@@ -43,13 +43,13 @@
 (defvar treemacs-width 35
   "Width of the treemacs buffer.")
 
-(defvar treemacs-icon-closed-dir (propertize "[+]" 'font-lock-face 'treemacs-icon-face)
+(defvar treemacs-icon-closed-dir (propertize "⏵ " 'font-lock-face 'treemacs-icon-face)
   "Icon indicating a closed directory.")
 
-(defvar treemacs-icon-opened-dir (propertize "[-]" 'font-lock-face 'treemacs-icon-face)
+(defvar treemacs-icon-opened-dir (propertize "⏷ " 'font-lock-face 'treemacs-icon-face)
   "Icon indicating an opened directory.")
 
-(defvar treemacs-icon-file (propertize "[f]" 'font-lock-face 'treemacs-icon-face)
+(defvar treemacs-icon-file (propertize "🖺 " 'font-lock-face 'treemacs-icon-face)
   "File icon placeholder.")
 
 (defvar treemacs-show-hidden-files t
