@@ -12,6 +12,7 @@
 (require 's)
 (require 'f)
 (require 'ido)
+(require 'ace-window)
 
 ;;;;;;;;;;;
 ;; Faces ;;
@@ -206,6 +207,17 @@ Do nothing if current node is a directoy."
   (treemacs--open-file))
 
 ;;;###autoload
+(defun treemacs-visit-file-ace ()
+  "Use `ace-window' to choose which buffer to visit the file at point."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (let* ((path (button-get (next-button (point)) 'abs-path)))
+      (when (f-file? path)
+        (select-window (aw-select "Select buffer"))
+        (find-file path)))))
+
+;;;###autoload
 (defun treemacs-xdg-open ()
   "Xdg open current file of the current node.
 Do nothing if current node is a directory."
@@ -366,13 +378,14 @@ under, if any."
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
   (cl-case (button-get btn 'state)
-    ('file       (treemacs--open-file #'split-window-vertically))
+    ('file       (treemacs-visit-file-vertical-split))
     ('dir-closed (treemacs--open-node btn))
     ('dir-open   (treemacs--close-node btn))))
 
 (defun treemacs--open-node (btn)
   "Open the node given by BTN."
   (button-put btn 'state 'dir-open)
+  (beginning-of-line)
   (treemacs--node-symbol-switch treemacs-icon-closed-dir treemacs-icon-opened-dir)
   (treemacs--create-branch
    (button-get btn 'abs-path)
@@ -577,6 +590,7 @@ is nil."
     (define-key map (kbd "ov")  #'treemacs-visit-file-vertical-split)
     (define-key map (kbd "oh")  #'treemacs-visit-file-horizontal-split)
     (define-key map (kbd "oo")  #'treemacs-visit-file-no-split)
+    (define-key map (kbd "oa")  #'treemacs-visit-file-ace)
     (define-key map (kbd "ox")  #'treemacs-xdg-open)
 
     map)
