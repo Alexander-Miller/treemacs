@@ -9,6 +9,7 @@
 ;;;;;;;;;;;;;;;;;;
 
 (require 'cl-lib)
+(require 'dash)
 (require 's)
 (require 'f)
 (require 'ido)
