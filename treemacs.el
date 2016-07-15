@@ -346,7 +346,7 @@ to be created is nested below another and not directly at the top level."
   (save-excursion
     (let* ((prefix    (s-repeat (* indent-depth treemacs-indentation) " "))
            (files     (treemacs--get-dir-content root))
-           (buttons   (--map (treemacs--insert-node it prefix indent-depth parent) files))
+           (buttons   (--map (-> (treemacs--insert-node it prefix indent-depth parent) (button-at)) files))
            (btn-pairs (-zip-fill nil buttons (cdr buttons))))
       (--each btn-pairs
         (button-put (car it) 'next-node (cdr it))
@@ -363,13 +363,13 @@ under, if any."
   (newline)
   (let* ((is-dir? (f-directory? path)))
     (insert prefix (if is-dir? treemacs-icon-closed-dir treemacs-icon-file))
-    (insert-button (f-filename path)
-                   'face      (if is-dir? 'treemacs-directory-face 'treemacs-file-face)
-                   'state     (if is-dir? 'dir-closed 'file)
-                   'action    #'treemacs--push-button
-                   'abs-path path
-                   'parent    parent
-                   'depth     depth)))
+    (insert-text-button (f-filename path)
+                        'face      (if is-dir? 'treemacs-directory-face 'treemacs-file-face)
+                        'state     (if is-dir? 'dir-closed 'file)
+                        'action    #'treemacs--push-button
+                        'abs-path path
+                        'parent    parent
+                        'depth     depth)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Button interactions ;;
