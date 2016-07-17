@@ -289,7 +289,9 @@ the treemacs buffer."
   (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
   (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
   (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
-  (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour))
+  (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
+
+  t)
 
 ;;;###autoload
 (defun treemacs-default-config ()
@@ -297,7 +299,9 @@ the treemacs buffer."
   (define-key treemacs-mode-map (kbd "n")  #'next-line)
   (define-key treemacs-mode-map (kbd "p")  #'previous-line)
   (define-key treemacs-mode-map (kbd "M-n")  #'treemacs-next-neighbour)
-  (define-key treemacs-mode-map (kbd "M-p")  #'treemacs-previous-neighbour))
+  (define-key treemacs-mode-map (kbd "M-p")  #'treemacs-previous-neighbour)
+
+  t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Building and tearing down the file trees ;;
