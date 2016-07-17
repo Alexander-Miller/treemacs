@@ -213,7 +213,7 @@ Do nothing if current node is a directoy."
   (interactive)
   (save-excursion
     (beginning-of-line)
-    (let* ((path (button-get (next-button (point)) 'abs-path)))
+    (let ((path (button-get (next-button (point)) 'abs-path)))
       (when (f-file? path)
         (select-window (aw-select "Select buffer"))
         (find-file path)))))
@@ -316,11 +316,12 @@ the treemacs buffer."
 (defun treemacs--build-tree (root &optional open-dirs)
   "Build the file tree starting at the given ROOT.
 If a list of OPEN-DIRS is provided they will be toggled open after the tree is constructed."
-  (treemacs--delete-all)
-  (treemacs--insert-header root)
-  (treemacs--create-branch root 0)
-  (goto-line 2)
-  (when open-dirs (treemacs--reopen-dirs open-dirs)))
+  (treemacs-with-writable-buffer
+   (treemacs--delete-all)
+   (treemacs--insert-header root)
+   (treemacs--create-branch root 0)
+   (goto-line 2)
+   (when open-dirs (treemacs--reopen-dirs open-dirs))))
 
 (defun treemacs--delete-all ()
   "Delete all content of the buffer."
@@ -385,36 +386,38 @@ under, if any."
 
 (defun treemacs--open-node (btn)
   "Open the node given by BTN."
-  (button-put btn 'state 'dir-open)
-  (beginning-of-line)
-  (treemacs--node-symbol-switch treemacs-icon-closed-dir treemacs-icon-opened-dir)
-  (treemacs--create-branch
-   (button-get btn 'abs-path)
-   (1+ (button-get btn 'depth))
-   btn)
-  (let ((dirs-to-open (-> (button-get btn 'abs-path)
-                          (assoc treemacs--open-dirs-cache)
-                          (cdr))))
-    (when dirs-to-open (treemacs--reopen-dirs dirs-to-open))))
+  (treemacs-with-writable-buffer
+   (button-put btn 'state 'dir-open)
+   (beginning-of-line)
+   (treemacs--node-symbol-switch treemacs-icon-closed-dir treemacs-icon-opened-dir)
+   (treemacs--create-branch
+    (button-get btn 'abs-path)
+    (1+ (button-get btn 'depth))
+    btn)
+   (let ((dirs-to-open (-> (button-get btn 'abs-path)
+                           (assoc treemacs--open-dirs-cache)
+                           (cdr))))
+     (when dirs-to-open (treemacs--reopen-dirs dirs-to-open)))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
   (let* ((abs-path  (button-get btn 'abs-path))
          (open-dirs (treemacs--collect-open-dirs btn)))
-    (treemacs--node-symbol-switch treemacs-icon-opened-dir treemacs-icon-closed-dir)
-    (forward-button 1)
-    (beginning-of-line)
-    (let* ((pos-start (point))
-           (next-node (treemacs--next-node btn))
-           (pos-end   (if next-node
-                          (-> next-node (button-start) (previous-button) (button-end) (1+))
-                        (point-max))))
-      (treemacs--clear-from-cache abs-path)
-      (when open-dirs
-        (treemacs--add-to-cache abs-path open-dirs))
-      (button-put btn 'state 'dir-closed)
-      (delete-region pos-start pos-end)
-      (delete-trailing-whitespace))))
+    (treemacs-with-writable-buffer
+     (treemacs--node-symbol-switch treemacs-icon-opened-dir treemacs-icon-closed-dir)
+     (forward-button 1)
+     (beginning-of-line)
+     (let* ((pos-start (point))
+            (next-node (treemacs--next-node btn))
+            (pos-end   (if next-node
+                           (-> next-node (button-start) (previous-button) (button-end) (1+))
+                         (point-max))))
+       (treemacs--clear-from-cache abs-path)
+       (when open-dirs
+         (treemacs--add-to-cache abs-path open-dirs))
+       (button-put btn 'state 'dir-closed)
+       (delete-region pos-start pos-end)
+       (delete-trailing-whitespace)))))
 
 (defun treemacs--open-file (&optional split-func)
   "Visit file of the current node.  Use SPLIT-FUNC to split the window.
@@ -513,6 +516,13 @@ is nil."
 ;; Misc. utils ;;
 ;;;;;;;;;;;;;;;;;
 
+(defmacro treemacs--with-writable-buffer (&rest body)
+  "Temporarily turn off read-ony mode to execute BODY."
+  `(progn
+     (read-only-mode -1)
+     ,@body
+     (read-only-mode t)))
+
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."
   (let ((w (max width window-min-width)))
@@ -599,7 +609,7 @@ is nil."
 
 (define-derived-mode treemacs-mode special-mode "Treemacs"
   "A major mode for displaying the directory tree in text mode."
-  (setq buffer-read-only nil
+  (setq buffer-read-only t
         indent-tabs-mode nil
         truncate-lines   t)
 
