@@ -1,4 +1,4 @@
-#Work in Progressi
+#Work in Progress
 
 To install load file and execute either `treemacs-default-config` or `treemacs-evil-config`, depending
 on whether you want to use n/p or j/k to navigate up and down.
