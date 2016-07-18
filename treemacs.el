@@ -320,7 +320,7 @@ the treemacs buffer."
 (defun treemacs--build-tree (root &optional open-dirs)
   "Build the file tree starting at the given ROOT.
 If a list of OPEN-DIRS is provided they will be toggled open after the tree is constructed."
-  (treemacs-with-writable-buffer
+  (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
    (treemacs--create-branch root 0)
@@ -390,7 +390,7 @@ under, if any."
 
 (defun treemacs--open-node (btn)
   "Open the node given by BTN."
-  (treemacs-with-writable-buffer
+  (treemacs--with-writable-buffer
    (button-put btn 'state 'dir-open)
    (beginning-of-line)
    (treemacs--node-symbol-switch treemacs-icon-closed-dir treemacs-icon-opened-dir)
@@ -407,7 +407,7 @@ under, if any."
   "Close node given by BTN."
   (let* ((abs-path  (button-get btn 'abs-path))
          (open-dirs (treemacs--collect-open-dirs btn)))
-    (treemacs-with-writable-buffer
+    (treemacs--with-writable-buffer
      (treemacs--node-symbol-switch treemacs-icon-opened-dir treemacs-icon-closed-dir)
      (forward-button 1)
      (beginning-of-line)
