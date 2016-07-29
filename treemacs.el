@@ -52,10 +52,6 @@
   '((t :inherit font-lock-constant-face :underline t :size 1.4))
   "Face used by treemacs for its header.")
 
-(defface treemacs-icon-face
-  '((t :inherit font-lock-string-face))
-  "Face used by treemacs for its icons.")
-
 ;;;;;;;;;;;;;;;;;;;
 ;; Configuration ;;
 ;;;;;;;;;;;;;;;;;;;
@@ -66,15 +62,6 @@
 (defvar treemacs-width 35
   "Width of the treemacs buffer.")
 
-(defvar treemacs-icon-closed-dir (propertize "⏵ " 'font-lock-face 'treemacs-icon-face)
-  "Icon indicating a closed directory.")
-
-(defvar treemacs-icon-opened-dir (propertize "⏷ " 'font-lock-face 'treemacs-icon-face)
-  "Icon indicating an opened directory.")
-
-(defvar treemacs-icon-file (propertize "🖺 " 'font-lock-face 'treemacs-icon-face)
-  "File icon placeholder.")
-
 (defvar treemacs-show-hidden-files t
   "Dotfiles will be shown if this is set to t and be hidden otherwise.")
 
@@ -82,6 +69,9 @@
   "The format string which is used for the header line.  Valid formats are all strings
 accepted by the `format' function for a single formatting
 argument, which is the current root directory.")
+
+(defvar treemacs-icons-hash (make-hash-table :test 'equal)
+  "Hash table containing a mapping of icons onto file extensions.")
 
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
@@ -375,14 +365,19 @@ If a list of OPEN-DIRS is provided they will be toggled open after the tree is c
 INDENT-DEPTH.  PARENT is same as ROOT, but only provided if the branch
 to be created is nested below another and not directly at the top level."
   (save-excursion
-    (let* ((prefix    (s-repeat (* indent-depth treemacs-indentation) " "))
-           (files     (treemacs--get-dir-content root))
-           (buttons   (--map (-> (treemacs--insert-node it prefix indent-depth parent) (button-at)) files))
-           (btn-pairs (-zip-fill nil buttons (cdr buttons))))
-      (--each btn-pairs
-        (button-put (car it) 'next-node (cdr it))
-        (when (not (null (cdr it)))
-          (button-put (cdr it) 'prev-node (car it)))))))
+    (let* ((prefix       (concat "\n" (s-repeat (* indent-depth treemacs-indentation) " ")))
+           (entries      (treemacs--get-dir-content root))
+           (directories  (first entries))
+           (files        (second entries))
+           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent) (button-at)) directories))
+           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent) (button-at)) files))
+           (last-dir     (-some-> (last dir-buttons) (car)))
+           (first-file   (first file-buttons)))
+      (treemacs-set-neighbours dir-buttons)
+      (treemacs-set-neighbours file-buttons)
+      (when (and last-dir first-file)
+        (button-put last-dir 'next-node first-file)
+        (button-put first-file 'prev-node last-dir)))))
 
 (defun treemacs--insert-node (path prefix depth parent)
  "Insert a single button node.
@@ -391,16 +386,27 @@ indentation.  DEPTH is the nesting depth, used for calculating the prefix length
 of all potential child branches.  PARENT is the node the new node is nested
 under, if any."
   (end-of-line)
-  (newline)
   (let* ((is-dir? (f-directory? path)))
-    (insert prefix (if is-dir? treemacs-icon-closed-dir treemacs-icon-file))
-    (insert-text-button (f-filename path)
+    (insert prefix)
+    (insert-image (if is-dir?
+                      treemacs-icon-closed
+                    (gethash (file-name-extension path) treemacs-icons-hash treemacs-icon-text)))
+    (insert-text-button (concat " " (f-filename path))
                         'face      (if is-dir? 'treemacs-directory-face 'treemacs-file-face)
                         'state     (if is-dir? 'dir-closed 'file)
                         'action    #'treemacs--push-button
-                        'abs-path path
+                        'abs-path  path
                         'parent    parent
                         'depth     depth)))
+
+(defun treemacs-set-neighbours (buttons)
+  "Set next- and previous-node properties for each button in buttons."
+  (when buttons
+    (cl-dolist (i (number-sequence 0 (- (list-length buttons) 2)))
+      (let ((b1 (nth i buttons))
+            (b2 (nth (1+ i) buttons)))
+        (button-put b1 'next-node b2)
+        (button-put b2 'prev-node b1)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Button interactions ;;
@@ -418,7 +424,7 @@ under, if any."
   (treemacs--with-writable-buffer
    (button-put btn 'state 'dir-open)
    (beginning-of-line)
-   (treemacs--node-symbol-switch treemacs-icon-closed-dir treemacs-icon-opened-dir)
+   (treemacs--node-symbol-switch treemacs-icon-open)
    (treemacs--create-branch
     (button-get btn 'abs-path)
     (1+ (button-get btn 'depth))
@@ -433,7 +439,7 @@ under, if any."
   (let* ((abs-path  (button-get btn 'abs-path))
          (open-dirs (treemacs--collect-open-dirs btn)))
     (treemacs--with-writable-buffer
-     (treemacs--node-symbol-switch treemacs-icon-opened-dir treemacs-icon-closed-dir)
+     (treemacs--node-symbol-switch treemacs-icon-closed)
      (forward-button 1)
      (beginning-of-line)
      (let* ((pos-start (point))
@@ -461,12 +467,16 @@ is nil."
         (when split-func (call-interactively split-func))
         (find-file path)))))
 
-(defun treemacs--node-symbol-switch (from to)
+(defun treemacs--node-symbol-switch (new-sym)
   "Replace first instance of FROM with TO in current line."
-  (save-excursion
-    (beginning-of-line)
-    (search-forward from)
-    (replace-match (propertize to 'font-lock-face 'treemacs-icon-face))))
+  (beginning-of-line)
+  (if (> (button-get (next-button (point)) 'depth) 0)
+      (progn
+        (skip-chars-forward "[[:space:]]")
+        (backward-char)
+        (delete-char -1))
+    (delete-char 1))
+  (insert-image new-sym))
 
 (defun treemacs--next-node (node)
   "Return NODE's lower same-indentation neighbour or nil if there is none."
@@ -541,6 +551,33 @@ is nil."
   (treemacs--setup-buffer)
   (switch-to-buffer treemacs--buffer-name))
 
+;;;;;;;;;;;
+;; Icons ;;
+;;;;;;;;;;;
+
+(defmacro treemacs--setup-icon (var file-name &rest extensions)
+  "Define a variable VAR with the value being the image created from FILE-NAME.
+Insert VAR into icon-cache for each of the given file EXTENSIONS."
+  `(progn
+     (defvar ,var
+        (create-image (concat
+                       (expand-file-name (if load-file-name (file-name-directory load-file-name) default-directory))
+                       "icons/" ,file-name)
+                      'png nil :ascent 'center))
+     (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
+
+(defun treemacs--create-icons ()
+  "Create icons and put them in the icons hash."
+
+  (setq treemacs-icons-hash (make-hash-table :test #'equal))
+
+  (treemacs--setup-icon treemacs-icon-closed  "dir_closed.png")
+  (treemacs--setup-icon treemacs-icon-open    "dir_open.png")
+  (treemacs--setup-icon treemacs-icon-text    "txt.png")
+
+  (treemacs--setup-icon treemacs-icon-shell   "shell.png"    "sh" "zsh" "fish")
+  (treemacs--setup-icon treemacs-icon-image   "image.png"    "jpg" "bmp" "svg" "png"))
+
 ;;;;;;;;;;;;;;;;;
 ;; Misc. utils ;;
 ;;;;;;;;;;;;;;;;;
@@ -561,7 +598,7 @@ is nil."
 
 (defun treemacs--get-dir-content (dir)
   "Get the list of files in DIR.  Directories are sorted first."
-  (-concat
+  (list
    (f-directories dir #'treemacs--should-show?)
    (f-files dir #'treemacs--should-show?)))
 
@@ -647,6 +684,8 @@ is nil."
   (setq window-size-fixed t)
   (electric-indent-local-mode -1)
   (hl-line-mode t)
+
+  (treemacs--create-icons)
 
   (when (fboundp 'spaceline-compile)
     (spaceline-compile "treemacs" '(workspace-number major-mode) nil)
