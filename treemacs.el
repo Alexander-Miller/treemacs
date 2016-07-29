@@ -151,7 +151,7 @@ If no treemacs buffer exists call `treemacs-init.'"
     (goto-line 2)))
 
 ;;;###autoload
-(defun treemacs-next-higher-node ()
+(defun treemacs-goto-parent-node ()
   "Move cursor to the next higher directory node.  Do nothing if current
 node is already at the root level."
   (interactive)
@@ -620,7 +620,7 @@ is nil."
     (define-key map (kbd "cf")  #'treemacs-create-file)
     (define-key map (kbd "cd")  #'treemacs-create-dir)
     (define-key map (kbd "h")   #'treemacs-uproot)
-    (define-key map (kbd "u")   #'treemacs-next-higher-node)
+    (define-key map (kbd "u")   #'treemacs-goto-parent-node)
     (define-key map (kbd "q")   #'treemacs-toggle)
     (define-key map (kbd "Q")   #'treemacs-kill-buffer)
     (define-key map (kbd "ov")  #'treemacs-visit-file-vertical-split)
