@@ -182,7 +182,7 @@ node is already at the root level."
            (goto-char)))
 
 ;;;###autoload
-(defun treemacs-refresh ()
+(defun treemacs-refresh (&optional no-message)
   "Rebuild treemacs buffer."
   (interactive)
   (let* ((point     (point))
@@ -191,7 +191,8 @@ node is already at the root level."
          (open-dirs (treemacs--collect-open-dirs root-btn)))
     (treemacs--build-tree root open-dirs)
     (goto-char point)
-    (message "Treemacs buffer refreshed.")))
+    (unless no-message
+      (message "Treemacs buffer refreshed."))))
 
 ;;;###autoload
 (defun treemacs-change-root ()
@@ -266,34 +267,36 @@ selected do nothing."
 (defun treemacs-delete ()
   "Delete the file at point."
   (interactive)
-  (beginning-of-line)
-  (let* ((path      (-some-> (next-button (point))
-                             (button-get 'abs-path)))
-         (file-name (when path (f-filename path))))
-    (when path
-      (cond
-       ((f-file? path)
-        (when (y-or-n-p (format "Delete %s ? " file-name))
-          (f-delete path)))
-       ((f-directory? path)
-        (when (y-or-n-p (format "Recursively delete %s ? " file-name))
-          (f-delete path t)
-          (treemacs--clear-from-cache path))))
-      (treemacs-refresh))))
+  (save-excursion
+    (beginning-of-line)
+    (let* ((path      (-some-> (next-button (point))
+                               (button-get 'abs-path)))
+           (file-name (when path (f-filename path))))
+      (when path
+        (cond
+         ((f-file? path)
+          (when (y-or-n-p (format "Delete %s ? " file-name))
+            (f-delete path)))
+         ((f-directory? path)
+          (when (y-or-n-p (format "Recursively delete %s ? " file-name))
+            (f-delete path t)
+            (treemacs--clear-from-cache path))))
+        (treemacs-refresh t)
+        (message "")))))
 
 ;;;###autoload
 (defun treemacs-create-file (file-name)
   "Create file called FILE-NAME."
   (interactive "FFile name: ")
   (f-touch file-name)
-  (treemacs-refresh))
+  (treemacs-refresh t))
 
 ;;;###autoload
 (defun treemacs-create-dir (dir-name)
   "Create directory called DIR-NAME."
-  (interactive "FDirectory name: ")
+  (interactive "DDirectory name: ")
   (f-mkdir dir-name)
-  (treemacs-refresh))
+  (treemacs-refresh t))
 
 ;;;###autoload
 (defun treemacs-evil-config ()
