@@ -364,6 +364,7 @@ If a list of OPEN-DIRS is provided they will be toggled open after the tree is c
 
 (defun treemacs--insert-header (root)
   "Insert the header line for the given ROOT."
+  (setq default-directory root)
   (insert-button (format treemacs-header-format (f-filename root))
                  'face 'treemacs-header-face
                  'abs-path root
