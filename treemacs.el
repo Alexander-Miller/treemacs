@@ -307,6 +307,16 @@ selected do nothing."
   (treemacs-refresh t))
 
 ;;;###autoload
+(defun treemacs-toggle-show-dotfiles ()
+  "Toggle the hiding and displaying of dotfiles."
+  (interactive)
+  (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
+  (treemacs-refresh t)
+  (message (concat "Dotfiles will now be "
+                   (if treemacs-show-hidden-files
+                       "displayed." "hidden."))))
+
+;;;###autoload
 (defun treemacs-evil-config ()
   "Create an evil state for treemacs mode.  Use j & k for navigating
 the treemacs buffer."
@@ -324,6 +334,7 @@ the treemacs buffer."
   (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
   (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
   (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
+  (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
 
   t)
 
@@ -334,6 +345,7 @@ the treemacs buffer."
   (define-key treemacs-mode-map (kbd "p")    #'treemacs-previous-line)
   (define-key treemacs-mode-map (kbd "M-n")  #'treemacs-next-neighbour)
   (define-key treemacs-mode-map (kbd "M-p")  #'treemacs-previous-neighbour)
+  (define-key treemacs-mode-map (kbd "th")   #'treemacs-toggle-show-dotfiles)
 
   t)
 
