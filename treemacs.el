@@ -124,13 +124,28 @@ If no treemacs buffer exists call `treemacs-init.'"
     (treemacs--init (projectile-project-root))))
 
 ;;;###autoload
+(defun treemacs-next-line ()
+  "Goto next line."
+  (interactive)
+  (next-line)
+  (treemacs-goto-column-1))
+
+;;;###autoload
+(defun treemacs-previous-line ()
+  "Goto previous line."
+  (interactive)
+  (previous-line)
+  (treemacs-goto-column-1))
+
+;;;###autoload
 (defun treemacs-push-button ()
   "Push the button in the current line."
   (interactive)
   (save-excursion
     (beginning-of-line)
     (forward-button 1)
-    (call-interactively #'push-button)))
+    (call-interactively #'push-button))
+  (treemacs-goto-column-1))
 
 ;;;###autoload
 (defun treemacs-uproot ()
@@ -138,7 +153,8 @@ If no treemacs buffer exists call `treemacs-init.'"
   (interactive)
   (let ((new-root  (treemacs--current-root)))
     (treemacs--build-tree (treemacs--parent new-root))
-    (goto-line 2)))
+    (goto-line 2)
+    (treemacs-goto-column-1)))
 
 ;;;###autoload
 (defun treemacs-goto-parent-node ()
@@ -146,10 +162,12 @@ If no treemacs buffer exists call `treemacs-init.'"
 node is already at the root level."
   (interactive)
   (beginning-of-line)
-  (-some-> (next-button (point))
-           (button-get 'parent)
-           (button-start)
-           (goto-char)))
+  (and (-some->
+        (next-button (point))
+        (button-get 'parent)
+        (button-start)
+        (goto-char))
+       (treemacs-goto-column-1)))
 
 ;;;###autoload
 (defun treemacs-next-neighbour ()
@@ -300,6 +318,8 @@ the treemacs buffer."
 
   (evil-set-initial-state 'treemacs-mode 'treemacs)
 
+  (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
+  (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
   (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
   (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
   (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
@@ -310,8 +330,8 @@ the treemacs buffer."
 ;;;###autoload
 (defun treemacs-default-config ()
   "Use n & p for navigating the treemacs buffer."
-  (define-key treemacs-mode-map (kbd "n")  #'next-line)
-  (define-key treemacs-mode-map (kbd "p")  #'previous-line)
+  (define-key treemacs-mode-map (kbd "n")    #'treemacs-next-line)
+  (define-key treemacs-mode-map (kbd "p")    #'treemacs-previous-line)
   (define-key treemacs-mode-map (kbd "M-n")  #'treemacs-next-neighbour)
   (define-key treemacs-mode-map (kbd "M-p")  #'treemacs-previous-neighbour)
 
@@ -339,6 +359,7 @@ If a list of OPEN-DIRS is provided they will be toggled open after the tree is c
    (treemacs--insert-header root)
    (treemacs--create-branch root 0)
    (goto-line 2)
+   (treemacs-goto-column-1)
    (when open-dirs (treemacs--reopen-dirs open-dirs))))
 
 (defun treemacs--delete-all ()
@@ -646,6 +667,11 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (if (f-root? path)
       path
     (f-parent path)))
+
+(defun treemacs-goto-column-1 ()
+  "Move cursor to column #1 in current line."
+  (beginning-of-line)
+  (forward-char))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Mode definitions ;;
