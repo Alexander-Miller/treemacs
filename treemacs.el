@@ -620,14 +620,14 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
 (defun treemacs--get-dir-content (dir)
   "Get the list of files in DIR.  Directories are sorted first."
-  (list
-   (f-directories dir #'treemacs--should-show?)
-   (f-files dir #'treemacs--should-show?)))
+  (let ((entries (-separate #'f-directory? (f-entries dir))))
+    (if treemacs-show-hidden-files
+        entries
+      (--map (-filter #'treemacs--should-show? it) entries))))
 
 (defun treemacs--should-show? (file-name)
   "Indicate whether FILE-NAME should be show in the treemacs buffer or kept hidden."
-  (or treemacs-show-hidden-files
-      (not (s-matches? "^\\..*" (f-filename file-name)))))
+  (not (s-matches? "^\\..*" (f-filename file-name))))
 
 (defun treemacs--current-root ()
   "Return the current root directory."
