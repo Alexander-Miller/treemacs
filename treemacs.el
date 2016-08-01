@@ -275,22 +275,27 @@ selected do nothing."
 (defun treemacs-delete ()
   "Delete the file at point."
   (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (let* ((path      (-some-> (next-button (point))
-                               (button-get 'abs-path)))
-           (file-name (when path (f-filename path))))
-      (when path
-        (cond
-         ((f-file? path)
-          (when (y-or-n-p (format "Delete %s ? " file-name))
-            (f-delete path)))
-         ((f-directory? path)
-          (when (y-or-n-p (format "Recursively delete %s ? " file-name))
-            (f-delete path t)
-            (treemacs--clear-from-cache path))))
-        (treemacs-refresh t)
-        (message "")))))
+  (beginning-of-line)
+  (-if-let (btn (next-button (point)))
+      (let* ((path      (button-get btn 'abs-path))
+             (file-name (f-filename path))
+             (neighbour (or (button-get btn 'next-node) (button-get btn 'prev-node)))
+             (pos       (if neighbour (button-start neighbour) (point))))
+        (when
+            (cond
+             ((f-file? path)
+              (when (y-or-n-p (format "Delete %s ? " file-name))
+                (f-delete path)
+                t))
+             ((f-directory? path)
+              (when (y-or-n-p (format "Recursively delete %s ? " file-name))
+                (f-delete path t)
+                (treemacs--clear-from-cache path)
+                t)))
+          (treemacs-refresh t)
+          (goto-char pos))
+        (message "")))
+  (treemacs-goto-column-1))
 
 ;;;###autoload
 (defun treemacs-create-file (file-name)
