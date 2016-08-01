@@ -576,6 +576,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (treemacs--setup-icon treemacs-icon-text    "txt.png")
 
   (treemacs--setup-icon treemacs-icon-shell   "shell.png"    "sh" "zsh" "fish")
+  (treemacs--setup-icon treemacs-icon-cpp     "cpp.png"      "cpp" "hpp")
   (treemacs--setup-icon treemacs-icon-image   "image.png"    "jpg" "bmp" "svg" "png"))
 
 ;;;;;;;;;;;;;;;;;
