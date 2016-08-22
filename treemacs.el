@@ -741,13 +741,13 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (electric-indent-local-mode -1)
   (hl-line-mode t)
 
-  (treemacs--create-icons)
-
   (when (fboundp 'spaceline-compile)
     (spaceline-compile "treemacs" '(workspace-number major-mode) nil)
     (setq-local
      mode-line-format
      '("%e" (:eval (spaceline-ml-treemacs))))))
+
+(treemacs--create-icons)
 
 (provide 'treemacs)
 
