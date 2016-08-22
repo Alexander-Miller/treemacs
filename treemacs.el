@@ -737,7 +737,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
   (setq-local cursor-type nil)
   (setq-local show-paren-mode nil)
-  (setq window-size-fixed t)
+  (setq window-size-fixed 'width)
   (electric-indent-local-mode -1)
   (hl-line-mode t)
 
