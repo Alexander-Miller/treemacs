@@ -466,18 +466,20 @@ under, if any."
 
 (defun treemacs--open-node (btn)
   "Open the node given by BTN."
-  (treemacs--with-writable-buffer
-   (button-put btn 'state 'dir-open)
-   (beginning-of-line)
-   (treemacs--node-symbol-switch treemacs-icon-open)
-   (treemacs--create-branch
-    (button-get btn 'abs-path)
-    (1+ (button-get btn 'depth))
-    btn)
-   (let ((dirs-to-open (-> (button-get btn 'abs-path)
-                           (assoc treemacs--open-dirs-cache)
-                           (cdr))))
-     (when dirs-to-open (treemacs--reopen-dirs dirs-to-open)))))
+  (if (not (f-readable? (button-get btn 'abs-path)))
+      (message "Directory is not readable.")
+    (treemacs--with-writable-buffer
+     (button-put btn 'state 'dir-open)
+     (beginning-of-line)
+     (treemacs--node-symbol-switch treemacs-icon-open)
+     (treemacs--create-branch
+      (button-get btn 'abs-path)
+      (1+ (button-get btn 'depth))
+      btn)
+     (let ((dirs-to-open (-> (button-get btn 'abs-path)
+                             (assoc treemacs--open-dirs-cache)
+                             (cdr))))
+       (when dirs-to-open (treemacs--reopen-dirs dirs-to-open))))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
