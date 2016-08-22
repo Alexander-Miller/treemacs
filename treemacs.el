@@ -151,10 +151,17 @@ If no treemacs buffer exists call `treemacs-init.'"
 (defun treemacs-uproot ()
   "Change current root to the next higher directory."
   (interactive)
-  (let ((new-root  (treemacs--current-root)))
-    (treemacs--build-tree (treemacs--parent new-root))
-    (goto-line 2)
-    (treemacs-goto-column-1)))
+  (let* ((root      (treemacs--current-root))
+         (new-root  (treemacs--parent root)))
+    (unless (s-equals? root new-root)
+      (treemacs--build-tree new-root)
+      (goto-char 0)
+      (while (not (s-equals?
+                   root
+                   (-some-> (next-button (point)) (button-get 'abs-path))))
+        (forward-button 1))
+      (forward-button 1)
+      (treemacs-goto-column-1))))
 
 ;;;###autoload
 (defun treemacs-goto-parent-node ()
@@ -650,9 +657,10 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
 (defun treemacs--current-root ()
   "Return the current root directory."
-  (goto-char (point-min))
-  (-> (treemacs--current-root-btn)
-      (button-get 'abs-path)))
+  (save-excursion
+    (goto-char (point-min))
+    (-> (treemacs--current-root-btn)
+        (button-get 'abs-path))))
 
 (defun treemacs--current-root-btn ()
   "Return the current root button."
