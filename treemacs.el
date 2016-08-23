@@ -382,7 +382,8 @@ If a list of OPEN-DIRS is provided they will be toggled open after the tree is c
    (treemacs--delete-all)
    (treemacs--insert-header root)
    (treemacs--create-branch root 0)
-   (goto-line 2)
+   (goto-char 0)
+   (forward-line 1)
    (treemacs-goto-column-1)
    (when open-dirs (treemacs--reopen-dirs open-dirs))))
 
