@@ -742,8 +742,8 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (hl-line-mode t)
 
   (when (fboundp 'spaceline-compile)
-    (spaceline-compile "treemacs" '(workspace-number major-mode) nil)
-    (setq-local
+    (spaceline-install "treemacs" '(workspace-number major-mode) nil)
+    (setq
      mode-line-format
      '("%e" (:eval (spaceline-ml-treemacs))))))
 
