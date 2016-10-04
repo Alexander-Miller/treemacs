@@ -703,6 +703,37 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (beginning-of-line)
   (forward-char))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Popwin Compatibility ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(with-eval-after-load 'popwin
+
+  (defadvice popwin:create-popup-window
+      (around treemacs--popwin-popup-buffer activate)
+    (let ((v? (treemacs--is-visible?))
+          (tb (get-buffer treemacs--buffer-name)))
+      (when v?
+        (with-current-buffer tb
+          (setq window-size-fixed nil)))
+      ad-do-it
+      (when v?
+        (with-current-buffer tb
+          (setq window-size-fixed 'width)))))
+
+  (defadvice popwin:close-popup-window
+      (around treemacs--popwin-close-buffer activate)
+    (let ((v? (treemacs--is-visible?))
+          (tb (get-buffer treemacs--buffer-name)))
+      (when v?
+        (with-current-buffer tb
+          (setq window-size-fixed nil)))
+      ad-do-it
+      (when v?
+        (with-current-buffer tb
+          (setq window-size-fixed 'width))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Mode definitions ;;
 ;;;;;;;;;;;;;;;;;;;;;;
