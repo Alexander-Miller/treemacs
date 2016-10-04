@@ -682,14 +682,14 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 (defun str-assq-delete-all (key alist)
   "Same as `assq-delete-all', but use `string=' instead of `eq'."
   (while (and (consp (car alist))
-	      (string= (car (car alist)) key))
+              (string= (car (car alist)) key))
     (setq alist (cdr alist)))
   (let ((tail alist) tail-cdr)
     (while (setq tail-cdr (cdr tail))
       (if (and (consp (car tail-cdr))
-	       (string= (car (car tail-cdr)) key))
-	  (setcdr tail (cdr tail-cdr))
-	(setq tail tail-cdr))))
+               (string= (car (car tail-cdr)) key))
+          (setcdr tail (cdr tail-cdr))
+        (setq tail tail-cdr))))
   alist)
 
 (defun treemacs--parent (path)
