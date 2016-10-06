@@ -767,14 +767,16 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   "Keymap for `treemacs-mode'.")
 
 (define-derived-mode treemacs-mode special-mode "Treemacs"
-  "A major mode for displaying the directory tree in text mode."
-  (setq buffer-read-only t
-        indent-tabs-mode nil
-        truncate-lines   t)
+  "A major mode for displaying the file system in a tree layout."
 
-  (setq-local cursor-type nil)
+  (setq window-size-fixed   'width
+        buffer-read-only    t
+        truncate-lines      t
+        indent-tabs-mode    nil
+        cursor-type         nil
+        desktop-save-buffer nil)
+
   (setq-local show-paren-mode nil)
-  (setq window-size-fixed 'width)
   (electric-indent-local-mode -1)
   (hl-line-mode t)
 
