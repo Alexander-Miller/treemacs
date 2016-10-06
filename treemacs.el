@@ -697,6 +697,17 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (beginning-of-line)
   (forward-char))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Window NUmbering Compatibility ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(with-eval-after-load 'window-numbering
+
+  (defun treemacs--window-number-zero ()
+    (when (string= (buffer-name) treemacs--buffer-name) 0))
+
+  (setq window-numbering-assign-func
+        (lambda () (treemacs--window-number-zero))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Popwin Compatibility ;;
