@@ -413,8 +413,8 @@ to be created is nested below another and not directly at the top level."
            (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent) (button-at)) files))
            (last-dir     (-some-> (last dir-buttons) (car)))
            (first-file   (first file-buttons)))
-      (treemacs-set-neighbours dir-buttons)
-      (treemacs-set-neighbours file-buttons)
+      (treemacs--set-neighbours dir-buttons)
+      (treemacs--set-neighbours file-buttons)
       (when (and last-dir first-file)
         (button-put last-dir 'next-node first-file)
         (button-put first-file 'prev-node last-dir)))))
@@ -439,7 +439,7 @@ under, if any."
                         'parent    parent
                         'depth     depth)))
 
-(defun treemacs-set-neighbours (buttons)
+(defun treemacs--set-neighbours (buttons)
   "Set next- and previous-node properties for each button in buttons."
   (when buttons
     (cl-dolist (i (number-sequence 0 (- (list-length buttons) 2)))
