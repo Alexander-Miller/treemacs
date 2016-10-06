@@ -299,17 +299,17 @@ If no treemacs buffer exists call `treemacs-init.'"
   (treemacs-goto-column-1))
 
 ;;;###autoload
-(defun treemacs-create-file (file-name)
-  "Create file called FILE-NAME."
-  (interactive "FFile name: ")
-  (f-touch file-name)
+(defun treemacs-create-file (dir filename)
+  "Create file called FILENAME in directory DIR."
+  (interactive "DDirectory:\nMFilename:")
+  (f-touch (f-join dir filename))
   (treemacs-refresh t))
 
 ;;;###autoload
-(defun treemacs-create-dir (dir-name)
-  "Create directory called DIR-NAME."
-  (interactive "DDirectory name: ")
-  (f-mkdir dir-name)
+(defun treemacs-create-dir (dir dirname)
+  "Create directory called DIRNAME in directory DIR."
+  (interactive "DDirectory:\nMDirname:")
+  (f-mkdir (f-join dir dirname))
   (treemacs-refresh t))
 
 ;;;###autoload
