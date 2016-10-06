@@ -98,7 +98,7 @@ If no treemacs buffer exists call `treemacs-init.'"
    ((treemacs--is-visible?)
     (progn
       (treemacs--select-visible)
-      (if (= 1 (list-length (window-list)))
+      (if (one-window-p)
           (switch-to-buffer (other-buffer))
         (delete-window))))
    ((treemacs--buffer-exists?)
@@ -139,7 +139,7 @@ If no treemacs buffer exists call `treemacs-init.'"
 
 ;;;###autoload
 (defun treemacs-push-button ()
-  "Push the button in the current line."
+  "Open/close directory. Open file with `treemacs-visit-file-vertical-split'."
   (interactive)
   (save-excursion
     (beginning-of-line)
@@ -149,7 +149,7 @@ If no treemacs buffer exists call `treemacs-init.'"
 
 ;;;###autoload
 (defun treemacs-uproot ()
-  "Change current root to the next higher directory."
+  "Switch treemacs' root directory to current root's parent, if possible."
   (interactive)
   (let* ((root      (treemacs--current-root))
          (new-root  (treemacs--parent root)))
@@ -165,8 +165,7 @@ If no treemacs buffer exists call `treemacs-init.'"
 
 ;;;###autoload
 (defun treemacs-goto-parent-node ()
-  "Move cursor to the next higher directory node.  Do nothing if current
-node is already at the root level."
+  "Select parent of selected node, if possible."
   (interactive)
   (beginning-of-line)
   (and (-some->
@@ -178,7 +177,7 @@ node is already at the root level."
 
 ;;;###autoload
 (defun treemacs-next-neighbour ()
-  "Move to the next node at the same level.  Do nothing if no such node exists."
+  "Select next node at the same depth as currently selected node, if possible."
   (interactive)
   (beginning-of-line)
   (-some-> (next-button (point))
@@ -188,7 +187,7 @@ node is already at the root level."
 
 ;;;###autoload
 (defun treemacs-previous-neighbour ()
-  "Move to the previous node at the same level.  Do nothing if no such node exists."
+  "Select previous node at the same depth as currently selected node, if possible."
   (interactive)
   (beginning-of-line)
   (-some-> (next-button (point))
@@ -211,7 +210,7 @@ node is already at the root level."
 
 ;;;###autoload
 (defun treemacs-change-root ()
-  "Change the root to the path of the node at point."
+  "Use current directory as new root. Do nothing for files."
   (interactive)
   (beginning-of-line)
   (let* ((point     (point))
@@ -225,28 +224,25 @@ node is already at the root level."
 
 ;;;###autoload
 (defun treemacs-visit-file-vertical-split ()
-  "Visit file of the current node in a new vertical split.
-Do nothing if current node is a directoy."
+  "Open current file by vertically splitting other-buffer. Do nothing for directories."
   (interactive)
   (treemacs--open-file #'split-window-vertically))
 
 ;;;###autoload
 (defun treemacs-visit-file-horizontal-split ()
-  "Visit file of the current node in a new horizontal split.
-Do nothing if current node is a directoy."
+  "Open current file by horizontally splitting other-buffer. Do nothing for directories."
   (interactive)
   (treemacs--open-file #'split-window-horizontally))
 
 ;;;###autoload
 (defun treemacs-visit-file-no-split ()
-  "Visit file of the current node in other window without performing a split.
-Do nothing if current node is a directoy."
+  "Open current file, performing no split and using other-buffer directly. Do nothing for directories."
   (interactive)
   (treemacs--open-file))
 
 ;;;###autoload
 (defun treemacs-visit-file-ace ()
-  "Use `ace-window' to choose which buffer to visit the file at point."
+  "Open current file, using `ace-window' to decide which buffer to open the file in. Do nothing for directories."
   (interactive)
   (save-excursion
     (beginning-of-line)
@@ -257,8 +253,7 @@ Do nothing if current node is a directoy."
 
 ;;;###autoload
 (defun treemacs-xdg-open ()
-  "Xdg open current file of the current node.
-Do nothing if current node is a directory."
+  "Open current file, using the `xdg-open' shell-command. Do nothing for directories."
   (interactive)
   (save-excursion
     (beginning-of-line)
@@ -268,11 +263,10 @@ Do nothing if current node is a directory."
 
 ;;;###autoload
 (defun treemacs-kill-buffer ()
-  "Quit treemacs and kill its buffer.  If the treemacs buffer is not currently
-selected do nothing."
+  "Kill the treemacs buffer."
   (interactive)
   (when (string= treemacs--buffer-name
-                 (buffer-name (current-buffer)))
+                 (buffer-name))
     (setq treemacs--open-dirs-cache '())
     (kill-this-buffer)
     (when (not (one-window-p))
@@ -280,7 +274,7 @@ selected do nothing."
 
 ;;;###autoload
 (defun treemacs-delete ()
-  "Delete the file at point."
+  "Delete node at point. A delete action must always be confirmed. Directories are deleted recursively."
   (interactive)
   (beginning-of-line)
   (-if-let (btn (next-button (point)))
