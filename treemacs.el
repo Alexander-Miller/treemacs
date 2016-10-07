@@ -57,7 +57,7 @@
 ;;;;;;;;;;;;;;;;;;;
 
 (defvar treemacs-indentation 2
-  "Number of spaces each level is indented.")
+  "The number of spaces each level is indented in the tree.")
 
 (defvar treemacs-width 35
   "Width of the treemacs buffer.")
