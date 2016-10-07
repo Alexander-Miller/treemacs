@@ -334,6 +334,15 @@ See also `treemacs-width.'"
            (if window-size-fixed "locked" "unlocked")))
 
 ;;;###autoload
+(defun treemacs-reset-width ()
+  "Reset the width of the treemacs buffer to `treemacs-buffe-width'."
+  (interactive)
+  (let ((original window-size-fixed))
+    (setq window-size-fixed nil)
+    (treemacs--set-width treemacs-width)
+    (setq window-size-fixed original)))
+
+;;;###autoload
 (defun treemacs-evil-config ()
   "Create an evil state for treemacs mode.  Use j & k for navigating
 the treemacs buffer."
@@ -353,6 +362,7 @@ the treemacs buffer."
   (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
   (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
   (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
+  (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
 
   t)
 
@@ -365,6 +375,7 @@ the treemacs buffer."
   (define-key treemacs-mode-map (kbd "M-p") #'treemacs-previous-neighbour)
   (define-key treemacs-mode-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
   (define-key treemacs-mode-map (kbd "tw")  #'treemacs-toggle-fixed-width)
+  (define-key treemacs-mode-map (kbd "w")   #'treemacs-reset-width)
 
   t)
 
