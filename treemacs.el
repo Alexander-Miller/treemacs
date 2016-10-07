@@ -347,11 +347,11 @@ the treemacs buffer."
 ;;;###autoload
 (defun treemacs-default-config ()
   "Use n & p for navigating the treemacs buffer."
-  (define-key treemacs-mode-map (kbd "n")    #'treemacs-next-line)
-  (define-key treemacs-mode-map (kbd "p")    #'treemacs-previous-line)
-  (define-key treemacs-mode-map (kbd "M-n")  #'treemacs-next-neighbour)
-  (define-key treemacs-mode-map (kbd "M-p")  #'treemacs-previous-neighbour)
-  (define-key treemacs-mode-map (kbd "th")   #'treemacs-toggle-show-dotfiles)
+  (define-key treemacs-mode-map (kbd "n")   #'treemacs-next-line)
+  (define-key treemacs-mode-map (kbd "p")   #'treemacs-previous-line)
+  (define-key treemacs-mode-map (kbd "M-n") #'treemacs-next-neighbour)
+  (define-key treemacs-mode-map (kbd "M-p") #'treemacs-previous-neighbour)
+  (define-key treemacs-mode-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
 
   t)
 
