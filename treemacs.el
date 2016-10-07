@@ -323,6 +323,17 @@ If no treemacs buffer exists call `treemacs-init.'"
                        "displayed." "hidden."))))
 
 ;;;###autoload
+(defun treemacs-toggle-fixed-width ()
+  "Toggle whether the treemacs buffer should have a fixed width.
+See also `treemacs-width.'"
+  (interactive)
+  (if window-size-fixed
+      (setq window-size-fixed nil)
+    (setq window-size-fixed 'width))
+  (message "Treemacs buffer width has been %s."
+           (if window-size-fixed "locked" "unlocked")))
+
+;;;###autoload
 (defun treemacs-evil-config ()
   "Create an evil state for treemacs mode.  Use j & k for navigating
 the treemacs buffer."
@@ -341,6 +352,7 @@ the treemacs buffer."
   (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
   (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
   (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
+  (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
 
   t)
 
@@ -352,6 +364,7 @@ the treemacs buffer."
   (define-key treemacs-mode-map (kbd "M-n") #'treemacs-next-neighbour)
   (define-key treemacs-mode-map (kbd "M-p") #'treemacs-previous-neighbour)
   (define-key treemacs-mode-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
+  (define-key treemacs-mode-map (kbd "tw")  #'treemacs-toggle-fixed-width)
 
   t)
 
