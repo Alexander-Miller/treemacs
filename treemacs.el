@@ -197,7 +197,7 @@ If no treemacs buffer exists call `treemacs-init.'"
 
 ;;;###autoload
 (defun treemacs-refresh (&optional no-message)
-  "Rebuild treemacs buffer."
+  "Refresh and rebuild treemacs buffer."
   (interactive)
   (let* ((point     (point))
          (root      (treemacs--current-root))
