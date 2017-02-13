@@ -80,8 +80,14 @@ argument, which is the current root directory.")
 (defvar treemacs--open-dirs-cache '()
   "Cache to keep track of opened subfolders.")
 
-(defvar treemacs--buffer-name "Treemacs"
+(defconst treemacs--buffer-name "Treemacs"
   "Name of the treemacs buffer.")
+
+(defconst treemacs-dir
+  (expand-file-name (if load-file-name
+                        (file-name-directory load-file-name)
+                      default-directory))
+  "The directory treemacs.el is stored in.")
 
 ;;;;;;;;;;;;;;;
 ;; Autoloads ;;
@@ -346,6 +352,9 @@ See also `treemacs-width.'"
 (defun treemacs-evil-config ()
   "Create an evil state for treemacs mode.  Use j & k for navigating
 the treemacs buffer."
+
+  (treemacs--create-icons)
+
   (require 'evil)
   (evil-define-state treemacs
     "Treemacs state"
@@ -369,6 +378,9 @@ the treemacs buffer."
 ;;;###autoload
 (defun treemacs-default-config ()
   "Use n & p for navigating the treemacs buffer."
+
+  (treemacs--create-icons)
+
   (define-key treemacs-mode-map (kbd "n")   #'treemacs-next-line)
   (define-key treemacs-mode-map (kbd "p")   #'treemacs-previous-line)
   (define-key treemacs-mode-map (kbd "M-n") #'treemacs-next-neighbour)
@@ -626,9 +638,7 @@ is nil."
 Insert VAR into icon-cache for each of the given file EXTENSIONS."
   `(progn
      (defvar ,var
-        (create-image (concat
-                       (expand-file-name (if load-file-name (file-name-directory load-file-name) default-directory))
-                       "icons/" ,file-name)
+        (create-image (f-join treemacs-dir "icons/" ,file-name)
                       'png nil :ascent 'center))
      (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
 
@@ -814,8 +824,6 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (setq
      mode-line-format
      '("%e" (:eval (spaceline-ml-treemacs))))))
-
-(treemacs--create-icons)
 
 (provide 'treemacs)
 
