@@ -126,11 +126,18 @@ If a prefix argument is given manually select the root directory."
                      (t (getenv "HOME"))))))
 
 ;;;###autoload
-(defun treemacs-projectile-init ()
-  "Open treemacs for the current projectile project.  If not in a project do nothing."
-  (interactive)
-  (when (projectile-project-p)
-    (treemacs--init (projectile-project-root))))
+(defun treemacs-projectile-init (&optional arg)
+  "Open treemacs for the current projectile project.
+If a prefix argument is given select the project from among
+`projectile-known-projects'.
+If not in a project do nothing."
+  (interactive "P")
+   (cond
+    ((and arg projectile-known-projects)
+     (treemacs--init (completing-read "Project: " projectile-known-projects)))
+    ((projectile-project-p)
+     (treemacs--init (projectile-project-root)))
+    (t (message "You're not in a project."))))
 
 ;;;###autoload
 (defun treemacs-next-line ()
