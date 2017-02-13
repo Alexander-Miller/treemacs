@@ -113,11 +113,14 @@ If no treemacs buffer exists call `treemacs-init.'"
     (treemacs-init))))
 
 ;;;###autoload
-(defun treemacs-init ()
-  "Open treemacs with current buffer's directory as root.  If the current buffer is not visiting any files use $HOME as fallback."
-  (interactive)
+(defun treemacs-init (&optional arg)
+  "Open treemacs with current buffer's directory as root.
+If the current buffer is not visiting any files use $HOME as fallback.
+If a prefix argument is given manually select the root directory."
+  (interactive "P")
   (let ((current-file (buffer-file-name (current-buffer))))
     (treemacs--init (cond
+                     (arg (read-directory-name "Treemacs root: "))
                      ((and current-file (f-directory? current-file)) current-file)
                      (current-file (treemacs--parent current-file))
                      (t (getenv "HOME"))))))

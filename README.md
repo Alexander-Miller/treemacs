@@ -25,7 +25,7 @@ navigation as well as *basic* file management utilities. Specifically the single
  depending on whether you want to use n/p or j/k to navigate up and down. All other keybindings
  will be the same between both configurations.
 
- Once this is done Treemacs is ready to be used by calluing `treemacs-init`, `treemacs-toggle` or `treemacs-projectile-init`.
+ Once this is done Treemacs is ready to be used by calling `treemacs-init`, `treemacs-toggle` or `treemacs-projectile-init`.
 
 ## Configuration
 
