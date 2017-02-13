@@ -242,13 +242,13 @@ If not in a project do nothing."
 (defun treemacs-visit-file-vertical-split ()
   "Open current file by vertically splitting other-buffer. Do nothing for directories."
   (interactive)
-  (treemacs--open-file #'split-window-vertically))
+  (treemacs--open-file nil #'split-window-vertically))
 
 ;;;###autoload
 (defun treemacs-visit-file-horizontal-split ()
   "Open current file by horizontally splitting other-buffer. Do nothing for directories."
   (interactive)
-  (treemacs--open-file #'split-window-horizontally))
+  (treemacs--open-file nil #'split-window-horizontally))
 
 ;;;###autoload
 (defun treemacs-visit-file-no-split ()
@@ -260,12 +260,26 @@ If not in a project do nothing."
 (defun treemacs-visit-file-ace ()
   "Open current file, using `ace-window' to decide which buffer to open the file in. Do nothing for directories."
   (interactive)
+  (treemacs--open-file
+   (aw-select "Select buffer")))
+
+;;;###autoload
+(defun treemacs-visit-file-ace-horizontal-split ()
+  "Open current file by horizontally splitting a buffer selected by `ace-window'.
+Do nothing for directories."
+  (interactive)
   (save-excursion
-    (beginning-of-line)
-    (let ((path (button-get (next-button (point)) 'abs-path)))
-      (when (f-file? path)
-        (select-window (aw-select "Select buffer"))
-        (find-file path)))))
+    (treemacs--open-file
+     (aw-select "Select buffer") #'split-window-horizontally)))
+
+;;;###autoload
+(defun treemacs-visit-file-ace-vertical-split ()
+  "Open current file by vertically splitting a buffer selected by `ace-window'.
+Do nothing for directories."
+  (interactive)
+  (save-excursion
+    (treemacs--open-file
+     (aw-select "Select buffer") #'split-window-vertically)))
 
 ;;;###autoload
 (defun treemacs-xdg-open ()
@@ -542,17 +556,20 @@ under, if any."
        (delete-region pos-start pos-end)
        (delete-trailing-whitespace)))))
 
-(defun treemacs--open-file (&optional split-func)
-  "Visit file of the current node.  Use SPLIT-FUNC to split the window.
-Do nothing if current node is a directory.  Do not split window if SPLIT-FUNC
-is nil."
+(defun treemacs--open-file (&optional window split-func)
+  "Visit file of the current node.  Use SPLIT-FUNC to split WINDOW.
+Do nothing if current node is a directory.
+Do not split window if SPLIT-FUNC is nil.
+Use `next-window' if WINDOW is nil."
   (save-excursion
     (beginning-of-line)
     (let* ((path     (button-get (next-button (point)) 'abs-path))
            (is-file? (f-file? path)))
       (when is-file?
-        (other-window 1)
-        (when split-func (call-interactively split-func))
+        (select-window (or window (next-window)))
+        (when split-func
+          (call-interactively split-func)
+          (call-interactively 'other-window))
         (find-file path)))))
 
 (defun treemacs--node-symbol-switch (new-sym)
@@ -742,7 +759,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (forward-char))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Window NUmbering Compatibility ;;
+;; Window Numbering Compatibility ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (with-eval-after-load 'window-numbering
@@ -790,22 +807,24 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 (defvar treemacs-mode-map
   (let ((map (make-sparse-keymap)))
 
-    (define-key map [tab]       #'treemacs-push-button)
-    (define-key map [return]    #'treemacs-change-root)
-    (define-key map (kbd "l")   #'treemacs-change-root)
-    (define-key map (kbd "r")   #'treemacs-refresh)
-    (define-key map (kbd "d")   #'treemacs-delete)
-    (define-key map (kbd "cf")  #'treemacs-create-file)
-    (define-key map (kbd "cd")  #'treemacs-create-dir)
-    (define-key map (kbd "h")   #'treemacs-uproot)
-    (define-key map (kbd "u")   #'treemacs-goto-parent-node)
-    (define-key map (kbd "q")   #'treemacs-toggle)
-    (define-key map (kbd "Q")   #'treemacs-kill-buffer)
-    (define-key map (kbd "ov")  #'treemacs-visit-file-vertical-split)
-    (define-key map (kbd "oh")  #'treemacs-visit-file-horizontal-split)
-    (define-key map (kbd "oo")  #'treemacs-visit-file-no-split)
-    (define-key map (kbd "oa")  #'treemacs-visit-file-ace)
-    (define-key map (kbd "ox")  #'treemacs-xdg-open)
+    (define-key map [tab]        #'treemacs-push-button)
+    (define-key map [return]     #'treemacs-change-root)
+    (define-key map (kbd "l")    #'treemacs-change-root)
+    (define-key map (kbd "r")    #'treemacs-refresh)
+    (define-key map (kbd "d")    #'treemacs-delete)
+    (define-key map (kbd "cf")   #'treemacs-create-file)
+    (define-key map (kbd "cd")   #'treemacs-create-dir)
+    (define-key map (kbd "h")    #'treemacs-uproot)
+    (define-key map (kbd "u")    #'treemacs-goto-parent-node)
+    (define-key map (kbd "q")    #'treemacs-toggle)
+    (define-key map (kbd "Q")    #'treemacs-kill-buffer)
+    (define-key map (kbd "ov")   #'treemacs-visit-file-vertical-split)
+    (define-key map (kbd "oh")   #'treemacs-visit-file-horizontal-split)
+    (define-key map (kbd "oo")   #'treemacs-visit-file-no-split)
+    (define-key map (kbd "oaa")  #'treemacs-visit-file-ace)
+    (define-key map (kbd "oah")  #'treemacs-visit-file-ace-horizontal-split)
+    (define-key map (kbd "oav")  #'treemacs-visit-file-ace-vertical-split)
+    (define-key map (kbd "ox")   #'treemacs-xdg-open)
 
     map)
   "Keymap for `treemacs-mode'.")
