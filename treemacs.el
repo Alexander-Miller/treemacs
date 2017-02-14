@@ -6,7 +6,7 @@
 ;; Package-Requires: ((cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 ;; Version: 1.0
-;; Keywords: tree, file
+;; Keywords: tree, file, explorer
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -72,6 +72,9 @@ argument, which is the current root directory.")
 
 (defvar treemacs-icons-hash (make-hash-table :test 'equal)
   "Hash table containing a mapping of icons onto file extensions.")
+
+(defvar treemacs-be-evil nil
+  "When t use evil keys for navigation (j/k instead of n/p).")
 
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
@@ -240,19 +243,19 @@ If not in a project do nothing."
 
 ;;;###autoload
 (defun treemacs-visit-file-vertical-split ()
-  "Open current file by vertically splitting other-buffer. Do nothing for directories."
+  "Open current file by vertically splitting next-window. Do nothing for directories."
   (interactive)
   (treemacs--open-file nil #'split-window-vertically))
 
 ;;;###autoload
 (defun treemacs-visit-file-horizontal-split ()
-  "Open current file by horizontally splitting other-buffer. Do nothing for directories."
+  "Open current file by horizontally splitting next-window. Do nothing for directories."
   (interactive)
   (treemacs--open-file nil #'split-window-horizontally))
 
 ;;;###autoload
 (defun treemacs-visit-file-no-split ()
-  "Open current file, performing no split and using other-buffer directly. Do nothing for directories."
+  "Open current file, performing no split and using next-window directly. Do nothing for directories."
   (interactive)
   (treemacs--open-file))
 
@@ -371,49 +374,6 @@ See also `treemacs-width.'"
     (setq window-size-fixed nil)
     (treemacs--set-width treemacs-width)
     (setq window-size-fixed original)))
-
-;;;###autoload
-(defun treemacs-evil-config ()
-  "Create an evil state for treemacs mode.  Use j & k for navigating
-the treemacs buffer."
-
-  (treemacs--create-icons)
-
-  (require 'evil)
-  (evil-define-state treemacs
-    "Treemacs state"
-    :cursor '(hbar . 0)
-    :enable (motion))
-
-  (evil-set-initial-state 'treemacs-mode 'treemacs)
-
-  (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
-  (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
-  (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
-  (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
-  (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
-  (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
-  (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
-  (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
-  (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
-
-  t)
-
-;;;###autoload
-(defun treemacs-default-config ()
-  "Use n & p for navigating the treemacs buffer."
-
-  (treemacs--create-icons)
-
-  (define-key treemacs-mode-map (kbd "n")   #'treemacs-next-line)
-  (define-key treemacs-mode-map (kbd "p")   #'treemacs-previous-line)
-  (define-key treemacs-mode-map (kbd "M-n") #'treemacs-next-neighbour)
-  (define-key treemacs-mode-map (kbd "M-p") #'treemacs-previous-neighbour)
-  (define-key treemacs-mode-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
-  (define-key treemacs-mode-map (kbd "tw")  #'treemacs-toggle-fixed-width)
-  (define-key treemacs-mode-map (kbd "w")   #'treemacs-reset-width)
-
-  t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Building and tearing down the file trees ;;
@@ -804,6 +764,43 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 ;; Mode definitions ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+(defun treemacs--evil-config ()
+  "Create an evil state for treemacs mode.  Use j & k for navigating
+the treemacs buffer."
+
+  (require 'evil)
+  (evil-define-state treemacs
+    "Treemacs state"
+    :cursor '(hbar . 0)
+    :enable (motion))
+
+  (evil-set-initial-state 'treemacs-mode 'treemacs)
+
+  (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
+  (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
+  (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
+  (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
+  (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
+  (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
+  (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
+  (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
+  (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
+
+  t)
+
+(defun treemacs--default-config ()
+  "Use n & p for navigating the treemacs buffer."
+
+  (define-key treemacs-mode-map (kbd "n")   #'treemacs-next-line)
+  (define-key treemacs-mode-map (kbd "p")   #'treemacs-previous-line)
+  (define-key treemacs-mode-map (kbd "M-n") #'treemacs-next-neighbour)
+  (define-key treemacs-mode-map (kbd "M-p") #'treemacs-previous-neighbour)
+  (define-key treemacs-mode-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
+  (define-key treemacs-mode-map (kbd "tw")  #'treemacs-toggle-fixed-width)
+  (define-key treemacs-mode-map (kbd "w")   #'treemacs-reset-width)
+
+  t)
+
 (defvar treemacs-mode-map
   (let ((map (make-sparse-keymap)))
 
@@ -828,6 +825,12 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
     map)
   "Keymap for `treemacs-mode'.")
+
+(if treemacs-be-evil
+    (treemacs--evil-config)
+  (treemacs--default-config))
+
+(treemacs--create-icons)
 
 (define-derived-mode treemacs-mode special-mode "Treemacs"
   "A major mode for displaying the file system in a tree layout."
