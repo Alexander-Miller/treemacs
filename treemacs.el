@@ -533,7 +533,7 @@ Use `next-window' if WINDOW is nil."
         (find-file path)))))
 
 (defun treemacs--node-symbol-switch (new-sym)
-  "Replace first instance of FROM with TO in current line."
+  "Replace icon in current line with NEW-SYM."
   (beginning-of-line)
   (if (> (button-get (next-button (point)) 'depth) 0)
       (progn
@@ -558,20 +558,15 @@ Use `next-window' if WINDOW is nil."
   "Collect list of absolute paths of all opened nodes below ROOT."
   (save-excursion
     (goto-char (button-start root))
-    (let* ((res       '())
-           (btn       (next-button (point)))
-           (next-path (-some->
-                       (button-get root 'next-node)
-                       (button-get 'abs-path))))
-      (while (and btn
-                  (-> (button-get btn 'abs-path)
-                      (string= next-path)
-                      (not)))
+    (let ((root-depth (or (button-get root 'depth) -1))
+          (res '())
+          (btn (next-button (point))))
+      (while (and btn (< root-depth (button-get btn 'depth)))
         (when (eq 'dir-open (button-get btn 'state))
-          (add-to-list 'res (button-get btn 'abs-path)))
-        (forward-button 1)
-        (setq btn (next-button (point))))
-      (reverse res))))
+          (message "Got %s" (or  (button-get btn 'abs-path) "NIL"))
+          (add-to-list 'res (button-get btn 'abs-path) t))
+        (setq btn (next-button (button-end btn))))
+      res)))
 
 (defun treemacs--reopen-dirs (open-dirs)
   "Toggle open every node whose full path is in OPEN-DIRS."
