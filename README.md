@@ -62,6 +62,14 @@ In addition treemacs defines the following faces:
 
 ## Keymap [WIP]
 
+Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
+
+| action                   | description                                                                                                                                                                                      |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs-init            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.  |
+| treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among `projectile-known-projects'.                       |
+| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call `treemacs-init.' |
+
 By default Treemacs's keymap looks as follows:
 
 | Key     | action                                   | Description                                                                                                   |
@@ -86,5 +94,5 @@ By default Treemacs's keymap looks as follows:
 | oo      | treemacs-visit-file-not-split            | Open current file, performing no split and using other-buffer directly. Do nothing for directories.           |
 | oaa     | treemacs-visit-file-ace                  | Open current file, using `ace-window' to decide which buffer to open the file in. Do nothing for directories. |
 | oah     | treemacs-visit-file-ace-horizontal-split | Open current file by horizontally splitting a buffer selected by `ace-window'. Do nothing for directories.    |
-| oav     | treemacs-visit-file-ace-vertical-split   | Open current file by vertically splitting a buffer selected by `ace-window'. Do nothing for directories. |
+| oav     | treemacs-visit-file-ace-vertical-split   | Open current file by vertically splitting a buffer selected by `ace-window'. Do nothing for directories.      |
 | ox      | treemacs-xdg-open                        | Open current file, using the `xdg-open' shell-command. Do nothing for directories.                            |

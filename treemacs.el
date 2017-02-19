@@ -130,10 +130,9 @@ If a prefix argument is given manually select the root directory."
 
 ;;;###autoload
 (defun treemacs-projectile-init (&optional arg)
-  "Open treemacs for the current projectile project.
-If a prefix argument is given select the project from among
-`projectile-known-projects'.
-If not in a project do nothing."
+  "Open treemacs for the current projectile project. If not in a project do
+nothing. If a prefix argument is given select the project from among
+`projectile-known-projects'."
   (interactive "P")
    (cond
     ((and arg projectile-known-projects)
