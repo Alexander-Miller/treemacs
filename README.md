@@ -11,7 +11,7 @@ navigation as well as *basic* file management utilities. Specifically the single
  * Versatile file access - decide exactly how and where a file will be opened, including using `ace-window` to chose a buffer or launching
    an external app via `xdg-open`.
  * Projectile integration - quickly open treemacs at any project's root directory.
- * Window numbering integration - Treemacs will always be assigned window number 0, never interferig with the numbering
+ * Window numbering integration - Treemacs will always be assigned window number 0, never interfering with the numbering
    layout of your other windows.
  * Ease of use - you need to (optionally) decide whether to use emacs default or evil nagivation keys (see `treemacs-be-evil` below).
    Other than that treemacs uses a mnemonic keymap inspired by spacemacs.
