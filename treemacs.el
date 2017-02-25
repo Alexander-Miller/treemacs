@@ -76,6 +76,9 @@ argument, which is the current root directory.")
 (defvar treemacs-be-evil nil
   "When t use evil keys for navigation (j/k instead of n/p).")
 
+(defvar treemacs-git-integration nil
+  "When t use different faces for files' different git states.")
+
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
 ;;;;;;;;;;;;;;;;;;
@@ -428,8 +431,10 @@ to be created is nested below another and not directly at the top level."
            (entries      (treemacs--get-dir-content root))
            (directories  (first entries))
            (files        (second entries))
-           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent) (button-at)) directories))
-           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent) (button-at)) files))
+           (is-git-dir?  (when treemacs-git-integration (treemacs--is-dir-git-controlled? root)))
+           (git-info     (when is-git-dir? (treemacs--parse-git-status root)))
+           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) directories))
+           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) files))
            (last-dir     (-some-> (last dir-buttons) (car)))
            (first-file   (first file-buttons)))
       (treemacs--set-neighbours dir-buttons)
@@ -438,7 +443,7 @@ to be created is nested below another and not directly at the top level."
         (button-put last-dir 'next-node first-file)
         (button-put first-file 'prev-node last-dir)))))
 
-(defun treemacs--insert-node (path prefix depth parent)
+(defun treemacs--insert-node (path prefix depth parent &optional root-is-git-controlled git-info)
  "Insert a single button node.
 PATH is the node's absolute path.  PREFIX is an empty string used for
 indentation.  DEPTH is the nesting depth, used for calculating the prefix length
@@ -451,12 +456,16 @@ under, if any."
                       treemacs-icon-closed
                     (gethash (file-name-extension path) treemacs-icons-hash treemacs-icon-text)))
     (insert-text-button (concat " " (f-filename path))
-                        'face      (if is-dir? 'treemacs-directory-face 'treemacs-file-face)
                         'state     (if is-dir? 'dir-closed 'file)
                         'action    #'treemacs--push-button
                         'abs-path  path
                         'parent    parent
-                        'depth     depth)))
+                        'depth     depth
+                        'face      (if is-dir? 'treemacs-directory-face
+                                     (if (and treemacs-git-integration
+                                              root-is-git-controlled)
+                                         (treemacs--git-face path git-info)
+                                       'treemacs-file-face)))))
 
 (defun treemacs--set-neighbours (buttons)
   "Set next- and previous-node properties for each button in buttons."
@@ -562,7 +571,6 @@ Use `next-window' if WINDOW is nil."
           (btn (next-button (point))))
       (while (and btn (< root-depth (button-get btn 'depth)))
         (when (eq 'dir-open (button-get btn 'state))
-          (message "Got %s" (or  (button-get btn 'abs-path) "NIL"))
           (add-to-list 'res (button-get btn 'abs-path) t))
         (setq btn (next-button (button-end btn))))
       res)))
@@ -637,6 +645,36 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (treemacs--setup-icon treemacs-icon-cpp     "cpp.png"      "cpp" "hpp")
   (treemacs--setup-icon treemacs-icon-haskell "haskell.png"  "hs")
   (treemacs--setup-icon treemacs-icon-image   "image.png"    "jpg" "bmp" "svg" "png"))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Git integrtion ;;
+;;;;;;;;;;;;;;;;;;;;
+
+(defun treemacs--is-dir-git-controlled? (path)
+  "Check whether PATH is under git control."
+  (let ((default-directory path))
+    (->> "git rev-parse"
+        (shell-command-to-string)
+        (s-starts-with? "fatal")
+        (not))))
+
+(defun treemacs--parse-git-status (path)
+  "Use the git command line to parse the git states of the files under PATH."
+  (let ((default-directory path))
+    (->> "git status --ignored --porcelain"
+         (shell-command-to-string)
+         (s-trim)
+         (s-split "\n")
+         (--map (s-split-up-to " " (s-trim it) 1))
+         (--map `(,(f-join path (f-filename (second it))) . ,(first it))))))
+
+(defun treemacs--git-face (path git-info)
+  "Return the appropriate face for PATH given GIT-INFO."
+  (pcase (cdr (assoc path git-info))
+    ("M"  'font-lock-constant-face)
+    ("??" 'font-lock-keyword-face)
+    ("!!" 'font-lock-comment-face)
+    (_    'default)))
 
 ;;;;;;;;;;;;;;;;;
 ;; Misc. utils ;;
