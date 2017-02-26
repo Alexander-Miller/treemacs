@@ -838,7 +838,7 @@ the treemacs buffer."
   (let ((map (make-sparse-keymap)))
 
     (define-key map [tab]        #'treemacs-push-button)
-    (define-key map [return]     #'treemacs-change-root)
+    (define-key map [return]     #'treemacs-visit-file-no-split)
     (define-key map (kbd "l")    #'treemacs-change-root)
     (define-key map (kbd "r")    #'treemacs-refresh)
     (define-key map (kbd "d")    #'treemacs-delete)

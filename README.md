@@ -64,7 +64,7 @@ In addition treemacs defines the following faces:
 
 Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
 
-| action                   | description                                                                                                                                                                                      |
+| Action                   | Description                                                                                                                                                                                      |
 |--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | treemacs-init            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.  |
 | treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among `projectile-known-projects'.                       |
@@ -72,11 +72,11 @@ Activation functions are unbound by default. It's left up to users to find the m
 
 By default Treemacs's keymap looks as follows:
 
-| Key     | action                                   | Description                                                                                                   |
+| Key     | Action                                   | Description                                                                                                   |
 |---------|------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | j/n     | treemacs-next-line                       | Goto next/prev line.                                                                                          |
 | h       | treemacs-uproot                          | Switch treemacs' root directory to current root's parent, if possible.                                        |
-| l/RET   | treemacs-change-root                     | Use current directory as new root. Do nothing for files.                                                      |
+| l       | treemacs-change-root                     | Use current directory as new root. Do nothing for files.                                                      |
 | M-j/M-n | treemacs-next/previous-neighbour         | Select next node at the same depth as currently selected node, if possible.                                   |
 | th      | treemacs-toggle-show-dotfiles            | Toggle the hiding and displaying of dotfiles.                                                                 |
 | tw      | treemacs-toggle-fixed-width              | Toggle whether the treemacs buffer should have a fixed width. See also `treemacs-width`.                      |
@@ -91,7 +91,7 @@ By default Treemacs's keymap looks as follows:
 | Q       | treemacs-kill-buffer                     | Kill the treemacs buffer.                                                                                     |
 | ov      | treemacs-visit-file-vertical-split       | Open current file by vertically splitting other-buffer. Do nothing for directories.                           |
 | oh      | treemacs-visit-file-horizontal-split     | Open current file by horizontally splitting other-buffer. Do nothing for directories.                         |
-| oo      | treemacs-visit-file-not-split            | Open current file, performing no split and using other-buffer directly. Do nothing for directories.           |
+| oo/RET  | treemacs-visit-file-no-split             | Open current file, performing no split and using other-buffer directly. Do nothing for directories.           |
 | oaa     | treemacs-visit-file-ace                  | Open current file, using `ace-window' to decide which buffer to open the file in. Do nothing for directories. |
 | oah     | treemacs-visit-file-ace-horizontal-split | Open current file by horizontally splitting a buffer selected by `ace-window'. Do nothing for directories.    |
 | oav     | treemacs-visit-file-ace-vertical-split   | Open current file by vertically splitting a buffer selected by `ace-window'. Do nothing for directories.      |
