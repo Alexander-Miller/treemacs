@@ -375,13 +375,13 @@ See also `treemacs-width.'"
            (if window-size-fixed "locked" "unlocked")))
 
 ;;;###autoload
-(defun treemacs-reset-width ()
-  "Reset the width of the treemacs buffer to `treemacs-buffe-width'."
-  (interactive)
-  (let ((original window-size-fixed))
-    (setq window-size-fixed nil)
-    (treemacs--set-width treemacs-width)
-    (setq window-size-fixed original)))
+(defun treemacs-reset-width (&optional arg)
+  "Reset the width of the treemacs buffer to `treemacs-buffer-width'.
+If a prefix argument is provided read a new value for `treemacs-buffer-width' first."
+  (interactive "P")
+  (let ((window-size-fixed nil))
+    (when arg (setq treemacs-width (read-number "New Width: ")))
+    (treemacs--set-width treemacs-width)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Building and tearing down the file trees ;;
