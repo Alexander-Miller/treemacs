@@ -850,6 +850,7 @@ the treemacs buffer."
     (define-key map [return]     #'treemacs-visit-file-no-split)
     (define-key map (kbd "l")    #'treemacs-change-root)
     (define-key map (kbd "r")    #'treemacs-refresh)
+    (define-key map (kbd "g")    #'treemacs-refresh)
     (define-key map (kbd "d")    #'treemacs-delete)
     (define-key map (kbd "cf")   #'treemacs-create-file)
     (define-key map (kbd "cd")   #'treemacs-create-dir)

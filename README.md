@@ -82,7 +82,7 @@ By default Treemacs's keymap looks as follows:
 | tw      | treemacs-toggle-fixed-width              | Toggle whether the treemacs buffer should have a fixed width. See also `treemacs-width`.                      |
 | w       | treemacs-reset-width                     | Reset the width of the treemacs buffer to `treemacs-buffe-width`.                                             |
 | tab     | treemacs-push-button                     | Open/close directory. Open file with `treemacs-visit-file-vertical-split'.                                    |
-| r       | treemacs-refresh                         | Refresh and rebuild treemacs buffer.                                                                          |
+| g/r     | treemacs-refresh                         | Refresh and rebuild treemacs buffer.                                                                          |
 | d       | treemacs-delete                          | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.          |
 | cf      | treemacs-create-file                     | Create a file.                                                                                                |
 | cd      | treemacs-create-dir                      | Create a directory.                                                                                           |
