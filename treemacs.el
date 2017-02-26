@@ -220,12 +220,15 @@ nothing. If a prefix argument is given select the project from among
 (defun treemacs-refresh (&optional no-message)
   "Refresh and rebuild treemacs buffer."
   (interactive)
-  (let* ((point     (point))
+  (let* ((line      (line-number-at-pos))
+         (win-start (window-start))
          (root      (treemacs--current-root))
          (root-btn  (treemacs--current-root-btn))
          (open-dirs (treemacs--collect-open-dirs root-btn)))
     (treemacs--build-tree root open-dirs)
-    (goto-char point)
+    (set-window-start (get-buffer-window) win-start)
+    (goto-line line)
+    (treemacs-goto-column-1)
     (unless no-message
       (message "Treemacs buffer refreshed."))))
 
@@ -593,6 +596,7 @@ Use `next-window' if WINDOW is nil."
 
 (defun treemacs--add-to-cache (path open-dirs)
   "Add to cache the OPEN-DIRS under PATH."
+  (treemacs--clear-from-cache path)
   (add-to-list 'treemacs--open-dirs-cache `(,path . ,open-dirs)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
