@@ -79,6 +79,9 @@ argument, which is the current root directory.")
 (defvar treemacs-git-integration nil
   "When t use different faces for files' different git states.")
 
+(defvar treemacs-dotfiles-regex (rx "." (1+ any))
+  "Files matching this regular expression count as dotfiles")
+
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
 ;;;;;;;;;;;;;;;;;;
@@ -582,7 +585,9 @@ Use `next-window' if WINDOW is nil."
   "Toggle open every node whose full path is in OPEN-DIRS."
   (save-excursion
     (goto-char 0)
-    (cl-dolist (dir open-dirs)
+    (cl-dolist (dir (if (not treemacs-show-hidden-files)
+                        (--filter (not (s-matches? treemacs-dotfiles-regex (f-filename it))) open-dirs)
+                      open-dirs))
       (while (-> (next-button (point) t)
                  (button-get 'abs-path)
                  (string= dir)
@@ -708,7 +713,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
 (defun treemacs--should-show? (file-name)
   "Indicate whether FILE-NAME should be show in the treemacs buffer or kept hidden."
-  (not (s-matches? "^\\..*" (f-filename file-name))))
+  (not (s-matches? treemacs-dotfiles-regex (f-filename file-name))))
 
 (defun treemacs--current-root ()
   "Return the current root directory."
