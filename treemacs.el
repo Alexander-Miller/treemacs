@@ -660,13 +660,14 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
 (defun treemacs--parse-git-status (path)
   "Use the git command line to parse the git states of the files under PATH."
-  (let ((default-directory path))
-    (->> "git status --ignored --porcelain"
-         (shell-command-to-string)
-         (s-trim)
-         (s-split "\n")
-         (--map (s-split-up-to " " (s-trim it) 1))
-         (--map `(,(f-join path (f-filename (second it))) . ,(first it))))))
+  (let ((default-directory path)
+        (git-output (shell-command-to-string  "git status --ignored --porcelain")))
+    (if (s-blank? git-output) '()
+      (->> git-output
+           (s-trim)
+           (s-split "\n")
+           (--map (s-split-up-to " " (s-trim it) 1))
+           (--map `(,(f-join path (f-filename (second it))) . ,(first it)))))))
 
 (defun treemacs--git-face (path git-info)
   "Return the appropriate face for PATH given GIT-INFO."
