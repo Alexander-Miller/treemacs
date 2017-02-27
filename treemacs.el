@@ -99,7 +99,7 @@ argument, which is the current root directory.")
 (defvar treemacs-git-integration nil
   "When t use different faces for files' different git states.")
 
-(defvar treemacs-dotfiles-regex (rx "." (1+ any))
+(defvar treemacs-dotfiles-regex (rx bol "." (1+ any))
   "Files matching this regular expression count as dotfiles")
 
 ;;;;;;;;;;;;;;;;;;
