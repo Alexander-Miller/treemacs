@@ -248,6 +248,9 @@ nothing. If a prefix argument is given select the project from among
          (root      (treemacs--current-root))
          (root-btn  (treemacs--current-root-btn))
          (open-dirs (treemacs--collect-open-dirs root-btn)))
+    (--each (cdr (assoc root treemacs--open-dirs-cache))
+      (add-to-list 'open-dirs it t))
+    (message "Refresh with %s" open-dirs)
     (treemacs--build-tree root open-dirs)
     (set-window-start (get-buffer-window) win-start)
     (goto-line line)
@@ -513,7 +516,7 @@ under, if any."
     ('dir-closed (treemacs--open-node btn))
     ('dir-open   (treemacs--close-node btn))))
 
-(defun treemacs--open-node (btn)
+(defun treemacs--open-node (btn &optional no-reopen)
   "Open the node given by BTN."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (message "Directory is not readable.")
@@ -525,10 +528,11 @@ under, if any."
       (button-get btn 'abs-path)
       (1+ (button-get btn 'depth))
       btn)
-     (let ((dirs-to-open (-> (button-get btn 'abs-path)
-                             (assoc treemacs--open-dirs-cache)
-                             (cdr))))
-       (when dirs-to-open (treemacs--reopen-dirs dirs-to-open))))))
+     (unless no-reopen
+       (let ((dirs-to-open (-> (button-get btn 'abs-path)
+                               (assoc treemacs--open-dirs-cache)
+                               (cdr))))
+         (when dirs-to-open (treemacs--reopen-dirs dirs-to-open)))))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
@@ -605,15 +609,25 @@ Use `next-window' if WINDOW is nil."
   "Toggle open every node whose full path is in OPEN-DIRS."
   (save-excursion
     (goto-char 0)
-    (cl-dolist (dir (if (not treemacs-show-hidden-files)
-                        (--filter (not (s-matches? treemacs-dotfiles-regex (f-filename it))) open-dirs)
-                      open-dirs))
-      (while (-> (next-button (point) t)
-                 (button-get 'abs-path)
-                 (string= dir)
-                 (not))
-        (forward-button 1))
-      (treemacs-push-button))))
+    (unless treemacs-show-hidden-files
+      ;; sort out all the dotfiles that could be opened AND all
+      ;; the files who have a dotfile as a parent
+      (cl-dolist (dir open-dirs)
+        (when (s-matches? treemacs-dotfiles-regex (f-filename dir))
+          (setq open-dirs
+                (--filter (not (or (s-equals? dir it) (s-starts-with? dir it))) open-dirs)))))
+    (cl-dolist (dir open-dirs)
+      (treemacs--reopen (f-filename dir) dir))))
+
+(defsubst treemacs--reopen (filename abs-path)
+  "Reopen the node identified by its FILENAME and ABS-PATH."
+  (let ((inhibit-message t))
+    (beginning-of-buffer)
+    (while (not (s-equals? abs-path (button-get (next-button (point) t) 'abs-path)))
+      (search-forward filename nil 'a)
+      (beginning-of-line))
+    (beginning-of-line)
+    (treemacs--open-node (next-button (point) t) t)))
 
 (defsubst treemacs--clear-from-cache (path)
   "Remove from the cache of opened nodes all entries of PATH."
