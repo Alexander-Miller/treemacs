@@ -469,7 +469,7 @@ to be created is nested below another and not directly at the top level."
         (button-put last-dir 'next-node first-file)
         (button-put first-file 'prev-node last-dir)))))
 
-(defun treemacs--insert-node (path prefix depth parent &optional root-is-git-controlled git-info)
+(defsubst treemacs--insert-node (path prefix depth parent &optional root-is-git-controlled git-info)
  "Insert a single button node.
 PATH is the node's absolute path.  PREFIX is an empty string used for
 indentation.  DEPTH is the nesting depth, used for calculating the prefix length
@@ -493,7 +493,7 @@ under, if any."
                                          (treemacs--git-face path git-info)
                                        'treemacs-file-face)))))
 
-(defun treemacs--set-neighbours (buttons)
+(defsubst treemacs--set-neighbours (buttons)
   "Set next- and previous-node properties for each button in buttons."
   (when buttons
     (cl-dolist (i (number-sequence 0 (- (list-length buttons) 2)))
@@ -577,7 +577,7 @@ Use `next-window' if WINDOW is nil."
     (delete-char 1))
   (insert-image new-sym))
 
-(defun treemacs--next-node (node)
+(defsubst treemacs--next-node (node)
   "Return NODE's lower same-indentation neighbour or nil if there is none."
   (when node
     (-if-let (next (button-get node 'next-node))
@@ -615,11 +615,11 @@ Use `next-window' if WINDOW is nil."
         (forward-button 1))
       (treemacs-push-button))))
 
-(defun treemacs--clear-from-cache (path)
+(defsubst treemacs--clear-from-cache (path)
   "Remove from the cache of opened nodes all entries of PATH."
   (setq treemacs--open-dirs-cache (str-assq-delete-all path treemacs--open-dirs-cache)))
 
-(defun treemacs--add-to-cache (path open-dirs)
+(defsubst treemacs--add-to-cache (path open-dirs)
   "Add to cache the OPEN-DIRS under PATH."
   (treemacs--clear-from-cache path)
   (add-to-list 'treemacs--open-dirs-cache `(,path . ,open-dirs)))
@@ -628,21 +628,21 @@ Use `next-window' if WINDOW is nil."
 ;; Buffer selection ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-(defun treemacs--is-visible? ()
+(defsubst treemacs--is-visible? ()
   "Inidicates whether the treemacs buffer is current visible."
   (-contains? (ido-get-buffers-in-frames t) treemacs--buffer-name))
 
-(defun treemacs--buffer-exists? ()
+(defsubst treemacs--buffer-exists? ()
   "Indicates whether the treemacs buffer exists even if it is not visible."
   (-contains?
    (-map #'buffer-name (buffer-list))
    treemacs--buffer-name))
 
-(defun treemacs--select-visible ()
+(defsubst treemacs--select-visible ()
   "Switch to treemacs buffer, given that it is currently visible."
   (select-window (get-buffer-window treemacs--buffer-name)))
 
-(defun treemacs--select-not-visible ()
+(defsubst treemacs--select-not-visible ()
   "Switch to treemacs buffer, given that it not visible."
   (treemacs--setup-buffer)
   (switch-to-buffer treemacs--buffer-name))
@@ -679,7 +679,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 ;; Git integrtion ;;
 ;;;;;;;;;;;;;;;;;;;;
 
-(defun treemacs--is-dir-git-controlled? (path)
+(defsubst treemacs--is-dir-git-controlled? (path)
   "Check whether PATH is under git control."
   (let ((default-directory path))
     (->> "git rev-parse"
@@ -687,7 +687,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
         (s-starts-with? "fatal")
         (not))))
 
-(defun treemacs--parse-git-status (path)
+(defsubst treemacs--parse-git-status (path)
   "Use the git command line to parse the git states of the files under PATH."
   (let ((default-directory path)
         (git-output (shell-command-to-string  "git status --ignored --porcelain")))
@@ -709,7 +709,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
       (replace-regexp-in-string "\"" "" str)
     str))
 
-(defun treemacs--git-face (path git-info)
+(defsubst treemacs--git-face (path git-info)
   "Return the appropriate face for PATH given GIT-INFO."
   (pcase (cdr (assoc path git-info))
     ("M"  'treemacs-git-modified-face)
@@ -743,7 +743,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
         entries
       (--map (-filter #'treemacs--should-show? it) entries))))
 
-(defun treemacs--should-show? (file-name)
+(defsubst treemacs--should-show? (file-name)
   "Indicate whether FILE-NAME should be show in the treemacs buffer or kept hidden."
   (not (s-matches? treemacs-dotfiles-regex (f-filename file-name))))
 
