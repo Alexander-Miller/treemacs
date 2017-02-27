@@ -45,12 +45,32 @@
   "Face used by treemacs for directories.")
 
 (defface treemacs-file-face
-  '((t :inherit font-lock-variable-name-face))
+  '((t :inherit default))
   "Face used by treemacs for files.")
 
 (defface treemacs-header-face
   '((t :inherit font-lock-constant-face :underline t :size 1.4))
   "Face used by treemacs for its header.")
+
+(defface treemacs-git-unmodified-face
+  '((t :inherit treemacs-file-face))
+  "Face used for unmodified files.")
+
+(defface treemacs-git-modified-face
+  '((t :inherit font-lock-variable-name-face))
+  "Face used for modified files.")
+
+(defface treemacs-git-ignored-face
+  '((t :inherit font-lock-comment-face))
+  "Face for ignored files.")
+
+(defface treemacs-git-untracked-face
+  '((t :inherit font-lock-string-face))
+  "Face for untracked files.")
+
+(defface treemacs-git-added-face
+  '((t :inherit font-lock-type-face))
+  "Face for newly added files.")
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Configuration ;;
@@ -673,18 +693,30 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
         (git-output (shell-command-to-string  "git status --ignored --porcelain")))
     (if (s-blank? git-output) '()
       (->> git-output
-           (s-trim)
+           (s-trim-right)
            (s-split "\n")
            (--map (s-split-up-to " " (s-trim it) 1))
-           (--map `(,(f-join path (f-filename (second it))) . ,(first it)))))))
+           (--map `(,(->> (second it)
+                          (s-trim-left)
+                          (treemacs--unqote) ; file names with spaces are quoted
+                          (f-filename)
+                          (f-join path))
+                    . ,(first it)))))))
+
+(defsubst treemacs--unqote (str)
+  "Unquote STR if it is wrapped in quotes."
+  (if (s-starts-with? "\"" str)
+      (replace-regexp-in-string "\"" "" str)
+    str))
 
 (defun treemacs--git-face (path git-info)
   "Return the appropriate face for PATH given GIT-INFO."
   (pcase (cdr (assoc path git-info))
-    ("M"  'font-lock-constant-face)
-    ("??" 'font-lock-keyword-face)
-    ("!!" 'font-lock-comment-face)
-    (_    'default)))
+    ("M"  'treemacs-git-modified-face)
+    ("??" 'treemacs-git-untracked-face)
+    ("!!" 'treemacs-git-ignored-face)
+    ("A"  'treemacs-git-added-face)
+    (_    'treemacs-git-unmodified-face)))
 
 ;;;;;;;;;;;;;;;;;
 ;; Misc. utils ;;
