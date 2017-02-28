@@ -714,8 +714,8 @@ Use `next-window' if WINDOW is nil."
 
 (defsubst treemacs--parse-git-status (path)
   "Use the git command line to parse the git states of the files under PATH."
-  (let ((default-directory path)
-        (git-output (shell-command-to-string  "git status --ignored --porcelain")))
+  (let* ((default-directory path)
+         (git-output (shell-command-to-string  "git status --ignored --porcelain")))
     (if (s-blank? git-output) '()
       (->> git-output
            (s-trim-right)
