@@ -166,294 +166,6 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
      ,@body
      (read-only-mode t)))
 
-;;;;;;;;;;;;;;;
-;; Autoloads ;;
-;;;;;;;;;;;;;;;
-
-;;;###autoload
-(defun treemacs-toggle ()
-  "If a treemacs buffer exists and is visible hide it.
-If a treemacs buffer exists, but is not visible bring it to the foreground
-and select it.
-If no treemacs buffer exists call `treemacs-init.'"
-  (interactive)
-  (cond
-   ((treemacs--is-visible?)
-    (progn
-      (treemacs--select-visible)
-      (if (one-window-p)
-          (switch-to-buffer (other-buffer))
-        (delete-window))))
-   ((treemacs--buffer-exists?)
-    (treemacs--select-not-visible))
-   (t
-    (treemacs-init))))
-
-;;;###autoload
-(defun treemacs-init (&optional arg)
-  "Open treemacs with current buffer's directory as root.
-If the current buffer is not visiting any files use $HOME as fallback.
-If a prefix argument ARG is given manually select the root directory."
-  (interactive "P")
-  (let ((current-file (buffer-file-name (current-buffer))))
-    (treemacs--init (cond
-                     (arg (read-directory-name "Treemacs root: "))
-                     ((and current-file (f-directory? current-file)) current-file)
-                     (current-file (treemacs--parent current-file))
-                     (t (getenv "HOME"))))))
-
-;;;###autoload
-(defun treemacs-projectile-init (&optional arg)
-  "Open treemacs for the current projectile project. If not in a project do
-nothing. If a prefix argument is given select the project from among
-`projectile-known-projects'."
-  (interactive "P")
-   (cond
-    ((and arg projectile-known-projects)
-     (treemacs--init (completing-read "Project: " projectile-known-projects)))
-    ((projectile-project-p)
-     (treemacs--init (projectile-project-root)))
-    (t (message "You're not in a project."))))
-
-;;;###autoload
-(defun treemacs-next-line ()
-  "Goto next line."
-  (interactive)
-  (forward-line 1)
-  (treemacs-goto-column-1))
-
-;;;###autoload
-(defun treemacs-previous-line ()
-  "Goto previous line."
-  (interactive)
-  (forward-line -1)
-  (treemacs-goto-column-1))
-
-;;;###autoload
-(defun treemacs-push-button ()
-  "Open/close directory. Open file with `treemacs-visit-file-vertical-split'."
-  (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (forward-button 1)
-    (call-interactively #'push-button))
-  (treemacs-goto-column-1))
-
-;;;###autoload
-(defun treemacs-uproot ()
-  "Switch treemacs' root directory to current root's parent, if possible."
-  (interactive)
-  (let* ((root      (treemacs--current-root))
-         (new-root  (treemacs--parent root)))
-    (unless (s-equals? root new-root)
-      (treemacs--build-tree new-root)
-      (goto-char 0)
-      (while (not (s-equals?
-                   root
-                   (-some-> (next-button (point)) (button-get 'abs-path))))
-        (forward-button 1))
-      (forward-button 1)
-      (treemacs-goto-column-1))))
-
-;;;###autoload
-(defun treemacs-goto-parent-node ()
-  "Select parent of selected node, if possible."
-  (interactive)
-  (beginning-of-line)
-  (and (-some->
-        (next-button (point))
-        (button-get 'parent)
-        (button-start)
-        (goto-char))
-       (treemacs-goto-column-1)))
-
-;;;###autoload
-(defun treemacs-next-neighbour ()
-  "Select next node at the same depth as currently selected node, if possible."
-  (interactive)
-  (beginning-of-line)
-  (-some-> (next-button (point))
-           (button-get 'next-node)
-           (button-start)
-           (goto-char)))
-
-;;;###autoload
-(defun treemacs-previous-neighbour ()
-  "Select previous node at the same depth as currently selected node, if possible."
-  (interactive)
-  (beginning-of-line)
-  (-some-> (next-button (point))
-           (button-get 'prev-node)
-           (button-start)
-           (goto-char)))
-
-;;;###autoload
-(defun treemacs-refresh (&optional no-message)
-  "Refresh and rebuild treemacs buffer."
-  (interactive)
-  (let* ((line      (line-number-at-pos))
-         (win-start (window-start))
-         (root      (treemacs--current-root))
-         (root-btn  (treemacs--current-root-btn))
-         (open-dirs (treemacs--collect-open-dirs root-btn)))
-    (--each (cdr (assoc root treemacs--open-dirs-cache))
-      (add-to-list 'open-dirs it t))
-    (treemacs--build-tree root open-dirs)
-    (set-window-start (get-buffer-window) win-start)
-    (with-no-warnings (goto-line line))
-    (treemacs-goto-column-1)
-    (unless no-message
-      (message "Treemacs buffer refreshed."))))
-
-;;;###autoload
-(defun treemacs-change-root ()
-  "Use current directory as new root. Do nothing for files."
-  (interactive)
-  (beginning-of-line)
-  (let* ((point     (point))
-         (btn       (next-button point))
-         (state     (button-get btn 'state))
-         (new-root  (button-get btn 'abs-path))
-         (open-dirs (treemacs--collect-open-dirs btn)))
-    (if (not (eq 'file state))
-        (treemacs--build-tree new-root open-dirs)
-      (goto-char point))))
-
-;;;###autoload
-(defun treemacs-visit-file-vertical-split ()
-  "Open current file by vertically splitting `next-window'. Do nothing for directories."
-  (interactive)
-  (treemacs--open-file nil #'split-window-vertically))
-
-;;;###autoload
-(defun treemacs-visit-file-horizontal-split ()
-  "Open current file by horizontally splitting `next-window'. Do nothing for directories."
-  (interactive)
-  (treemacs--open-file nil #'split-window-horizontally))
-
-;;;###autoload
-(defun treemacs-visit-file-no-split ()
-  "Open current file, performing no split and using `next-window' directly. Do nothing for directories."
-  (interactive)
-  (treemacs--open-file))
-
-;;;###autoload
-(defun treemacs-visit-file-ace ()
-  "Open current file, using `ace-window' to decide which buffer to open the file in. Do nothing for directories."
-  (interactive)
-  (treemacs--open-file
-   (aw-select "Select buffer")))
-
-;;;###autoload
-(defun treemacs-visit-file-ace-horizontal-split ()
-  "Open the current file by horizontally splitting a buffer selected by
-`ace-window'. Do nothing for directories."
-  (interactive)
-  (save-excursion
-    (treemacs--open-file
-     (aw-select "Select buffer") #'split-window-horizontally)))
-
-;;;###autoload
-(defun treemacs-visit-file-ace-vertical-split ()
-  "Open current file by vertically splitting a buffer selected by `ace-window'.
-Do nothing for directories."
-  (interactive)
-  (save-excursion
-    (treemacs--open-file
-     (aw-select "Select buffer") #'split-window-vertically)))
-
-;;;###autoload
-(defun treemacs-xdg-open ()
-  "Open current file, using the `xdg-open' shell command. Do nothing for directories."
-  (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (let ((abs-path (button-get (next-button (point)) 'abs-path)))
-      (when (f-file? abs-path)
-        (call-process-shell-command (format "xdg-open \"%s\" &" abs-path))))))
-
-;;;###autoload
-(defun treemacs-kill-buffer ()
-  "Kill the treemacs buffer."
-  (interactive)
-  (when (string= treemacs--buffer-name
-                 (buffer-name))
-    (setq treemacs--open-dirs-cache '())
-    (kill-this-buffer)
-    (when (not (one-window-p))
-      (delete-window))))
-
-;;;###autoload
-(defun treemacs-delete ()
-  "Delete node at point. A delete action must always be confirmed. Directories are deleted recursively."
-  (interactive)
-  (beginning-of-line)
-  (-if-let (btn (next-button (point)))
-      (let* ((path      (button-get btn 'abs-path))
-             (file-name (f-filename path))
-             (neighbour (or (button-get btn 'next-node) (button-get btn 'prev-node)))
-             (pos       (if neighbour (button-start neighbour) (point))))
-        (when
-            (cond
-             ((f-file? path)
-              (when (y-or-n-p (format "Delete %s ? " file-name))
-                (f-delete path)
-                t))
-             ((f-directory? path)
-              (when (y-or-n-p (format "Recursively delete %s ? " file-name))
-                (f-delete path t)
-                (treemacs--clear-from-cache path)
-                t)))
-          (treemacs-refresh t)
-          (goto-char pos))
-        (message "")))
-  (treemacs-goto-column-1))
-
-;;;###autoload
-(defun treemacs-create-file (dir filename)
-  "In directory DIR create file called FILENAME."
-  (interactive "DDirectory:\nMFilename:")
-  (f-touch (f-join dir filename))
-  (treemacs-refresh t))
-
-;;;###autoload
-(defun treemacs-create-dir (dir dirname)
-  "In directory DIR create directory called DIRNAME."
-  (interactive "DDirectory:\nMDirname:")
-  (f-mkdir (f-join dir dirname))
-  (treemacs-refresh t))
-
-;;;###autoload
-(defun treemacs-toggle-show-dotfiles ()
-  "Toggle the hiding and displaying of dotfiles."
-  (interactive)
-  (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
-  (treemacs-refresh t)
-  (message (concat "Dotfiles will now be "
-                   (if treemacs-show-hidden-files
-                       "displayed." "hidden."))))
-
-;;;###autoload
-(defun treemacs-toggle-fixed-width ()
-  "Toggle whether the treemacs buffer should have a fixed width.
-See also `treemacs-width.'"
-  (interactive)
-  (if window-size-fixed
-      (setq window-size-fixed nil)
-    (setq window-size-fixed 'width))
-  (message "Treemacs buffer width has been %s."
-           (if window-size-fixed "locked" "unlocked")))
-
-;;;###autoload
-(defun treemacs-reset-width (&optional arg)
-  "Reset the width of the treemacs buffer to `treemacs-buffer-width'.
-If a prefix argument ARG is provided read a new value for
-`treemacs-buffer-width'first."
-  (interactive "P")
-  (let ((window-size-fixed nil))
-    (when arg (setq treemacs-width (read-number "New Width: ")))
-    (treemacs--set-width treemacs-width)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Building and tearing down the file trees ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -883,6 +595,294 @@ Delete all elements whose car is ‘eq’ to KEY from ALIST."
       (when v?
         (with-current-buffer tb
           (setq window-size-fixed 'width))))))
+
+;;;;;;;;;;;;;;;
+;; Autoloads ;;
+;;;;;;;;;;;;;;;
+
+;;;###autoload
+(defun treemacs-toggle ()
+  "If a treemacs buffer exists and is visible hide it.
+If a treemacs buffer exists, but is not visible bring it to the foreground
+and select it.
+If no treemacs buffer exists call `treemacs-init.'"
+  (interactive)
+  (cond
+   ((treemacs--is-visible?)
+    (progn
+      (treemacs--select-visible)
+      (if (one-window-p)
+          (switch-to-buffer (other-buffer))
+        (delete-window))))
+   ((treemacs--buffer-exists?)
+    (treemacs--select-not-visible))
+   (t
+    (treemacs-init))))
+
+;;;###autoload
+(defun treemacs-init (&optional arg)
+  "Open treemacs with current buffer's directory as root.
+If the current buffer is not visiting any files use $HOME as fallback.
+If a prefix argument ARG is given manually select the root directory."
+  (interactive "P")
+  (let ((current-file (buffer-file-name (current-buffer))))
+    (treemacs--init (cond
+                     (arg (read-directory-name "Treemacs root: "))
+                     ((and current-file (f-directory? current-file)) current-file)
+                     (current-file (treemacs--parent current-file))
+                     (t (getenv "HOME"))))))
+
+;;;###autoload
+(defun treemacs-projectile-init (&optional arg)
+  "Open treemacs for the current projectile project. If not in a project do
+nothing. If a prefix argument is given select the project from among
+`projectile-known-projects'."
+  (interactive "P")
+   (cond
+    ((and arg projectile-known-projects)
+     (treemacs--init (completing-read "Project: " projectile-known-projects)))
+    ((projectile-project-p)
+     (treemacs--init (projectile-project-root)))
+    (t (message "You're not in a project."))))
+
+;;;###autoload
+(defun treemacs-next-line ()
+  "Goto next line."
+  (interactive)
+  (forward-line 1)
+  (treemacs-goto-column-1))
+
+;;;###autoload
+(defun treemacs-previous-line ()
+  "Goto previous line."
+  (interactive)
+  (forward-line -1)
+  (treemacs-goto-column-1))
+
+;;;###autoload
+(defun treemacs-push-button ()
+  "Open/close directory. Open file with `treemacs-visit-file-vertical-split'."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (forward-button 1)
+    (call-interactively #'push-button))
+  (treemacs-goto-column-1))
+
+;;;###autoload
+(defun treemacs-uproot ()
+  "Switch treemacs' root directory to current root's parent, if possible."
+  (interactive)
+  (let* ((root      (treemacs--current-root))
+         (new-root  (treemacs--parent root)))
+    (unless (s-equals? root new-root)
+      (treemacs--build-tree new-root)
+      (goto-char 0)
+      (while (not (s-equals?
+                   root
+                   (-some-> (next-button (point)) (button-get 'abs-path))))
+        (forward-button 1))
+      (forward-button 1)
+      (treemacs-goto-column-1))))
+
+;;;###autoload
+(defun treemacs-goto-parent-node ()
+  "Select parent of selected node, if possible."
+  (interactive)
+  (beginning-of-line)
+  (and (-some->
+        (next-button (point))
+        (button-get 'parent)
+        (button-start)
+        (goto-char))
+       (treemacs-goto-column-1)))
+
+;;;###autoload
+(defun treemacs-next-neighbour ()
+  "Select next node at the same depth as currently selected node, if possible."
+  (interactive)
+  (beginning-of-line)
+  (-some-> (next-button (point))
+           (button-get 'next-node)
+           (button-start)
+           (goto-char)))
+
+;;;###autoload
+(defun treemacs-previous-neighbour ()
+  "Select previous node at the same depth as currently selected node, if possible."
+  (interactive)
+  (beginning-of-line)
+  (-some-> (next-button (point))
+           (button-get 'prev-node)
+           (button-start)
+           (goto-char)))
+
+;;;###autoload
+(defun treemacs-refresh (&optional no-message)
+  "Refresh and rebuild treemacs buffer."
+  (interactive)
+  (let* ((line      (line-number-at-pos))
+         (win-start (window-start))
+         (root      (treemacs--current-root))
+         (root-btn  (treemacs--current-root-btn))
+         (open-dirs (treemacs--collect-open-dirs root-btn)))
+    (--each (cdr (assoc root treemacs--open-dirs-cache))
+      (add-to-list 'open-dirs it t))
+    (treemacs--build-tree root open-dirs)
+    (set-window-start (get-buffer-window) win-start)
+    (with-no-warnings (goto-line line))
+    (treemacs-goto-column-1)
+    (unless no-message
+      (message "Treemacs buffer refreshed."))))
+
+;;;###autoload
+(defun treemacs-change-root ()
+  "Use current directory as new root. Do nothing for files."
+  (interactive)
+  (beginning-of-line)
+  (let* ((point     (point))
+         (btn       (next-button point))
+         (state     (button-get btn 'state))
+         (new-root  (button-get btn 'abs-path))
+         (open-dirs (treemacs--collect-open-dirs btn)))
+    (if (not (eq 'file state))
+        (treemacs--build-tree new-root open-dirs)
+      (goto-char point))))
+
+;;;###autoload
+(defun treemacs-visit-file-vertical-split ()
+  "Open current file by vertically splitting `next-window'. Do nothing for directories."
+  (interactive)
+  (treemacs--open-file nil #'split-window-vertically))
+
+;;;###autoload
+(defun treemacs-visit-file-horizontal-split ()
+  "Open current file by horizontally splitting `next-window'. Do nothing for directories."
+  (interactive)
+  (treemacs--open-file nil #'split-window-horizontally))
+
+;;;###autoload
+(defun treemacs-visit-file-no-split ()
+  "Open current file, performing no split and using `next-window' directly. Do nothing for directories."
+  (interactive)
+  (treemacs--open-file))
+
+;;;###autoload
+(defun treemacs-visit-file-ace ()
+  "Open current file, using `ace-window' to decide which buffer to open the file in. Do nothing for directories."
+  (interactive)
+  (treemacs--open-file
+   (aw-select "Select buffer")))
+
+;;;###autoload
+(defun treemacs-visit-file-ace-horizontal-split ()
+  "Open the current file by horizontally splitting a buffer selected by
+`ace-window'. Do nothing for directories."
+  (interactive)
+  (save-excursion
+    (treemacs--open-file
+     (aw-select "Select buffer") #'split-window-horizontally)))
+
+;;;###autoload
+(defun treemacs-visit-file-ace-vertical-split ()
+  "Open current file by vertically splitting a buffer selected by `ace-window'.
+Do nothing for directories."
+  (interactive)
+  (save-excursion
+    (treemacs--open-file
+     (aw-select "Select buffer") #'split-window-vertically)))
+
+;;;###autoload
+(defun treemacs-xdg-open ()
+  "Open current file, using the `xdg-open' shell command. Do nothing for directories."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (let ((abs-path (button-get (next-button (point)) 'abs-path)))
+      (when (f-file? abs-path)
+        (call-process-shell-command (format "xdg-open \"%s\" &" abs-path))))))
+
+;;;###autoload
+(defun treemacs-kill-buffer ()
+  "Kill the treemacs buffer."
+  (interactive)
+  (when (string= treemacs--buffer-name
+                 (buffer-name))
+    (setq treemacs--open-dirs-cache '())
+    (kill-this-buffer)
+    (when (not (one-window-p))
+      (delete-window))))
+
+;;;###autoload
+(defun treemacs-delete ()
+  "Delete node at point. A delete action must always be confirmed. Directories are deleted recursively."
+  (interactive)
+  (beginning-of-line)
+  (-if-let (btn (next-button (point)))
+      (let* ((path      (button-get btn 'abs-path))
+             (file-name (f-filename path))
+             (neighbour (or (button-get btn 'next-node) (button-get btn 'prev-node)))
+             (pos       (if neighbour (button-start neighbour) (point))))
+        (when
+            (cond
+             ((f-file? path)
+              (when (y-or-n-p (format "Delete %s ? " file-name))
+                (f-delete path)
+                t))
+             ((f-directory? path)
+              (when (y-or-n-p (format "Recursively delete %s ? " file-name))
+                (f-delete path t)
+                (treemacs--clear-from-cache path)
+                t)))
+          (treemacs-refresh t)
+          (goto-char pos))
+        (message "")))
+  (treemacs-goto-column-1))
+
+;;;###autoload
+(defun treemacs-create-file (dir filename)
+  "In directory DIR create file called FILENAME."
+  (interactive "DDirectory:\nMFilename:")
+  (f-touch (f-join dir filename))
+  (treemacs-refresh t))
+
+;;;###autoload
+(defun treemacs-create-dir (dir dirname)
+  "In directory DIR create directory called DIRNAME."
+  (interactive "DDirectory:\nMDirname:")
+  (f-mkdir (f-join dir dirname))
+  (treemacs-refresh t))
+
+;;;###autoload
+(defun treemacs-toggle-show-dotfiles ()
+  "Toggle the hiding and displaying of dotfiles."
+  (interactive)
+  (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
+  (treemacs-refresh t)
+  (message (concat "Dotfiles will now be "
+                   (if treemacs-show-hidden-files
+                       "displayed." "hidden."))))
+
+;;;###autoload
+(defun treemacs-toggle-fixed-width ()
+  "Toggle whether the treemacs buffer should have a fixed width.
+See also `treemacs-width.'"
+  (interactive)
+  (if window-size-fixed
+      (setq window-size-fixed nil)
+    (setq window-size-fixed 'width))
+  (message "Treemacs buffer width has been %s."
+           (if window-size-fixed "locked" "unlocked")))
+
+;;;###autoload
+(defun treemacs-reset-width (&optional arg)
+  "Reset the width of the treemacs buffer to `treemacs-buffer-width'.
+If a prefix argument ARG is provided read a new value for
+`treemacs-buffer-width'first."
+  (interactive "P")
+  (let ((window-size-fixed nil))
+    (when arg (setq treemacs-width (read-number "New Width: ")))
+    (treemacs--set-width treemacs-width)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Mode definitions ;;
