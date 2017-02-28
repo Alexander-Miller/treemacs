@@ -118,6 +118,26 @@ argument, which is the current root directory.")
                       default-directory))
   "The directory treemacs.el is stored in.")
 
+;;;;;;;;;;;;
+;; Macros ;;
+;;;;;;;;;;;;
+
+(defmacro treemacs--setup-icon (var file-name &rest extensions)
+  "Define a variable VAR with the value being the image created from FILE-NAME.
+Insert VAR into icon-cache for each of the given file EXTENSIONS."
+  `(progn
+     (defvar ,var
+       (create-image (f-join treemacs-dir "icons/" ,file-name)
+                     'png nil :ascent 'center))
+     (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
+
+(defmacro treemacs--with-writable-buffer (&rest body)
+  "Temporarily turn off read-ony mode to execute BODY."
+  `(progn
+     (read-only-mode -1)
+     ,@body
+     (read-only-mode t)))
+
 ;;;;;;;;;;;;;;;
 ;; Autoloads ;;
 ;;;;;;;;;;;;;;;
@@ -665,15 +685,6 @@ Use `next-window' if WINDOW is nil."
 ;; Icons ;;
 ;;;;;;;;;;;
 
-(defmacro treemacs--setup-icon (var file-name &rest extensions)
-  "Define a variable VAR with the value being the image created from FILE-NAME.
-Insert VAR into icon-cache for each of the given file EXTENSIONS."
-  `(progn
-     (defvar ,var
-        (create-image (f-join treemacs-dir "icons/" ,file-name)
-                      'png nil :ascent 'center))
-     (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
-
 (defun treemacs--create-icons ()
   "Create icons and put them in the icons hash."
 
@@ -735,13 +746,6 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 ;;;;;;;;;;;;;;;;;
 ;; Misc. utils ;;
 ;;;;;;;;;;;;;;;;;
-
-(defmacro treemacs--with-writable-buffer (&rest body)
-  "Temporarily turn off read-ony mode to execute BODY."
-  `(progn
-     (read-only-mode -1)
-     ,@body
-     (read-only-mode t)))
 
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."
