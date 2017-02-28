@@ -114,9 +114,9 @@
   "Dotfiles will be shown if this is set to t and be hidden otherwise.")
 
 (defvar treemacs-header-format "*%s*"
-  "The format string which is used for the header line.  Valid formats are all strings
-accepted by the `format' function for a single formatting
-argument, which is the current root directory.")
+  "Format string which is used to format the header line.  Valid formats
+are all strings accepted by the `format' function for a single formatting
+argument,which is the current root directory.")
 
 (defvar treemacs-icons-hash (make-hash-table :test 'equal)
   "Hash table containing a mapping of icons onto file extensions.")
@@ -128,7 +128,7 @@ argument, which is the current root directory.")
   "When t use different faces for files' different git states.")
 
 (defvar treemacs-dotfiles-regex (rx bol "." (1+ any))
-  "Files matching this regular expression count as dotfiles")
+  "Files matching this regular expression count as dotfiles.")
 
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
@@ -193,7 +193,7 @@ If no treemacs buffer exists call `treemacs-init.'"
 (defun treemacs-init (&optional arg)
   "Open treemacs with current buffer's directory as root.
 If the current buffer is not visiting any files use $HOME as fallback.
-If a prefix argument is given manually select the root directory."
+If a prefix argument ARG is given manually select the root directory."
   (interactive "P")
   (let ((current-file (buffer-file-name (current-buffer))))
     (treemacs--init (cond
@@ -219,14 +219,14 @@ nothing. If a prefix argument is given select the project from among
 (defun treemacs-next-line ()
   "Goto next line."
   (interactive)
-  (next-line)
+  (forward-line 1)
   (treemacs-goto-column-1))
 
 ;;;###autoload
 (defun treemacs-previous-line ()
   "Goto previous line."
   (interactive)
-  (previous-line)
+  (forward-line -1)
   (treemacs-goto-column-1))
 
 ;;;###autoload
@@ -298,10 +298,9 @@ nothing. If a prefix argument is given select the project from among
          (open-dirs (treemacs--collect-open-dirs root-btn)))
     (--each (cdr (assoc root treemacs--open-dirs-cache))
       (add-to-list 'open-dirs it t))
-    (message "Refresh with %s" open-dirs)
     (treemacs--build-tree root open-dirs)
     (set-window-start (get-buffer-window) win-start)
-    (goto-line line)
+    (with-no-warnings (goto-line line))
     (treemacs-goto-column-1)
     (unless no-message
       (message "Treemacs buffer refreshed."))))
@@ -322,19 +321,19 @@ nothing. If a prefix argument is given select the project from among
 
 ;;;###autoload
 (defun treemacs-visit-file-vertical-split ()
-  "Open current file by vertically splitting next-window. Do nothing for directories."
+  "Open current file by vertically splitting `next-window'. Do nothing for directories."
   (interactive)
   (treemacs--open-file nil #'split-window-vertically))
 
 ;;;###autoload
 (defun treemacs-visit-file-horizontal-split ()
-  "Open current file by horizontally splitting next-window. Do nothing for directories."
+  "Open current file by horizontally splitting `next-window'. Do nothing for directories."
   (interactive)
   (treemacs--open-file nil #'split-window-horizontally))
 
 ;;;###autoload
 (defun treemacs-visit-file-no-split ()
-  "Open current file, performing no split and using next-window directly. Do nothing for directories."
+  "Open current file, performing no split and using `next-window' directly. Do nothing for directories."
   (interactive)
   (treemacs--open-file))
 
@@ -347,8 +346,8 @@ nothing. If a prefix argument is given select the project from among
 
 ;;;###autoload
 (defun treemacs-visit-file-ace-horizontal-split ()
-  "Open current file by horizontally splitting a buffer selected by `ace-window'.
-Do nothing for directories."
+  "Open the current file by horizontally splitting a buffer selected by
+`ace-window'. Do nothing for directories."
   (interactive)
   (save-excursion
     (treemacs--open-file
@@ -365,7 +364,7 @@ Do nothing for directories."
 
 ;;;###autoload
 (defun treemacs-xdg-open ()
-  "Open current file, using the `xdg-open' shell-command. Do nothing for directories."
+  "Open current file, using the `xdg-open' shell command. Do nothing for directories."
   (interactive)
   (save-excursion
     (beginning-of-line)
@@ -412,14 +411,14 @@ Do nothing for directories."
 
 ;;;###autoload
 (defun treemacs-create-file (dir filename)
-  "Create file called FILENAME in directory DIR."
+  "In directory DIR create file called FILENAME."
   (interactive "DDirectory:\nMFilename:")
   (f-touch (f-join dir filename))
   (treemacs-refresh t))
 
 ;;;###autoload
 (defun treemacs-create-dir (dir dirname)
-  "Create directory called DIRNAME in directory DIR."
+  "In directory DIR create directory called DIRNAME."
   (interactive "DDirectory:\nMDirname:")
   (f-mkdir (f-join dir dirname))
   (treemacs-refresh t))
@@ -448,7 +447,8 @@ See also `treemacs-width.'"
 ;;;###autoload
 (defun treemacs-reset-width (&optional arg)
   "Reset the width of the treemacs buffer to `treemacs-buffer-width'.
-If a prefix argument is provided read a new value for `treemacs-buffer-width' first."
+If a prefix argument ARG is provided read a new value for
+`treemacs-buffer-width'first."
   (interactive "P")
   (let ((window-size-fixed nil))
     (when arg (setq treemacs-width (read-number "New Width: ")))
@@ -464,7 +464,8 @@ If a prefix argument is provided read a new value for `treemacs-buffer-width' fi
       (treemacs--select-visible)
     (progn
       (treemacs--setup-buffer)
-      (switch-to-buffer (get-buffer-create treemacs--buffer-name))))
+      (switch-to-buffer (get-buffer-create treemacs--buffer-name))
+      (bury-buffer treemacs--buffer-name)))
   (treemacs-mode)
   (treemacs--build-tree root))
 
@@ -499,26 +500,15 @@ If a list of OPEN-DIRS is provided they will be toggled open after the tree is c
                  'abs-path root
                  'acion #'ignore))
 
-(defun treemacs--create-branch (root indent-depth &optional parent)
-  "Create a new filetree branch below the given ROOT path with the given
-INDENT-DEPTH.  PARENT is same as ROOT, but only provided if the branch
-to be created is nested below another and not directly at the top level."
-  (save-excursion
-    (let* ((prefix       (concat "\n" (s-repeat (* indent-depth treemacs-indentation) " ")))
-           (entries      (treemacs--get-dir-content root))
-           (directories  (first entries))
-           (files        (second entries))
-           (is-git-dir?  (when treemacs-git-integration (treemacs--is-dir-git-controlled? root)))
-           (git-info     (when is-git-dir? (treemacs--parse-git-status root)))
-           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) directories))
-           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) files))
-           (last-dir     (-some-> (last dir-buttons) (car)))
-           (first-file   (first file-buttons)))
-      (treemacs--set-neighbours dir-buttons)
-      (treemacs--set-neighbours file-buttons)
-      (when (and last-dir first-file)
-        (button-put last-dir 'next-node first-file)
-        (button-put first-file 'prev-node last-dir)))))
+(defsubst treemacs--set-neighbours (buttons)
+  "Set next- and previous-node properties for each button in BUTTONS."
+  (when buttons
+    (cl-dolist (i (number-sequence 0 (- (list-length buttons) 2)))
+      (let ((b1 (nth i buttons))
+            (b2 (nth (1+ i) buttons)))
+        (button-put b1 'next-node b2)
+        (button-put b2 'prev-node b1)))))
+
 
 (defsubst treemacs--insert-node (path prefix depth parent &optional root-is-git-controlled git-info)
  "Insert a single button node.
@@ -544,14 +534,26 @@ under, if any."
                                          (treemacs--git-face path git-info)
                                        'treemacs-file-face)))))
 
-(defsubst treemacs--set-neighbours (buttons)
-  "Set next- and previous-node properties for each button in buttons."
-  (when buttons
-    (cl-dolist (i (number-sequence 0 (- (list-length buttons) 2)))
-      (let ((b1 (nth i buttons))
-            (b2 (nth (1+ i) buttons)))
-        (button-put b1 'next-node b2)
-        (button-put b2 'prev-node b1)))))
+(defun treemacs--create-branch (root indent-depth &optional parent)
+  "Create a new filetree branch below the given ROOT path with the given
+INDENT-DEPTH.  PARENT is same as ROOT, but only provided if the branch
+to be created is nested below another and not directly at the top level."
+  (save-excursion
+    (let* ((prefix       (concat "\n" (s-repeat (* indent-depth treemacs-indentation) " ")))
+           (entries      (treemacs--get-dir-content root))
+           (directories  (first entries))
+           (files        (second entries))
+           (is-git-dir?  (when treemacs-git-integration (treemacs--is-dir-git-controlled? root)))
+           (git-info     (when is-git-dir? (treemacs--parse-git-status root)))
+           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) directories))
+           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) files))
+           (last-dir     (-some-> (last dir-buttons) (car)))
+           (first-file   (first file-buttons)))
+      (treemacs--set-neighbours dir-buttons)
+      (treemacs--set-neighbours file-buttons)
+      (when (and last-dir first-file)
+        (button-put last-dir 'next-node first-file)
+        (button-put first-file 'prev-node last-dir)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Button interactions ;;
@@ -565,7 +567,8 @@ under, if any."
     ('dir-open   (treemacs--close-node btn))))
 
 (defun treemacs--open-node (btn &optional no-reopen)
-  "Open the node given by BTN."
+  "Open the node given by BTN. Do not reopen its previously open children when
+NO-REOPEN is given."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (message "Directory is not readable.")
     (treemacs--with-writable-buffer
@@ -603,7 +606,7 @@ under, if any."
        (delete-trailing-whitespace)))))
 
 (defun treemacs--open-file (&optional window split-func)
-  "Visit file of the current node.  Use SPLIT-FUNC to split WINDOW.
+  "Visit file of the current node.  Split WINDOW using SPLIT-FUNC.
 Do nothing if current node is a directory.
 Do not split window if SPLIT-FUNC is nil.
 Use `next-window' if WINDOW is nil."
@@ -670,7 +673,7 @@ Use `next-window' if WINDOW is nil."
 (defsubst treemacs--reopen (filename abs-path)
   "Reopen the node identified by its FILENAME and ABS-PATH."
   (let ((inhibit-message t))
-    (beginning-of-buffer)
+    (goto-char (point-min))
     (while (not (s-equals? abs-path (button-get (next-button (point) t) 'abs-path)))
       (search-forward filename nil 'a)
       (beginning-of-line))
@@ -682,7 +685,7 @@ Use `next-window' if WINDOW is nil."
   (setq treemacs--open-dirs-cache (str-assq-delete-all path treemacs--open-dirs-cache)))
 
 (defsubst treemacs--add-to-cache (path open-dirs)
-  "Add to cache the OPEN-DIRS under PATH."
+  "Add to cache PATH's OPEN-DIRS."
   (treemacs--clear-from-cache path)
   (add-to-list 'treemacs--open-dirs-cache `(,path . ,open-dirs)))
 
@@ -815,7 +818,8 @@ Use `next-window' if WINDOW is nil."
   (treemacs--set-width treemacs-width))
 
 (defun str-assq-delete-all (key alist)
-  "Same as `assq-delete-all', but use `string=' instead of `eq'."
+  "Same as `assq-delete-all', but use `string=' instead of `eq'.
+Delete all elements whose car is ‘eq’ to KEY from ALIST."
   (while (and (consp (car alist))
               (string= (car (car alist)) key))
     (setq alist (cdr alist)))
@@ -884,6 +888,32 @@ Use `next-window' if WINDOW is nil."
 ;; Mode definitions ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+(defvar treemacs-mode-map
+  (let ((map (make-sparse-keymap)))
+
+    (define-key map [tab]        #'treemacs-push-button)
+    (define-key map [return]     #'treemacs-visit-file-no-split)
+    (define-key map (kbd "l")    #'treemacs-change-root)
+    (define-key map (kbd "r")    #'treemacs-refresh)
+    (define-key map (kbd "g")    #'treemacs-refresh)
+    (define-key map (kbd "d")    #'treemacs-delete)
+    (define-key map (kbd "cf")   #'treemacs-create-file)
+    (define-key map (kbd "cd")   #'treemacs-create-dir)
+    (define-key map (kbd "h")    #'treemacs-uproot)
+    (define-key map (kbd "u")    #'treemacs-goto-parent-node)
+    (define-key map (kbd "q")    #'treemacs-toggle)
+    (define-key map (kbd "Q")    #'treemacs-kill-buffer)
+    (define-key map (kbd "ov")   #'treemacs-visit-file-vertical-split)
+    (define-key map (kbd "oh")   #'treemacs-visit-file-horizontal-split)
+    (define-key map (kbd "oo")   #'treemacs-visit-file-no-split)
+    (define-key map (kbd "oaa")  #'treemacs-visit-file-ace)
+    (define-key map (kbd "oah")  #'treemacs-visit-file-ace-horizontal-split)
+    (define-key map (kbd "oav")  #'treemacs-visit-file-ace-vertical-split)
+    (define-key map (kbd "ox")   #'treemacs-xdg-open)
+
+    map)
+  "Keymap for `treemacs-mode'.")
+
 (defun treemacs--evil-config ()
   "Create an evil state for treemacs mode.  Use j & k for navigating
 the treemacs buffer."
@@ -920,32 +950,6 @@ the treemacs buffer."
   (define-key treemacs-mode-map (kbd "w")   #'treemacs-reset-width)
 
   t)
-
-(defvar treemacs-mode-map
-  (let ((map (make-sparse-keymap)))
-
-    (define-key map [tab]        #'treemacs-push-button)
-    (define-key map [return]     #'treemacs-visit-file-no-split)
-    (define-key map (kbd "l")    #'treemacs-change-root)
-    (define-key map (kbd "r")    #'treemacs-refresh)
-    (define-key map (kbd "g")    #'treemacs-refresh)
-    (define-key map (kbd "d")    #'treemacs-delete)
-    (define-key map (kbd "cf")   #'treemacs-create-file)
-    (define-key map (kbd "cd")   #'treemacs-create-dir)
-    (define-key map (kbd "h")    #'treemacs-uproot)
-    (define-key map (kbd "u")    #'treemacs-goto-parent-node)
-    (define-key map (kbd "q")    #'treemacs-toggle)
-    (define-key map (kbd "Q")    #'treemacs-kill-buffer)
-    (define-key map (kbd "ov")   #'treemacs-visit-file-vertical-split)
-    (define-key map (kbd "oh")   #'treemacs-visit-file-horizontal-split)
-    (define-key map (kbd "oo")   #'treemacs-visit-file-no-split)
-    (define-key map (kbd "oaa")  #'treemacs-visit-file-ace)
-    (define-key map (kbd "oah")  #'treemacs-visit-file-ace-horizontal-split)
-    (define-key map (kbd "oav")  #'treemacs-visit-file-ace-vertical-split)
-    (define-key map (kbd "ox")   #'treemacs-xdg-open)
-
-    map)
-  "Keymap for `treemacs-mode'.")
 
 (if treemacs-be-evil
     (treemacs--evil-config)
