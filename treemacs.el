@@ -860,23 +860,23 @@ Use `next-window' if WINDOW is nil."
   "Create an evil state for treemacs mode.  Use j & k for navigating
 the treemacs buffer."
 
-  (require 'evil)
-  (evil-define-state treemacs
-    "Treemacs state"
-    :cursor '(hbar . 0)
-    :enable (motion))
+  (with-eval-after-load 'evil
+    (evil-define-state treemacs
+      "Treemacs state"
+      :cursor '(hbar . 0)
+      :enable (motion))
 
-  (evil-set-initial-state 'treemacs-mode 'treemacs)
+    (evil-set-initial-state 'treemacs-mode 'treemacs)
 
-  (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
-  (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
-  (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
-  (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
-  (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
-  (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
-  (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
-  (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
-  (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
+    (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
+    (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
+    (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
+    (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
+    (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
+    (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
+    (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
+    (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
+    (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width))
 
   t)
 
