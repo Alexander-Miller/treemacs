@@ -36,41 +36,69 @@
 (require 'ido)
 (require 'ace-window)
 
+;;;;;;;;;;;;
+;; Groups ;;
+;;;;;;;;;;;;
+
+(defgroup treemacs nil
+  "A major mode for displaying the file system in a tree layout."
+  :group 'files
+  :prefix "treemacs-"
+  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
+
+(defgroup treemacs-faces nil
+  "Faces for treemacs' syntax highlighting."
+  :group 'treemacs
+  :group 'faces)
+
+(defgroup treemacs-configuration nil
+  "Treemacs configuration options."
+  :group 'treemacs
+  :prefix "treemacs-")
+
 ;;;;;;;;;;;
 ;; Faces ;;
 ;;;;;;;;;;;
 
 (defface treemacs-directory-face
   '((t :inherit font-lock-function-name-face))
-  "Face used by treemacs for directories.")
+  "Face used by treemacs for directories."
+  :group 'treemacs-faces)
 
 (defface treemacs-file-face
   '((t :inherit default))
-  "Face used by treemacs for files.")
+  "Face used by treemacs for files."
+  :group 'treemacs-faces)
 
 (defface treemacs-header-face
   '((t :inherit font-lock-constant-face :underline t :size 1.4))
-  "Face used by treemacs for its header.")
+  "Face used by treemacs for its header."
+  :group 'treemacs-faces)
 
 (defface treemacs-git-unmodified-face
   '((t :inherit treemacs-file-face))
-  "Face used for unmodified files.")
+  "Face used for unmodified files."
+  :group 'treemacs-faces)
 
 (defface treemacs-git-modified-face
   '((t :inherit font-lock-variable-name-face))
-  "Face used for modified files.")
+  "Face used for modified files."
+  :group 'treemacs-faces)
 
 (defface treemacs-git-ignored-face
   '((t :inherit font-lock-comment-face))
-  "Face for ignored files.")
+  "Face for ignored files."
+  :group 'treemacs-faces)
 
 (defface treemacs-git-untracked-face
   '((t :inherit font-lock-string-face))
-  "Face for untracked files.")
+  "Face for untracked files."
+  :group 'treemacs-faces)
 
 (defface treemacs-git-added-face
   '((t :inherit font-lock-type-face))
-  "Face for newly added files.")
+  "Face for newly added files."
+  :group 'treemacs-faces)
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Configuration ;;
