@@ -238,19 +238,23 @@ If a list of OPEN-DIRS is provided they will be toggled open after the tree is c
 (defsubst treemacs--set-neighbours (buttons)
   "Set next- and previous-node properties for each button in BUTTONS."
   (when buttons
-    (cl-dolist (i (number-sequence 0 (- (list-length buttons) 2)))
+    (cl-dolist (i (number-sequence 0 (- (seq-length buttons) 2)))
       (let ((b1 (nth i buttons))
             (b2 (nth (1+ i) buttons)))
         (button-put b1 'next-node b2)
         (button-put b2 'prev-node b1)))))
 
 
-(defsubst treemacs--insert-node (path prefix depth parent &optional root-is-git-controlled git-info)
+(defsubst treemacs--insert-node (path prefix depth parent &optional git-controlled? git-info)
  "Insert a single button node.
-PATH is the node's absolute path.  PREFIX is an empty string used for
-indentation.  DEPTH is the nesting depth, used for calculating the prefix length
-of all potential child branches.  PARENT is the node the new node is nested
-under, if any."
+PATH is the node's absolute path.
+PREFIX is an empty string used for indentation.
+DEPTH is the nesting depth, used for calculating the prefix length
+of all potential child branches.
+PARENT is the node the new node is nested under, if any.
+GIT-CONTROLLED? indicates wheter the files under parent are under git control.
+GIT-INFO is an alist mapping each file to its git state (no mapping meaning
+the file is unchanged)."
   (end-of-line)
   (let* ((is-dir? (f-directory? path)))
     (insert prefix)
@@ -265,13 +269,13 @@ under, if any."
                         'depth     depth
                         'face      (if is-dir? 'treemacs-directory-face
                                      (if (and treemacs-git-integration
-                                              root-is-git-controlled)
+                                              git-controlled?)
                                          (treemacs--git-face path git-info)
                                        'treemacs-file-face)))))
 
 (defun treemacs--create-branch (root indent-depth &optional parent)
-  "Create a new filetree branch below the given ROOT path with the given
-INDENT-DEPTH.  PARENT is same as ROOT, but only provided if the branch
+  "Create a new filetree branch below ROOT path with the given INDENT-DEPTH.
+PARENT is same as ROOT, but only provided if the branch
 to be created is nested below another and not directly at the top level."
   (save-excursion
     (let* ((prefix       (concat "\n" (s-repeat (* indent-depth treemacs-indentation) " ")))
@@ -302,8 +306,8 @@ to be created is nested below another and not directly at the top level."
     ('dir-open   (treemacs--close-node btn))))
 
 (defun treemacs--open-node (btn &optional no-reopen)
-  "Open the node given by BTN. Do not reopen its previously open children when
-NO-REOPEN is given."
+  "Open the node given by BTN.
+Do not reopen its previously open children when NO-REOPEN is given."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (message "Directory is not readable.")
     (treemacs--with-writable-buffer
@@ -319,6 +323,13 @@ NO-REOPEN is given."
                                (assoc treemacs--open-dirs-cache)
                                (cdr))))
          (when dirs-to-open (treemacs--reopen-dirs dirs-to-open)))))))
+
+(defsubst treemacs--next-node (node)
+  "Return NODE's lower same-indentation neighbour or nil if there is none."
+  (when node
+    (-if-let (next (button-get node 'next-node))
+        next
+      (treemacs--next-node (button-get node 'parent)))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
@@ -367,13 +378,6 @@ Use `next-window' if WINDOW is nil."
     (delete-char 1))
   (insert-image new-sym))
 
-(defsubst treemacs--next-node (node)
-  "Return NODE's lower same-indentation neighbour or nil if there is none."
-  (when node
-    (-if-let (next (button-get node 'next-node))
-        next
-      (treemacs--next-node (button-get node 'parent)))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Restoration of opened dirs ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -391,6 +395,16 @@ Use `next-window' if WINDOW is nil."
         (setq btn (next-button (button-end btn))))
       res)))
 
+(defsubst treemacs--reopen (filename abs-path)
+  "Reopen the node identified by its FILENAME and ABS-PATH."
+  (treemacs--without-messages
+   (goto-char (point-min))
+   (while (not (s-equals? abs-path (button-get (next-button (point) t) 'abs-path)))
+     (search-forward filename nil 'a)
+     (beginning-of-line))
+   (beginning-of-line)
+   (treemacs--open-node (next-button (point) t) t)))
+
 (defun treemacs--reopen-dirs (open-dirs)
   "Toggle open every node whose full path is in OPEN-DIRS."
   (save-excursion
@@ -404,16 +418,6 @@ Use `next-window' if WINDOW is nil."
                 (--filter (not (or (s-equals? dir it) (s-starts-with? dir it))) open-dirs)))))
     (cl-dolist (dir open-dirs)
       (treemacs--reopen (f-filename dir) dir))))
-
-(defsubst treemacs--reopen (filename abs-path)
-  "Reopen the node identified by its FILENAME and ABS-PATH."
-  (treemacs--without-messages
-   (goto-char (point-min))
-   (while (not (s-equals? abs-path (button-get (next-button (point) t) 'abs-path)))
-     (search-forward filename nil 'a)
-     (beginning-of-line))
-   (beginning-of-line)
-   (treemacs--open-node (next-button (point) t) t)))
 
 (defsubst treemacs--clear-from-cache (path)
   "Remove from the cache of opened nodes all entries of PATH."
@@ -586,6 +590,8 @@ Delete all elements whose car is ‘eq’ to KEY from ALIST."
   (defun treemacs--window-number-zero ()
     (when (string= (buffer-name) treemacs--buffer-name) 0))
 
+  (defvar window-numbering-assign-func)
+
   (setq window-numbering-assign-func
         (lambda () (treemacs--window-number-zero))))
 
@@ -658,7 +664,7 @@ If a prefix argument ARG is given manually select the root directory."
 ;;;###autoload
 (defun treemacs-projectile-init (&optional arg)
   "Open treemacs for the current projectile project. If not in a project do
-nothing. If a prefix argument is given select the project from among
+nothing. If a prefix argument ARG is given select the project from among
 `projectile-known-projects'."
   (interactive "P")
    (cond
@@ -866,7 +872,7 @@ Do nothing for directories."
 ;;;###autoload
 (defun treemacs-create-file (dir filename)
   "In directory DIR create file called FILENAME."
-  (interactive "DDirectory:\nMFilename:")
+  (interactive "DDirectory: \nMFilename: ")
   (f-touch (f-join dir filename))
   (treemacs--without-messages (treemacs-refresh)))
 
@@ -939,8 +945,8 @@ If a prefix argument ARG is provided read a new value for
   "Keymap for `treemacs-mode'.")
 
 (defun treemacs--evil-config ()
-  "Create an evil state for treemacs mode.  Use j & k for navigating
-the treemacs buffer."
+  "Create an evil state for treemacs mode.
+Use j & k for navigating the treemacs buffer."
 
   (with-eval-after-load 'evil
     (evil-define-state treemacs
