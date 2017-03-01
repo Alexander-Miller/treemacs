@@ -166,6 +166,13 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
      ,@body
      (read-only-mode t)))
 
+(defmacro treemacs--without-messages (&rest body)
+  "Temporarily turn off messages to execute BODY."
+  `(let ((inhibit inhibit-message))
+     (setq inhibit-message t)
+     ,@body
+     (setq inhibit-message inhibit)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Building and tearing down the file trees ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -384,13 +391,13 @@ Use `next-window' if WINDOW is nil."
 
 (defsubst treemacs--reopen (filename abs-path)
   "Reopen the node identified by its FILENAME and ABS-PATH."
-  (let ((inhibit-message t))
-    (goto-char (point-min))
-    (while (not (s-equals? abs-path (button-get (next-button (point) t) 'abs-path)))
-      (search-forward filename nil 'a)
-      (beginning-of-line))
-    (beginning-of-line)
-    (treemacs--open-node (next-button (point) t) t)))
+  (treemacs--without-messages
+   (goto-char (point-min))
+   (while (not (s-equals? abs-path (button-get (next-button (point) t) 'abs-path)))
+     (search-forward filename nil 'a)
+     (beginning-of-line))
+   (beginning-of-line)
+   (treemacs--open-node (next-button (point) t) t)))
 
 (defsubst treemacs--clear-from-cache (path)
   "Remove from the cache of opened nodes all entries of PATH."
@@ -718,7 +725,7 @@ nothing. If a prefix argument is given select the project from among
            (goto-char)))
 
 ;;;###autoload
-(defun treemacs-refresh (&optional no-message)
+(defun treemacs-refresh ()
   "Refresh and rebuild treemacs buffer."
   (interactive)
   (let* ((line      (line-number-at-pos))
@@ -730,10 +737,12 @@ nothing. If a prefix argument is given select the project from among
       (add-to-list 'open-dirs it t))
     (treemacs--build-tree root open-dirs)
     (set-window-start (get-buffer-window) win-start)
-    (with-no-warnings (goto-line line))
+    ;; not pretty, but there can still be some off by one jitter when
+    ;; using forwald-line
+    (treemacs--without-messages
+     (with-no-warnings (goto-line line)))
     (treemacs-goto-column-1)
-    (unless no-message
-      (message "Treemacs buffer refreshed."))))
+    (message "Treemacs buffer refreshed.")))
 
 ;;;###autoload
 (defun treemacs-change-root ()
@@ -834,9 +843,8 @@ Do nothing for directories."
                 (f-delete path t)
                 (treemacs--clear-from-cache path)
                 t)))
-          (treemacs-refresh t)
-          (goto-char pos))
-        (message "")))
+          (progn (treemacs--without-messages (treemacs-refresh))
+                 (goto-char pos)))))
   (treemacs-goto-column-1))
 
 ;;;###autoload
@@ -844,21 +852,21 @@ Do nothing for directories."
   "In directory DIR create file called FILENAME."
   (interactive "DDirectory:\nMFilename:")
   (f-touch (f-join dir filename))
-  (treemacs-refresh t))
+  (treemacs--without-messages (treemacs-refresh)))
 
 ;;;###autoload
 (defun treemacs-create-dir (dir dirname)
   "In directory DIR create directory called DIRNAME."
   (interactive "DDirectory:\nMDirname:")
   (f-mkdir (f-join dir dirname))
-  (treemacs-refresh t))
+  (treemacs--without-messages (treemacs-refresh)))
 
 ;;;###autoload
 (defun treemacs-toggle-show-dotfiles ()
   "Toggle the hiding and displaying of dotfiles."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
-  (treemacs-refresh t)
+  (treemacs-refresh)
   (message (concat "Dotfiles will now be "
                    (if treemacs-show-hidden-files
                        "displayed." "hidden."))))
