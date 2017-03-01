@@ -104,31 +104,47 @@
 ;; Configuration ;;
 ;;;;;;;;;;;;;;;;;;;
 
-(defvar treemacs-indentation 2
-  "The number of spaces each level is indented in the tree.")
+(defcustom treemacs-indentation 2
+  "The number of spaces each level is indented in the tree."
+  :type 'integer
+  :group 'treemacs-configuration)
 
-(defvar treemacs-width 35
-  "Width of the treemacs buffer.")
+(defcustom treemacs-width 35
+  "Width of the treemacs buffer."
+  :type 'integer
+  :group 'treemacs-configuration)
 
-(defvar treemacs-show-hidden-files t
-  "Dotfiles will be shown if this is set to t and be hidden otherwise.")
+(defcustom treemacs-show-hidden-files t
+  "Dotfiles will be shown if this is set to t and be hidden otherwise."
+  :type 'boolean
+  :group 'treemacs-configuration)
 
-(defvar treemacs-header-format "*%s*"
+(defcustom treemacs-header-format "*%s*"
   "Format string which is used to format the header line.  Valid formats
 are all strings accepted by the `format' function for a single formatting
-argument,which is the current root directory.")
+argument, which is the current root directory."
+  :type 'string
+  :group 'treemacs-configuration)
 
-(defvar treemacs-icons-hash (make-hash-table :test 'equal)
-  "Hash table containing a mapping of icons onto file extensions.")
+(defcustom treemacs-icons-hash (make-hash-table :test 'equal)
+  "Hash table containing a mapping of icons onto file extensions."
+  :type 'plist
+  :group 'treemacs-configuration)
 
-(defvar treemacs-be-evil nil
-  "When t use evil keys for navigation (j/k instead of n/p).")
+(defcustom treemacs-be-evil nil
+  "When t use evil keys for navigation (j/k instead of n/p)."
+  :type 'boolean
+  :group 'treemacs-configuration)
 
-(defvar treemacs-git-integration nil
-  "When t use different faces for files' different git states.")
+(defcustom treemacs-git-integration nil
+  "When t use different faces for files' different git states."
+  :type 'boolean
+  :group 'treemacs-configuration)
 
-(defvar treemacs-dotfiles-regex (rx bol "." (1+ any))
-  "Files matching this regular expression count as dotfiles.")
+(defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
+  "Files matching this regular expression count as dotfiles."
+  :type 'regexp
+  :group 'treemacs-configuration)
 
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
