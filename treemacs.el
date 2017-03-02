@@ -468,7 +468,8 @@ Use `next-window' if WINDOW is nil."
   (treemacs--setup-icon treemacs-icon-pdf     "pdf.png"      "pdf")
   (treemacs--setup-icon treemacs-icon-cpp     "cpp.png"      "cpp" "hpp")
   (treemacs--setup-icon treemacs-icon-haskell "haskell.png"  "hs")
-  (treemacs--setup-icon treemacs-icon-image   "image.png"    "jpg" "bmp" "svg" "png"))
+  (treemacs--setup-icon treemacs-icon-image   "image.png"    "jpg" "bmp" "svg" "png")
+  (treemacs--setup-icon treemacs-icon-emacs   "emacs.png"    "el" "elc" "org"))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Git integrtion ;;
