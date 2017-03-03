@@ -204,27 +204,18 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (treemacs-mode)
   (treemacs--build-tree root))
 
-(defun treemacs--build-tree (root &optional open-dirs)
-  "Build the file tree starting at the given ROOT.
-If a list of OPEN-DIRS is provided they will be toggled open after the tree is constructed."
+(defun treemacs--build-tree (root)
+  "Build the file tree starting at the given ROOT. "
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
    (treemacs--create-branch root 0)
    (goto-char 0)
    (forward-line 1)
-   (treemacs-goto-column-1)
-   (when open-dirs (treemacs--reopen-dirs open-dirs))))
+   (treemacs-goto-column-1)))
 
 (defun treemacs--delete-all ()
   "Delete all content of the buffer."
-  (when (treemacs--current-root-btn)
-    (let* ((root      (treemacs--current-root-btn))
-           (open-dirs (treemacs--collect-open-dirs root))
-           (abs-path  (button-get root 'abs-path)))
-      (treemacs--clear-from-cache abs-path)
-      (when open-dirs
-        (treemacs--add-to-cache abs-path open-dirs))))
   (delete-region (point-min) (point-max)))
 
 (defun treemacs--insert-header (root)
@@ -305,24 +296,19 @@ to be created is nested below another and not directly at the top level."
     ('dir-closed (treemacs--open-node btn))
     ('dir-open   (treemacs--close-node btn))))
 
-(defun treemacs--open-node (btn &optional no-reopen)
+(defun treemacs--open-node (btn &optional no-add)
   "Open the node given by BTN.
 Do not reopen its previously open children when NO-REOPEN is given."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (message "Directory is not readable.")
     (treemacs--with-writable-buffer
-     (button-put btn 'state 'dir-open)
-     (beginning-of-line)
-     (treemacs--node-symbol-switch treemacs-icon-open)
-     (treemacs--create-branch
-      (button-get btn 'abs-path)
-      (1+ (button-get btn 'depth))
-      btn)
-     (unless no-reopen
-       (let ((dirs-to-open (-> (button-get btn 'abs-path)
-                               (assoc treemacs--open-dirs-cache)
-                               (cdr))))
-         (when dirs-to-open (treemacs--reopen-dirs dirs-to-open)))))))
+     (let ((abs-path (button-get btn 'abs-path)))
+       (button-put btn 'state 'dir-open)
+       (beginning-of-line)
+       (treemacs--node-symbol-switch treemacs-icon-open)
+       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) btn)
+       (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
+       (treemacs--reopen-at btn)))))
 
 (defsubst treemacs--next-node (node)
   "Return NODE's lower same-indentation neighbour or nil if there is none."
@@ -333,23 +319,19 @@ Do not reopen its previously open children when NO-REOPEN is given."
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
-  (let* ((abs-path  (button-get btn 'abs-path))
-         (open-dirs (treemacs--collect-open-dirs btn)))
-    (treemacs--with-writable-buffer
-     (treemacs--node-symbol-switch treemacs-icon-closed)
-     (forward-button 1)
-     (beginning-of-line)
-     (let* ((pos-start (point))
-            (next-node (treemacs--next-node btn))
-            (pos-end   (if next-node
-                           (-> next-node (button-start) (previous-button) (button-end) (1+))
-                         (point-max))))
-       (treemacs--clear-from-cache abs-path)
-       (when open-dirs
-         (treemacs--add-to-cache abs-path open-dirs))
-       (button-put btn 'state 'dir-closed)
-       (delete-region pos-start pos-end)
-       (delete-trailing-whitespace)))))
+  (treemacs--with-writable-buffer
+   (treemacs--node-symbol-switch treemacs-icon-closed)
+   (treemacs--clear-from-cache (button-get btn 'abs-path))
+   (forward-button 1)
+   (beginning-of-line)
+   (let* ((pos-start (point))
+          (next-node (treemacs--next-node btn))
+          (pos-end   (if next-node
+                         (-> next-node (button-start) (previous-button) (button-end) (1+))
+                       (point-max))))
+     (button-put btn 'state 'dir-closed)
+     (delete-region pos-start pos-end)
+     (delete-trailing-whitespace))))
 
 (defun treemacs--open-file (&optional window split-func)
   "Visit file of the current node.  Split WINDOW using SPLIT-FUNC.
@@ -382,51 +364,56 @@ Use `next-window' if WINDOW is nil."
 ;; Restoration of opened dirs ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun treemacs--collect-open-dirs (root)
-  "Collect list of absolute paths of all opened nodes below ROOT."
-  (save-excursion
-    (goto-char (button-start root))
-    (let ((root-depth (or (button-get root 'depth) -1))
-          (res '())
-          (btn (next-button (point))))
-      (while (and btn (< root-depth (button-get btn 'depth)))
-        (when (eq 'dir-open (button-get btn 'state))
-          (add-to-list 'res (button-get btn 'abs-path) t))
-        (setq btn (next-button (button-end btn))))
-      res)))
+(defsubst treemacs--maybe-filter-dotfiles (dirs)
+  (unless treemacs-show-hidden-files
+    (cl-dolist (dir dirs)
+      (when (s-matches? treemacs-dotfiles-regex (f-filename dir))
+        (setq dirs (--filter (not (or (s-equals? dir it) (s-starts-with? dir it))) dirs)))))
+  dirs)
 
-(defsubst treemacs--reopen (filename abs-path)
-  "Reopen the node identified by its FILENAME and ABS-PATH."
+(defun treemacs--reopen-at (btn)
+  "Reopen dirs below BTN."
+  (-some-> (button-get btn 'abs-path)
+           (assoc treemacs--open-dirs-cache)
+           (cdr)
+           (treemacs--maybe-filter-dotfiles)
+           (-each #'treemacs--reopen)))
+
+(defsubst treemacs--reopen (abs-path)
+  "Reopen the node identified by its ABS-PATH."
   (treemacs--without-messages
    (goto-char (point-min))
-   (while (not (s-equals? abs-path (button-get (next-button (point) t) 'abs-path)))
-     (search-forward filename nil 'a)
-     (beginning-of-line))
-   (beginning-of-line)
-   (treemacs--open-node (next-button (point) t) t)))
+   (let ((keep-looking t)
+         (filename (f-filename abs-path)))
+     (while (and keep-looking
+                 (search-forward filename nil t))
+       (beginning-of-line)
+       (let ((btn (next-button (point) t)))
+         (if (s-equals? abs-path (button-get btn 'abs-path))
+           (progn (setq keep-looking nil)
+                  (treemacs--open-node btn t))
+           (beginning-of-line 2)))))))
 
-(defun treemacs--reopen-dirs (open-dirs)
-  "Toggle open every node whose full path is in OPEN-DIRS."
-  (save-excursion
-    (goto-char 0)
-    (unless treemacs-show-hidden-files
-      ;; sort out all the dotfiles that could be opened AND all
-      ;; the files who have a dotfile as a parent
-      (cl-dolist (dir open-dirs)
-        (when (s-matches? treemacs-dotfiles-regex (f-filename dir))
-          (setq open-dirs
-                (--filter (not (or (s-equals? dir it) (s-starts-with? dir it))) open-dirs)))))
-    (cl-dolist (dir open-dirs)
-      (treemacs--reopen (f-filename dir) dir))))
+(defsubst treemacs--clear-from-cache (path &optional purge)
+  "Remove PATH from the open dirs cache.
+Also remove any dirs below if PURGE is given."
+  (let* ((parent (treemacs--parent path))
+         (cache  (assoc parent treemacs--open-dirs-cache))
+         (values (cdr cache)))
+    (if (= 1 (seq-length values))
+        (setq treemacs--open-dirs-cache (delete cache treemacs--open-dirs-cache))
+      (setcdr cache (delete path values)))
+    (when purge
+      (-if-let (children (-flatten (--map (cdr (assoc it treemacs--open-dirs-cache)) values)))
+          (progn
+            (--each children (treemacs--clear-from-cache it t)))))))
 
-(defsubst treemacs--clear-from-cache (path)
-  "Remove from the cache of opened nodes all entries of PATH."
-  (setq treemacs--open-dirs-cache (str-assq-delete-all path treemacs--open-dirs-cache)))
-
-(defsubst treemacs--add-to-cache (path open-dirs)
-  "Add to cache PATH's OPEN-DIRS."
-  (treemacs--clear-from-cache path)
-  (add-to-list 'treemacs--open-dirs-cache `(,path . ,open-dirs)))
+(defsubst treemacs--add-to-cache (parent opened-child)
+  "Add to PARENT's open dirs cache an entry for OPENED-CHILD."
+  (let ((cache (assoc parent treemacs--open-dirs-cache)))
+    (if cache
+        (push opened-child (cdr cache))
+      (add-to-list 'treemacs--open-dirs-cache `(,parent ,opened-child)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Buffer selection ;;
@@ -754,11 +741,9 @@ nothing. If a prefix argument ARG is given select the project from among
   (let* ((line      (line-number-at-pos))
          (win-start (window-start))
          (root      (treemacs--current-root))
-         (root-btn  (treemacs--current-root-btn))
-         (open-dirs (treemacs--collect-open-dirs root-btn)))
-    (--each (cdr (assoc root treemacs--open-dirs-cache))
-      (add-to-list 'open-dirs it t))
-    (treemacs--build-tree root open-dirs)
+         (root-btn  (treemacs--current-root-btn)))
+    (treemacs--build-tree root)
+    (treemacs--reopen-at root-btn)
     (set-window-start (get-buffer-window) win-start)
     ;; not pretty, but there can still be some off by one jitter when
     ;; using forwald-line
@@ -775,10 +760,9 @@ nothing. If a prefix argument ARG is given select the project from among
   (let* ((point     (point))
          (btn       (next-button point))
          (state     (button-get btn 'state))
-         (new-root  (button-get btn 'abs-path))
-         (open-dirs (treemacs--collect-open-dirs btn)))
+         (new-root  (button-get btn 'abs-path)))
     (if (not (eq 'file state))
-        (treemacs--build-tree new-root open-dirs)
+        (treemacs--build-tree new-root)
       (goto-char point))))
 
 ;;;###autoload
@@ -864,10 +848,10 @@ Do nothing for directories."
              ((f-directory? path)
               (when (y-or-n-p (format "Recursively delete %s ? " file-name))
                 (f-delete path t)
-                (treemacs--clear-from-cache path)
-                t)))
-          (progn (treemacs--without-messages (treemacs-refresh))
-                 (goto-char pos)))))
+                (treemacs--clear-from-cache path t)
+                t))))
+        (progn (treemacs--without-messages (treemacs-refresh))
+               (goto-char pos))))
   (treemacs-goto-column-1))
 
 ;;;###autoload
