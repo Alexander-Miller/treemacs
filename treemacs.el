@@ -654,11 +654,10 @@ If no treemacs buffer exists call `treemacs-init.'"
 If the current buffer's default-directory is nil, use $HOME as fallback.
 If a prefix argument ARG is given manually select the root directory."
   (interactive "P")
-  (let ((current-file (buffer-file-name (current-buffer))))
-    (treemacs--init (cond
-                     (arg (read-directory-name "Treemacs root: "))
-                     (default-directory default-directory)
-                     (t (getenv "HOME"))))))
+  (treemacs--init (cond
+                   (arg (read-directory-name "Treemacs root: "))
+                   (default-directory default-directory)
+                   (t (getenv "HOME")))))
 
 ;;;###autoload
 (defun treemacs-projectile-init (&optional arg)
