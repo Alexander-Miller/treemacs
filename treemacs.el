@@ -224,7 +224,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (insert-button (format treemacs-header-format (f-filename root))
                  'face 'treemacs-header-face
                  'abs-path root
-                 'acion #'ignore))
+                 'action #'ignore))
 
 (defsubst treemacs--set-neighbours (buttons)
   "Set next- and previous-node properties for each button in BUTTONS."
@@ -455,6 +455,7 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-pdf     "pdf.png"      "pdf")
   (treemacs--setup-icon treemacs-icon-cpp     "cpp.png"      "cpp" "hpp")
   (treemacs--setup-icon treemacs-icon-haskell "haskell.png"  "hs")
+  (treemacs--setup-icon treemacs-icon-python  "python.png"   "py" "pyc")
   (treemacs--setup-icon treemacs-icon-image   "image.png"    "jpg" "bmp" "svg" "png")
   (treemacs--setup-icon treemacs-icon-emacs   "emacs.png"    "el" "elc" "org"))
 
