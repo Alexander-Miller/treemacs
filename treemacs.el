@@ -647,7 +647,8 @@ If a prefix argument ARG is given manually select the root directory."
                    (default-directory
                      ;; default direcoty (usually) ends with a slash, while the dir names
                      ;; given by f.el do not
-                     (if (s-ends-with? "/" default-directory)
+                     (if (and (s-ends-with? "/" default-directory)
+                              (> (length default-directory) 1))
                          (substring default-directory 0 -1)
                        default-directory))
                    (t (getenv "HOME")))))
