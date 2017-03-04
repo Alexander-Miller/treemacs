@@ -447,17 +447,18 @@ Also remove any dirs below if PURGE is given."
 
   (setq treemacs-icons-hash (make-hash-table :test #'equal))
 
-  (treemacs--setup-icon treemacs-icon-closed  "dir_closed.png")
-  (treemacs--setup-icon treemacs-icon-open    "dir_open.png")
-  (treemacs--setup-icon treemacs-icon-text    "txt.png")
+  (treemacs--setup-icon treemacs-icon-closed   "dir_closed.png")
+  (treemacs--setup-icon treemacs-icon-open     "dir_open.png")
+  (treemacs--setup-icon treemacs-icon-text     "txt.png")
 
-  (treemacs--setup-icon treemacs-icon-shell   "shell.png"    "sh" "zsh" "fish")
-  (treemacs--setup-icon treemacs-icon-pdf     "pdf.png"      "pdf")
-  (treemacs--setup-icon treemacs-icon-cpp     "cpp.png"      "cpp" "hpp")
-  (treemacs--setup-icon treemacs-icon-haskell "haskell.png"  "hs")
-  (treemacs--setup-icon treemacs-icon-python  "python.png"   "py" "pyc")
-  (treemacs--setup-icon treemacs-icon-image   "image.png"    "jpg" "bmp" "svg" "png")
-  (treemacs--setup-icon treemacs-icon-emacs   "emacs.png"    "el" "elc" "org"))
+  (treemacs--setup-icon treemacs-icon-shell    "shell.png"    "sh" "zsh" "fish")
+  (treemacs--setup-icon treemacs-icon-pdf      "pdf.png"      "pdf")
+  (treemacs--setup-icon treemacs-icon-cpp      "cpp.png"      "cpp" "hpp")
+  (treemacs--setup-icon treemacs-icon-haskell  "haskell.png"  "hs")
+  (treemacs--setup-icon treemacs-icon-python   "python.png"   "py" "pyc")
+  (treemacs--setup-icon treemacs-icon-markdown "markdown.png" "md")
+  (treemacs--setup-icon treemacs-icon-image    "image.png"    "jpg" "bmp" "svg" "png")
+  (treemacs--setup-icon treemacs-icon-emacs    "emacs.png"    "el" "elc" "org"))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Git integrtion ;;
@@ -578,8 +579,6 @@ Delete all elements whose car is ‘eq’ to KEY from ALIST."
 
   (defun treemacs--window-number-zero ()
     (when (string= (buffer-name) treemacs--buffer-name) 0))
-
-  (defvar window-numbering-assign-func)
 
   (setq window-numbering-assign-func
         (lambda () (treemacs--window-number-zero))))
