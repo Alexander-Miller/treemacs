@@ -251,7 +251,7 @@ the file is unchanged)."
     (insert prefix)
     (insert-image (if is-dir?
                       treemacs-icon-closed
-                    (gethash (file-name-extension path) treemacs-icons-hash treemacs-icon-text)))
+                    (gethash (-some-> path (file-name-extension) (downcase)) treemacs-icons-hash treemacs-icon-text)))
     (insert-text-button (concat " " (f-filename path))
                         'state     (if is-dir? 'dir-closed 'file)
                         'action    #'treemacs--push-button
