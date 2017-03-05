@@ -13,6 +13,7 @@ navigation as well as *basic* file management utilities. Specifically the single
  * Projectile integration - quickly open treemacs at any project's root directory.
  * Window numbering integration - Treemacs will always be assigned window number 0, never interfering with the numbering
    layout of your other windows.
+ * Git integration - treemacs will optionally use different faces for files in different git states.
  * Ease of use - you need to (optionally) decide whether to use emacs default or evil nagivation keys (see `treemacs-be-evil` below).
    Other than that treemacs uses a mnemonic keymap inspired by spacemacs.
 
@@ -45,10 +46,14 @@ Treemacs offers the following configuration variables:
 
  * `treemacs-header-format` (default value: "\*%s\*")
 
-    The format string which is used for the header line. Valid formats are all strings
-    accepted by the `format' function for a single formatting argument, which is the current root directory.
+   The format string which is used for the header line. Valid formats are all strings
+   accepted by the `format' function for a single formatting argument, which is the current root directory.
 
-In addition treemacs defines the following faces:
+ * `treemacs-git-integration` (default value: nil)
+
+    When t use different faces for files' different git states.
+
+In addition treemacs defines the following base faces:
 
  * `treemacs-directory-face`
    Face used by treemacs for directories.
@@ -59,6 +64,7 @@ In addition treemacs defines the following faces:
  * `treemacs-header-face`
   Face used by treemacs for its header.
 
+as well as a number of `treemacs-git-*` faces to use for files' various git states.
 
 ## Keymap [WIP]
 
