@@ -855,6 +855,7 @@ Do nothing for directories."
                 (f-delete path t)
                 (treemacs--clear-from-cache path t)
                 t))))
+        (dired-clean-up-after-deletion path)
         (progn (treemacs--without-messages (treemacs-refresh))
                (goto-char pos))))
   (treemacs-goto-column-1))
