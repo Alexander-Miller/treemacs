@@ -69,6 +69,8 @@ as well as a number of `treemacs-git-*` faces to use for files' various git stat
 ## Keymap [WIP]
 
 Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
+`treemacs-refresh` may also be called from outside the treemacs window and might therefore need its own
+global binding.
 
 | Action                   | Description                                                                                                                                                                                      |
 |--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

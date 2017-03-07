@@ -170,7 +170,7 @@ argument, which is the current root directory."
   "Define a variable VAR with the value being the image created from FILE-NAME.
 Insert VAR into icon-cache for each of the given file EXTENSIONS."
   `(progn
-     (defvar ,var
+     (defconst ,var
        (create-image (f-join treemacs-dir "icons/" ,file-name)
                      'png nil :ascent 'center))
      (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
@@ -247,7 +247,7 @@ GIT-CONTROLLED? indicates wheter the files under parent are under git control.
 GIT-INFO is an alist mapping each file to its git state (no mapping meaning
 the file is unchanged)."
   (end-of-line)
-  (let* ((is-dir? (f-directory? path)))
+  (let ((is-dir? (f-directory? path)))
     (insert prefix)
     (insert-image (if is-dir?
                       treemacs-icon-closed
@@ -288,6 +288,10 @@ to be created is nested below another and not directly at the top level."
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Button interactions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defsubst treemacs--prop-at-point (prop)
+  "Grab property PROP of the button at point."
+  (button-get (next-button (point) t) prop))
 
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
@@ -382,17 +386,7 @@ Use `next-window' if WINDOW is nil."
 (defsubst treemacs--reopen (abs-path)
   "Reopen the node identified by its ABS-PATH."
   (treemacs--without-messages
-   (goto-char (point-min))
-   (let ((keep-looking t)
-         (filename (f-filename abs-path)))
-     (while (and keep-looking
-                 (search-forward filename nil t))
-       (beginning-of-line)
-       (let ((btn (next-button (point) t)))
-         (if (s-equals? abs-path (button-get btn 'abs-path))
-           (progn (setq keep-looking nil)
-                  (treemacs--open-node btn t))
-           (beginning-of-line 2)))))))
+   (treemacs--open-node (treemacs--goto-button-at abs-path) t)))
 
 (defsubst treemacs--clear-from-cache (path &optional purge)
   "Remove PATH from the open dirs cache.
@@ -507,6 +501,25 @@ Also remove any dirs below if PURGE is given."
 ;; Misc. utils ;;
 ;;;;;;;;;;;;;;;;;
 
+(defun treemacs--goto-button-at (abs-path)
+  "Move point to button identified by ABS-PATH.
+Also return that button."
+  (goto-char (point-min))
+  (let ((keep-looking t)
+        (filename (f-filename abs-path))
+        (ret))
+    (while (and keep-looking
+                (search-forward filename nil t))
+      (message "Look for %s a %s" filename abs-path)
+      (beginning-of-line)
+      (let ((btn (next-button (point) t)))
+        (if (s-equals? abs-path (button-get btn 'abs-path))
+            (progn (treemacs-goto-column-1)
+                   (setq keep-looking nil
+                         ret btn))
+          (beginning-of-line 2))))
+    ret))
+
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."
   (let ((w (max width window-min-width)))
@@ -526,16 +539,18 @@ Also remove any dirs below if PURGE is given."
   (not (s-matches? treemacs-dotfiles-regex (f-filename file-name))))
 
 (defun treemacs--current-root ()
-  "Return the current root directory."
-  (save-excursion
-    (goto-char (point-min))
-    (-> (treemacs--current-root-btn)
-        (button-get 'abs-path))))
+  "Return the current root directory.
+
+If both the root button and the root dir are needed it's more efficient to get
+the root button and then grab its 'abs-path property."
+  (-> (treemacs--current-root-btn)
+      (button-get 'abs-path)))
 
 (defun treemacs--current-root-btn ()
   "Return the current root button."
-  (goto-char (point-min))
-  (next-button (point) t))
+  (save-excursion
+    (goto-char (point-min))
+    (next-button (point) t)))
 
 (defun treemacs--setup-buffer ()
   "Setup a buffer for treemacs in the right position and size."
@@ -742,19 +757,31 @@ nothing. If a prefix argument ARG is given select the project from among
 (defun treemacs-refresh ()
   "Refresh and rebuild treemacs buffer."
   (interactive)
-  (let* ((line      (line-number-at-pos))
-         (win-start (window-start))
-         (root      (treemacs--current-root))
-         (root-btn  (treemacs--current-root-btn)))
-    (treemacs--build-tree root)
-    (treemacs--reopen-at root-btn)
-    (set-window-start (get-buffer-window) win-start)
-    ;; not pretty, but there can still be some off by one jitter when
-    ;; using forwald-line
-    (treemacs--without-messages
-     (with-no-warnings (goto-line line)))
-    (treemacs-goto-column-1)
-    (message "Treemacs buffer refreshed.")))
+  (-if-let (treemacs-buffer (get-buffer treemacs--buffer-name))
+      (with-selected-window (get-buffer-window treemacs-buffer)
+        (let* ((curr-line (line-number-at-pos))
+               (curr-path (treemacs--prop-at-point 'abs-path))
+               (win-start (window-start (get-buffer-window)))
+               (root-btn  (treemacs--current-root-btn))
+               (root      (button-get root-btn 'abs-path)))
+          (treemacs--build-tree root)
+          (treemacs--reopen-at root-btn)
+          ;; move point to the same file it was with before the refresh if the file
+          ;; still exists and is visible, stay in the same line otherwise
+          (if (and (f-exists? curr-path)
+                   (or treemacs-show-hidden-files
+                       (not (s-matches? treemacs-dotfiles-regex (f-filename curr-path)))))
+              (treemacs--goto-button-at curr-path)
+            ;; not pretty, but there can still be some off by one jitter when
+            ;; using forwald-line
+            (treemacs--without-messages (with-no-warnings (goto-line curr-line))))
+          (treemacs-goto-column-1)
+          (set-window-start (get-buffer-window) win-start)
+          ;; needs to be turned on again when refresh is called from outside the
+          ;; treemacs window, otherwise it looks like the selection disappears
+          (hl-line-mode t)
+          (message "Treemacs buffer refreshed.")))
+    (message "Treemacs buffer does not exist.")))
 
 ;;;###autoload
 (defun treemacs-change-root ()
