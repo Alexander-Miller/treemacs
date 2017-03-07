@@ -400,9 +400,10 @@ Also remove any dirs below if PURGE is given."
   (let* ((parent (treemacs--parent path))
          (cache  (assoc parent treemacs--open-dirs-cache))
          (values (cdr cache)))
-    (if (= 1 (seq-length values))
-        (setq treemacs--open-dirs-cache (delete cache treemacs--open-dirs-cache))
-      (setcdr cache (delete path values)))
+    (when values
+      (if (= 1 (seq-length values))
+          (setq treemacs--open-dirs-cache (delete cache treemacs--open-dirs-cache))
+        (setcdr cache (delete path values))))
     (when purge
       (-if-let (children (-flatten (--map (cdr (assoc it treemacs--open-dirs-cache)) values)))
           (progn
@@ -854,6 +855,7 @@ Do nothing for directories."
                 (f-delete path t)
                 (treemacs--clear-from-cache path t)
                 t))))
+        (dired-clean-up-after-deletion path)
         (progn (treemacs--without-messages (treemacs-refresh))
                (goto-char pos))))
   (treemacs-goto-column-1))
