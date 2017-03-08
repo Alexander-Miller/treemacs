@@ -862,27 +862,24 @@ Do nothing for directories."
 
 ;;;###autoload
 (defun treemacs-delete ()
-  "Delete node at point. A delete action must always be confirmed. Directories are deleted recursively."
+  "Delete node at point.
+A delete action must always be confirmed. Directories are deleted recursively."
   (interactive)
   (beginning-of-line)
   (-if-let (btn (next-button (point)))
       (let* ((path      (button-get btn 'abs-path))
-             (file-name (f-filename path))
-             (neighbour (or (button-get btn 'next-node) (button-get btn 'prev-node)))
-             (pos       (if neighbour (button-start neighbour) (point))))
+             (file-name (f-filename path)))
         (when
             (cond
              ((f-file? path)
               (when (y-or-n-p (format "Delete %s ? " file-name))
-                (f-delete path)
-                t))
+                (f-delete path) t))
              ((f-directory? path)
               (when (y-or-n-p (format "Recursively delete %s ? " file-name))
                 (f-delete path t)
                 (treemacs--clear-from-cache path t)
-                t))))
-        (progn (treemacs--without-messages (treemacs-refresh))
-               (goto-char pos))))
+                t)))
+          (treemacs--without-messages (treemacs-refresh)))))
   (treemacs-goto-column-1))
 
 ;;;###autoload
