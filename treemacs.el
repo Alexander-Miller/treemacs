@@ -454,33 +454,32 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-image    "image.png"    "jpg" "bmp" "svg" "png")
   (treemacs--setup-icon treemacs-icon-emacs    "emacs.png"    "el" "elc" "org"))
 
-;;;;;;;;;;;;;;;;;;;;
-;; Git integrtion ;;
-;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;
+;; Git integration ;;
+;;;;;;;;;;;;;;;;;;;;;
 
 (defsubst treemacs--is-dir-git-controlled? (path)
   "Check whether PATH is under git control."
-  (let ((default-directory path))
-    (->> "git rev-parse"
-        (shell-command-to-string)
-        (s-starts-with? "fatal")
-        (not))))
+  (when (f-files path)
+    (let ((default-directory path))
+      (->> "git rev-parse"
+           (shell-command-to-string)
+           (s-starts-with? "fatal")
+           (not)))))
 
 (defsubst treemacs--parse-git-status (path)
-  "Use the git command line to parse the git states of the files under PATH."
+  "Use the git command line to parse the git states of the files under PATH.
+Only called when `treemacs--is-dir-git-controlled?' has returned t for PATH."
   (let* ((default-directory path)
          (git-output (shell-command-to-string  "git status --ignored --porcelain")))
     (if (s-blank? git-output) '()
-      (->> git-output
-           (s-trim-right)
-           (s-split "\n")
-           (--map (s-split-up-to " " (s-trim it) 1))
-           (--map `(,(->> (second it)
-                          (s-trim-left)
-                          (treemacs--unqote) ; file names with spaces are quoted
-                          (f-filename)
-                          (f-join path))
-                    . ,(first it)))))))
+      (let ((status
+             (->> (substring git-output 0 -1)
+                  (s-split "\n")
+                  (--map (s-split-up-to " " (s-trim it) 1)))))
+        (--each status
+          (setcdr it (->> (second it) (s-trim-left) (treemacs--unqote) (f-filename) (f-join path))))
+        status))))
 
 (defsubst treemacs--unqote (str)
   "Unquote STR if it is wrapped in quotes."
@@ -490,12 +489,14 @@ Also remove any dirs below if PURGE is given."
 
 (defsubst treemacs--git-face (path git-info)
   "Return the appropriate face for PATH given GIT-INFO."
-  (pcase (cdr (assoc path git-info))
-    ("M"  'treemacs-git-modified-face)
-    ("??" 'treemacs-git-untracked-face)
-    ("!!" 'treemacs-git-ignored-face)
-    ("A"  'treemacs-git-added-face)
-    (_    'treemacs-git-unmodified-face)))
+  ;; for the sake of simplicity we only look at the state in the working tree
+  ;; see OUTPUT section `git help status'
+  (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
+    ("M" 'treemacs-git-modified-face)
+    ("?" 'treemacs-git-untracked-face)
+    ("!" 'treemacs-git-ignored-face)
+    ("A" 'treemacs-git-added-face)
+    (_   'treemacs-git-unmodified-face)))
 
 ;;;;;;;;;;;;;;;;;
 ;; Misc. utils ;;
@@ -510,7 +511,6 @@ Also return that button."
         (ret))
     (while (and keep-looking
                 (search-forward filename nil t))
-      (message "Look for %s a %s" filename abs-path)
       (beginning-of-line)
       (let ((btn (next-button (point) t)))
         (if (s-equals? abs-path (button-get btn 'abs-path))
