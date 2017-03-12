@@ -205,7 +205,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (treemacs--build-tree root))
 
 (defun treemacs--build-tree (root)
-  "Build the file tree starting at the given ROOT. "
+  "Build the file tree starting at the given ROOT."
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
@@ -670,9 +670,9 @@ If a prefix argument ARG is given manually select the root directory."
 
 ;;;###autoload
 (defun treemacs-projectile-init (&optional arg)
-  "Open treemacs for the current projectile project. If not in a project do
-nothing. If a prefix argument ARG is given select the project from among
-`projectile-known-projects'."
+  "Open treemacs for the current projectile project.
+If not in a project do nothing. If a prefix argument ARG is given select
+the project from among `projectile-known-projects'."
   (interactive "P")
    (cond
     ((and arg projectile-known-projects)
@@ -798,33 +798,37 @@ nothing. If a prefix argument ARG is given select the project from among
 
 ;;;###autoload
 (defun treemacs-visit-file-vertical-split ()
-  "Open current file by vertically splitting `next-window'. Do nothing for directories."
+  "Open current file by vertically splitting `next-window'.
+Do nothing for directories."
   (interactive)
   (treemacs--open-file nil #'split-window-vertically))
 
 ;;;###autoload
 (defun treemacs-visit-file-horizontal-split ()
-  "Open current file by horizontally splitting `next-window'. Do nothing for directories."
+  "Open current file by horizontally splitting `next-window'.
+Do nothing for directories."
   (interactive)
   (treemacs--open-file nil #'split-window-horizontally))
 
 ;;;###autoload
 (defun treemacs-visit-file-no-split ()
-  "Open current file, performing no split and using `next-window' directly. Do nothing for directories."
+  "Open current file within `next-window'.
+Do nothing for directories."
   (interactive)
   (treemacs--open-file))
 
 ;;;###autoload
 (defun treemacs-visit-file-ace ()
-  "Open current file, using `ace-window' to decide which buffer to open the file in. Do nothing for directories."
+  "Open current file in window selected by `ace-window'.
+Do nothing for directories."
   (interactive)
   (treemacs--open-file
    (aw-select "Select buffer")))
 
 ;;;###autoload
 (defun treemacs-visit-file-ace-horizontal-split ()
-  "Open the current file by horizontally splitting a buffer selected by
-`ace-window'. Do nothing for directories."
+  "Open current file by horizontally splitting window selected by `ace-window'.
+Do nothing for directories."
   (interactive)
   (save-excursion
     (treemacs--open-file
@@ -832,7 +836,7 @@ nothing. If a prefix argument ARG is given select the project from among
 
 ;;;###autoload
 (defun treemacs-visit-file-ace-vertical-split ()
-  "Open current file by vertically splitting a buffer selected by `ace-window'.
+  "Open current file by vertically splitting window selected by `ace-window'.
 Do nothing for directories."
   (interactive)
   (save-excursion
@@ -841,7 +845,8 @@ Do nothing for directories."
 
 ;;;###autoload
 (defun treemacs-xdg-open ()
-  "Open current file, using the `xdg-open' shell command. Do nothing for directories."
+  "Open current file, using the `xdg-open' shell command.
+Do nothing for directories."
   (interactive)
   (save-excursion
     (beginning-of-line)
