@@ -368,22 +368,16 @@ Use `next-window' if WINDOW is nil."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defsubst treemacs--maybe-filter-dotfiles (dirs)
-  (unless treemacs-show-hidden-files
-    (cl-dolist (dir dirs)
-      (when (s-matches? treemacs-dotfiles-regex (f-filename dir))
-        (setq dirs (--filter (not (or (s-equals? dir it) (s-starts-with? dir it))) dirs)))))
-  dirs)
+  "Remove from DIRS directories that shouldn't be reopened.
+That is, directories (and their descendants) that are in the reopen cache, but
+are not being shown on account of `treemacs-show-hidden-files' being nil."
+  (if treemacs-show-hidden-files
+      dirs
+    (let ((root (treemacs--current-root)))
+      (--filter (not (--any (s-matches? treemacs-dotfiles-regex it)
+                            (f-split (substring it (length root)))))
+                dirs))))
 
-(defun treemacs--reopen-at (btn)
-  "Reopen dirs below BTN."
-  (-some-> (button-get btn 'abs-path)
-           (assoc treemacs--open-dirs-cache)
-           (cdr)
-           (treemacs--maybe-filter-dotfiles)
-           (-each #'treemacs--reopen)))
-
-(defsubst treemacs--reopen (abs-path)
-  "Reopen the node identified by its ABS-PATH."
 (defun treemacs--reopen-at (abs-path git-info)
   "Reopen dirs below ABS-PATH.
 Pass GIT-INFO along till it's needed."
