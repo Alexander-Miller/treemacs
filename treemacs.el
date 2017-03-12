@@ -35,6 +35,7 @@
 (require 'f)
 (require 'ido)
 (require 'ace-window)
+(require 'vc-hooks)
 
 ;;;;;;;;;;;;
 ;; Groups ;;
@@ -209,7 +210,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
-   (treemacs--create-branch root 0)
+   (treemacs--create-branch root 0 (treemacs--parse-git-status root))
    (goto-char 0)
    (forward-line 1)
    (treemacs-goto-column-1)))
@@ -235,15 +236,13 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
         (button-put b1 'next-node b2)
         (button-put b2 'prev-node b1)))))
 
-
-(defsubst treemacs--insert-node (path prefix depth parent &optional git-controlled? git-info)
+(defsubst treemacs--insert-node (path prefix depth parent &optional git-info)
  "Insert a single button node.
 PATH is the node's absolute path.
 PREFIX is an empty string used for indentation.
 DEPTH is the nesting depth, used for calculating the prefix length
 of all potential child branches.
 PARENT is the node the new node is nested under, if any.
-GIT-CONTROLLED? indicates wheter the files under parent are under git control.
 GIT-INFO is an alist mapping each file to its git state (no mapping meaning
 the file is unchanged)."
   (end-of-line)
@@ -259,31 +258,31 @@ the file is unchanged)."
                         'parent    parent
                         'depth     depth
                         'face      (if is-dir? 'treemacs-directory-face
-                                     (if (and treemacs-git-integration
-                                              git-controlled?)
+                                     (if treemacs-git-integration
                                          (treemacs--git-face path git-info)
                                        'treemacs-file-face)))))
 
-(defun treemacs--create-branch (root indent-depth &optional parent)
-  "Create a new filetree branch below ROOT path with the given INDENT-DEPTH.
-PARENT is same as ROOT, but only provided if the branch
-to be created is nested below another and not directly at the top level."
+(defun treemacs--create-branch (root indent-depth git-info &optional parent)
+  "Create a new treemacs branch under ROOT.
+The branch is indented at INDENT-DEPTH and uses GIT-INFO to decide on file
+nodes' faces. The nodes' parent property is set to PARENT."
   (save-excursion
     (let* ((prefix       (concat "\n" (s-repeat (* indent-depth treemacs-indentation) " ")))
            (entries      (treemacs--get-dir-content root))
            (directories  (first entries))
            (files        (second entries))
-           (is-git-dir?  (when treemacs-git-integration (treemacs--is-dir-git-controlled? root)))
-           (git-info     (when is-git-dir? (treemacs--parse-git-status root)))
-           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) directories))
-           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent is-git-dir? git-info) (button-at)) files))
+           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent git-info) (button-at)) directories))
+           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent git-info) (button-at)) files))
            (last-dir     (-some-> (last dir-buttons) (car)))
            (first-file   (first file-buttons)))
       (treemacs--set-neighbours dir-buttons)
       (treemacs--set-neighbours file-buttons)
       (when (and last-dir first-file)
         (button-put last-dir 'next-node first-file)
-        (button-put first-file 'prev-node last-dir)))))
+        (button-put first-file 'prev-node last-dir))
+      ;; reopen here only since create-branch is called both when opening a node and
+      ;; building the entire tree
+      (treemacs--reopen-at root git-info))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Button interactions ;;
@@ -300,9 +299,10 @@ to be created is nested below another and not directly at the top level."
     ('dir-closed (treemacs--open-node btn))
     ('dir-open   (treemacs--close-node btn))))
 
-(defun treemacs--open-node (btn &optional no-add)
+(defun treemacs--open-node (btn &optional git-info no-add)
   "Open the node given by BTN.
-Do not reopen its previously open children when NO-REOPEN is given."
+Pass on GIT-INFO to set faces when `treemacs-git-integration' is t.
+Do not reopen its previously open children when NO-ADD is given."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (message "Directory is not readable.")
     (treemacs--with-writable-buffer
@@ -310,9 +310,8 @@ Do not reopen its previously open children when NO-REOPEN is given."
        (button-put btn 'state 'dir-open)
        (beginning-of-line)
        (treemacs--node-symbol-switch treemacs-icon-open)
-       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) btn)
-       (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
-       (treemacs--reopen-at btn)))))
+       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (or git-info (treemacs--parse-git-status abs-path)) btn)
+       (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))))))
 
 (defsubst treemacs--next-node (node)
   "Return NODE's lower same-indentation neighbour or nil if there is none."
@@ -385,8 +384,21 @@ Use `next-window' if WINDOW is nil."
 
 (defsubst treemacs--reopen (abs-path)
   "Reopen the node identified by its ABS-PATH."
+(defun treemacs--reopen-at (abs-path git-info)
+  "Reopen dirs below ABS-PATH.
+Pass GIT-INFO along till it's needed."
+  (-some->
+   abs-path
+   (assoc treemacs--open-dirs-cache)
+   (cdr)
+   (treemacs--maybe-filter-dotfiles)
+   (--each (treemacs--reopen it git-info))))
+
+(defsubst treemacs--reopen (abs-path git-info)
+  "Reopen the node identified by its ABS-PATH.
+Pass GIT-INFO along till it's needed."
   (treemacs--without-messages
-   (treemacs--open-node (treemacs--goto-button-at abs-path) t)))
+   (treemacs--open-node (treemacs--goto-button-at abs-path) git-info t)))
 
 (defsubst treemacs--clear-from-cache (path &optional purge)
   "Remove PATH from the open dirs cache.
@@ -460,32 +472,38 @@ Also remove any dirs below if PURGE is given."
 
 (defsubst treemacs--is-dir-git-controlled? (path)
   "Check whether PATH is under git control."
-  (when (f-files path)
-    (let ((default-directory path))
-      (->> "git rev-parse"
-           (shell-command-to-string)
-           (s-starts-with? "fatal")
-           (not)))))
-
-(defsubst treemacs--parse-git-status (path)
-  "Use the git command line to parse the git states of the files under PATH.
-Only called when `treemacs--is-dir-git-controlled?' has returned t for PATH."
-  (let* ((default-directory path)
-         (git-output (shell-command-to-string  "git status --ignored --porcelain")))
-    (if (s-blank? git-output) '()
-      (let ((status
-             (->> (substring git-output 0 -1)
-                  (s-split "\n")
-                  (--map (s-split-up-to " " (s-trim it) 1)))))
-        (--each status
-          (setcdr it (->> (second it) (s-trim-left) (treemacs--unqote) (f-filename) (f-join path))))
-        status))))
+  (let ((default-directory path))
+    (->> "git rev-parse"
+         (shell-command-to-string)
+         (s-starts-with? "fatal")
+         (not))))
 
 (defsubst treemacs--unqote (str)
   "Unquote STR if it is wrapped in quotes."
   (if (s-starts-with? "\"" str)
       (replace-regexp-in-string "\"" "" str)
     str))
+
+(defsubst treemacs--parse-git-status (path)
+  "Use the git command line to parse the git states of the files at PATH.
+Parsing only takes place if
+1) `treemacs-git-integrtion' is t.
+2) PATH is under git control."
+  (when (and treemacs-git-integration
+             (treemacs--is-dir-git-controlled? path))
+    (let* ((default-directory path)
+           (git-output (shell-command-to-string  "git status --ignored --porcelain"))
+           ;; need the actual git root since git status outputs paths relative to it
+           ;; and the output must be valid also for files in dirs being reopened
+           (git-root (vc-call-backend 'Git 'root default-directory)))
+      (if (s-blank? git-output) '()
+        (let ((status
+               (->> (substring git-output 0 -1)
+                    (s-split "\n")
+                    (--map (s-split-up-to " " (s-trim it) 1)))))
+          (--each status
+            (setcdr it (->> (second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
+          status)))))
 
 (defsubst treemacs--git-face (path git-info)
   "Return the appropriate face for PATH given GIT-INFO."
@@ -654,7 +672,7 @@ If no treemacs buffer exists call `treemacs-init.'"
 ;;;###autoload
 (defun treemacs-init (&optional arg)
   "Open treemacs with current buffer's directory as root.
-If the current buffer's default-directory is nil, use $HOME as fallback.
+If the current buffer's `default-directory' is nil, use $HOME as fallback.
 If a prefix argument ARG is given manually select the root directory."
   (interactive "P")
   (treemacs--init (cond
@@ -765,7 +783,6 @@ the project from among `projectile-known-projects'."
                (root-btn  (treemacs--current-root-btn))
                (root      (button-get root-btn 'abs-path)))
           (treemacs--build-tree root)
-          (treemacs--reopen-at root-btn)
           ;; move point to the same file it was with before the refresh if the file
           ;; still exists and is visible, stay in the same line otherwise
           (if (and (f-exists? curr-path)
