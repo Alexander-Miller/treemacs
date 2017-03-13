@@ -203,6 +203,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
       (switch-to-buffer (get-buffer-create treemacs--buffer-name))
       (bury-buffer treemacs--buffer-name)))
   (treemacs-mode)
+  (setq treemacs--open-dirs-cache '())
   ;; f-long to expand ~ and remove final slash
   ;; needed for root dirs given by projectile
   (treemacs--build-tree (f-long root)))
