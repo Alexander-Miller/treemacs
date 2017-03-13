@@ -203,7 +203,9 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
       (switch-to-buffer (get-buffer-create treemacs--buffer-name))
       (bury-buffer treemacs--buffer-name)))
   (treemacs-mode)
-  (treemacs--build-tree root))
+  ;; f-long to expand ~ and remove final slash
+  ;; needed for root dirs given by projectile
+  (treemacs--build-tree (f-long root)))
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
@@ -671,13 +673,7 @@ If a prefix argument ARG is given manually select the root directory."
   (interactive "P")
   (treemacs--init (cond
                    (arg (read-directory-name "Treemacs root: "))
-                   (default-directory
-                     ;; default direcoty (usually) ends with a slash, while the dir names
-                     ;; given by f.el do not
-                     (if (and (s-ends-with? "/" default-directory)
-                              (> (length default-directory) 1))
-                         (substring default-directory 0 -1)
-                       default-directory))
+                   (default-directory default-directory)
                    (t (getenv "HOME")))))
 
 ;;;###autoload
