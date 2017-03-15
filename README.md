@@ -29,6 +29,7 @@ navigation as well as *basic* file management utilities. Specifically the single
 Treemacs offers the following configuration variables:
 
  * `treemacs-be-evil` (default value: nil)
+
     If t when treemacs is loaded treemacs will define is own simple evil-state and use j/k for navigation
     instead of n/p.
 
@@ -56,12 +57,15 @@ Treemacs offers the following configuration variables:
 In addition treemacs defines the following base faces:
 
  * `treemacs-directory-face`
+
    Face used by treemacs for directories.
 
  * `treemacs-file-face`
+
   Face used by treemacs for files.
 
  * `treemacs-header-face`
+
   Face used by treemacs for its header.
 
 as well as a number of `treemacs-git-*` faces to use for files' various git states.
@@ -104,3 +108,16 @@ By default Treemacs's keymap looks as follows:
 | oah     | treemacs-visit-file-ace-horizontal-split | Open current file by horizontally splitting a buffer selected by `ace-window'. Do nothing for directories.                                              |
 | oav     | treemacs-visit-file-ace-vertical-split   | Open current file by vertically splitting a buffer selected by `ace-window'. Do nothing for directories.                                                |
 | ox      | treemacs-xdg-open                        | Open current file, using the `xdg-open' shell-command. Do nothing for directories.                                                                      |
+
+## Coming features & TODOs
+
+In no particular order:
+
+ * Allowing treemacs to 'follow' the current file
+ * More states for git integration
+ * Autorefresh on file system change (filewatch p1)
+ * Waiting to collect multiple file system events before refresh (filewatch p2)
+ * Localized refresh only in dir(s) that need it (filewatch p3)
+ * Customizing header with a user set function instead of just a format string
+ * More icons (suggestions welcome)
+ * text icon fallback when emacs is run in a terminal
