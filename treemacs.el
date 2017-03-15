@@ -408,9 +408,12 @@ Also remove any dirs below if PURGE is given."
           (setq treemacs--open-dirs-cache (delete cache treemacs--open-dirs-cache))
         (setcdr cache (delete path values))))
     (when purge
-      (-if-let (children (-flatten (--map (cdr (assoc it treemacs--open-dirs-cache)) values)))
-          (progn
-            (--each children (treemacs--clear-from-cache it t)))))))
+      ;; recursively grab all nodes open below PATH and remove them too
+      (-if-let (children
+                (->> values
+                     (--map (cdr (assoc it treemacs--open-dirs-cache)))
+                     (-flatten)))
+          (--each children (treemacs--clear-from-cache it t))))))
 
 (defsubst treemacs--add-to-cache (parent opened-child)
   "Add to PARENT's open dirs cache an entry for OPENED-CHILD."
