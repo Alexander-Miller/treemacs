@@ -91,6 +91,11 @@
       (treemacs--clear-from-cache "/home/A")
       (should (null treemacs--open-dirs-cache))))
 
+  (ert-deftest clear-from-dirs-cache//clear-item-not-in-the-cache ()
+    (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
+      (treemacs--clear-from-cache "/home/X")
+      (should (equal '(("/home/A" "/home/A/B")) treemacs--open-dirs-cache))))
+
   (ert-deftest clear-from-dirs-cache//clear-item-from-empty-cache-with-purge ()
     (let ((treemacs--open-dirs-cache nil))
       (treemacs--clear-from-cache "/home/A" t)
