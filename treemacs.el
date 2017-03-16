@@ -293,7 +293,9 @@ nodes' faces. The nodes' parent property is set to PARENT."
 
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point."
-  (button-get (next-button (point) t) prop))
+  (save-excursion
+    (beginning-of-line)
+    (button-get (next-button (point) t) prop)))
 
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
