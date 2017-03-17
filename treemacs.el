@@ -488,6 +488,7 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-haskell  "haskell.png"  "hs")
   (treemacs--setup-icon treemacs-icon-python   "python.png"   "py" "pyc")
   (treemacs--setup-icon treemacs-icon-markdown "markdown.png" "md")
+  (treemacs--setup-icon treemacs-icon-rust     "rust.png"     "rs" "toml")
   (treemacs--setup-icon treemacs-icon-image    "image.png"    "jpg" "bmp" "svg" "png")
   (treemacs--setup-icon treemacs-icon-emacs    "emacs.png"    "el" "elc" "org"))
 
