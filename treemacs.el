@@ -120,11 +120,18 @@
   :type 'boolean
   :group 'treemacs-configuration)
 
-(defcustom treemacs-header-format "*%s*"
-  "Format string which is used to format the header line.  Valid formats
-are all strings accepted by the `format' function for a single formatting
-argument, which is the current root directory."
-  :type 'string
+(defcustom treemacs-header-function 'treemacs--create-header
+  "The function which is used to create the header string for treemacs buffers.
+Treemacs offers two builtin header creators:
+1) `treemacs--create-header' (the default), which will simply output the current
+   treemacs root.
+2) `treemacs--create-header-projectile', which will first try to find the name of
+   the current projectile project and fall back on `treemacs--create-header' if
+   no project name is found.
+Other than these two functions this value may be made to use any custom function
+which takes as input a string (the absolute path of the current treemacs root)
+and outputs the string header to be inserted in the treemacs buffer."
+  :type 'function
   :group 'treemacs-configuration)
 
 (defcustom treemacs-icons-hash (make-hash-table :test 'equal)
@@ -222,10 +229,25 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   "Delete all content of the buffer."
   (delete-region (point-min) (point-max)))
 
+(defun treemacs--create-header (root)
+  "Use ROOT's directory name as treemacs' header."
+   (format "*%s*" (f-filename root)))
+
+(defun treemacs--create-header-projectile (root)
+  "Try to use the projectile project name for ROOT as treemacs' header.
+If not projectile name was found call `treemacs--create-header' for ROOT instead."
+  (-if-let (project-root (condition-case nil
+                             (projectile-project-root)
+                           (error nil)))
+      (format "*%s*"
+              (funcall projectile-project-name-function project-root))
+    (treemacs--create-header root)))
+
 (defun treemacs--insert-header (root)
   "Insert the header line for the given ROOT."
   (setq default-directory root)
-  (insert-button (format treemacs-header-format (f-filename root))
+  (insert-button (propertize (funcall treemacs-header-function root)
+                             'face 'treemacs-header-face)
                  'face 'treemacs-header-face
                  'abs-path root
                  'action #'ignore))

@@ -45,10 +45,19 @@ Treemacs offers the following configuration variables:
 
    Dotfiles will be shown if this is set to t and be hidden otherwise.
 
- * `treemacs-header-format` (default value: "\*%s\*")
+ * `treemacs-header-function` (default value: `treemacs--create-header`)
 
-   The format string which is used for the header line. Valid formats are all strings
-   accepted by the `format' function for a single formatting argument, which is the current root directory.
+   The function which is used to create the header string for treemacs buffers.
+   Treemacs offers two builtin header creators:
+
+   1. `treemacs--create-header`, which will simply output the current treemacs root.
+   2. `treemacs--create-header-projectile`, which will first try to find the name of
+      the current projectile project and fall back on `treemacs--create-header` if
+      no project name is found.
+
+   Other than these two functions this value may be made to use any custom function
+   which takes as input a string (the absolute path of the current treemacs root)
+   and outputs the string header to be inserted in the treemacs buffer.
 
  * `treemacs-git-integration` (default value: nil)
 
@@ -118,7 +127,6 @@ In no particular order:
  * Autorefresh on file system change (filewatch p1)
  * Waiting to collect multiple file system events before refresh (filewatch p2)
  * Localized refresh only in dir(s) that need it (filewatch p3)
- * Customizing header with a user set function instead of just a format string
  * More icons (suggestions welcome)
  * text icon fallback when emacs is run in a terminal
  * offer choice to render file system either flat or hierarchical (the latter being the current way)
