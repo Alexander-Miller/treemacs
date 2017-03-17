@@ -121,3 +121,4 @@ In no particular order:
  * Customizing header with a user set function instead of just a format string
  * More icons (suggestions welcome)
  * text icon fallback when emacs is run in a terminal
+ * offer choice to render file system either flat or hierarchical (the latter being the current way)
