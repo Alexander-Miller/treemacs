@@ -630,6 +630,40 @@ Delete all elements whose car is ‘eq’ to KEY from ALIST."
   (beginning-of-line)
   (forward-char))
 
+(defsubst treemacs--path-in-dir? (path dir)
+  "Is PATH in directory DIR?"
+  (s-starts-with? (concat dir "/") path))
+
+(defun treemacs--kill-buffers-after-deletion (path is-file)
+  "Clean up after a deleted file or directory.
+Just kill the buffer visiting PATH if IS-FILE. Otherwise, go
+through the buffer list and kill buffer if PATH is a prefix."
+
+  (if is-file
+      (let ((buf (get-file-buffer path)))
+        (and buf
+             (y-or-n-p (format "Kill buffer of %s, too? "
+                               (f-filename path)))
+             (kill-buffer buf)))
+
+    ;; Prompt for each buffer visiting a file in directory
+    (--each (buffer-list)
+      (and
+       (treemacs--path-in-dir? (buffer-file-name it) path)
+       (y-or-n-p (format "Kill buffer %s in %s, too? "
+                         (buffer-name it)
+                         (f-filename path)))
+       (kill-buffer it)))
+
+    ;; Kill all dired buffers in one step
+    (when-let (dired-buffers-for-path
+           (->> dired-buffers
+                (--filter (treemacs--path-in-dir? (car it) path))
+                (-map #'cdr)))
+      (and (y-or-n-p (format "Kill Dired buffers of %s, too? "
+                             (f-filename path)))
+       (-each dired-buffers-for-path #'kill-buffer)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Window Numbering Compatibility ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -915,11 +949,14 @@ A delete action must always be confirmed. Directories are deleted recursively."
             (cond
              ((f-file? path)
               (when (y-or-n-p (format "Delete %s ? " file-name))
-                (f-delete path) t))
+                (f-delete path)
+                (treemacs--kill-buffers-after-deletion path t)
+                t))
              ((f-directory? path)
               (when (y-or-n-p (format "Recursively delete %s ? " file-name))
                 (f-delete path t)
                 (treemacs--clear-from-cache path t)
+                (treemacs--kill-buffers-after-deletion path nil)
                 t)))
           (treemacs--without-messages (treemacs-refresh)))))
   (treemacs-goto-column-1))
