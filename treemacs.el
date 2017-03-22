@@ -192,10 +192,8 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
 (defmacro treemacs--without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
-  `(let ((inhibit inhibit-message))
-     (setq inhibit-message t)
-     ,@body
-     (setq inhibit-message inhibit)))
+  `(let ((inhibit-message))
+     ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Building and tearing down the file trees ;;
