@@ -40,6 +40,11 @@
   "Face used by treemacs for its header."
   :group 'treemacs-faces)
 
+(defface treemacs-term-node-face
+  '((t :inherit font-lock-string-face))
+  "Face used by treemacs in the terminal for directory nodes."
+  :group 'treemacs-faces)
+
 (defface treemacs-git-unmodified-face
   '((t :inherit treemacs-file-face))
   "Face used for unmodified files."

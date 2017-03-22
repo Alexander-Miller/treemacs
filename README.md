@@ -19,7 +19,7 @@ navigation as well as *basic* file management utilities. Specifically the single
 
 ## Installation
 
- Treemacs is still in testing and not yet available on MELPA, thus for now must be loaded manually.
+ Treemacs is not yet available on MELPA, so for now must be loaded manually.
 
  Set `treemacs-be-evil` to t before loading treemacs if you want evil-mode integration.
  Once this is done Treemacs is ready to be used by calling `treemacs-init`, `treemacs-toggle` or `treemacs-projectile-init`.
@@ -128,5 +128,4 @@ In no particular order:
  * Waiting to collect multiple file system events before refresh (filewatch p2)
  * Localized refresh only in dir(s) that need it (filewatch p3)
  * More icons (suggestions welcome)
- * text icon fallback when emacs is run in a terminal
  * offer choice to render file system either flat or hierarchical (the latter being the current way)

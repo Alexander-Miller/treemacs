@@ -53,6 +53,8 @@
                       default-directory))
   "The directory treemacs.el is stored in.")
 
+(defvar treemacs--insert-image #'treemacs--insert-image-png)
+
 ;;;;;;;;;;;;
 ;; Macros ;;
 ;;;;;;;;;;;;
@@ -98,6 +100,16 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
+  ;; terminal compatibility
+  (if (window-system)
+      (progn
+        (setf treemacs--insert-image #'treemacs--insert-image-png)
+        (setq treemacs-icon-closed treemacs-icon-closed-png
+              treemacs-icon-open   treemacs-icon-open-png))
+    (progn
+      (setf treemacs--insert-image #'treemacs--insert-image-text)
+      (setq treemacs-icon-closed treemacs-icon-closed-text
+            treemacs-icon-open   treemacs-icon-open-text)))
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
@@ -142,6 +154,15 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
         (button-put b1 'next-node b2)
         (button-put b2 'prev-node b1)))))
 
+(defun treemacs--insert-image-png (path is-dir?)
+  (insert-image
+   (if is-dir? treemacs-icon-closed
+     (gethash (-some-> path (file-name-extension) (downcase)) treemacs-icons-hash treemacs-icon-text)))
+  (insert " "))
+
+(defun treemacs--insert-image-text (_ is-dir?)
+  (when is-dir? (insert treemacs-icon-closed-text " ")))
+
 (defsubst treemacs--insert-node (path prefix depth parent &optional git-info)
  "Insert a single button node.
 PATH is the node's absolute path.
@@ -154,10 +175,8 @@ the file is unchanged)."
   (end-of-line)
   (let ((is-dir? (f-directory? path)))
     (insert prefix)
-    (insert-image (if is-dir?
-                      treemacs-icon-closed
-                    (gethash (-some-> path (file-name-extension) (downcase)) treemacs-icons-hash treemacs-icon-text)))
-    (insert-text-button (concat " " (f-filename path))
+    (funcall treemacs--insert-image path is-dir?)
+    (insert-text-button (f-filename path)
                         'state     (if is-dir? 'dir-closed 'file)
                         'action    #'treemacs--push-button
                         'abs-path  path
@@ -233,6 +252,7 @@ Do not reopen its previously open children when NO-ADD is given."
   (treemacs--with-writable-buffer
    (treemacs--node-symbol-switch treemacs-icon-closed)
    (treemacs--clear-from-cache (button-get btn 'abs-path))
+   (end-of-line)
    (forward-button 1)
    (beginning-of-line)
    (let* ((pos-start (point))
@@ -249,27 +269,29 @@ Do not reopen its previously open children when NO-ADD is given."
 Do nothing if current node is a directory.
 Do not split window if SPLIT-FUNC is nil.
 Use `next-window' if WINDOW is nil."
-  (save-excursion
-    (beginning-of-line)
-    (let* ((path     (button-get (next-button (point)) 'abs-path))
-           (is-file? (f-file? path)))
-      (when is-file?
-        (select-window (or window (next-window)))
-        (when split-func
-          (call-interactively split-func)
-          (call-interactively 'other-window))
-        (find-file path)))))
+  (let* ((path     (treemacs--prop-at-point 'abs-path))
+         (is-file? (f-file? path)))
+    (when is-file?
+      (select-window (or window (next-window)))
+      (when split-func
+        (call-interactively split-func)
+        (call-interactively 'other-window))
+      (find-file path))))
 
 (defun treemacs--node-symbol-switch (new-sym)
   "Replace icon in current line with NEW-SYM."
   (beginning-of-line)
-  (if (> (button-get (next-button (point)) 'depth) 0)
-      (progn
-        (skip-chars-forward "[[:space:]]")
-        (backward-char)
-        (delete-char -1))
-    (delete-char 1))
-  (insert-image new-sym))
+  (forward-char (* treemacs-indentation (treemacs--prop-at-point 'depth)))
+  (delete-char 1)
+  ;; (if (> (button-get (next-button (point)) 'depth) 0)
+  ;;     (progn
+  ;;       (skip-chars-forward "[[:space:]]")
+  ;;       (backward-char)
+  ;;       (delete-char -1))
+  ;;   (delete-char 1))
+  (if (window-system)
+      (insert-image new-sym)
+    (insert new-sym)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Restoration of opened dirs ;;
@@ -359,9 +381,9 @@ Also remove any dirs below if PURGE is given."
 
   (setq treemacs-icons-hash (make-hash-table :test #'equal))
 
-  (treemacs--setup-icon treemacs-icon-closed   "dir_closed.png")
-  (treemacs--setup-icon treemacs-icon-open     "dir_open.png")
-  (treemacs--setup-icon treemacs-icon-text     "txt.png")
+  (treemacs--setup-icon treemacs-icon-closed-png "dir_closed.png")
+  (treemacs--setup-icon treemacs-icon-open-png   "dir_open.png")
+  (treemacs--setup-icon treemacs-icon-text       "txt.png")
 
   (treemacs--setup-icon treemacs-icon-shell    "shell.png"    "sh" "zsh" "fish")
   (treemacs--setup-icon treemacs-icon-pdf      "pdf.png"      "pdf")
@@ -371,7 +393,12 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-markdown "markdown.png" "md")
   (treemacs--setup-icon treemacs-icon-rust     "rust.png"     "rs" "toml")
   (treemacs--setup-icon treemacs-icon-image    "image.png"    "jpg" "bmp" "svg" "png")
-  (treemacs--setup-icon treemacs-icon-emacs    "emacs.png"    "el" "elc" "org"))
+  (treemacs--setup-icon treemacs-icon-emacs    "emacs.png"    "el" "elc" "org")
+
+  (defvar treemacs-icon-closed-text (propertize "+" 'face 'treemacs-term-node-face))
+  (defvar treemacs-icon-open-text   (propertize "-" 'face 'treemacs-term-node-face))
+  (defvar treemacs-icon-closed treemacs-icon-closed-png)
+  (defvar treemacs-icon-open treemacs-icon-open-png))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Git integration ;;
