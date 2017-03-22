@@ -223,7 +223,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
    (treemacs--create-branch root 0 (treemacs--parse-git-status root))
    (goto-char 0)
    (forward-line 1)
-   (treemacs-goto-column-1)))
+   (treemacs--evade-image)))
 
 (defun treemacs--delete-all ()
   "Delete all content of the buffer."
@@ -558,7 +558,7 @@ Also return that button."
       (beginning-of-line)
       (let ((btn (next-button (point) t)))
         (if (s-equals? abs-path (button-get btn 'abs-path))
-            (progn (treemacs-goto-column-1)
+            (progn (treemacs--evade-image)
                    (setq keep-looking nil
                          ret btn))
           (beginning-of-line 2))))
@@ -625,10 +625,9 @@ Delete all elements whose car is ‘eq’ to KEY from ALIST."
       path
     (f-parent path)))
 
-(defun treemacs-goto-column-1 ()
-  "Move cursor to column #1 in current line."
-  (beginning-of-line)
-  (forward-char))
+(defalias 'treemacs--evade-image #'end-of-line
+  "The cursor blinks visibly when it is on top of an image. Always moving it to
+to end of the line prevents this from happening.")
 
 (defsubst treemacs--path-in-dir? (path dir)
   "Is PATH in directory DIR?"
@@ -758,14 +757,14 @@ the project from among `projectile-known-projects'."
   "Goto next line."
   (interactive)
   (forward-line 1)
-  (treemacs-goto-column-1))
+  (treemacs--evade-image))
 
 ;;;###autoload
 (defun treemacs-previous-line ()
   "Goto previous line."
   (interactive)
   (forward-line -1)
-  (treemacs-goto-column-1))
+  (treemacs--evade-image))
 
 ;;;###autoload
 (defun treemacs-push-button ()
@@ -775,7 +774,7 @@ the project from among `projectile-known-projects'."
     (beginning-of-line)
     (forward-button 1)
     (call-interactively #'push-button))
-  (treemacs-goto-column-1))
+  (treemacs--evade-image))
 
 ;;;###autoload
 (defun treemacs-uproot ()
@@ -791,7 +790,7 @@ the project from among `projectile-known-projects'."
                    (-some-> (next-button (point)) (button-get 'abs-path))))
         (forward-button 1))
       (forward-button 1)
-      (treemacs-goto-column-1))))
+      (treemacs--evade-image))))
 
 ;;;###autoload
 (defun treemacs-goto-parent-node ()
@@ -803,7 +802,7 @@ the project from among `projectile-known-projects'."
         (button-get 'parent)
         (button-start)
         (goto-char))
-       (treemacs-goto-column-1)))
+       (treemacs--evade-image)))
 
 ;;;###autoload
 (defun treemacs-next-neighbour ()
@@ -846,7 +845,7 @@ the project from among `projectile-known-projects'."
             ;; not pretty, but there can still be some off by one jitter when
             ;; using forwald-line
             (treemacs--without-messages (with-no-warnings (goto-line curr-line))))
-          (treemacs-goto-column-1)
+          (treemacs--evade-image)
           (set-window-start (get-buffer-window) win-start)
           ;; needs to be turned on again when refresh is called from outside the
           ;; treemacs window, otherwise it looks like the selection disappears
@@ -959,7 +958,7 @@ A delete action must always be confirmed. Directories are deleted recursively."
                 (treemacs--kill-buffers-after-deletion path nil)
                 t)))
           (treemacs--without-messages (treemacs-refresh)))))
-  (treemacs-goto-column-1))
+  (treemacs--evade-image))
 
 ;;;###autoload
 (defun treemacs-create-file (dir filename)
