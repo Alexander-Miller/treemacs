@@ -1,4 +1,4 @@
-(require 'treemacs)
+(require 'treemacs-impl)
 (require 'ert)
 (require 'el-mock)
 
