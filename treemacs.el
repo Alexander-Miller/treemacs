@@ -21,8 +21,9 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary: Autoloaded functions only. Everything else is extracted
-;;; into its own file to reduce clutter.
+;;; Commentary:
+;;; Autoloaded functions only. Everything else is extracted ;;; into its
+;;; own file to reduce clutter.
 
 ;;; Code:
 

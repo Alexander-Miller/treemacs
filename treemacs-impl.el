@@ -21,7 +21,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary: Implementation extracted into its own file to reduce clutter.
+;;; Commentary:
+;;; Implementation extracted into its own file to reduce clutter.
 
 ;;; Code:
 
@@ -155,12 +156,14 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
         (button-put b2 'prev-node b1)))))
 
 (defun treemacs--insert-image-png (path is-dir?)
+  "Insert the appropriate png image for PATH given IS-DIR?."
   (insert-image
    (if is-dir? treemacs-icon-closed
      (gethash (-some-> path (file-name-extension) (downcase)) treemacs-icons-hash treemacs-icon-text)))
   (insert " "))
 
 (defun treemacs--insert-image-text (_ is-dir?)
+  "Insert the appropriate text image a path given IS-DIR?."
   (when is-dir? (insert treemacs-icon-closed-text " ")))
 
 (defsubst treemacs--insert-node (path prefix depth parent &optional git-info)

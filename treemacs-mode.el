@@ -21,7 +21,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary: Mode definition extracted into its own file to reduce clutter.
+;;; Commentary:
+;;; Mode definition extracted into its own file to reduce clutter.
 
 ;;; Code:
 
