@@ -327,7 +327,7 @@ Pass GIT-INFO along till it's needed."
   (treemacs--without-messages
    (treemacs--open-node (treemacs--goto-button-at abs-path) git-info t)))
 
-(defsubst treemacs--clear-from-cache (path &optional purge)
+(defun treemacs--clear-from-cache (path &optional purge)
   "Remove PATH from the open dirs cache.
 Also remove any dirs below if PURGE is given."
   (let* ((parent (treemacs--parent path))
