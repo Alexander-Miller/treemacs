@@ -110,6 +110,8 @@ Use j & k for navigating the treemacs buffer."
   (electric-indent-local-mode -1)
   (hl-line-mode t)
 
+  (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
+
   (when (fboundp 'spaceline-compile)
     (spaceline-install "treemacs"
                        '(((workspace-number window-number)

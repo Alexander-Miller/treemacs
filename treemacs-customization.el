@@ -57,6 +57,12 @@
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-follow-after-init nil
+  "When t run `treemacs-follow' after calling `treemacs-init' or
+`treemacs-projectle-init' regardless of `treemacs-follow-mode' setting."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-header-function 'treemacs--create-header
   "The function which is used to create the header string for treemacs buffers.
 Treemacs offers two builtin header creators:

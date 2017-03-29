@@ -34,7 +34,6 @@
 (require 'dash)
 (require 's)
 (require 'f)
-(require 'ido)
 (require 'ace-window)
 (require 'vc-hooks)
 
@@ -55,6 +54,11 @@
   "The directory treemacs.el is stored in.")
 
 (defvar treemacs--insert-image #'treemacs--insert-image-png)
+
+(defvar treemacs--ready nil
+  "Signals to `treemacs-follow-mode' if a follow action may be run.
+Must be set to nil during `treemacs--init' when the treemacs buffer has not yet
+been populated with content.")
 
 ;;;;;;;;;;;;
 ;; Macros ;;
@@ -87,17 +91,22 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
 (defun treemacs--init (root)
   "Initialize and build treemacs buffer for ROOT."
-  (if (treemacs--is-visible?)
-      (treemacs--select-visible)
-    (progn
-      (treemacs--setup-buffer)
-      (switch-to-buffer (get-buffer-create treemacs--buffer-name))
-      (bury-buffer treemacs--buffer-name)))
-  (treemacs-mode)
-  (setq treemacs--open-dirs-cache '())
-  ;; f-long to expand ~ and remove final slash
-  ;; needed for root dirs given by projectile
-  (treemacs--build-tree (f-long root)))
+  (let ((origin-buffer (current-buffer)))
+    (treemacs--buffer-teardown)
+    (if (treemacs--is-visible?)
+        (treemacs--select-visible)
+      (progn
+        (treemacs--setup-buffer)
+        (switch-to-buffer (get-buffer-create treemacs--buffer-name))
+        (bury-buffer treemacs--buffer-name)))
+    (treemacs-mode)
+    ;; f-long to expand ~ and remove final slash
+    ;; needed for root dirs given by projectile
+    (treemacs--build-tree (f-long root))
+    (setq treemacs--ready t)
+    (when (or treemacs-follow-after-init treemacs-follow-mode)
+      (with-current-buffer origin-buffer
+        (treemacs-follow)))))
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
@@ -211,6 +220,11 @@ nodes' faces. The nodes' parent property is set to PARENT."
       ;; reopen here only since create-branch is called both when opening a node and
       ;; building the entire tree
       (treemacs--reopen-at root git-info))))
+
+(defun treemacs--buffer-teardown ()
+  "Cleanup to be run when the treemacs buffer gets killed."
+  (setq treemacs--open-dirs-cache nil
+        treemacs-ready nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Button interactions ;;
@@ -357,8 +371,9 @@ Also remove any dirs below if PURGE is given."
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (defsubst treemacs--is-visible? ()
-  "Inidicates whether the treemacs buffer is current visible."
-  (-contains? (ido-get-buffers-in-frames t) treemacs--buffer-name))
+  "Inidicates whether the treemacs buffer is currently visible.
+Will return the treemacs window if true."
+  (get-buffer-window treemacs--buffer-name))
 
 (defsubst treemacs--buffer-exists? ()
   "Indicates whether the treemacs buffer exists even if it is not visible."
@@ -457,10 +472,10 @@ Parsing only takes place if
 ;; Misc. utils ;;
 ;;;;;;;;;;;;;;;;;
 
-(defun treemacs--goto-button-at (abs-path)
-  "Move point to button identified by ABS-PATH.
+(defun treemacs--goto-button-at (abs-path &optional start)
+  "Move point to button identified by ABS-PATH, starting search at START.
 Also return that button."
-  (goto-char (point-min))
+  (goto-char (or start (point-min)))
   (let ((keep-looking t)
         (filename (f-filename abs-path))
         (ret))
@@ -540,7 +555,7 @@ Delete all elements whose car is ‘eq’ to KEY from ALIST."
   "The cursor blinks visibly when it is on top of an image. Always moving it to
 to end of the line prevents this from happening.")
 
-(defsubst treemacs--path-in-dir? (path dir)
+(defsubst treemacs--is-path-in-dir? (path dir)
   "Is PATH in directory DIR?"
   (s-starts-with? (concat dir "/") path))
 
@@ -559,7 +574,7 @@ through the buffer list and kill buffer if PATH is a prefix."
     ;; Prompt for each buffer visiting a file in directory
     (--each (buffer-list)
       (and
-       (treemacs--path-in-dir? (buffer-file-name it) path)
+       (treemacs--is-path-in-dir? (buffer-file-name it) path)
        (y-or-n-p (format "Kill buffer %s in %s, too? "
                          (buffer-name it)
                          (f-filename path)))
@@ -568,7 +583,7 @@ through the buffer list and kill buffer if PATH is a prefix."
     ;; Kill all dired buffers in one step
     (when-let (dired-buffers-for-path
            (->> dired-buffers
-                (--filter (treemacs--path-in-dir? (car it) path))
+                (--filter (treemacs--is-path-in-dir? (car it) path))
                 (-map #'cdr)))
       (and (y-or-n-p (format "Kill Dired buffers of %s, too? "
                              (f-filename path)))
