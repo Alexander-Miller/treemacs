@@ -175,6 +175,28 @@
       (treemacs--clear-from-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A2" "/home/A2/B1" "/home/A2/B2")))))))
 
+;; treemacs--is-path-in-dir?
+(progn
+  (ert-deftest path-in-dir//direct-parent ()
+    (let ((path "~/A/B/c")
+          (parent "~/A/B"))
+      (should (treemacs--is-path-in-dir? path parent))))
+
+  (ert-deftest path-in-dir//indirect-parent ()
+    (let ((path "~/A/B/C/D/e")
+          (parent "~/A"))
+      (should (treemacs--is-path-in-dir? path parent))))
+
+  (ert-deftest path-in-dir//not-a-parent ()
+    (let ((path "~/A/B/C/D/e")
+          (parent "~/B"))
+      (should-not (treemacs--is-path-in-dir? path parent))))
+
+  (ert-deftest path-in-dir//not-a-parent-with-simialr-prefix ()
+    (let ((path "~/A/prefix")
+          (parent "~/A/prefixp"))
+      (should-not (treemacs--is-path-in-dir? path parent)))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
