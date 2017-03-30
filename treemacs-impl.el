@@ -57,8 +57,9 @@
 
 (defvar treemacs--ready nil
   "Signals to `treemacs-follow-mode' if a follow action may be run.
-Must be set to nil during `treemacs--init' when the treemacs buffer has not yet
-been populated with content.")
+Must be set to nil when no follow actions should be triggered, e.g. when the
+treemacs buffer is being rebuilt or during treemacs' own window selection
+functions.")
 
 ;;;;;;;;;;;;
 ;; Macros ;;
@@ -224,7 +225,7 @@ nodes' faces. The nodes' parent property is set to PARENT."
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when the treemacs buffer gets killed."
   (setq treemacs--open-dirs-cache nil
-        treemacs-ready nil))
+        treemacs--ready nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Button interactions ;;

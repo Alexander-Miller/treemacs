@@ -195,29 +195,33 @@ the project from among `projectile-known-projects'."
   "Open current file by vertically splitting `next-window'.
 Do nothing for directories."
   (interactive)
-  (treemacs--open-file nil #'split-window-vertically))
+  (treemacs--without-following
+   (treemacs--open-file nil #'split-window-vertically)))
 
 ;;;###autoload
 (defun treemacs-visit-file-horizontal-split ()
   "Open current file by horizontally splitting `next-window'.
 Do nothing for directories."
   (interactive)
-  (treemacs--open-file nil #'split-window-horizontally))
+  (treemacs--without-following
+   (treemacs--open-file nil #'split-window-horizontally)))
 
 ;;;###autoload
 (defun treemacs-visit-file-no-split ()
   "Open current file within `next-window'.
 Do nothing for directories."
   (interactive)
-  (treemacs--open-file))
+  (treemacs--without-following
+   (treemacs--open-file)))
 
 ;;;###autoload
 (defun treemacs-visit-file-ace ()
   "Open current file in window selected by `ace-window'.
 Do nothing for directories."
   (interactive)
-  (treemacs--open-file
-   (aw-select "Select buffer")))
+  (treemacs--without-following
+   (treemacs--open-file
+    (aw-select "Select buffer"))))
 
 ;;;###autoload
 (defun treemacs-visit-file-ace-horizontal-split ()
@@ -225,8 +229,9 @@ Do nothing for directories."
 Do nothing for directories."
   (interactive)
   (save-excursion
-    (treemacs--open-file
-     (aw-select "Select buffer") #'split-window-horizontally)))
+    (treemacs--without-following
+     (treemacs--open-file
+      (aw-select "Select buffer") #'split-window-horizontally))))
 
 ;;;###autoload
 (defun treemacs-visit-file-ace-vertical-split ()
@@ -234,8 +239,9 @@ Do nothing for directories."
 Do nothing for directories."
   (interactive)
   (save-excursion
-    (treemacs--open-file
-     (aw-select "Select buffer") #'split-window-vertically)))
+    (treemacs--without-following
+     (treemacs--open-file
+      (aw-select "Select buffer") #'split-window-vertically))))
 
 ;;;###autoload
 (defun treemacs-xdg-open ()
@@ -333,32 +339,34 @@ If a prefix argument ARG is provided read a new value for
 if needed. Do nothing if current file does not exist in the file sysmte or is
 not below current treemacs root or if the treemacs buffer is not visible."
   (interactive)
-  (let* ((treemacs-window (treemacs--is-visible?))
-         (current-buffer  (current-buffer))
-         (current-file    (buffer-file-name current-buffer))
-         (current-window  (get-buffer-window current-buffer)))
-    (when (and treemacs--ready
-               current-file
-               treemacs-window
-               (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))
-               (f-exists? current-file))
-      (with-current-buffer (window-buffer treemacs-window)
-        (let* ((bound     (point-min))
-               (root      (treemacs--current-root))
-               (dir-parts (->> (length root) (substring current-file) (f-split) (cdr))))
-          (when (treemacs--is-path-in-dir? current-file root)
-            ;; hl-line *needs* to be toggled here otherwise it won't appear to
-            ;; move until the treemacs buffer is selected again and follow must
-            ;; work when called from outside the treemacs buffer with treemacs-follow-mode
-            (hl-line-mode -1)
-            (--each dir-parts
-              (setq root (f-join root it))
-              (let ((btn (treemacs--goto-button-at root bound)))
-                (when (eq 'dir-closed (button-get btn 'state))
-                  (treemacs--open-node btn)))
-              (setq bound (point)))
-            (hl-line-mode t)
-            (set-window-point treemacs-window (point))))))))
+  ;; Treemacs selecting files with `ace-window' results in a large amount of
+  ;; window selections, so we should be breaking out as soon as possbile
+  (when treemacs--ready
+    (let* ((treemacs-window (treemacs--is-visible?))
+           (current-buffer  (current-buffer))
+           (current-file    (buffer-file-name current-buffer))
+           (current-window  (get-buffer-window current-buffer)))
+      (when (and current-file
+                 treemacs-window
+                 (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))
+                 (f-exists? current-file))
+        (with-current-buffer (window-buffer treemacs-window)
+          (let* ((bound     (point-min))
+                 (root      (treemacs--current-root))
+                 (dir-parts (->> (length root) (substring current-file) (f-split) (cdr))))
+            (when (treemacs--is-path-in-dir? current-file root)
+              ;; hl-line *needs* to be toggled here otherwise it won't appear to
+              ;; move until the treemacs buffer is selected again and follow must
+              ;; work when called from outside the treemacs buffer with treemacs-follow-mode
+              (hl-line-mode -1)
+              (--each dir-parts
+                (setq root (f-join root it))
+                (let ((btn (treemacs--goto-button-at root bound)))
+                  (when (eq 'dir-closed (button-get btn 'state))
+                    (treemacs--open-node btn)))
+                (setq bound (point)))
+              (hl-line-mode t)
+              (set-window-point treemacs-window (point)))))))))
 
 (provide 'treemacs)
 

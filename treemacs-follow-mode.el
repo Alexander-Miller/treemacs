@@ -29,6 +29,11 @@
 
 (declare-function treemacs-follow "treemacs")
 
+(defmacro treemacs--without-following (&rest body)
+  "Execute BODY with `treemacs--ready' set to nil."
+  `(let ((treemacs--ready))
+    ,@body))
+
 (defun treemacs--follow-advice (&rest _)
   "Advice function for `treemacs-follow-mode'.
 Ignores the original arguments of `select-window' and directly calls
