@@ -34,7 +34,16 @@
   `(let ((treemacs--ready))
     ,@body))
 
-(defun treemacs--follow-advice (&rest _)
+(with-eval-after-load 'which-key
+
+  (defun treemacs--which-key-advice (original-func &rest args)
+    (treemacs--without-following
+     (apply original-func args)))
+
+  (advice-add #'which-key--show-popup :around #'treemacs--which-key-advice)
+  (advice-add #'which-key--hide-popup :around #'treemacs--which-key-advice))
+
+(defun treemacs--select-window-advice (&rest _)
   "Advice function for `treemacs-follow-mode'.
 Ignores the original arguments of `select-window' and directly calls
 `treemacs-follow'."
@@ -46,8 +55,8 @@ Ignores the original arguments of `select-window' and directly calls
   :global     t
   :lighter    nil
   (if treemacs-follow-mode
-      (advice-add 'select-window :after #'treemacs--follow-advice)
-    (advice-remove 'select-window 'treemacs--follow-advice)))
+      (advice-add 'select-window :after #'treemacs--select-window-advice)
+    (advice-remove 'select-window 'treemacs--select-window-advice)))
 
 (provide 'treemacs-follow-mode)
 
