@@ -14,6 +14,7 @@ navigation as well as *basic* file management utilities. Specifically the single
  * Window numbering integration - Treemacs will always be assigned window number 0, never interfering with the numbering
    layout of your other windows.
  * Git integration - treemacs will optionally use different faces for files in different git states.
+ * Ability to always follow along with the currently selected file with `treemacs-follow-mode`.
  * Ease of use - you need to (optionally) decide whether to use emacs default or evil nagivation keys (see `treemacs-be-evil` below).
    Other than that treemacs uses a mnemonic keymap inspired by spacemacs.
 
@@ -61,7 +62,12 @@ Treemacs offers the following configuration variables:
 
  * `treemacs-git-integration` (default value: nil)
 
-    When t use different faces for files' different git states.
+   When t use different faces for files' different git states.
+
+ * `treemacs-follow-after-init` (default value: nil)
+
+   When t run `treemacs-follow` after calling `treemacs-init` or
+   `treemacs-projectle-init` regardless of `treemacs-follow-mode` setting.
 
 In addition treemacs defines the following base faces:
 
@@ -71,25 +77,38 @@ In addition treemacs defines the following base faces:
 
  * `treemacs-file-face`
 
-  Face used by treemacs for files.
+   Face used by treemacs for files.
 
  * `treemacs-header-face`
 
-  Face used by treemacs for its header.
+   Face used by treemacs for its header.
 
 as well as a number of `treemacs-git-*` faces to use for files' various git states.
 
-## Keymap [WIP]
+
+### Treemacs-follow-mode
+
+`treemacs-follow-mode` is a minor mode which allows the treemacs view to always move its focus to the
+currently selected file by calling `treemacs-follow`. This is achieved by advising `select-window`, which
+is a ubiquitous function, often called multiple times in a row when emacs is working. This means two things:
+1) `treemacs-follow` tries to be very specific about when it is run at all. 2) There may be times when something
+slips through (`which-key` for exmaple would cause such a problem if treemacs wasn't made compatible with it by default).
+If you do see `treemacs-follow` behaving in a way it shouldn't open up an issue. The fix shouldn't be more than
+a single bit of advice away.
+
+
+## Keymap
 
 Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
-`treemacs-refresh` may also be called from outside the treemacs window and might therefore need its own
-global binding.
+Additionally `treemacs-refresh` and `treemacs-follow` may also be called from outside the treemacs window and
+might therefore need their own global binding.
 
-| Action                   | Description                                                                                                                                                                                      |
-|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| treemacs-init            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.  |
-| treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among `projectile-known-projects'.                       |
-| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call `treemacs-init.' |
+| Action                   | Description                                                                                                                                                                                                                          |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs-init            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                      |
+| treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among `projectile-known-projects'.                                                           |
+| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call `treemacs-init.'                                     |
+| treemacs-follow          | Move point to the current file in the treemacs buffer, expanding directories if needed. Do nothing if current file does not exist in the file sysmte or is not below current treemacs root or if the treemacs buffer is not visible. |
 
 By default Treemacs's keymap looks as follows:
 
@@ -122,7 +141,6 @@ By default Treemacs's keymap looks as follows:
 
 In no particular order:
 
- * Allowing treemacs to 'follow' the current file
  * More states for git integration
  * Autorefresh on file system change (filewatch p1)
  * Waiting to collect multiple file system events before refresh (filewatch p2)
