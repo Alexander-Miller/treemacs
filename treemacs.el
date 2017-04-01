@@ -69,12 +69,12 @@ If a prefix argument ARG is given manually select the root directory."
 If not in a project do nothing. If a prefix argument ARG is given select
 the project from among `projectile-known-projects'."
   (interactive "P")
-   (cond
-    ((and arg projectile-known-projects)
-     (treemacs--init (completing-read "Project: " projectile-known-projects)))
-    ((projectile-project-p)
-     (treemacs--init (projectile-project-root)))
-    (t (message "You're not in a project."))))
+  (cond
+   ((and arg projectile-known-projects)
+    (treemacs--init (completing-read "Project: " projectile-known-projects)))
+   ((projectile-project-p)
+    (treemacs--init (projectile-project-root)))
+   (t (message "You're not in a project."))))
 
 ;;;###autoload
 (defun treemacs-next-line ()
@@ -153,28 +153,29 @@ the project from among `projectile-known-projects'."
   "Refresh and rebuild treemacs buffer."
   (interactive)
   (-if-let (treemacs-buffer (get-buffer treemacs--buffer-name))
-      (with-selected-window (get-buffer-window treemacs-buffer)
-        (let* ((curr-line (line-number-at-pos))
-               (curr-path (treemacs--prop-at-point 'abs-path))
-               (win-start (window-start (get-buffer-window)))
-               (root-btn  (treemacs--current-root-btn))
-               (root      (button-get root-btn 'abs-path)))
-          (treemacs--build-tree root)
-          ;; move point to the same file it was with before the refresh if the file
-          ;; still exists and is visible, stay in the same line otherwise
-          (if (and (f-exists? curr-path)
-                   (or treemacs-show-hidden-files
-                       (not (s-matches? treemacs-dotfiles-regex (f-filename curr-path)))))
-              (treemacs--goto-button-at curr-path)
-            ;; not pretty, but there can still be some off by one jitter when
-            ;; using forwald-line
-            (treemacs--without-messages (with-no-warnings (goto-line curr-line))))
-          (treemacs--evade-image)
-          (set-window-start (get-buffer-window) win-start)
-          ;; needs to be turned on again when refresh is called from outside the
-          ;; treemacs window, otherwise it looks like the selection disappears
-          (hl-line-mode t)
-          (message "Treemacs buffer refreshed.")))
+      (treemacs--without-following
+       (with-selected-window (get-buffer-window treemacs-buffer)
+         (let* ((curr-line (line-number-at-pos))
+                (curr-path (treemacs--prop-at-point 'abs-path))
+                (win-start (window-start (get-buffer-window)))
+                (root-btn  (treemacs--current-root-btn))
+                (root      (button-get root-btn 'abs-path)))
+           (treemacs--build-tree root)
+           ;; move point to the same file it was with before the refresh if the file
+           ;; still exists and is visible, stay in the same line otherwise
+           (if (and (f-exists? curr-path)
+                    (or treemacs-show-hidden-files
+                        (not (s-matches? treemacs-dotfiles-regex (f-filename curr-path)))))
+               (treemacs--goto-button-at curr-path)
+             ;; not pretty, but there can still be some off by one jitter when
+             ;; using forwald-line
+             (treemacs--without-messages (with-no-warnings (goto-line curr-line))))
+           (treemacs--evade-image)
+           (set-window-start (get-buffer-window) win-start)
+           ;; needs to be turned on again when refresh is called from outside the
+           ;; treemacs window, otherwise it looks like the selection disappears
+           (hl-line-mode t)
+           (message "Treemacs buffer refreshed."))))
     (message "Treemacs buffer does not exist.")))
 
 ;;;###autoload
@@ -351,22 +352,22 @@ not below current treemacs root or if the treemacs buffer is not visible."
                  (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))
                  (f-exists? current-file))
         (with-current-buffer (window-buffer treemacs-window)
-          (let* ((bound     (point-min))
-                 (root      (treemacs--current-root))
-                 (dir-parts (->> (length root) (substring current-file) (f-split) (cdr))))
+          (let ((root (treemacs--current-root)))
             (when (treemacs--is-path-in-dir? current-file root)
-              ;; hl-line *needs* to be toggled here otherwise it won't appear to
-              ;; move until the treemacs buffer is selected again and follow must
-              ;; work when called from outside the treemacs buffer with treemacs-follow-mode
-              (hl-line-mode -1)
-              (--each dir-parts
-                (setq root (f-join root it))
-                (let ((btn (treemacs--goto-button-at root bound)))
-                  (when (eq 'dir-closed (button-get btn 'state))
-                    (treemacs--open-node btn)))
-                (setq bound (point)))
-              (hl-line-mode t)
-              (set-window-point treemacs-window (point)))))))))
+              (let* ((search-start (point-min))
+                     (dir-parts    (->> (length root) (substring current-file) (f-split) (cdr))))
+                ;; hl-line *needs* to be toggled here otherwise it won't appear to
+                ;; move until the treemacs buffer is selected again and follow must
+                ;; work when called from outside the treemacs buffer with treemacs-follow-mode
+                (hl-line-mode -1)
+                (--each dir-parts
+                  (setq root (f-join root it))
+                  (let ((btn (treemacs--goto-button-at root search-start)))
+                    (when (eq 'dir-closed (button-get btn 'state))
+                      (treemacs--open-node btn)))
+                  (setq search-start (point)))
+                (hl-line-mode t)
+                (set-window-point treemacs-window (point))))))))))
 
 (provide 'treemacs)
 

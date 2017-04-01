@@ -143,8 +143,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   (-if-let (project-root (condition-case nil
                              (projectile-project-root)
                            (error nil)))
-      (format "*%s*"
-              (funcall projectile-project-name-function project-root))
+      (format "*%s*" (funcall projectile-project-name-function project-root))
     (treemacs--create-header root)))
 
 (defun treemacs--insert-header (root)
