@@ -29,19 +29,15 @@
 
 (declare-function treemacs-follow "treemacs")
 
+;; this is only to stop the compiler from complaining about unknown functions
+(with-eval-after-load 'which-key
+  (declare-function which-key--show-popup "which-key")
+  (declare-function which-key--hide-popup "which-key"))
+
 (defmacro treemacs--without-following (&rest body)
   "Execute BODY with `treemacs--ready' set to nil."
   `(let ((treemacs--ready))
-    ,@body))
-
-(with-eval-after-load 'which-key
-
-  (defun treemacs--which-key-advice (original-func &rest args)
-    (treemacs--without-following
-     (apply original-func args)))
-
-  (advice-add #'which-key--show-popup :around #'treemacs--which-key-advice)
-  (advice-add #'which-key--hide-popup :around #'treemacs--which-key-advice))
+     ,@body))
 
 (defun treemacs--select-window-advice (&rest _)
   "Advice function for `treemacs-follow-mode'.
@@ -49,14 +45,41 @@ Ignores the original arguments of `select-window' and directly calls
 `treemacs-follow'."
   (treemacs-follow))
 
+(defun treemacs--follow-compatibility-advice (original-func &rest args)
+  "Make ORIGINAL-FUNC compatible with `treemacs-follow-mode'.
+Do so by running it and its ARGS through `treemacs--without-following'."
+  (treemacs--without-following
+   (apply original-func args)))
+
+(defsubst treemacs--setup-follow-mode ()
+  "Setup all the advice needed for `treemacs-follow-mode'."
+  (advice-add 'select-window :after #'treemacs--select-window-advice)
+  ;; which key compatibility
+  (progn
+    (when (fboundp 'which-key--show-popup)
+      (advice-add #'which-key--show-popup :around #'treemacs--follow-compatibility-advice))
+    (when (fboundp 'which-key--hide-popup)
+      (advice-add #'which-key--hide-popup :around #'treemacs--follow-compatibility-advice)))
+  (treemacs-follow))
+
+(defsubst treemacs--tear-down-follow-mode ()
+  "Remove all the advice added by `treemacs--setup-follow-mode'."
+  (advice-remove 'select-window 'treemacs--select-window-advice)
+  ;; which key compatibility
+  (progn
+    (when (advice-member-p #'treemacs--follow-compatibility-advice #'which-key--show-popup)
+      (advice-remove #'which-key--show-popup #'treemacs--follow-compatibility-advice))
+    (when (advice-member-p #'treemacs--follow-compatibility-advice #'which-key--hide-popup)
+      (advice-remove #'which-key--hide-popup #'treemacs--follow-compatibility-advice))))
+
 (define-minor-mode treemacs-follow-mode
   "Minor mode to run `treemacs-follow' on every window selection."
   :init-value nil
   :global     t
   :lighter    nil
   (if treemacs-follow-mode
-      (advice-add 'select-window :after #'treemacs--select-window-advice)
-    (advice-remove 'select-window 'treemacs--select-window-advice)))
+      (treemacs--setup-follow-mode)
+    (treemacs--tear-down-follow-mode)))
 
 (provide 'treemacs-follow-mode)
 
