@@ -33,6 +33,9 @@
 (require 'treemacs-mode)
 (require 'treemacs-follow-mode)
 
+(declare-function projectile-project-p "projectile")
+(declare-function projectile-project-root "projectile")
+
 ;;;###autoload
 (defun treemacs-toggle ()
   "If a treemacs buffer exists and is visible hide it.
@@ -70,8 +73,10 @@ If not in a project do nothing. If a prefix argument ARG is given select
 the project from among `projectile-known-projects'."
   (interactive "P")
   (cond
-   ((and arg projectile-known-projects)
-    (treemacs--init (completing-read "Project: " projectile-known-projects)))
+   ((and arg (bound-and-true-p projectile-known-projects))
+    ;; no warnings since `projectile-known-projects' is known here
+    (with-no-warnings
+      (treemacs--init (completing-read "Project: " projectile-known-projects))))
    ((projectile-project-p)
     (treemacs--init (projectile-project-root)))
    (t (message "You're not in a project."))))
@@ -293,15 +298,19 @@ A delete action must always be confirmed. Directories are deleted recursively."
 (defun treemacs-create-file (dir filename)
   "In directory DIR create file called FILENAME."
   (interactive "DDirectory: \nMFilename: ")
-  (f-touch (f-join dir filename))
-  (treemacs--without-messages (treemacs-refresh)))
+  (let ((created-path (f-join dir filename)))
+    (f-touch created-path)
+    (treemacs--without-messages (treemacs-refresh))
+    (treemacs--do-follow created-path)))
 
 ;;;###autoload
 (defun treemacs-create-dir (dir dirname)
   "In directory DIR create directory called DIRNAME."
-  (interactive "DDirectory:\nMDirname:")
-  (f-mkdir (f-join dir dirname))
-  (treemacs--without-messages (treemacs-refresh)))
+  (interactive "DDirectory: \nMDirname: ")
+  (let ((created-path (f-join dir dirname)))
+    (f-mkdir created-path)
+    (treemacs--without-messages (treemacs-refresh))
+    (treemacs--do-follow created-path)))
 
 ;;;###autoload
 (defun treemacs-toggle-show-dotfiles ()
@@ -336,9 +345,10 @@ If a prefix argument ARG is provided read a new value for
 
 ;;;###autoload
 (defun treemacs-follow ()
-  "Move point to the current file in the treemacs buffer, expanding directories
-if needed. Do nothing if current file does not exist in the file sysmte or is
-not below current treemacs root or if the treemacs buffer is not visible."
+  "Move point to the current file in the treemacs buffer.
+Expand directories if needed. Do nothing if current file does not exist in the
+file sysmte or is not below current treemacs root or if the treemacs buffer is
+not visible."
   (interactive)
   ;; Treemacs selecting files with `ace-window' results in a large amount of
   ;; window selections, so we should be breaking out as soon as possbile
@@ -352,22 +362,7 @@ not below current treemacs root or if the treemacs buffer is not visible."
                  (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))
                  (f-exists? current-file))
         (with-current-buffer (window-buffer treemacs-window)
-          (let ((root (treemacs--current-root)))
-            (when (treemacs--is-path-in-dir? current-file root)
-              (let* ((search-start (point-min))
-                     (dir-parts    (->> (length root) (substring current-file) (f-split) (cdr))))
-                ;; hl-line *needs* to be toggled here otherwise it won't appear to
-                ;; move until the treemacs buffer is selected again and follow must
-                ;; work when called from outside the treemacs buffer with treemacs-follow-mode
-                (hl-line-mode -1)
-                (--each dir-parts
-                  (setq root (f-join root it))
-                  (let ((btn (treemacs--goto-button-at root search-start)))
-                    (when (eq 'dir-closed (button-get btn 'state))
-                      (treemacs--open-node btn)))
-                  (setq search-start (point)))
-                (hl-line-mode t)
-                (set-window-point treemacs-window (point))))))))))
+          (treemacs--do-follow current-file))))))
 
 (provide 'treemacs)
 

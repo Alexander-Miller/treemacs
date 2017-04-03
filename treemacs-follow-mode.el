@@ -27,7 +27,28 @@
 
 ;;; Code:
 
+(require 'treemacs-impl)
 (declare-function treemacs-follow "treemacs")
+
+(defsubst treemacs--do-follow (followed-file)
+  "When in the treemacs buffer move point to FOLLOWED-FILE."
+  (let ((root (treemacs--current-root)))
+    (when (treemacs--is-path-in-dir? followed-file root)
+      (let* ((search-start (point-min))
+             (dir-parts    (->> (length root) (substring followed-file) (f-split) (cdr))))
+        ;; hl-line *needs* to be toggled here otherwise it won't appear to
+        ;; move until the treemacs buffer is selected again and follow must
+        ;; work when called from outside the treemacs buffer with treemacs-follow-mode
+        (hl-line-mode -1)
+        (--each dir-parts
+          (setq root (f-join root it))
+          (let ((btn (treemacs--goto-button-at root search-start)))
+            (when (eq 'dir-closed (button-get btn 'state))
+              (treemacs--open-node btn)))
+          (setq search-start (point)))
+        (hl-line-mode t)
+        (treemacs--evade-image)
+        (set-window-point (get-buffer-window) (point))))))
 
 ;; this is only to stop the compiler from complaining about unknown functions
 (with-eval-after-load 'which-key
