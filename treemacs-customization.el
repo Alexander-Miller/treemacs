@@ -58,8 +58,10 @@
   :group 'treemacs-configuration)
 
 (defcustom treemacs-follow-after-init nil
-  "When t run `treemacs-follow' after calling `treemacs-init' or
-`treemacs-projectle-init' regardless of `treemacs-follow-mode' setting."
+  "When t always run `treemacs-follow' after building a treemacs-buffer.
+
+A treemacs buffer is built when after calling `treemacs-init' or
+`treemacs-projectle-init'. This will ignore `treemacs-follow-mode'."
   :type 'boolean
   :group 'treemacs-configuration)
 

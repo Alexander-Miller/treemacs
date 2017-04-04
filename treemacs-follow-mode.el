@@ -28,6 +28,7 @@
 ;;; Code:
 
 (require 'treemacs-impl)
+
 (declare-function treemacs-follow "treemacs")
 
 (defsubst treemacs--do-follow (followed-file)

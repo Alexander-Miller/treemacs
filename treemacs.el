@@ -75,8 +75,7 @@ the project from among `projectile-known-projects'."
   (cond
    ((and arg (bound-and-true-p projectile-known-projects))
     ;; no warnings since `projectile-known-projects' is known here
-    (with-no-warnings
-      (treemacs--init (completing-read "Project: " projectile-known-projects))))
+    (treemacs--init (completing-read "Project: " (with-no-warnings projectile-known-projects))))
    ((projectile-project-p)
     (treemacs--init (projectile-project-root)))
    (t (message "You're not in a project."))))
