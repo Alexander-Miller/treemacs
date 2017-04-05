@@ -164,17 +164,6 @@ Parsing only takes place if
             (setcdr it (->> (cl-second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
           status)))))
 
-(defsubst treemacs--git-face (path git-info)
-  "Return the appropriate face for PATH given GIT-INFO."
-  ;; for the sake of simplicity we only look at the state in the working tree
-  ;; see OUTPUT section `git help status'
-  (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
-    ("M" 'treemacs-git-modified-face)
-    ("?" 'treemacs-git-untracked-face)
-    ("!" 'treemacs-git-ignored-face)
-    ("A" 'treemacs-git-added-face)
-    (_   'treemacs-git-unmodified-face)))
-
 (defsubst treemacs--insert-node (path prefix depth parent &optional git-info)
  "Insert a single button node.
 PATH is the node's absolute path.
@@ -194,10 +183,7 @@ the file is unchanged)."
                         'abs-path  path
                         'parent    parent
                         'depth     depth
-                        'face      (if is-dir? 'treemacs-directory-face
-                                     (if treemacs-git-integration
-                                         (treemacs--git-face path git-info)
-                                       'treemacs-file-face)))))
+                        'face      (treemacs--get-face path is-dir? git-info))))
 
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point."
@@ -308,6 +294,20 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
                  'face 'treemacs-header-face
                  'abs-path root
                  'action #'ignore))
+
+(defun treemacs--get-face (path is-dir? git-info)
+  "Return the appropriate face for PATH given IS-DIR? and GIT-INFO."
+  (if is-dir? 'treemacs-directory-face
+    (if treemacs-git-integration
+        ;; for the sake of simplicity we only look at the state in the working tree
+        ;; see OUTPUT section `git help status'
+        (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
+          ("M" 'treemacs-git-modified-face)
+          ("?" 'treemacs-git-untracked-face)
+          ("!" 'treemacs-git-ignored-face)
+          ("A" 'treemacs-git-added-face)
+          (_   'treemacs-git-unmodified-face))
+      'treemacs-file-face)))
 
 (defun treemacs--insert-image-png (path is-dir?)
   "Insert the appropriate png image for PATH given IS-DIR?."
