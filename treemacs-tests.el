@@ -197,6 +197,45 @@
           (parent "~/A/prefixp"))
       (should-not (treemacs--is-path-in-dir? path parent)))))
 
+;; treemacs--get-face
+(progn
+  (ert-deftest get-face//dir-face-for-path-without-git-info ()
+    (should (eq 'treemacs-directory-face (treemacs--get-face "~/A" t nil))))
+
+  (ert-deftest get-face//dir-face-for-path-with-git-info ()
+    (should (eq 'treemacs-directory-face (treemacs--get-face "~/A" t '(("M" . "~/A"))))))
+
+  (ert-deftest get-face//unmodified-face-for-file-without-git-info ()
+    (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil nil))))
+
+  (ert-deftest get-face//unmodified-face-for-file-without-fitting-git-info ()
+    (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
+      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
+
+  (ert-deftest get-face//unmodified-face-for-file-without-fitting-git-info ()
+    (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
+      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
+
+  (ert-deftest get-face//unmodified-face-for-file-without-fitting-git-status ()
+    (let ((git-info '(("0" . "~/A"))))
+      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
+
+  (ert-deftest get-face//modified-face-for-modified-file ()
+    (let ((git-info '(("!!" . "~/A/B/c") ("M" . "~/A"))))
+      (should (eq 'treemacs-git-modified-face (treemacs--get-face "~/A" nil git-info)))))
+
+  (ert-deftest get-face//untracked-face-for-untracked-file ()
+    (let ((git-info '(("!!" . "~/A/B/c") ("??" . "~/A"))))
+      (should (eq 'treemacs-git-untracked-face (treemacs--get-face "~/A" nil git-info)))))
+
+  (ert-deftest get-face//ignored-face-for-ignored-file ()
+    (let ((git-info '(("!!" . "~/A/B/c") ("!!" . "~/A"))))
+      (should (eq 'treemacs-git-ignored-face (treemacs--get-face "~/A" nil git-info)))))
+
+  (ert-deftest get-face//added-face-for-added-file ()
+    (let ((git-info '(("!!" . "~/A/B/c") ("A" . "~/A"))))
+      (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" nil git-info))))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
