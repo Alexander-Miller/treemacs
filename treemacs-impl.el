@@ -148,21 +148,22 @@ Will return the treemacs window if true."
 Parsing only takes place if
 1) `treemacs-git-integrtion' is t.
 2) PATH is under git control."
-  (when (and treemacs-git-integration
-             (treemacs--is-dir-git-controlled? path))
-    (let* ((default-directory path)
-           (git-output (shell-command-to-string  "git status --ignored --porcelain"))
-           ;; need the actual git root since git status outputs paths relative to it
-           ;; and the output must be valid also for files in dirs being reopened
-           (git-root (vc-call-backend 'Git 'root default-directory)))
-      (if (s-blank? git-output) '()
-        (let ((status
-               (->> (substring git-output 0 -1)
-                    (s-split "\n")
-                    (--map (s-split-up-to " " (s-trim it) 1)))))
-          (--each status
-            (setcdr it (->> (cl-second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
-          status)))))
+  (let ((canonical-path (f-canonical path)))
+    (when (and treemacs-git-integration
+               (treemacs--is-dir-git-controlled? canonical-path))
+      (let* ((default-directory canonical-path)
+             (git-output (shell-command-to-string  "git status --ignored --porcelain"))
+             ;; need the actual git root since git status outputs paths relative to it
+             ;; and the output must be valid also for files in dirs being reopened
+             (git-root (vc-call-backend 'Git 'root default-directory)))
+        (if (s-blank? git-output) '()
+          (let ((status
+                 (->> (substring git-output 0 -1)
+                      (s-split "\n")
+                      (--map (s-split-up-to " " (s-trim it) 1)))))
+            (--each status
+              (setcdr it (->> (cl-second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
+            status))))))
 
 (defsubst treemacs--insert-node (path prefix depth parent &optional git-info)
  "Insert a single button node.
@@ -214,7 +215,6 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
       (--filter (not (--any (s-matches? treemacs-dotfiles-regex it)
                             (f-split (substring it (length root)))))
                 dirs))))
-
 
 (defsubst treemacs--should-show? (file-name)
   "Indicate whether FILE-NAME should be show in the treemacs buffer or kept hidden."
