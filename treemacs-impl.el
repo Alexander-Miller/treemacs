@@ -327,7 +327,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
 The branch is indented at INDENT-DEPTH and uses GIT-INFO to decide on file
 nodes' faces. The nodes' parent property is set to PARENT."
   (save-excursion
-    (let* ((prefix       (concat "\n" (s-repeat (* indent-depth treemacs-indentation) " ")))
+    (let* ((prefix       (concat "\n" (make-string (* indent-depth treemacs-indentation) ?\ )))
            (entries      (treemacs--get-dir-content root))
            (directories  (cl-first entries))
            (files        (cl-second entries))
