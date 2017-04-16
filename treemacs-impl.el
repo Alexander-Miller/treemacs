@@ -587,21 +587,20 @@ through the buffer list and kill buffer if PATH is a prefix."
                                (f-filename path)))
              (-each dired-buffers-for-path #'kill-buffer))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Window Numbering Compatibility ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Winum Compatibility ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(with-eval-after-load 'window-numbering
+(with-eval-after-load 'winum
 
   ;; somestimes the compiler asks for the strangest things
   (declare-function treemacs--window-number-zero "treemacs-impl")
 
   (defun treemacs--window-number-zero ()
-    (when (string= (buffer-name) treemacs--buffer-name) 0))
+    (when (s-equals? (buffer-name) treemacs--buffer-name) 10))
 
-  (when (boundp 'window-numbering-assign-func)
-    (setq window-numbering-assign-func
-          (lambda () (treemacs--window-number-zero)))))
+  (when (boundp 'winum-assign-func)
+    (setq winum-assign-func #'treemacs--window-number-zero)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Popwin Compatibility ;;

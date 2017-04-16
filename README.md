@@ -11,7 +11,7 @@ navigation as well as *basic* file management utilities. Specifically the single
  * Versatile file access - decide exactly how and where a file will be opened, including using `ace-window` to chose a buffer or launching
    an external app via `xdg-open`.
  * Projectile integration - quickly open treemacs at any project's root directory.
- * Window numbering integration - Treemacs will always be assigned window number 0, never interfering with the numbering
+ * Winum integration - Treemacs will always be assigned window number 10, never interfering with the numbering
    layout of your other windows.
  * Git integration - treemacs will optionally use different faces for files in different git states.
  * Ability to always follow along with the currently selected file with `treemacs-follow-mode`.
