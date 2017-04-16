@@ -459,7 +459,7 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-rust     "rust.png"     "rs" "toml")
   (treemacs--setup-icon treemacs-icon-image    "image.png"    "jpg" "bmp" "svg" "png")
   (treemacs--setup-icon treemacs-icon-emacs    "emacs.png"    "el" "elc" "org")
-  (treemacs--setup-icon treemacs-icon-clojure  "clojure.png"  "clj")
+  (treemacs--setup-icon treemacs-icon-clojure  "clojure.png"  "clj" "cljs" "cljc")
 
   (defvar treemacs-icon-closed-text (propertize "+" 'face 'treemacs-term-node-face))
   (defvar treemacs-icon-open-text   (propertize "-" 'face 'treemacs-term-node-face))
