@@ -32,6 +32,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-mode)
 (require 'treemacs-follow-mode)
+(require 'treemacs-persist)
 (require 'cl-macs)
 
 (declare-function projectile-project-p "projectile")
@@ -377,6 +378,31 @@ given and the current buffer is not editing a file."
                        (treemacs--goto-button-at path)
                        (hl-line-mode -1)
                        (hl-line-mode t)))))))))))))
+
+;;;###autoload
+(defun treemacs-persist ()
+  "Save current state, allowing it to be restored with `treemacs-restore'."
+  (interactive)
+  (if-let (buf (get-buffer treemacs--buffer-name))
+      (with-current-buffer buf
+        (save-excursion
+          (let ((window    (get-buffer-window buf t))
+                (root      (treemacs--current-root))
+                (text      ""))
+            (unless (f-exists? treemacs--persist-file)
+              (f-mkdir treemacs--persist-file))
+            (setq text (s-concat text (format "TREEMACS-ROOT : %s" root)))
+            (f-write text 'utf-8 treemacs--persist-file))))))
+
+(defun treemacs-restore ()
+  "Restore the treemacs state saved with `treeemacs-persist'."
+  (interactive)
+  (-if-let (stored-data (treemacs--read-persist-data))
+      (let ((root (cdr (assoc "TREEMACS-ROOT" stored-data))))
+        (unless (f-dir? root)      (error "%s is not a directory, cannot be restored by treemacs" root))
+        (unless (f-readable? root) (error "%s is not readable, cannot be restored by treemacs"    root))
+        (treemacs--buffer-teardown)
+        (treemacs--init root))))
 
 (provide 'treemacs)
 
