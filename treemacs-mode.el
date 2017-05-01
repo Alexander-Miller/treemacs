@@ -108,13 +108,17 @@ Use j & k for navigating the treemacs buffer."
         truncate-lines      t
         indent-tabs-mode    nil
         cursor-type         nil
-        desktop-save-buffer nil)
+        desktop-save-buffer t)
 
   (setq-local show-paren-mode nil)
   (electric-indent-local-mode -1)
   (hl-line-mode t)
+  (when (string-empty-p (buffer-string))
+    (treemacs-restore))
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
+  (add-hook 'kill-buffer-hook #'treemacs--maybe-persist nil t)
+  (add-hook 'kill-emacs-hook  #'treemacs--maybe-persist)
 
   (when (fboundp 'spaceline-compile)
     (spaceline-install "treemacs"

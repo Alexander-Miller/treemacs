@@ -29,6 +29,9 @@
 
 (require 'f)
 (require 's)
+(require 'treemacs-customization)
+
+(declare-function treemacs-persist "treemacs")
 
 (defconst treemacs--persist-file (f-join user-emacs-directory ".cache" "treemacs-persist")
   "File treemacs uses to persist its current state.")
@@ -43,6 +46,17 @@
             (add-to-list 'ret
                          `(,(cl-first split) . ,(cl-second split)))))
         ret)))
+
+(defun treemacs--maybe-persist ()
+  "Hook function to save treemacs state when conditions for it are met.
+Persistence takes place when the treemacs buffer is killed or when Emacs shuts
+down and `treemacs--never-persist' is not t and a state saving mode like
+desktop save mode is on."
+  (when (and (not treemacs--never-persist)
+             (or desktop-save-mode
+                 (and (bound-and-true-p persp-auto-save-opt)
+                      (not (eq 0 persp-auto-save-opt)))))
+    (treemacs-persist)))
 
 (provide 'treemacs-persist)
 
