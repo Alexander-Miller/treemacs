@@ -111,7 +111,6 @@ Use j & k for navigating the treemacs buffer."
     (treemacs-restore))
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
-  (add-hook 'kill-buffer-hook #'treemacs--maybe-persist nil t)
   (add-hook 'kill-emacs-hook  #'treemacs--maybe-persist)
 
   (when (fboundp 'spaceline-compile)
