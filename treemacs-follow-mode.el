@@ -16,8 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Follow mode definition only. Everything else is extracted into its
-;;; own file to reduce clutter.
+;;; Follow mode definition extracted into its own file to reduce clutter.
 
 ;;; Code:
 
