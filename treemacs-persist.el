@@ -26,6 +26,7 @@
 (require 'treemacs-customization)
 
 (declare-function treemacs-persist "treemacs")
+(declare-function treemacs-restore "treemacs")
 
 (defconst treemacs--persist-file (f-join user-emacs-directory ".cache" "treemacs-persist")
   "File treemacs uses to persist its current state.")
@@ -65,6 +66,16 @@ desktop save mode is on."
           (add-to-list 'dirs (button-get btn 'abs-path) t))
         (setq btn (next-button (button-end btn))))
       dirs)))
+
+(with-eval-after-load "desktop"
+
+  (defun treemacs--desktop-handler (&rest _)
+    "Treemacs mode handler for desktop save mode."
+    ;; args are irrelevant since treemacs has but one way to be restored
+    (treemacs-restore))
+
+  (add-to-list 'desktop-buffer-mode-handlers
+               '(treemacs-mode . treemacs--desktop-handler)))
 
 (provide 'treemacs-persist)
 

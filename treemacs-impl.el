@@ -241,8 +241,8 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
     (treemacs--build-tree (f-long root))
     (treemacs-mode)
     ;; do mode activation last - if the treemacs buffer is empty when the major
-    ;; mode is activated (this happens when treemacs is restored from e.g. desktop
-    ;; save mode) treemacs will attempt to restore the previous session
+    ;; mode is activated (this may happen when treemacs is restored from other
+    ;; than desktop save mode) treemacs will attempt to restore the previous session
     (setq treemacs--ready t)
     ;; no warnings since follow mode is known to be defined
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
