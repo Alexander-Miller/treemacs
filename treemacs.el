@@ -388,21 +388,42 @@ given and the current buffer is not editing a file."
         (save-excursion
           (let ((window    (get-buffer-window buf t))
                 (root      (treemacs--current-root))
+                (open-dirs (treemacs--get-open-dirs))
+                (point-at  (treemacs--prop-at-point 'abs-path))
                 (text      ""))
             (unless (f-exists? treemacs--persist-file)
               (f-mkdir treemacs--persist-file))
-            (setq text (s-concat text (format "TREEMACS-ROOT : %s" root)))
+            (setq text (s-concat text (format "ROOT : %s" root)))
+            (setq text (s-concat text "\n" (format "OPEN-DIRS : %s" (s-join "|" open-dirs))))
+            (setq text (s-concat text "\n" (format "POINT-AT : %s" point-at)))
             (f-write text 'utf-8 treemacs--persist-file))))))
 
+;;;###autoload
 (defun treemacs-restore ()
   "Restore the treemacs state saved with `treeemacs-persist'."
   (interactive)
   (-if-let (stored-data (treemacs--read-persist-data))
-      (let ((root (cdr (assoc "TREEMACS-ROOT" stored-data))))
+      (let ((root      (cdr (assoc "ROOT"      stored-data)))
+            (open-dirs (cdr (assoc "OPEN-DIRS" stored-data)))
+            (point-at  (cdr (assoc "POINT-AT"  stored-data))))
         (unless (f-dir? root)      (error "%s is not a directory, cannot be restored by treemacs" root))
         (unless (f-readable? root) (error "%s is not readable, cannot be restored by treemacs"    root))
         (treemacs--buffer-teardown)
-        (treemacs--init root))))
+        (treemacs--init root)
+        ;; Don't always start searching from the very top
+        (let ((start 0)
+              (btn   nil))
+          (--each
+              (--filter (f-readable? it) (s-split "|" open-dirs t))
+            (setq btn (treemacs--goto-button-at it start))
+            (treemacs--push-button btn)
+            (setq start (button-end btn))))
+        (when (f-exists? point-at)
+          (treemacs--goto-button-at point-at))
+        (recenter)
+        ;; selected line is not visible otherwise
+        (hl-line-mode -1)
+        (hl-line-mode t))))
 
 (provide 'treemacs)
 

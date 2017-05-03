@@ -52,6 +52,20 @@ desktop save mode is on."
                       (not (eq 0 persp-auto-save-opt)))))
     (treemacs-persist)))
 
+(defun treemacs--get-open-dirs ()
+  "Collect the paths of all currently expanded folders."
+  ;; not using open dirs cache on account of its arbitrary ordering
+  ;; dirs are collected - and reopened - from top to bottom
+  (save-excursion
+    (goto-char 0)
+    (let ((btn  (next-button (point)))
+          (dirs (list)))
+      (while btn
+        (when (eq 'dir-open (button-get btn 'state))
+          (add-to-list 'dirs (button-get btn 'abs-path) t))
+        (setq btn (next-button (button-end btn))))
+      dirs)))
+
 (provide 'treemacs-persist)
 
 ;;; treemacs-persist.el ends here
