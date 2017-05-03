@@ -392,7 +392,7 @@ given and the current buffer is not editing a file."
                 (point-at  (treemacs--prop-at-point 'abs-path))
                 (text      ""))
             (unless (f-exists? treemacs--persist-file)
-              (f-mkdir treemacs--persist-file))
+              (f-touch treemacs--persist-file))
             (setq text (s-concat text (format "ROOT : %s" root)))
             (setq text (s-concat text "\n" (format "OPEN-DIRS : %s" (s-join "|" open-dirs))))
             (setq text (s-concat text "\n" (format "POINT-AT : %s" point-at)))
