@@ -313,6 +313,27 @@
     (ert-deftest should-show::wont-show-relative-dotfile ()
       (should-not (treemacs--should-show? "~/A/B/C/.foo")))))
 
+;; str-assq-delete-all
+(progn
+  (ert-deftest str-assq-delete::does-nothing-for-nil-key-and-list ()
+    (should-not (str-assq-delete-all nil nil)))
+
+  (ert-deftest str-assq-delete::does-nothing-for-nil-key ()
+    (let ((input '(("A" . 1))))
+      (should (equal input (str-assq-delete-all nil input)))))
+
+  (ert-deftest str-assq-delete::does-nothing-for-nil-list ()
+    (should-not (str-assq-delete-all "A" nil)))
+
+  (ert-deftest str-assq-delete::returns-same-list-when-nothing-to-delete ()
+    (let ((input '(("A" . 1) ("B" . 2))))
+      (should (eq input (str-assq-delete-all "X" input)))))
+
+  (ert-deftest str-assq-delete::deletes-every-fitting-item ()
+    (let ((input '(("X" . 1) ("A" . 2) ("X" . 3) ("B" . 4) ("X" . 5))))
+      (should (equal '(("A" . 2) ("B" . 4))
+                     (str-assq-delete-all "X" input))))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
