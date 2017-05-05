@@ -281,6 +281,38 @@
     (let ((input "\"input"))
       (should (equal "input" (treemacs--unqote input))))))
 
+;; treemacs--should-show?
+(progn
+
+  (let ((treemacs-dotfiles-regex (default-value 'treemacs-dotfiles-regex)))
+
+    (ert-deftest should-show::fails-on-nil-file ()
+      (should-error (treemacs--should-show? nil)))
+
+    (ert-deftest should-show::shows-empty-name ()
+      (should (treemacs--should-show? "")))
+
+    (ert-deftest should-show::shows-file-name ()
+      (should (treemacs--should-show? "~/A/B/C/d.el")))
+
+    (ert-deftest should-show::shows-dir-name ()
+      (should (treemacs--should-show? "~/A/B/C/d/")))
+
+    (ert-deftest should-show::shows-abs-name ()
+      (should (treemacs--should-show? "foo.el")))
+
+    (ert-deftest should-show::shows-single-dot ()
+      (should (treemacs--should-show? ".")))
+
+    (ert-deftest should-show::wont-show-dot-dot ()
+      (should-not (treemacs--should-show? "..")))
+
+    (ert-deftest should-show::wont-show-abs-dotfile ()
+      (should-not (treemacs--should-show? ".foo")))
+
+    (ert-deftest should-show::wont-show-relative-dotfile ()
+      (should-not (treemacs--should-show? "~/A/B/C/.foo")))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
