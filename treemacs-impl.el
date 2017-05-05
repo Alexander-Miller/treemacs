@@ -239,10 +239,10 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
     ;; f-long to expand ~ and remove final slash
     ;; needed for root dirs given by projectile
     (treemacs--build-tree (f-long root))
-    (treemacs-mode)
     ;; do mode activation last - if the treemacs buffer is empty when the major
     ;; mode is activated (this may happen when treemacs is restored from other
     ;; than desktop save mode) treemacs will attempt to restore the previous session
+    (treemacs-mode)
     (setq treemacs--ready t)
     ;; no warnings since follow mode is known to be defined
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
@@ -428,7 +428,6 @@ Pass GIT-INFO along till it's needed."
    (treemacs--maybe-filter-dotfiles)
    (--each (treemacs--reopen it git-info))))
 
-
 (defun treemacs--clear-from-cache (path &optional purge)
   "Remove PATH from the open dirs cache.
 Also remove any dirs below if PURGE is given."
@@ -543,7 +542,7 @@ Valid states are 'visible, 'exists and 'none."
 
 (defun str-assq-delete-all (key alist)
   "Same as `assq-delete-all', but use `string=' instead of `eq'.
-Delete all elements whose car is ‘eq’ to KEY from ALIST."
+Delete all elements whose car is ‘string=’ to KEY from ALIST."
   (while (and (consp (car alist))
               (string= (car (car alist)) key))
     (setq alist (cdr alist)))
