@@ -21,6 +21,7 @@
 
 (require 'treemacs-impl)
 (require 'treemacs-customization)
+(require 'treemacs-persist)
 (require 'ert)
 (require 'el-mock)
 
@@ -347,6 +348,36 @@
 
   (ert-deftest parent::returns-root ()
     (should (equal "/" (treemacs--parent "/")))))
+
+;; treemacs--read-persist-data
+(progn
+
+  (ert-deftest read-persist::reads-nil-from-empty-file ()
+    (with-mock
+      (stub f-file? => t)
+      (stub f-read => "")
+      (should-not (treemacs--read-persist-data))))
+
+  (ert-deftest read-persist::reads-all-data-correctly ()
+    (with-mock
+      (stub f-file? => t)
+      (stub f-read => "ROOT : ~/A\nOPEN-DIRS : ~/A/X|~/A/Y\nPOINT-AT : ~/A/p")
+      (should (let ((result (treemacs--read-persist-data)))
+                (and (= 3 (length result))
+                     (--all? (-contains? result it)
+                             '(("ROOT" . "~/A")
+                               ("OPEN-DIRS" . "~/A/X|~/A/Y")
+                               ("POINT-AT" . "~/A/p"))))))))
+
+  (ert-deftest read-persist::reads-empty-open-dirs-correctly ()
+    (with-mock
+      (stub f-file? => t)
+      (stub f-read => "ROOT : ~/A\nOPEN-DIRS :\nPOINT-AT : ~/A/p")
+      (should (let ((result (treemacs--read-persist-data)))
+                (and (= 2 (length result))
+                     (--all? (-contains? result it)
+                             '(("ROOT" . "~/A")
+                               ("POINT-AT" . "~/A/p")))))))))
 
 (provide 'treemacs-tests)
 

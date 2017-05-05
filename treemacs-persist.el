@@ -37,8 +37,9 @@
             (lines (s-lines (f-read treemacs--persist-file))))
         (while lines
           (let ((split (s-split " : " (pop lines))))
-            (add-to-list 'ret
-                         `(,(cl-first split) . ,(cl-second split)))))
+            (when (= 2 (length split))
+              (add-to-list 'ret
+                           `(,(cl-first split) . ,(cl-second split))))))
         ret)))
 
 (defun treemacs--maybe-persist ()
