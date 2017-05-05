@@ -334,6 +334,20 @@
       (should (equal '(("A" . 2) ("B" . 4))
                      (str-assq-delete-all "X" input))))))
 
+;; treemacs--parent
+(progn
+  (ert-deftest parent::fails-on-nil-path ()
+    (should-error (treemacs--parent nil)))
+
+  (ert-deftest parent::does-not-fail-on-empty-path ()
+    (should (treemacs--parent "")))
+
+  (ert-deftest parent::returns-parent ()
+    (should (equal "/home/A" (treemacs--parent "/home/A/B"))))
+
+  (ert-deftest parent::returns-root ()
+    (should (equal "/" (treemacs--parent "/")))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
