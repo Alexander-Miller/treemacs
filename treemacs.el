@@ -337,26 +337,6 @@ If a prefix argument ARG is provided read a new value for
     (when arg (setq treemacs-width (read-number "New Width: ")))
     (treemacs--set-width treemacs-width)))
 
-;;;###autoload
-(defun treemacs-follow ()
-  "Move point to the current file in the treemacs buffer.
-Expand directories if needed. Do nothing if current file does not exist in the
-file sysmte or is not below current treemacs root or if the treemacs buffer is
-not visible."
-  (interactive)
-  ;; Treemacs selecting files with `ace-window' results in a large amount of
-  ;; window selections, so we should be breaking out as soon as possbile
-  (when treemacs--ready
-    (let* ((treemacs-window (treemacs--is-visible?))
-           (current-buffer  (current-buffer))
-           (current-file    (buffer-file-name current-buffer))
-           (current-window  (get-buffer-window current-buffer)))
-      (when (and current-file
-                 treemacs-window
-                 (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))
-                 (f-exists? current-file))
-        (with-current-buffer (window-buffer treemacs-window)
-          (treemacs--do-follow current-file))))))
 
 (provide 'treemacs)
 

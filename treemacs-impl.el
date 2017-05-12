@@ -39,7 +39,7 @@
 (require 'treemacs-customization)
 
 (declare-function treemacs-mode "treemacs-mode")
-(declare-function treemacs-follow "treemacs")
+(declare-function treemacs--follow "treemacs")
 (declare-function treemacs-visit-file-vertical-split "treemacs")
 (declare-function projectile-project-root "projectile")
 
@@ -250,7 +250,7 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
     ;; no warnings since follow mode is known to be defined
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
-        (treemacs-follow)))))
+        (treemacs--follow)))))
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
