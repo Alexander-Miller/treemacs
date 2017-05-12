@@ -1,4 +1,4 @@
-;;; treemacs.el --- A tree style file viewer package
+;;; treemacs.el --- A tree style file explorer package
 
 ;; Copyright (C) 2017 Alexander Miller
 
@@ -112,12 +112,7 @@ the project from among `projectile-known-projects'."
          (new-root  (treemacs--parent root)))
     (unless (s-equals? root new-root)
       (treemacs--build-tree new-root)
-      (goto-char 0)
-      (while (not (s-equals?
-                   root
-                   (-some-> (next-button (point)) (button-get 'abs-path))))
-        (forward-button 1))
-      (forward-button 1)
+      (treemacs--goto-button-at root)
       (treemacs--evade-image))))
 
 ;;;###autoload

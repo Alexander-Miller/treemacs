@@ -203,7 +203,15 @@ the file is unchanged)."
 
 (defsubst treemacs--is-path-in-dir? (path dir)
   "Is PATH in directory DIR?"
-  (s-starts-with? (concat dir "/") path))
+  (s-starts-with? (f-slash dir) path))
+
+(defsubst treemacs--current-root ()
+  "Return the current root directory.
+Requires and assumes to be called inside the treemacs buffer.
+
+If both the root button and the root dir are needed it's more efficient to get
+the root button and then grab its 'abs-path property."
+  (f-long default-directory))
 
 (defsubst treemacs--maybe-filter-dotfiles (dirs)
   "Remove from DIRS directories that shouldn't be reopened.
@@ -281,19 +289,20 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
             (when (bound-and-true-p projectile-project-name-function)
               (condition-case nil
                   (projectile-project-root)
-                (error (progn (message "ERR") nil)))))
+                (error nil))))
       ;; name function is known to be defined
       (format "*%s*" (funcall (with-no-warnings projectile-project-name-function) project-name))
     (treemacs--create-header root)))
 
 (defun treemacs--insert-header (root)
   "Insert the header line for the given ROOT."
-  (setq default-directory root)
-  (insert-button (propertize (funcall treemacs-header-function root)
-                             'face 'treemacs-header-face)
-                 'face 'treemacs-header-face
-                 'abs-path root
-                 'action #'ignore))
+  (let ((full-root (f-full root)))
+    (setq default-directory full-root)
+    (insert-button (propertize (funcall treemacs-header-function root)
+                               'face 'treemacs-header-face)
+                   'face 'treemacs-header-face
+                   'abs-path full-root
+                   'action #'ignore)))
 
 (defun treemacs--get-face (path is-dir? git-info)
   "Return the appropriate face for PATH given IS-DIR? and GIT-INFO."
@@ -493,8 +502,10 @@ Also return that button."
   "Set the width of the treemacs buffer to WIDTH when it is created."
   (let ((w (max width window-min-width)))
     (cond
-     ((> (window-width) w) (shrink-window-horizontally (- (window-width) w)))
-     ((< (window-width) w) (enlarge-window-horizontally (- w (window-width)))))))
+     ((> (window-width) w)
+      (shrink-window-horizontally  (- (window-width) w)))
+     ((< (window-width) w)
+      (enlarge-window-horizontally (- w (window-width)))))))
 
 (defun treemacs--get-dir-content (dir)
   "Get the list of files in DIR.  Directories are sorted first."
@@ -503,13 +514,6 @@ Also return that button."
         entries
       (--map (-filter #'treemacs--should-show? it) entries))))
 
-(defun treemacs--current-root ()
-  "Return the current root directory.
-
-If both the root button and the root dir are needed it's more efficient to get
-the root button and then grab its 'abs-path property."
-  (-> (treemacs--current-root-btn)
-      (button-get 'abs-path)))
 
 (defun treemacs--current-root-btn ()
   "Return the current root button."
@@ -580,7 +584,7 @@ through the buffer list and kill buffer if PATH is a prefix."
 
     ;; Kill all dired buffers in one step
     (when (bound-and-true-p dired-buffers)
-      (when-let (dired-buffers-for-path
+      (-when-let (dired-buffers-for-path
                  (->> dired-buffers
                       (--filter (treemacs--is-path-in-dir? (car it) path))
                       (-map #'cdr)))
