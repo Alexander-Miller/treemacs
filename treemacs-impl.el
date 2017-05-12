@@ -514,6 +514,13 @@ Also return that button."
         entries
       (--map (-filter #'treemacs--should-show? it) entries))))
 
+(defun treemacs--current-visibility ()
+  "Return whether the current visibility state of the treemacs buffer.
+Valid states are 'visible, 'exists and 'none."
+  (cond
+   ((treemacs--is-visible?)    'visible)
+   ((treemacs--buffer-exists?) 'exists)
+   (t 'none)))
 
 (defun treemacs--current-root-btn ()
   "Return the current root button."

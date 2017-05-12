@@ -33,41 +33,41 @@
 
 ;; treemacs--maybe-filter-dotfiles
 (progn
-  (ert-deftest filter-dotfiles//do-nothing-when-dotfiles-are-shown ()
+  (ert-deftest filter-dotfiles::do-nothing-when-dotfiles-are-shown ()
     (with-mock (stub treemacs--current-root => "/home/")
                (let ((treemacs-show-hidden-files t)
                      (input '("/home/.A" "/home/B/C" "/home/.A/B" "/home/.A/.B/.C")))
                  (should (equal input (treemacs--maybe-filter-dotfiles input))))))
 
-  (ert-deftest filter-dotfiles//do-nothing-for-nulls ()
+  (ert-deftest filter-dotfiles::do-nothing-for-nulls ()
     (with-mock (stub treemacs--current-root => "/home/")
                (let ((treemacs-show-hidden-files nil))
                  (should (null (treemacs--maybe-filter-dotfiles nil))))))
 
-  (ert-deftest filter-dotfiles//do-nothing-for-empty-input ()
+  (ert-deftest filter-dotfiles::do-nothing-for-empty-input ()
     (with-mock (stub treemacs--current-root => "/home/")
                (let ((treemacs-show-hidden-files nil))
                  (should (null (treemacs--maybe-filter-dotfiles '()))))))
 
-  (ert-deftest filter-dotfiles//filter-single-dotfile ()
+  (ert-deftest filter-dotfiles::filter-single-dotfile ()
     (with-mock (stub treemacs--current-root => "/home/")
                (let ((treemacs-show-hidden-files nil)
                      (input '("/home/A/B/C/D/.d")))
                  (should (null (treemacs--maybe-filter-dotfiles input))))))
 
-  (ert-deftest filter-dotfiles//filter-dotfile-based-on-parent ()
+  (ert-deftest filter-dotfiles::filter-dotfile-based-on-parent ()
     (with-mock (stub treemacs--current-root => "/home/")
                (let ((treemacs-show-hidden-files nil)
                      (input '("/home/A/B/C/.D/d")))
                  (should (null (treemacs--maybe-filter-dotfiles input))))))
 
-  (ert-deftest filter-dotfiles//dont-filter-dotfile-above-root ()
+  (ert-deftest filter-dotfiles::dont-filter-dotfile-above-root ()
     (with-mock (stub treemacs--current-root => "/home/.A/B")
                (let ((treemacs-show-hidden-files nil)
                      (input '("/home/.A/B/C/d")))
                  (should (equal input (treemacs--maybe-filter-dotfiles input))))))
 
-  (ert-deftest filter-dotfiles//filter-long-input ()
+  (ert-deftest filter-dotfiles::filter-long-input ()
     (with-mock (stub treemacs--current-root => "/home/.A/B")
                (let ((treemacs-show-hidden-files nil)
                      (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
@@ -75,14 +75,14 @@
 
 ;; treemacs--add-to-cache
 (progn
-  (ert-deftest add-to-dirs-cache//add-single-item ()
+  (ert-deftest add-to-dirs-cache::add-single-item ()
     (let ((parent "/home/A")
           (child  "/home/A/B")
           (treemacs--open-dirs-cache nil))
       (treemacs--add-to-cache parent child)
       (should (equal `((,parent ,child)) treemacs--open-dirs-cache))))
 
-  (ert-deftest add-to-dirs-cache//add-two-same-parent-items ()
+  (ert-deftest add-to-dirs-cache::add-two-same-parent-items ()
     (let ((parent "/home/A")
           (child1 "/home/A/B1")
           (child2 "/home/A/B2")
@@ -91,7 +91,7 @@
       (treemacs--add-to-cache parent child2)
       (should (equal `((,parent ,child2 ,child1)) treemacs--open-dirs-cache))))
 
-  (ert-deftest add-to-dirs-cache//add-two-different-parent-items ()
+  (ert-deftest add-to-dirs-cache::add-two-different-parent-items ()
     (let ((parent1 "/home/A1")
           (parent2 "/home/A2")
           (child1  "/home/A/B1")
@@ -101,7 +101,7 @@
       (treemacs--add-to-cache parent2 child2)
       (should (equal `((,parent2 ,child2) (,parent1 ,child1)) treemacs--open-dirs-cache))))
 
-  (ert-deftest add-to-dirs-cache//add-new-child-to-cache-with-multiple-items ()
+  (ert-deftest add-to-dirs-cache::add-new-child-to-cache-with-multiple-items ()
     (let ((parent1 "/home/A1")
           (parent2 "/home/A2")
           (child1  "/home/A/B1")
@@ -115,56 +115,56 @@
 
 ;; treemacs--clear-from-cache
 (progn
-  (ert-deftest clear-from-dirs-cache//clear-item-from-empty-cache ()
+  (ert-deftest clear-from-dirs-cache::clear-item-from-empty-cache ()
     (let ((treemacs--open-dirs-cache nil))
       (treemacs--clear-from-cache "/home/A")
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache//clear-item-not-in-the-cache ()
+  (ert-deftest clear-from-dirs-cache::clear-item-not-in-the-cache ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
       (treemacs--clear-from-cache "/home/X")
       (should (equal '(("/home/A" "/home/A/B")) treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache//clear-item-from-empty-cache-with-purge ()
+  (ert-deftest clear-from-dirs-cache::clear-item-from-empty-cache-with-purge ()
     (let ((treemacs--open-dirs-cache nil))
       (treemacs--clear-from-cache "/home/A" t)
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache//clear-item-from-cache-deleting-the-entry ()
+  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-deleting-the-entry ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
       (treemacs--clear-from-cache "/home/A/B")
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache//clear-item-from-cache-deleting-the-entry-with-purge ()
+  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-deleting-the-entry-with-purge ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
       (treemacs--clear-from-cache "/home/A/B" t)
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache//clear-item-from-cache-leaving-other-entry ()
+  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-leaving-other-entry ()
     (let* ((entry1 '("/home/A" "/home/A/B"))
            (entry2 '("/home/C" "/home/C/D"))
            (treemacs--open-dirs-cache (list entry1 entry2)))
       (treemacs--clear-from-cache "/home/A/B")
       (should (equal treemacs--open-dirs-cache `(,entry2)))))
 
-  (ert-deftest clear-from-dirs-cache//clear-item-from-cache-leaving-other-entry-with-purge ()
+  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-leaving-other-entry-with-purge ()
     (let* ((entry1 '("/home/A" "/home/A/B"))
            (entry2 '("/home/C" "/home/C/D"))
            (treemacs--open-dirs-cache (list entry1 entry2)))
       (treemacs--clear-from-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache `(,entry2)))))
 
-  (ert-deftest clear-from-dirs-cache//clear-one-of-two-items ()
+  (ert-deftest clear-from-dirs-cache::clear-one-of-two-items ()
     (let* ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B" "/home/A/C"))))
       (treemacs--clear-from-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A" "/home/A/C"))))))
 
-  (ert-deftest clear-from-dirs-cache//clear-one-of-two-items-with-purge ()
+  (ert-deftest clear-from-dirs-cache::clear-one-of-two-items-with-purge ()
     (let* ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B" "/home/A/C"))))
       (treemacs--clear-from-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A" "/home/A/C"))))))
 
-  (ert-deftest clear-from-dirs-cache//clear-item-and-purge-children ()
+  (ert-deftest clear-from-dirs-cache::clear-item-and-purge-children ()
     (let* ((treemacs--open-dirs-cache
             '(("/home/A" "/home/A/B")
               ("/home/A/B" "/home/A/B/C1" "/home/A/B/C2")
@@ -177,64 +177,91 @@
 
 ;; treemacs--is-path-in-dir?
 (progn
-  (ert-deftest path-in-dir//direct-parent ()
+  (ert-deftest path-in-dir::direct-parent ()
     (let ((path "~/A/B/c")
           (parent "~/A/B"))
       (should (treemacs--is-path-in-dir? path parent))))
 
-  (ert-deftest path-in-dir//indirect-parent ()
+  (ert-deftest path-in-dir::indirect-parent ()
     (let ((path "~/A/B/C/D/e")
           (parent "~/A"))
       (should (treemacs--is-path-in-dir? path parent))))
 
-  (ert-deftest path-in-dir//not-a-parent ()
+  (ert-deftest path-in-dir::not-a-parent ()
     (let ((path "~/A/B/C/D/e")
           (parent "~/B"))
       (should-not (treemacs--is-path-in-dir? path parent))))
 
-  (ert-deftest path-in-dir//not-a-parent-with-simialr-prefix ()
+  (ert-deftest path-in-dir::not-a-parent-with-simialr-prefix ()
     (let ((path "~/A/prefix")
           (parent "~/A/prefixp"))
       (should-not (treemacs--is-path-in-dir? path parent)))))
 
 ;; treemacs--get-face
 (progn
-  (ert-deftest get-face//dir-face-for-path-without-git-info ()
+  (ert-deftest get-face::dir-face-for-path-without-git-info ()
     (should (eq 'treemacs-directory-face (treemacs--get-face "~/A" t nil))))
 
-  (ert-deftest get-face//dir-face-for-path-with-git-info ()
+  (ert-deftest get-face::dir-face-for-path-with-git-info ()
     (should (eq 'treemacs-directory-face (treemacs--get-face "~/A" t '(("M" . "~/A"))))))
 
-  (ert-deftest get-face//unmodified-face-for-file-without-git-info ()
+  (ert-deftest get-face::unmodified-face-for-file-without-git-info ()
     (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil nil))))
 
-  (ert-deftest get-face//unmodified-face-for-file-without-fitting-git-info ()
+  (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
     (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
       (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
 
-  (ert-deftest get-face//unmodified-face-for-file-without-fitting-git-info ()
+  (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
     (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
       (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
 
-  (ert-deftest get-face//unmodified-face-for-file-without-fitting-git-status ()
+  (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-status ()
     (let ((git-info '(("0" . "~/A"))))
       (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
 
-  (ert-deftest get-face//modified-face-for-modified-file ()
+  (ert-deftest get-face::modified-face-for-modified-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("M" . "~/A"))))
       (should (eq 'treemacs-git-modified-face (treemacs--get-face "~/A" nil git-info)))))
 
-  (ert-deftest get-face//untracked-face-for-untracked-file ()
+  (ert-deftest get-face::untracked-face-for-untracked-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("??" . "~/A"))))
       (should (eq 'treemacs-git-untracked-face (treemacs--get-face "~/A" nil git-info)))))
 
-  (ert-deftest get-face//ignored-face-for-ignored-file ()
+  (ert-deftest get-face::ignored-face-for-ignored-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("!!" . "~/A"))))
       (should (eq 'treemacs-git-ignored-face (treemacs--get-face "~/A" nil git-info)))))
 
-  (ert-deftest get-face//added-face-for-added-file ()
+  (ert-deftest get-face::added-face-for-added-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("A" . "~/A"))))
       (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" nil git-info))))))
+
+;; treemacs--current-visibility
+(progn
+
+  (ert-deftest current-visibility::visible-buffer ()
+      (with-mock
+        (stub treemacs--is-visible? => t)
+        (stub treemacs--buffer-exists? => t)
+        (should (eq 'visible (treemacs--current-visibility)))))
+
+  (ert-deftest current-visibility::visible-buffer-even-when-exists?-is-nil ()
+    (with-mock
+      (stub treemacs--is-visible? => t)
+      (stub treemacs--buffer-exists? => nil)
+      (should (eq 'visible (treemacs--current-visibility)))))
+
+  (ert-deftest current-visibility::existing-buffer ()
+    (with-mock
+      (stub treemacs--is-visible? => nil)
+      (stub treemacs--buffer-exists? => t)
+      (should (eq 'exists (treemacs--current-visibility)))))
+
+  (ert-deftest current-visibility::no-buffer ()
+    (with-mock
+      (stub treemacs--is-visible? => nil)
+      (stub treemacs--buffer-exists? => nil)
+      (should (eq 'none (treemacs--current-visibility))))))
 
 (provide 'treemacs-tests)
 
