@@ -5,7 +5,7 @@
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
-;; Version: 1.2.4
+;; Version: 1.2.5
 ;; Keywords: tree, file, explorer
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-mode)
 (require 'treemacs-follow-mode)
+(require 'cl-macs)
 
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")
@@ -337,6 +338,44 @@ If a prefix argument ARG is provided read a new value for
     (when arg (setq treemacs-width (read-number "New Width: ")))
     (treemacs--set-width treemacs-width)))
 
+;;;###autoload
+(cl-defun treemacs-find-file (&optional (path (buffer-file-name (current-buffer))))
+  "Find and move point to PATH (or the current file) in the treemacs buffer.
+Expand folders if needed. If PATH is not under the current root ask to change
+the root. If no treemacs buffer exists create it with PATH as root if PATH is
+a directory or PATH's parent as root if PATH is a file.
+Do nothing if PATH is not given and the current buffer is not editing a file."
+  (interactive)
+  (when (and path (f-exists? path))
+    (save-selected-window
+      (treemacs--without-following
+       (let* ((visibility (treemacs--current-visibility))
+              (path       (f-long path))
+              (is-dir?    (f-directory? path)))
+         ;; get up a visible treemacs buffer, regardless of its current state
+         (if (eq visibility 'none)
+             ;; finding a file without an existing treemacs is just an init
+             ;; nothing else to do here
+             (treemacs--init (if is-dir? path (f-dirname path)))
+           (progn
+             (cl-case visibility
+               (exists  (treemacs-toggle))
+               (visible (treemacs--select-visible))
+               (t       (error "Unkown treemacs buffer visibility '%s'" visibility)))
+             ;; find the file given whether is a directory and if it can be found below
+             ;; the current root or not
+             (let ((root (treemacs--current-root)))
+               (if (treemacs--is-path-in-dir? path root)
+                   (treemacs--do-follow path root)
+                 (when (or treemacs-change-root-without-asking
+                           (y-or-n-p "Change the treemacs root to find the file? "))
+                   (if is-dir?
+                       (treemacs--init path)
+                     (progn
+                       (treemacs--init (f-dirname path))
+                       (treemacs--goto-button-at path)
+                       (hl-line-mode -1)
+                       (hl-line-mode t)))))))))))))
 
 (provide 'treemacs)
 

@@ -99,6 +99,11 @@ and outputs the string header to be inserted in the treemacs buffer."
   :type 'regexp
   :group 'treemacs-configuration)
 
+(defcustom treemacs-change-root-without-asking nil
+  "When t don't ask to change the root when calling `treemacs-find-file'."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here
