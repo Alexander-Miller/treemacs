@@ -341,10 +341,11 @@ If a prefix argument ARG is provided read a new value for
 ;;;###autoload
 (cl-defun treemacs-find-file (&optional (path (buffer-file-name (current-buffer))))
   "Find and move point to PATH (or the current file) in the treemacs buffer.
+Most likley to be useful when `treemacs-follo-mode' is not active.
+
 Expand folders if needed. If PATH is not under the current root ask to change
-the root. If no treemacs buffer exists create it with PATH as root if PATH is
-a directory or PATH's parent as root if PATH is a file.
-Do nothing if PATH is not given and the current buffer is not editing a file."
+the root. If no treemacs buffer exists create it. Do nothing if PATH is not
+given and the current buffer is not editing a file."
   (interactive)
   (when (and path (f-exists? path))
     (save-selected-window
