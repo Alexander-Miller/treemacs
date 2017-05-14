@@ -1,3 +1,5 @@
+#+STARTUP: noinlineimages
+
 * Treemacs - a tree layout file explorer for Emacs
 
 [[file:screenshot.png]]
@@ -6,7 +8,7 @@
 
 Treemacs is a file and project explorer in the same vein as NeoTree or vim's NerdTree. It shows the file system outline in a
 simple tree layout allowing quick navigation and exploration, while also possessing *basic* file management utilities.
-Specifically the single selling points are as follows:
+Specifically a quick feature overview looks as follows:
 
  * Easy navigation - quickly change the root directory or use shortcuts to jump to parent or neighbouring nodes.
  * Versatile file access - decide exactly how and where a file will be opened, including using ~ace-window~ to choose
@@ -18,6 +20,7 @@ Specifically the single selling points are as follows:
  * Projectile integration - quickly open treemacs at any known project's root directory.
  * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
    another matter). When run in a terminal a very simple fallback is used.
+ * Session persistence with ~desktop-save-mode~
  * Ease of use - treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
    defaults. Installation aside there are to obligatory pieces of setup: 1) setting ~treemacs-be-evil~ to t if you want to
    use vim-like navigation keybinds and 2) Choosing convenient keybindings to run treemacs. More on both below.
@@ -45,6 +48,7 @@ Treemacs offers the following configuration options:
 | treemacs-git-integration            | nil                     | When t use different faces for files' different git states.                                                                                                                                                                                                   |
 | treemacs-follow-after-init          | nil                     | When t follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                                                               |
 | treemacs-change-root-without-asking | nil                     | When t don't ask to change the root when calling ~treemacs-find-file~.                                                                                                                                                                                        |
+| treemacs-never-persist              | nil                     | When t treemacs will never persist its state.                                                                                                                                                                                                                 |
 
 *** Faces
 
@@ -69,17 +73,35 @@ multiple times in a row when emacs is working. This means two things:
 wasn't made compatible with it by default). If you do see ~treemacs-follow~ behaving in a way it shouldn't open up
 an issue. The fix shouldn't be more than a single bit of advice away.
 
+*** Session persistence
+To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
+~desktop-save-mode~. This integration shoud work out of the box and require zero setup and configuration
+(aside from the option to turn it off with ~treemacs-never-persist~).
+
+The persisted state is saved under ~user-emacs-directory/.cache/treemacs-persist~. The exact file location
+is saved in the variable ~treemacs--persist-file~.
+
+Persistence by means of frameworks other than ~desktop-save-mode~ is likewise possible, but does require
+some additional work. To save treemacs' current state ~treemacs-persist~ must be called. By default this would
+happen in ~desktop-save-hook~, in its absence it must be invoked elsewhere. If all else fails ~emacs-kill-hook~
+is a good candidate to run persistence.
+
+State restoration should again work automatically. When the treemacs major mode is toggled in a completely empty
+buffer (this should normally never happen, as even an empty directory still contains a header) ~treemacs-restore~
+will be called and the previously saved state (if available) will be restored. If this does not work it is of course
+still possible to invoke ~treemacs-restore~ manually when the right conditions are met.
+
 ** Keymap
 
 Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
 Additionally ~treemacs-refresh~ and ~treemacs-find-file~ may also be called from outside the treemacs window and
 might therefore need their own global binding.
 
-| Action                     | Description                                                                                                                                                                                                                                                                              |
-|----------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action                   | Description                                                                                                                                                                                                                                                                              |
+|--------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | treemacs-init            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
 | treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
-| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-init.                                                                                         |
+| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-init.                                                                                           |
 | treemacs-find-file       | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
 
 By default Treemacs's keymap looks as follows:
