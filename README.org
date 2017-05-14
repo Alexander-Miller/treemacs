@@ -1,0 +1,110 @@
+* Treemacs - a tree layout file explorer for Emacs
+
+[[file:screenshot.png]]
+
+** Feature Overview
+
+Treemacs is a file and project explorer in the same vein as NeoTree or vim's NerdTree. It shows the file system outline in a
+simple tree layout allowing quick navigation and exploration, while also possessing *basic* file management utilities.
+Specifically the single selling points are as follows:
+
+ * Easy navigation - quickly change the root directory or use shortcuts to jump to parent or neighbouring nodes.
+ * Versatile file access - decide exactly how and where a file will be opened, including using ~ace-window~ to choose
+   a buffer or launch an external app via ~xdg-open~
+ * Optionally always follow along and keep in focus the currently selected file ~treemacs-follow-mode~
+ * Optional git integration - treemacs will use different faces for files based on their git status
+ * [[https://github.com/deb0ch/emacs-winum][Winum]] integration - treemacs will always be assigned window number 10, never interfering with the numbering
+   layout of your other windows.
+ * Projectile integration - quickly open treemacs at any known project's root directory.
+ * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
+   another matter). When run in a terminal a very simple fallback is used.
+ * Ease of use - treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
+   defaults. Installation aside there are to obligatory pieces of setup: 1) setting ~treemacs-be-evil~ to t if you want to
+   use vim-like navigation keybinds and 2) Choosing convenient keybindings to run treemacs. More on both below.
+
+** Installation
+
+Treemacs is not available on MEPLA just yet (though I do plan to publish soon). If you want to use it anyway installtion
+has to be done the oldfashioned way - clone the repository, add it to your ~loadpath~, and ~require~ it.
+
+Make sure to set ~treemacs-be-evil~ to t /before/ calling require as the necessary keymap are setup when the package is
+first loaded. Once this is done treemacs is ready to be used by calling ~treemacs-init~, ~treemacs-toggle~ or
+~treemacs-projectile-init~.
+
+** Configuration
+*** Variables
+Treemacs offers the following configuration options:
+
+| Variable                            | Default                 | Description                                                                                                                                                                                                                                                   |
+|-------------------------------------+-------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs-be-evil                    | nil                     | If t when treemacs is loaded treemacs will define is own simple evil-state and use j/k for navigation instead of n/p.                                                                                                                                         |
+| treemacs-indentation                | 2                       | The number of spaces each level is indented in the tree.                                                                                                                                                                                                      |
+| treemacs-width                      | 35                      | Width of the treemacs buffer.                                                                                                                                                                                                                                 |
+| treemacs-show-hidden-files          | t                       | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                                           |
+| treemacs-header-function            | treemacs--create-header | The function which is used to create the header string for treemacs buffers. Default options are ~treemacs--create-header~ and ~treemacs--create-header-projectile~. Any function that takes the current root path and returns the header string may be used. |
+| treemacs-git-integration            | nil                     | When t use different faces for files' different git states.                                                                                                                                                                                                   |
+| treemacs-follow-after-init          | nil                     | When t follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                                                               |
+| treemacs-change-root-without-asking | nil                     | When t don't ask to change the root when calling ~treemacs-find-file~.                                                                                                                                                                                        |
+
+*** Faces
+
+Treemacs defines and uses the following faces:
+| Face                    | Inherits from                                   | Description                                                                  |
+|-------------------------+-------------------------------------------------+------------------------------------------------------------------------------|
+| treemacs-directory-face | font-lock-function-name-face                    | Face used for directories.                                                   |
+| treemacs-file-face      | default                                         | Face used for files.                                                         |
+| treemacs-header-face    | font-lock-constant-face (underlined & size 1.4) | Face used for the treemacs header.                                           |
+| treemacs-term-node-face | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
+| treemacs-git-*-face     | various font lock faces                         | Faces used by treemacs for various git states.                               |
+
+*** Treemacs-follow-mode
+
+~treemacs-follow-mode~ is a minor mode which allows the treemacs view to always move its focus to the
+currently selected file. This is achieved by advising ~select-window~, which is a ubiquitous function, often called
+multiple times in a row when emacs is working. This means two things:
+
+1) ~treemacs-follow~ tries to be very specific about when it is run at all.
+
+2) There may be times when something slips through (~which-key~ for exmaple would cause such a problem if treemacs
+wasn't made compatible with it by default). If you do see ~treemacs-follow~ behaving in a way it shouldn't open up
+an issue. The fix shouldn't be more than a single bit of advice away.
+
+** Keymap
+
+Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
+Additionally ~treemacs-refresh~ and ~treemacs-find-file~ may also be called from outside the treemacs window and
+might therefore need their own global binding.
+
+| Action                     | Description                                                                                                                                                                                                                                                                              |
+|----------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs-init            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
+| treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
+| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-init.                                                                                         |
+| treemacs-find-file       | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
+
+By default Treemacs's keymap looks as follows:
+
+| Key     | Action                                   | Description                                                                                                                           |
+|---------+------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------|
+| j/n     | treemacs-next-line                       | Goto next/prev line.                                                                                                                  |
+| h       | treemacs-uproot                          | Switch treemacs' root directory to current root's parent, if possible.                                                                |
+| l       | treemacs-change-root                     | Use currently selected directory as new root. Do nothing for files.                                                                   |
+| M-j/M-n | treemacs-next/previous-neighbour         | Select next node at the same depth as currently selected node, if possible.                                                           |
+| th      | treemacs-toggle-show-dotfiles            | Toggle the hiding and displaying of dotfiles.                                                                                         |
+| tw      | treemacs-toggle-fixed-width              | Toggle whether the treemacs buffer should have a fixed width. See also treemacs-width.                                                |
+| w       | treemacs-reset-width                     | Reset the width of the treemacs buffer to treemacs-width. If a prefix argument is provided read a new value for treemacs-width first. |
+| tab     | treemacs-push-button                     | Open/close directory. Open file with treemacs-visit-file-vertical-split.                                                              |
+| g/r     | treemacs-refresh                         | Refresh and rebuild treemacs buffer.                                                                                                  |
+| d       | treemacs-delete                          | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                  |
+| cf      | treemacs-create-file                     | Create a file.                                                                                                                        |
+| cd      | treemacs-create-dir                      | Create a directory.                                                                                                                   |
+| u       | treemacs-goto-parent-node                | Select parent of selected node, if possible.                                                                                          |
+| q       | treemacs-toggle                          | Hide/show an existing treemacs buffer. Create one if it does not exist.                                                               |
+| Q       | treemacs-kill-buffer                     | Kill the treemacs buffer.                                                                                                             |
+| ov      | treemacs-visit-file-vertical-split       | Open current file by vertically splitting other-buffer. Do nothing for directories.                                                   |
+| oh      | treemacs-visit-file-horizontal-split     | Open current file by horizontally splitting other-buffer. Do nothing for directories.                                                 |
+| oo/RET  | treemacs-visit-file-no-split             | Open current file, performing no split and using other-buffer directly. Do nothing for directories.                                   |
+| oaa     | treemacs-visit-file-ace                  | Open current file, using ace-window to decide which buffer to open the file in. Do nothing for directories.                           |
+| oah     | treemacs-visit-file-ace-horizontal-split | Open current file by horizontally splitting a buffer selected by ace-window. Do nothing for directories.                              |
+| oav     | treemacs-visit-file-ace-vertical-split   | Open current file by vertically splitting a buffer selected by ace-window. Do nothing for directories.                                |
+| ox      | treemacs-xdg-open                        | Open current file, using the xdg-open shell-command. Do nothing for directories.                                                      |

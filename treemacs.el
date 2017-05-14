@@ -5,7 +5,7 @@
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
-;; Version: 1.2.5
+;; Version: 1.3
 ;; Keywords: tree, file, explorer
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -180,7 +180,7 @@ the project from among `projectile-known-projects'."
 
 ;;;###autoload
 (defun treemacs-change-root ()
-  "Use current directory as new root. Do nothing for files."
+  "Use currently selected directory as new root. Do nothing for files."
   (interactive)
   (beginning-of-line)
   (let* ((point     (point))

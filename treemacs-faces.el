@@ -43,7 +43,7 @@
 
 (defface treemacs-term-node-face
   '((t :inherit font-lock-string-face))
-  "Face used by treemacs in the terminal for directory nodes."
+  "Face used by treemacs in the terminal for directory node symbols."
   :group 'treemacs-faces)
 
 (defface treemacs-git-unmodified-face
