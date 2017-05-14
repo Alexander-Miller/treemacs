@@ -117,6 +117,8 @@ desktop save mode is on."
     ;; args are irrelevant since treemacs has but one way to be restored
     (treemacs-restore))
 
+  (add-hook 'desktop-save-hook #'treemacs--maybe-persist)
+
   (add-to-list 'desktop-buffer-mode-handlers
                '(treemacs-mode . treemacs--desktop-handler)))
 
