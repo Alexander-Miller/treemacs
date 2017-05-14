@@ -88,9 +88,9 @@
 (defun treemacs--maybe-persist ()
   "Hook function to save treemacs state when conditions for it are met.
 Persistence takes place when the treemacs buffer is killed or when Emacs shuts
-down and `treemacs--never-persist' is not t and a state saving mode like
+down and `treemacs-never-persist' is not t and a state saving mode like
 desktop save mode is on."
-  (when (and (not treemacs--never-persist)
+  (when (and (not treemacs-never-persist)
              (or desktop-save-mode
                  (and (bound-and-true-p persp-auto-save-opt)
                       (not (eq 0 persp-auto-save-opt)))))

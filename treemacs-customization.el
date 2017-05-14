@@ -98,7 +98,7 @@ and outputs the string header to be inserted in the treemacs buffer."
   :type 'boolean
   :group 'treemacs-configuration)
 
-(defcustom treemacs--never-persist nil
+(defcustom treemacs-never-persist nil
   "When t treemacs will never persist its state.
 By default treemacs' state is written to disk in `treemacs--persist-file' if it
 detects a session saving mechanism like desktop save mode so it can be restored
