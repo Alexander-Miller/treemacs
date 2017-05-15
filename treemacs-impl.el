@@ -293,13 +293,12 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
 
 (defun treemacs--insert-header (root)
   "Insert the header line for the given ROOT."
-  (let ((full-root (f-full root)))
-    (setq default-directory full-root)
-    (insert-button (propertize (funcall treemacs-header-function root)
-                               'face 'treemacs-header-face)
-                   'face 'treemacs-header-face
-                   'abs-path full-root
-                   'action #'ignore)))
+  (setq default-directory (f-full root))
+  (insert-button (propertize (funcall treemacs-header-function root)
+                             'face 'treemacs-header-face)
+                 'face 'treemacs-header-face
+                 'abs-path root
+                 'action #'ignore))
 
 (defun treemacs--get-face (path is-dir? git-info)
   "Return the appropriate face for PATH given IS-DIR? and GIT-INFO."
