@@ -639,6 +639,13 @@ through the buffer list and kill buffer if PATH is a prefix."
         (with-current-buffer tb
           (setq window-size-fixed 'width))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Golden Ratio Compatibility ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(with-eval-after-load 'golden-ratio
+  (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode))
+
 (provide 'treemacs-impl)
 
 ;;; treemacs-impl.el ends here
