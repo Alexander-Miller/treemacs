@@ -379,6 +379,21 @@ given and the current buffer is not editing a file."
                        (hl-line-mode -1)
                        (hl-line-mode t)))))))))))))
 
+;;;###autoload
+(defun treemacs-yank-path-at-point ()
+  "Copy the absolute path of the node at point."
+  (interactive)
+  (-> (treemacs--prop-at-point 'abs-path)
+      (f-full)
+      (kill-new)))
+
+;;;###autoload
+(defun treemacs-yank-root ()
+  "Copy the absolute path of the current treemacs root."
+  (interactive)
+  (-> default-directory
+      (f-full)
+      (kill-new)))
 
 (provide 'treemacs)
 

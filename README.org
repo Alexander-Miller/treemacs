@@ -130,3 +130,5 @@ By default Treemacs's keymap looks as follows:
 | oah     | treemacs-visit-file-ace-horizontal-split | Open current file by horizontally splitting a buffer selected by ace-window. Do nothing for directories.                              |
 | oav     | treemacs-visit-file-ace-vertical-split   | Open current file by vertically splitting a buffer selected by ace-window. Do nothing for directories.                                |
 | ox      | treemacs-xdg-open                        | Open current file, using the xdg-open shell-command. Do nothing for directories.                                                      |
+| yy      | treemacs-yank-path-at-point              | Copy the absolute path of the node at point.                                                                                          |
+| yr      | treemacs-yank-root                       | Copy the absolute path of the current treemacs root.                                                                                  |
