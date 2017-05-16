@@ -66,12 +66,27 @@
                 (open-dirs (treemacs--get-open-dirs))
                 (point-at  (treemacs--prop-at-point 'abs-path))
                 (text      ""))
-            (unless (f-exists? treemacs--persist-file)
-              (f-touch treemacs--persist-file))
+            (treemacs--check-persist-file)
             (setq text (s-concat text (format "ROOT : %s" root)))
             (setq text (s-concat text "\n" (format "OPEN-DIRS : %s" (s-join "|" open-dirs))))
             (setq text (s-concat text "\n" (format "POINT-AT : %s" point-at)))
             (f-write text 'utf-8 treemacs--persist-file))))))
+
+(defun treemacs--check-persist-file ()
+  "Make sure treemacs' persist file exists and is set up correctly.
+Create files/directories if necessary."
+  (let ((cache-dir (f-join user-emacs-directory ".cache")))
+    (if (f-exists? cache-dir)
+        (progn
+          (unless (f-dir? cache-dir)
+            (error " user-emacs-directory/.cache is not a directory "))
+          (unless (f-readable? cache-dir)
+            (error " user-emacs-directory/.cache is not readable "))
+          (unless (f-exists? treemacs--persist-file)
+            (f-touch treemacs--persist-file)))
+      (progn
+        (f-mkdir cache-dir)
+        (f-touch treemacs--persist-file)))))
 
 (defun treemacs--read-persist-data ()
   "Read the data stored in `treemacs--persist-file'."
