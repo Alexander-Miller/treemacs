@@ -72,8 +72,11 @@ not visible."
 
 (defmacro treemacs--without-following (&rest body)
   "Execute BODY with `treemacs--ready' set to nil."
-  `(let ((treemacs--ready))
-     ,@body))
+  `(let ((o treemacs--ready))
+     (setq treemacs--ready nil)
+     (unwind-protect
+         (progn ,@body)
+       (setq treemacs--ready o))))
 
 (defun treemacs--select-window-advice (&rest _)
   "Advice function for `treemacs-follow-mode'.

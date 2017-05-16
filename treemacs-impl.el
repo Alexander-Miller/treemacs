@@ -78,13 +78,17 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   "Temporarily turn off read-ony mode to execute BODY."
   `(progn
      (read-only-mode -1)
-     ,@body
-     (read-only-mode t)))
+     (unwind-protect
+         (progn ,@body)
+       (read-only-mode t))))
 
 (defmacro treemacs--without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
-  `(let ((inhibit-message))
-     ,@body))
+  `(let ((o inhibit-message))
+     (setq inhibit-message t)
+     (unwind-protect
+         (progn ,@body)
+       (setq inhibit-message o))))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
