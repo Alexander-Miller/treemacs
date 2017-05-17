@@ -22,23 +22,36 @@
 
 (require 'treemacs-impl)
 
+(defsubst treemacs--follow-each-dir (dir-parts root)
+  "Follow (goto and open) every single dir in DIR-PARTS, starting at ROOT."
+  (catch 'follow-failed
+    (let ((last-index (- (length dir-parts) 1))
+          (search-start (point-min)))
+      (--each dir-parts
+        (setq root (f-join root it))
+        (let ((btn (treemacs--goto-button-at root search-start)))
+          (if (null btn)
+              (progn
+                (throw 'follow-failed 'follow-failed)))
+          ;; don't open dir at the very end of the list since we only want to put
+          ;; point in its line
+          (when (and (eq 'dir-closed (button-get btn 'state))
+                     (< it-index last-index))
+            (treemacs--open-node btn)))
+        (setq search-start (point))))))
+
 (cl-defun treemacs--do-follow (followed-file &optional (root (treemacs--current-root)))
   "In the treemacs buffer move point to FOLLOWED-FILE given current ROOT.
 The followed file MUST be under root or the search will break."
-  (let* ((search-start (point-min))
-         (dir-parts    (->> (length root) (substring followed-file) (f-split) (cdr)))
-         (last-index   (- (length dir-parts) 1)))
+  (let* ((start         (point))
+         (dir-parts     (->> (length root) (substring followed-file) (f-split) (cdr)))
+         (search-result (treemacs--follow-each-dir dir-parts root)))
+    (when (eq search-result 'follow-failed)
+      (goto-char start))
     ;; hl-line *needs* to be toggled here otherwise it won't appear to
     ;; move until the treemacs buffer is selected again and follow must
     ;; work when called from outside the treemacs buffer with treemacs-follow-mode
     (hl-line-mode -1)
-    (--each dir-parts
-      (setq root (f-join root it))
-      (let ((btn (treemacs--goto-button-at root search-start)))
-        (when (and (eq 'dir-closed (button-get btn 'state))
-                   (< it-index last-index))
-          (treemacs--open-node btn)))
-      (setq search-start (point)))
     (hl-line-mode t)
     (treemacs--evade-image)
     (set-window-point (get-buffer-window) (point))))

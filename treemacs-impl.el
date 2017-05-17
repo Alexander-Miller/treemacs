@@ -479,13 +479,14 @@ Also remove any dirs below if PURGE is given."
 ;; Misc. utils ;;
 ;;;;;;;;;;;;;;;;;
 
-(defun treemacs--goto-button-at (abs-path &optional start)
+(cl-defun treemacs--goto-button-at (abs-path &optional (start-from (point-min)))
   "Move point to button identified by ABS-PATH, starting search at START.
 Also return that button."
-  (goto-char (or start (point-min)))
   (let ((keep-looking t)
         (filename (f-filename abs-path))
+        (start (point))
         (ret))
+    (goto-char start-from)
     (while (and keep-looking
                 (search-forward filename nil t))
       (beginning-of-line)
@@ -495,6 +496,7 @@ Also return that button."
                    (setq keep-looking nil
                          ret btn))
           (beginning-of-line 2))))
+    (unless ret (goto-char start))
     ret))
 
 (defun treemacs--set-width (width)
