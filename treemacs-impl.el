@@ -650,7 +650,8 @@ through the buffer list and kill buffer if PATH is a prefix."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (with-eval-after-load 'golden-ratio
-  (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode))
+  (when (bound-and-true-p golden-ratio-exclude-modes)
+    (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode)))
 
 (provide 'treemacs-impl)
 
