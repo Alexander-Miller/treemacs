@@ -73,7 +73,8 @@ Use j & k for navigating the treemacs buffer."
       (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
       (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
       (evil-define-key 'treemacs treemacs-mode-map (kbd "yr") #'treemacs-yank-root)
-      (evil-define-key 'treemacs treemacs-mode-map (kbd "yy") #'treemacs-yank-path-at-point)))
+      (evil-define-key 'treemacs treemacs-mode-map (kbd "yy") #'treemacs-yank-path-at-point)
+      (evil-define-key 'treemacs treemacs-mode-map (kbd "g")  #'treemacs-refresh)))
 
   t)
 
@@ -89,6 +90,7 @@ Use j & k for navigating the treemacs buffer."
   (define-key treemacs-mode-map (kbd "w")   #'treemacs-reset-width)
   (define-key treemacs-mode-map (kbd "yy")  #'treemacs-yank-path-at-point)
   (define-key treemacs-mode-map (kbd "yr")  #'treemacs-yank-root)
+  (define-key treemacs-mode-map (kbd "g")   #'treemacs-refresh)
 
   t)
 
