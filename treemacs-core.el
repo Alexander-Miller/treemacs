@@ -66,7 +66,7 @@ If a prefix argument ARG is given manually select the root directory."
                    (t (getenv "HOME")))))
 
 ;;;###autoload
-(defun treemacs-projectile-init (&optional arg)
+(defun treemacs-projectile (&optional arg)
   "Open treemacs for the current projectile project.
 If not in a project do nothing. If a prefix argument ARG is given select
 the project from among `projectile-known-projects'."

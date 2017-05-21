@@ -32,7 +32,7 @@ has to be done the oldfashioned way - clone the repository, add it to your ~load
 
 Make sure to set ~treemacs-be-evil~ to t /before/ calling require as the necessary keymap are setup when the package is
 first loaded. Once this is done treemacs is ready to be used by calling ~treemacs~, ~treemacs-toggle~ or
-~treemacs-projectile-init~.
+~treemacs-projectile~.
 
 ** Configuration
 *** Variables
@@ -97,12 +97,12 @@ Activation functions are unbound by default. It's left up to users to find the m
 Additionally ~treemacs-refresh~ and ~treemacs-find-file~ may also be called from outside the treemacs window and
 might therefore need their own global binding.
 
-| Action                   | Description                                                                                                                                                                                                                                                                              |
-|--------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| treemacs                 | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
-| treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
-| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.                                                                                                |
-| treemacs-find-file       | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
+| Action              | Description                                                                                                                                                                                                                                                                              |
+|---------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
+| treemacs-projectile | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
+| treemacs-toggle     | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.                                                                                                |
+| treemacs-find-file  | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
 
 By default Treemacs's keymap looks as follows:
 
