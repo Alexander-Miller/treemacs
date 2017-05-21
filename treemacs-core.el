@@ -40,7 +40,7 @@
   "If a treemacs buffer exists and is visible hide it.
 If a treemacs buffer exists, but is not visible bring it to the foreground
 and select it.
-If no treemacs buffer exists call `treemacs-init.'"
+If no treemacs buffer exists call `treemacs'."
   (interactive)
   (cond
    ((treemacs--is-visible?)
@@ -52,10 +52,10 @@ If no treemacs buffer exists call `treemacs-init.'"
    ((treemacs--buffer-exists?)
     (treemacs--select-not-visible))
    (t
-    (treemacs-init))))
+    (treemacs))))
 
 ;;;###autoload
-(defun treemacs-init (&optional arg)
+(defun treemacs (&optional arg)
   "Open treemacs with current buffer's directory as root.
 If the current buffer's `default-directory' is nil, use $HOME as fallback.
 If a prefix argument ARG is given manually select the root directory."

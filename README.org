@@ -31,7 +31,7 @@ Treemacs is not available on MEPLA just yet (though I do plan to publish soon). 
 has to be done the oldfashioned way - clone the repository, add it to your ~loadpath~, and ~require~ it.
 
 Make sure to set ~treemacs-be-evil~ to t /before/ calling require as the necessary keymap are setup when the package is
-first loaded. Once this is done treemacs is ready to be used by calling ~treemacs-init~, ~treemacs-toggle~ or
+first loaded. Once this is done treemacs is ready to be used by calling ~treemacs~, ~treemacs-toggle~ or
 ~treemacs-projectile-init~.
 
 ** Configuration
@@ -99,9 +99,9 @@ might therefore need their own global binding.
 
 | Action                   | Description                                                                                                                                                                                                                                                                              |
 |--------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| treemacs-init            | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
+| treemacs                 | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
 | treemacs-projectile-init | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
-| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-init.                                                                                           |
+| treemacs-toggle          | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.                                                                                                |
 | treemacs-find-file       | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
 
 By default Treemacs's keymap looks as follows:
