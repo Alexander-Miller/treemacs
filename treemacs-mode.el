@@ -20,8 +20,11 @@
 
 ;;; Code:
 
+(require 's)
 (require 'treemacs-customization)
 (require 'treemacs-impl)
+(require 'treemacs-core)
+(require 'treemacs-persist)
 
 (defvar treemacs-mode-map
   (let ((map (make-sparse-keymap)))
@@ -115,7 +118,7 @@ Use j & k for navigating the treemacs buffer."
   (hl-line-mode t)
   ;; treemacs buffer is only completely empty when it has been revived
   ;; by something like persp.el
-  (when (string-empty-p (buffer-string))
+  (when (s-blank? (buffer-string))
     (treemacs-restore))
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)

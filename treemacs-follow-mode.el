@@ -20,6 +20,9 @@
 
 ;;; Code:
 
+(require 'dash)
+(require 's)
+(require 'f)
 (require 'treemacs-impl)
 
 (defsubst treemacs--follow-each-dir (dir-parts root)
