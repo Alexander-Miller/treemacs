@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Custom options extracted into their own file to reduce clutter.
+;;; Customize interface definitions.
 
 ;;; Code:
 
@@ -76,11 +76,6 @@ and outputs the string header to be inserted in the treemacs buffer."
 (defcustom treemacs-icons-hash (make-hash-table :test 'equal)
   "Hash table containing a mapping of icons onto file extensions."
   :type 'plist
-  :group 'treemacs-configuration)
-
-(defcustom treemacs-be-evil nil
-  "When t use evil keys for navigation (j/k instead of n/p)."
-  :type 'boolean
   :group 'treemacs-configuration)
 
 (defcustom treemacs-git-integration nil

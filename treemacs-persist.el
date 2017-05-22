@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Persistence extracted into its own file to reduce clutter.
+;;; General persistence and desktop-save-mode-integration.
 
 ;;; Code:
 

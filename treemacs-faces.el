@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Faces extracted into their own file to reduce clutter.
+;;; Treemacs faces.
 
 ;;; Code:
 

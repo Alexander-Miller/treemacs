@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Mode definition extracted into its own file to reduce clutter.
+;;; Major mode definition.
 
 ;;; Code:
 
@@ -28,7 +28,6 @@
 
 (defvar treemacs-mode-map
   (let ((map (make-sparse-keymap)))
-
     (define-key map [tab]        #'treemacs-push-button)
     (define-key map [?\t]        #'treemacs-push-button)
     (define-key map [return]     #'treemacs-visit-file-no-split)
@@ -48,58 +47,18 @@
     (define-key map (kbd "oah")  #'treemacs-visit-file-ace-horizontal-split)
     (define-key map (kbd "oav")  #'treemacs-visit-file-ace-vertical-split)
     (define-key map (kbd "ox")   #'treemacs-xdg-open)
-
+    (define-key map (kbd "n")    #'treemacs-next-line)
+    (define-key map (kbd "p")    #'treemacs-previous-line)
+    (define-key map (kbd "M-n")  #'treemacs-next-neighbour)
+    (define-key map (kbd "M-p")  #'treemacs-previous-neighbour)
+    (define-key map (kbd "th")   #'treemacs-toggle-show-dotfiles)
+    (define-key map (kbd "tw")   #'treemacs-toggle-fixed-width)
+    (define-key map (kbd "w")    #'treemacs-reset-width)
+    (define-key map (kbd "yy")   #'treemacs-yank-path-at-point)
+    (define-key map (kbd "yr")   #'treemacs-yank-root)
+    (define-key map (kbd "g")    #'treemacs-refresh)
     map)
   "Keymap for `treemacs-mode'.")
-
-(defun treemacs--evil-config ()
-  "Create an evil state for treemacs mode.
-Use j & k for navigating the treemacs buffer."
-
-  (with-eval-after-load 'evil
-    ;; no, `treemacs' and `evil-treemacs-state-map' are NOT undefined variables
-    (with-no-warnings
-      (evil-define-state treemacs
-        "Treemacs state"
-        :cursor '(hbar . 0)
-        :enable (motion))
-
-      (evil-set-initial-state 'treemacs-mode 'treemacs)
-
-      (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
-      (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
-      (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
-      (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
-      (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
-      (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
-      (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
-      (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
-      (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
-      (evil-define-key 'treemacs treemacs-mode-map (kbd "yr") #'treemacs-yank-root)
-      (evil-define-key 'treemacs treemacs-mode-map (kbd "yy") #'treemacs-yank-path-at-point)
-      (evil-define-key 'treemacs treemacs-mode-map (kbd "g")  #'treemacs-refresh)))
-
-  t)
-
-(defun treemacs--default-config ()
-  "Use n & p for navigating the treemacs buffer."
-
-  (define-key treemacs-mode-map (kbd "n")   #'treemacs-next-line)
-  (define-key treemacs-mode-map (kbd "p")   #'treemacs-previous-line)
-  (define-key treemacs-mode-map (kbd "M-n") #'treemacs-next-neighbour)
-  (define-key treemacs-mode-map (kbd "M-p") #'treemacs-previous-neighbour)
-  (define-key treemacs-mode-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
-  (define-key treemacs-mode-map (kbd "tw")  #'treemacs-toggle-fixed-width)
-  (define-key treemacs-mode-map (kbd "w")   #'treemacs-reset-width)
-  (define-key treemacs-mode-map (kbd "yy")  #'treemacs-yank-path-at-point)
-  (define-key treemacs-mode-map (kbd "yr")  #'treemacs-yank-root)
-  (define-key treemacs-mode-map (kbd "g")   #'treemacs-refresh)
-
-  t)
-
-(if treemacs-be-evil
-    (treemacs--evil-config)
-  (treemacs--default-config))
 
 (treemacs--create-icons)
 
@@ -123,7 +82,7 @@ Use j & k for navigating the treemacs buffer."
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
 
-  (when (fboundp 'spaceline-compile)
+  (when (fboundp 'spaceline-install)
     (spaceline-install "treemacs"
                        '(((workspace-number window-number)
                           :separator "|"

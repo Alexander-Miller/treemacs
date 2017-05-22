@@ -4,7 +4,19 @@
 
 [[file:screenshot.png]]
 
-** Feature Overview
+* Content                                                                            :TOC:noexport:
+ - [[#treemacs---a-tree-layout-file-explorer-for-emacs][Treemacs - a tree layout file explorer for Emacs]]
+ - [[#feature-overview][Feature Overview]]
+ - [[#installation][Installation]]
+ - [[#configuration][Configuration]]
+   - [[#variables][Variables]]
+   - [[#faces][Faces]]
+   - [[#treemacs-follow-mode][Treemacs-follow-mode]]
+   - [[#session-persistence][Session persistence]]
+ - [[#keymap][Keymap]]
+ - [[#dependencies][Dependencies]]
+
+* Feature Overview
 
 Treemacs is a file and project explorer in the same vein as NeoTree or vim's NerdTree. It shows the file system outline in a
 simple tree layout allowing quick navigation and exploration, while also possessing *basic* file management utilities.
@@ -22,25 +34,25 @@ Specifically a quick feature overview looks as follows:
    another matter). When run in a terminal a very simple fallback is used.
  * Session persistence with ~desktop-save-mode~
  * Ease of use - treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
-   defaults. Installation aside there are to obligatory pieces of setup: 1) setting ~treemacs-be-evil~ to t if you want to
-   use vim-like navigation keybinds and 2) Choosing convenient keybindings to run treemacs. More on both below.
+   defaults. Installation aside there are two obligatory pieces of setup: 1) Choosing convenient keybindings to run
+   treemacs and 2) If you use evil: requiring ~treemacs-evil~ to integrate treemacs with evil and enable j/k navigation.
+   More on both below.
 
-** Installation
+* Installation
 
 Treemacs is not available on MEPLA just yet (though I do plan to publish soon). If you want to use it anyway installtion
-has to be done the oldfashioned way - clone the repository, add it to your ~loadpath~, and ~require~ it.
+has to be done the oldfashioned way - clone the repository, add it to your ~loadpath~, and ~require~ it. Also require
+~treemacs-evil~ if you use evil-mode.
 
-Make sure to set ~treemacs-be-evil~ to t /before/ calling require as the necessary keymap are setup when the package is
-first loaded. Once this is done treemacs is ready to be used by calling ~treemacs~, ~treemacs-toggle~ or
+Once this is done treemacs is ready to be used by calling ~treemacs~, ~treemacs-toggle~ or
 ~treemacs-projectile~.
 
-** Configuration
-*** Variables
+* Configuration
+** Variables
 Treemacs offers the following configuration options:
 
 | Variable                            | Default                 | Description                                                                                                                                                                                                                                                   |
 |-------------------------------------+-------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| treemacs-be-evil                    | nil                     | If t when treemacs is loaded treemacs will define is own simple evil-state and use j/k for navigation instead of n/p.                                                                                                                                         |
 | treemacs-indentation                | 2                       | The number of spaces each level is indented in the tree.                                                                                                                                                                                                      |
 | treemacs-width                      | 35                      | Width of the treemacs buffer.                                                                                                                                                                                                                                 |
 | treemacs-show-hidden-files          | t                       | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                                           |
@@ -50,7 +62,7 @@ Treemacs offers the following configuration options:
 | treemacs-change-root-without-asking | nil                     | When t don't ask to change the root when calling ~treemacs-find-file~.                                                                                                                                                                                        |
 | treemacs-never-persist              | nil                     | When t treemacs will never persist its state.                                                                                                                                                                                                                 |
 
-*** Faces
+** Faces
 
 Treemacs defines and uses the following faces:
 | Face                    | Inherits from                                   | Description                                                                  |
@@ -61,7 +73,7 @@ Treemacs defines and uses the following faces:
 | treemacs-term-node-face | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
 | treemacs-git-*-face     | various font lock faces                         | Faces used by treemacs for various git states.                               |
 
-*** Treemacs-follow-mode
+** Treemacs-follow-mode
 
 ~treemacs-follow-mode~ is a minor mode which allows the treemacs view to always move its focus to the
 currently selected file. This is achieved by advising ~select-window~, which is a ubiquitous function, often called
@@ -73,7 +85,7 @@ multiple times in a row when emacs is working. This means two things:
 wasn't made compatible with it by default). If you do see ~treemacs-follow~ behaving in a way it shouldn't open up
 an issue. The fix shouldn't be more than a single bit of advice away.
 
-*** Session persistence
+** Session persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
 ~desktop-save-mode~. This integration shoud work out of the box and require zero setup and configuration
 (aside from the option to turn it off with ~treemacs-never-persist~).
@@ -91,7 +103,7 @@ buffer (this should normally never happen, as even an empty directory still cont
 will be called and the previously saved state (if available) will be restored. If this does not work it is of course
 still possible to invoke ~treemacs-restore~ manually when the right conditions are met.
 
-** Keymap
+* Keymap
 
 Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
 Additionally ~treemacs-refresh~ and ~treemacs-find-file~ may also be called from outside the treemacs window and
@@ -132,3 +144,12 @@ By default Treemacs's keymap looks as follows:
 | ox      | treemacs-xdg-open                        | Open current file, using the xdg-open shell-command. Do nothing for directories.                                                      |
 | yy      | treemacs-yank-path-at-point              | Copy the absolute path of the node at point.                                                                                          |
 | yr      | treemacs-yank-root                       | Copy the absolute path of the current treemacs root.                                                                                  |
+* Dependencies
+ * emacs >= 24.4
+ * f.el
+ * s.el
+ * dash
+ * cl-lib
+ * ace-window
+ * (optionally) evil
+ * (optionally) projectile

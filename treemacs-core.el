@@ -19,8 +19,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Autoloaded functions only. Everything else is extracted into its
-;;; own file to reduce clutter.
+;;; Autoloaded, user-facing functions.
 
 ;;; Code:
 
