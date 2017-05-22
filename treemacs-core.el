@@ -43,13 +43,14 @@ If no treemacs buffer exists call `treemacs'."
   (interactive)
   (cond
    ((treemacs--is-visible?)
-    (progn
-      (treemacs--select-visible)
-      (if (one-window-p)
-          (switch-to-buffer (other-buffer))
-        (delete-window))))
+    (treemacs--select-visible)
+    (treemacs--refresh-on-ui-change)
+    (if (one-window-p)
+        (switch-to-buffer (other-buffer))
+      (delete-window)))
    ((treemacs--buffer-exists?)
-    (treemacs--select-not-visible))
+    (treemacs--select-not-visible)
+    (treemacs--refresh-on-ui-change))
    (t
     (treemacs))))
 

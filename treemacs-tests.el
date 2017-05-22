@@ -232,7 +232,6 @@
 
 ;; treemacs--current-visibility
 (progn
-
   (ert-deftest current-visibility::visible-buffer ()
       (with-mock
         (stub treemacs--is-visible? => t)
@@ -284,7 +283,6 @@
 
 ;; treemacs--should-show?
 (progn
-
   (let ((treemacs-dotfiles-regex (default-value 'treemacs-dotfiles-regex)))
 
     (ert-deftest should-show::fails-on-nil-file ()
@@ -351,7 +349,6 @@
 
 ;; treemacs--read-persist-data
 (progn
-
   (ert-deftest read-persist::reads-nil-from-empty-file ()
     (with-mock
       (stub f-file? => t)
@@ -378,6 +375,32 @@
                      (--all? (-contains? result it)
                              '(("ROOT" . "~/A")
                                ("POINT-AT" . "~/A/p")))))))))
+
+;; treemacs--check-window-system
+(progn
+  (ert-deftest check-window-system::returns-nil-when-no-change-from-x ()
+    (with-mock
+     (stub window-system => 'x)
+     (let ((treemacs--in-gui 'x))
+       (should-not (treemacs--check-window-system)))))
+
+  (ert-deftest check-window-system::returns-nil-when-no-change-from-term ()
+    (with-mock
+      (stub window-system => nil)
+      (let ((treemacs--in-gui))
+        (should-not (treemacs--check-window-system)))))
+
+  (ert-deftest check-window-system::returns-t-when-no-change-from-x-to-term ()
+    (with-mock
+      (stub window-system => 'x)
+      (let ((treemacs--in-gui))
+        (should (treemacs--check-window-system)))))
+
+  (ert-deftest check-window-system::returns-t-when-no-change-from-term-to-x ()
+    (with-mock
+      (stub window-system => nil)
+      (let ((treemacs--in-gui 'x))
+        (should (treemacs--check-window-system))))))
 
 (provide 'treemacs-tests)
 

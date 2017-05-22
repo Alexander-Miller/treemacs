@@ -13,6 +13,7 @@
    - [[#faces][Faces]]
    - [[#treemacs-follow-mode][Treemacs-follow-mode]]
    - [[#session-persistence][Session persistence]]
+   - [[#terminal-compatibility][Terminal Compatibility]]
  - [[#keymap][Keymap]]
  - [[#dependencies][Dependencies]]
 
@@ -103,6 +104,11 @@ buffer (this should normally never happen, as even an empty directory still cont
 will be called and the previously saved state (if available) will be restored. If this does not work it is of course
 still possible to invoke ~treemacs-restore~ manually when the right conditions are met.
 
+** Terminal Compatibility
+When run in a terminal treemacs will fall back to a much simpler rendering system, foregoing its usual png icons and using
+simple ~+~ and ~-~ characters instead. Changes to the current rendering system are detected automatically - within some
+limits. The check for the change happens with treemacs' functions which build or show/hide the treemacs buffer, namely
+~treemacs(-projectile)~. ~treemacs-toggle~ and ~treemacs-refresh~.
 * Keymap
 
 Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
@@ -153,3 +159,4 @@ By default Treemacs's keymap looks as follows:
  * ace-window
  * (optionally) evil
  * (optionally) projectile
+ * (optionally) winum

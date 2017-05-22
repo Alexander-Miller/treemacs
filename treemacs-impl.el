@@ -53,6 +53,9 @@
                       default-directory))
   "The directory treemacs.el is stored in.")
 
+(defvar treemacs--in-gui (window-system)
+  "Indicates whether Emacs is running in a gui or a terminal.")
+
 (defvar treemacs--insert-image #'treemacs--insert-image-png)
 
 (defvar treemacs--ready nil
@@ -93,6 +96,11 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
 ;;;;;;;;;;;;;;;;;;;
+
+(defsubst treemacs--refresh-on-ui-change ()
+  "Refresh the treemacs buffer when the window system has changed."
+  (when (treemacs--check-window-system)
+    (treemacs-refresh)))
 
 (defsubst treemacs--reopen (abs-path git-info)
   "Reopen the node identified by its ABS-PATH.
@@ -253,20 +261,29 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
       (with-current-buffer origin-buffer
         (treemacs--follow)))))
 
+(defun treemacs--check-window-system ()
+  "Check if the window system has changed since the last call.
+Make the necessary render function changes changes if so and explicitly
+return t."
+  (let ((current-ui (window-system)))
+    (unless (eq current-ui treemacs--in-gui)
+        (setq treemacs--in-gui current-ui)
+        (if current-ui
+            ;; icon variables are known to exist
+            (with-no-warnings
+              (setf treemacs--insert-image #'treemacs--insert-image-png)
+              (setq treemacs-icon-closed treemacs-icon-closed-png
+                    treemacs-icon-open   treemacs-icon-open-png))
+          ;; icon variables are known to exist
+          (with-no-warnings
+            (setf treemacs--insert-image #'treemacs--insert-image-text)
+            (setq treemacs-icon-closed treemacs-icon-closed-text
+                  treemacs-icon-open   treemacs-icon-open-text)))
+        t)))
+
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
-  ;; terminal compatibility
-  (if (window-system)
-      ;; icon variables are known to exist
-      (with-no-warnings
-        (setf treemacs--insert-image #'treemacs--insert-image-png)
-        (setq treemacs-icon-closed treemacs-icon-closed-png
-              treemacs-icon-open   treemacs-icon-open-png))
-    ;; icon variables are known to exist
-    (with-no-warnings
-      (setf treemacs--insert-image #'treemacs--insert-image-text)
-      (setq treemacs-icon-closed treemacs-icon-closed-text
-            treemacs-icon-open   treemacs-icon-open-text)))
+  (treemacs--check-window-system)
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
