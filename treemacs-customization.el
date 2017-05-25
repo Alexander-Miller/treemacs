@@ -101,6 +101,42 @@ on the next launch."
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-sorting 'alphabetic-desc
+  "Indicates how treemeacs will sort its files and directories.
+Files will still always be shown after directories.
+Valid values are
+ * alphabetic-asc,
+ * alphabetic-desc,
+ * size-asc,
+ * size-desc,
+ * mod-time-asc,
+ * mod-time-desc."
+  :type '(choice (const alphabetic-asc)
+                 (const alphabetic-desc)
+                 (const size-asc)
+                 (const size-desc)
+                 (const mod-time-asc)
+                 (const mod-time-desc))
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-ignored-file-predicates
+  '(treemacs--std-ignore-file-predicate)
+  "List of predicates to test for files ignored by Emacs.
+
+Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles)
+whose presence is controlled by `treemacs-show-hidden-files').
+
+Each predicate is a function that takes the filename as its only argument and
+returns t if the file should be ignored and nil otherwise. A file whose name
+returns t for *any* function in this list counts as ignored.
+
+By default this list contains `treemacs--std-ignore-file-predicate' which
+filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and
+therefore should not be directly overwritten, but added to and removed from
+instead."
+  :type 'list
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

@@ -281,36 +281,79 @@
     (let ((input "\"input"))
       (should (equal "input" (treemacs--unqote input))))))
 
-;; treemacs--should-show?
+;; treemacs--reject-ignored-files
 (progn
-  (let ((treemacs-dotfiles-regex (default-value 'treemacs-dotfiles-regex)))
+  (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
 
-    (ert-deftest should-show::fails-on-nil-file ()
-      (should-error (treemacs--should-show? nil)))
+    (ert-deftest reject-ignored::fails-on-nil-file ()
+      (should-error (treemacs--reject-ignored-files nil)))
 
-    (ert-deftest should-show::shows-empty-name ()
-      (should (treemacs--should-show? "")))
+    (ert-deftest reject-ignored::rejects-emacs-lock-file ()
+      (should-not (treemacs--reject-ignored-files '("~/A/B/C/#.foo.el"))))
 
-    (ert-deftest should-show::shows-file-name ()
-      (should (treemacs--should-show? "~/A/B/C/d.el")))
+    (ert-deftest reject-ignored::rejects-flycheck-temp-file ()
+      (should-not (treemacs--reject-ignored-files '("~/A/B/C/flycheck_foo.el"))))
 
-    (ert-deftest should-show::shows-dir-name ()
-      (should (treemacs--should-show? "~/A/B/C/d/")))
+    (ert-deftest reject-ignored::rejects-dot ()
+      (should-not (treemacs--reject-ignored-files '("."))))
 
-    (ert-deftest should-show::shows-abs-name ()
-      (should (treemacs--should-show? "foo.el")))
+    (ert-deftest reject-ignored::rejects-dot-dot ()
+      (should-not (treemacs--reject-ignored-files '(".."))))
 
-    (ert-deftest should-show::shows-single-dot ()
-      (should (treemacs--should-show? ".")))
+    (ert-deftest reject-ignored::accepts-dotfile ()
+      (should (treemacs--reject-ignored-files '("~/A/B/C/.foo.el"))))
 
-    (ert-deftest should-show::wont-show-dot-dot ()
-      (should-not (treemacs--should-show? "..")))
+    (ert-deftest reject-ignored::accepts-std-file ()
+      (should (treemacs--reject-ignored-files '("~/A/B/C/foo.el"))))
 
-    (ert-deftest should-show::wont-show-abs-dotfile ()
-      (should-not (treemacs--should-show? ".foo")))
+    (ert-deftest reject-ignored::accepts-empty-file ()
+      (should (treemacs--reject-ignored-files '(""))))
 
-    (ert-deftest should-show::wont-show-relative-dotfile ()
-      (should-not (treemacs--should-show? "~/A/B/C/.foo")))))
+    (ert-deftest reject-ignored::accepts-dir ()
+      (should (treemacs--reject-ignored-files '("~/A/B/C/"))))
+
+    (ert-deftest reject-ignored::accepts-abs-file ()
+      (should (treemacs--reject-ignored-files '("foo.el"))))))
+
+;; treemacs--reject-ignored-and-dotfiles
+(progn
+  (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
+
+    (ert-deftest reject-ignored-and-dotfiles::fails-on-nil-file ()
+      (should-error (treemacs--reject-ignored-and-dotfiles nil)))
+
+    (ert-deftest reject-ignored-and-dotfiles::rejects-emacs-lock-file ()
+      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/#.foo.el"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::rejects-flycheck-temp-file ()
+      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/flycheck_foo.el"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::rejects-dotfile ()
+      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/.foo.el"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::rejects-dot ()
+      (should-not (treemacs--reject-ignored-and-dotfiles '("."))))
+
+    (ert-deftest reject-ignored-and-dotfiles::rejects-dot-dot ()
+      (should-not (treemacs--reject-ignored-and-dotfiles '(".."))))
+
+    (ert-deftest reject-ignored-and-dotfiles::accepts-std-file ()
+      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::accepts-std-file ()
+      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::accepts-std-file ()
+      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::accepts-empty-file ()
+      (should (treemacs--reject-ignored-and-dotfiles '(""))))
+
+    (ert-deftest reject-ignored-and-dotfiles::accepts-dir ()
+      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::accepts-abs-file ()
+      (should (treemacs--reject-ignored-and-dotfiles '("foo.el"))))))
 
 ;; str-assq-delete-all
 (progn

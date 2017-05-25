@@ -33,8 +33,9 @@
 (require 'treemacs-customization)
 
 (declare-function treemacs-mode "treemacs-mode")
-(declare-function treemacs--follow "treemacs")
-(declare-function treemacs-visit-file-vertical-split "treemacs")
+(declare-function treemacs-refresh "treemacs-core")
+(declare-function treemacs--follow "treemacs-follow-mode")
+(declare-function treemacs-visit-file-vertical-split "treemacs-core")
 (declare-function projectile-project-root "projectile")
 
 ;;;;;;;;;;;;;;;;;;
@@ -230,9 +231,42 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
                             (f-split (substring it (length root)))))
                 dirs))))
 
-(defsubst treemacs--should-show? (file-name)
-  "Indicate whether FILE-NAME should be show in the treemacs buffer or kept hidden."
-  (not (s-matches? treemacs-dotfiles-regex (f-filename file-name))))
+(defsubst treemacs--sort-alphabetic-asc (files)
+  "Sort FILES alphabetically asc."
+  (--sort (string> (cl-first it) (cl-first other)) files))
+
+(defsubst treemacs--sort-alphabetic-desc (files)
+  "Sort FILES alphabetically desc."
+  (--sort (string< (cl-first it) (cl-first other)) files))
+
+(defsubst treemacs--sort-size-asc (files)
+  "Sort FILES by size asc."
+  (--sort (> (file-attribute-size (cdr it)) (file-attribute-size (cdr other))) files))
+
+(defsubst treemacs--sort-size-desc (files)
+  "Sort FILES by size desc."
+  (--sort (< (file-attribute-size (cdr it)) (file-attribute-size (cdr other))) files))
+
+(defsubst treemacs--sort-mod-time-asc (files)
+  "Sort FILES by modification time asc."
+   (--sort (not (time-less-p (file-attribute-modification-time (cdr it)) (file-attribute-modification-time (cdr other)))) files))
+
+(defsubst treemacs--sort-mod-time-desc (files)
+  "Sort FILES by modification time desc."
+  (--sort (time-less-p (file-attribute-modification-time (cdr it)) (file-attribute-modification-time (cdr other))) files))
+
+(defsubst treemacs--reject-ignored-files (file)
+  "Return t if FILE is *not* an ignored file.
+FILE here is a list consisting of an absolute path and file attributes."
+  (--none? (funcall it (f-filename (cl-first file))) treemacs-ignored-file-predicates))
+
+(defsubst treemacs--reject-ignored-and-dotfiles (file)
+  "Return t when FILE is neither ignored, nor a dotfile.
+FILE here is a list consisting of an absolute path and file attributes."
+  (let ((filename (f-filename (cl-first file))))
+    (and (not (s-matches? treemacs-dotfiles-regex filename))
+         (--none? (funcall it (f-filename filename)) treemacs-ignored-file-predicates))))
+
 
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
@@ -492,10 +526,6 @@ Also remove any dirs below if PURGE is given."
   (defvar treemacs-icon-closed treemacs-icon-closed-png)
   (defvar treemacs-icon-open treemacs-icon-open-png))
 
-;;;;;;;;;;;;;;;;;
-;; Misc. utils ;;
-;;;;;;;;;;;;;;;;;
-
 (cl-defun treemacs--goto-button-at (abs-path &optional (start-from (point-min)))
   "Move point to button identified by ABS-PATH, starting search at START.
 Also return that button."
@@ -526,11 +556,46 @@ Also return that button."
       (enlarge-window-horizontally (- w (window-width)))))))
 
 (defun treemacs--get-dir-content (dir)
-  "Get the list of files in DIR.  Directories are sorted first."
-  (let ((entries (-separate #'f-directory? (f-entries dir))))
-    (if treemacs-show-hidden-files
-        entries
-      (--map (-filter #'treemacs--should-show? it) entries))))
+  "Get the list of files in DIR.
+Returns a list of two lists - first directories, then files, both sorted
+according to `treemacs-sorting'."
+  (let* ((attr-entries (directory-files-and-attributes dir t nil t))
+         (sep (->> attr-entries
+                   (treemacs--filter-files-to-be-shown)
+                   (--separate (f-directory? (cl-first it)))))
+         (sort-func (cl-case treemacs-sorting
+                      (alphabetic-asc  #'treemacs--sort-alphabetic-asc)
+                      (alphabetic-desc #'treemacs--sort-alphabetic-desc)
+                      (size-asc        #'treemacs--sort-size-asc)
+                      (size-desc       #'treemacs--sort-size-desc)
+                      (mod-time-asc    #'treemacs--sort-mod-time-asc)
+                      (mod-time-desc   #'treemacs--sort-mod-time-desc)
+                      (t               (user-error "Unknown treemacs-sorting value '%s'" treemacs-sorting)))))
+    (list
+     (->> (cl-first sep)
+          (funcall sort-func)
+          (-map #'cl-first))
+     (->> (cl-second sep)
+          (funcall sort-func)
+          (-map #'cl-first)))))
+
+(defun treemacs--filter-files-to-be-shown (files)
+  "Filter FILES for those files which treemacs should show.
+These are the files which return nil for every function in
+`treemacs-ignored-file-predicates' and do not match `treemacs-dotfiles-regex'.
+The second test not apply if `treemacs-show-hidden-files' is t."
+       (if treemacs-show-hidden-files
+           (-filter #'treemacs--reject-ignored-files files)
+         (-filter #'treemacs--reject-ignored-and-dotfiles files)))
+
+(defun treemacs--std-ignore-file-predicate (file)
+  "The default predicate to detect ignored files.
+Will return t when FILE starts with '#.' or 'flycheck_' or is '.' or '..'."
+       (s-matches? (rx bol
+                       (or (seq (or "#." "flycheck_") (1+ any))
+                           (or "." ".."))
+                       eol)
+                   file))
 
 (defun treemacs--current-visibility ()
   "Return whether the current visibility state of the treemacs buffer.
