@@ -511,6 +511,7 @@ Also remove any dirs below if PURGE is given."
 
   (treemacs--setup-icon treemacs-icon-shell      "shell.png"       "sh" "zsh" "fish")
   (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"         "pdf")
+  (treemacs--setup-icon treemacs-icon-c          "c.png"           "c" "h")
   (treemacs--setup-icon treemacs-icon-cpp        "cpp.png"         "cpp" "hpp")
   (treemacs--setup-icon treemacs-icon-haskell    "haskell.png"     "hs")
   (treemacs--setup-icon treemacs-icon-python     "python.png"      "py" "pyc")
