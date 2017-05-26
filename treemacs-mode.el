@@ -53,6 +53,7 @@
     (define-key map (kbd "M-p")  #'treemacs-previous-neighbour)
     (define-key map (kbd "th")   #'treemacs-toggle-show-dotfiles)
     (define-key map (kbd "tw")   #'treemacs-toggle-fixed-width)
+    (define-key map (kbd "tf")   #'treemacs-follow-mode)
     (define-key map (kbd "w")    #'treemacs-reset-width)
     (define-key map (kbd "yy")   #'treemacs-yank-path-at-point)
     (define-key map (kbd "yr")   #'treemacs-yank-root)
