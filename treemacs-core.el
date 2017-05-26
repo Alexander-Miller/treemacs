@@ -299,7 +299,7 @@ A delete action must always be confirmed. Directories are deleted recursively."
 ;;;###autoload
 (defun treemacs-create-dir (dir dirname)
   "In directory DIR create directory called DIRNAME."
-  (interactive "DDirectory: \nMDirname: ")
+  (interactive "DCreate in: \nMDirname: ")
   (let ((created-path (f-join dir dirname)))
     (f-mkdir created-path)
     (treemacs--without-messages (treemacs-refresh))

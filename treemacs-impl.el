@@ -522,6 +522,7 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-clojure    "clojure.png"     "clj" "cljs" "cljc")
   (treemacs--setup-icon treemacs-icon-typescript "typescript.png"  "ts")
   (treemacs--setup-icon treemacs-icon-css        "css.png"         "css")
+  (treemacs--setup-icon treemacs-icon-conf       "conf.png"        "conf" "ini")
 
   (defvar treemacs-icon-closed-text (propertize "+" 'face 'treemacs-term-node-face))
   (defvar treemacs-icon-open-text   (propertize "-" 'face 'treemacs-term-node-face))
