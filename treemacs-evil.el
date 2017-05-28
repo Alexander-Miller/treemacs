@@ -1,11 +1,10 @@
-;;; treemacs.el --- A tree style file explorer package
+;;; treemacs-evil.el --- Evil mode integration for treemacs
 
 ;; Copyright (C) 2017 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0"))
+;; Package-Requires: ((evil "1.2.12") (treemacs "1.6.3"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
-;; Version: 1.5.1
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,7 +25,7 @@
 ;;; Code:
 
 (require 'evil)
-(require 'treemacs-core)
+(require 'treemacs)
 
 (evil-define-state treemacs
   "Treemacs state"
