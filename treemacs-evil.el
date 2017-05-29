@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((evil "1.2.12") (treemacs "1.6.3"))
+;; Package-Requires: ((evil "1.2.12") (treemacs "."))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
 ;; This program is free software; you can redistribute it and/or modify
