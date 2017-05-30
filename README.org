@@ -27,7 +27,8 @@ Specifically a quick feature overview looks as follows:
  * Versatile file access - decide exactly how and where a file will be opened, including using ~ace-window~ to choose
    a buffer or launch an external app via ~xdg-open~
  * Optionally always follow along and keep in focus the currently selected file ~treemacs-follow-mode~
- * Optional git integration - treemacs will use different faces for files based on their git status
+ * Optional git integration - treemacs will use different faces for files based on their git status.
+   The git process runs asynchronously and so won't cause any perceptible delay.
  * [[https://github.com/deb0ch/emacs-winum][Winum]] integration - treemacs will always be assigned window number 10, never interfering with the numbering
    layout of your other windows.
  * Projectile integration - quickly open treemacs at any known project's root directory.
@@ -186,6 +187,7 @@ By default Treemacs's keymap looks as follows:
  * dash
  * cl-lib
  * ace-window
+ * pfuture
  * (optionally) evil
  * (optionally) projectile
  * (optionally) winum

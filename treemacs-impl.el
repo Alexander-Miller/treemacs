@@ -30,6 +30,7 @@
 (require 'f)
 (require 'ace-window)
 (require 'vc-hooks)
+(require 'pfuture)
 (require 'treemacs-customization)
 
 (declare-function treemacs-mode "treemacs-mode")
@@ -100,11 +101,11 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (when (treemacs--check-window-system)
     (treemacs-refresh)))
 
-(defsubst treemacs--reopen (abs-path git-info)
+(defsubst treemacs--reopen (abs-path git-process)
   "Reopen the node identified by its ABS-PATH.
-Pass GIT-INFO along till it's needed."
+Pass GIT-PROCESS along till it's needed."
   (treemacs--without-messages
-   (treemacs--open-node (treemacs--goto-button-at abs-path) git-info t)))
+   (treemacs--open-node (treemacs--goto-button-at abs-path) git-process t)))
 
 (defsubst treemacs--add-to-cache (parent opened-child)
   "Add to PARENT's open dirs cache an entry for OPENED-CHILD."
@@ -133,41 +134,35 @@ Will return the treemacs window if true."
   (treemacs--setup-buffer)
   (switch-to-buffer treemacs--buffer-name))
 
-(defsubst treemacs--is-dir-git-controlled? (path)
-  "Check whether PATH is under git control."
-  (let ((default-directory path))
-    (->> "git rev-parse"
-         (shell-command-to-string)
-         (s-starts-with? "fatal")
-         (not))))
-
 (defsubst treemacs--unqote (str)
   "Unquote STR if it is wrapped in quotes."
   (if (s-starts-with? "\"" str)
       (replace-regexp-in-string "\"" "" str)
     str))
 
-(defsubst treemacs--parse-git-status (path)
-  "Use the git command line to parse the git states of the files at PATH.
-Parsing only takes place if
-1) `treemacs-git-integrtion' is t.
-2) PATH is under git control."
-  (let ((canonical-path (f-canonical path)))
-    (when (and treemacs-git-integration
-               (treemacs--is-dir-git-controlled? canonical-path))
-      (let* ((default-directory canonical-path)
-             (git-output (shell-command-to-string  "git status --ignored --porcelain"))
-             ;; need the actual git root since git status outputs paths relative to it
-             ;; and the output must be valid also for files in dirs being reopened
-             (git-root (vc-call-backend 'Git 'root default-directory)))
-        (if (s-blank? git-output) '()
-          (let ((status
-                 (->> (substring git-output 0 -1)
-                      (s-split "\n")
-                      (--map (s-split-up-to " " (s-trim it) 1)))))
-            (--each status
-              (setcdr it (->> (cl-second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
-            status))))))
+(defun treemacs--git-status-process (path)
+  "Create a new process future to get the git status under PATH."
+  (when treemacs-git-integration
+    (let ((default-directory (f-canonical path)))
+      (pfuture-new "git" "status" "--porcelain" "--ignored" "-uall"))))
+
+(defsubst treemacs--parse-git-status (git-future)
+  "Parse the git status derived from the output of GIT-FUTURE."
+  (when git-future
+    (pfuture-await git-future)
+    (when (equal 0 (process-exit-status (pfuture-process git-future)))
+      (let ((git-output (pfuture-result git-future)))
+        (unless (s-blank? git-output)
+          ;; need the actual git root since git status outputs paths relative to it
+          ;; and the output must be valid also for files in dirs being reopened
+          (let* ((git-root (vc-call-backend 'Git 'root default-directory)))
+            (let ((status
+                   (->> (substring git-output 0 -1)
+                        (s-split "\n")
+                        (--map (s-split-up-to " " (s-trim it) 1)))))
+              (--each status
+                (setcdr it (->> (cl-second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
+              status)))))))
 
 (defsubst treemacs--insert-node (path prefix depth parent &optional git-info)
  "Insert a single button node.
@@ -318,7 +313,7 @@ return t."
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
-   (treemacs--create-branch root 0 (treemacs--parse-git-status root))
+   (treemacs--create-branch root 0 (treemacs--git-status-process root))
    (goto-char 0)
    (forward-line 1)
    (treemacs--evade-image)))
@@ -379,15 +374,17 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   ;; no warnings since the icon is known to be defined
   (when is-dir? (insert (with-no-warnings treemacs-icon-closed-text) " ")))
 
-(defun treemacs--create-branch (root indent-depth git-info &optional parent)
+(defun treemacs--create-branch (root indent-depth git-process &optional parent)
   "Create a new treemacs branch under ROOT.
-The branch is indented at INDENT-DEPTH and uses GIT-INFO to decide on file
-nodes' faces. The nodes' parent property is set to PARENT."
+The branch is indented at INDENT-DEPTH and uses the eventual output of
+GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
+to PARENT."
   (save-excursion
     (let* ((prefix       (concat "\n" (make-string (* indent-depth treemacs-indentation) ?\ )))
            (entries      (treemacs--get-dir-content root))
            (directories  (cl-first entries))
            (files        (cl-second entries))
+           (git-info     (treemacs--parse-git-status git-process))
            (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent git-info) (button-at)) directories))
            (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent git-info) (button-at)) files))
            (last-dir     (-some-> (last dir-buttons) (car)))
@@ -399,7 +396,7 @@ nodes' faces. The nodes' parent property is set to PARENT."
         (button-put first-file 'prev-node last-dir))
       ;; reopen here only since create-branch is called both when opening a node and
       ;; building the entire tree
-      (treemacs--reopen-at root git-info))))
+      (treemacs--reopen-at root git-process))))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when the treemacs buffer gets killed."
@@ -413,9 +410,9 @@ nodes' faces. The nodes' parent property is set to PARENT."
     ('dir-closed (treemacs--open-node btn))
     ('dir-open   (treemacs--close-node btn))))
 
-(defun treemacs--open-node (btn &optional git-info no-add)
+(defun treemacs--open-node (btn &optional git-process no-add)
   "Open the node given by BTN.
-Pass on GIT-INFO to set faces when `treemacs-git-integration' is t.
+Pass on GIT-PROCESS to set faces when `treemacs-git-integration' is t.
 Do not reopen its previously open children when NO-ADD is given."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (message "Directory is not readable.")
@@ -425,7 +422,7 @@ Do not reopen its previously open children when NO-ADD is given."
        (beginning-of-line)
        ;; icon is known to be defined
        (treemacs--node-symbol-switch (with-no-warnings treemacs-icon-open))
-       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (or git-info (treemacs--parse-git-status abs-path)) btn)
+       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (or git-process (treemacs--git-status-process abs-path)) btn)
        (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))))))
 
 (defun treemacs--close-node (btn)
@@ -469,15 +466,15 @@ Use `next-window' if WINDOW is nil."
       (insert-image new-sym)
     (insert new-sym)))
 
-(defun treemacs--reopen-at (abs-path git-info)
+(defun treemacs--reopen-at (abs-path git-process)
   "Reopen dirs below ABS-PATH.
-Pass GIT-INFO along till it's needed."
+Pass GIT-PROCESS along till it's needed."
   (-some->
    abs-path
    (assoc treemacs--open-dirs-cache)
    (cdr)
    (treemacs--maybe-filter-dotfiles)
-   (--each (treemacs--reopen it git-info))))
+   (--each (treemacs--reopen it git-process))))
 
 (defun treemacs--clear-from-cache (path &optional purge)
   "Remove PATH from the open dirs cache.
