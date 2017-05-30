@@ -63,6 +63,19 @@
 
 (treemacs--create-icons)
 
+(defun treemacs--setup-mode-line ()
+  "Create either a simple modeline, or integrate into spaceline."
+  (if (fboundp 'spaceline-install)
+      (progn
+        (spaceline-install
+         "treemacs" '(((workspace-number window-number)
+                       :separator "|"
+                       :face highlight-face)
+                      major-mode)
+         nil)
+        (setq mode-line-format '("%e" (:eval (spaceline-ml-treemacs)))))
+    (setq mode-line-format '(" Treemacs "))))
+
 (define-derived-mode treemacs-mode special-mode "Treemacs"
   "A major mode for displaying the file system in a tree layout."
 
@@ -83,16 +96,7 @@
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
 
-  (when (fboundp 'spaceline-install)
-    (spaceline-install "treemacs"
-                       '(((workspace-number window-number)
-                          :separator "|"
-                          :face highlight-face)
-                         major-mode)
-                       nil)
-    (setq
-     mode-line-format
-     '("%e" (:eval (spaceline-ml-treemacs))))))
+  (treemacs--setup-mode-line))
 
 (provide 'treemacs-mode)
 
