@@ -548,12 +548,14 @@ Also return that button."
 
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."
-  (let ((w (max width window-min-width)))
-    (cond
-     ((> (window-width) w)
-      (shrink-window-horizontally  (- (window-width) w)))
-     ((< (window-width) w)
-      (enlarge-window-horizontally (- w (window-width)))))))
+  (unless (one-window-p)
+    (let ((window-size-fixed)
+          (w (max width window-min-width)))
+      (cond
+       ((> (window-width) w)
+        (shrink-window-horizontally  (- (window-width) w)))
+       ((< (window-width) w)
+        (enlarge-window-horizontally (- w (window-width))))))))
 
 (defun treemacs--get-dir-content (dir)
   "Get the list of files in DIR.
@@ -612,13 +614,13 @@ Valid states are 'visible, 'exists and 'none."
     (next-button (point) t)))
 
 (defun treemacs--setup-buffer ()
-  "Setup a buffer for treemacs in the right position and size."
-  (-> (selected-window)
-      (window-frame)
-      (frame-root-window)
-      (split-window nil 'left)
-      (select-window))
-  (treemacs--set-width treemacs-width))
+  "Create and setup a buffer for treemacs in the right position and size."
+  (select-window
+   (display-buffer-in-side-window
+    (get-buffer-create treemacs--buffer-name) '((side . left))))
+  (treemacs--set-width treemacs-width)
+  (let ((window-size-fixed))
+    (set-window-dedicated-p (get-buffer-window) t)))
 
 (defun treemacs--next-node (node)
   "Return NODE's lower same-indentation neighbour or nil if there is none."
