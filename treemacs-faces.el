@@ -65,6 +65,11 @@
   "Face for newly added files."
   :group 'treemacs-faces)
 
+(defface treemacs-git-conflict-face
+  '((t :inherit error))
+  "Face for conlicting files."
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here

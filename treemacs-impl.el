@@ -355,6 +355,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
         ;; see OUTPUT section `git help status'
         (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
           ("M" 'treemacs-git-modified-face)
+          ("U" 'treemacs-git-conflict-face)
           ("?" 'treemacs-git-untracked-face)
           ("!" 'treemacs-git-ignored-face)
           ("A" 'treemacs-git-added-face)
