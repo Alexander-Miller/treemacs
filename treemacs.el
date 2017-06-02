@@ -33,6 +33,7 @@
 (require 'treemacs-mode)
 (require 'treemacs-follow-mode)
 (require 'treemacs-persist)
+(require 'treemacs-filewatch)
 
 (provide 'treemacs)
 

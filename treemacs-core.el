@@ -30,6 +30,7 @@
 (require 'treemacs-customization)
 (require 'treemacs-impl)
 (require 'treemacs-follow-mode)
+(require 'treemacs-filewatch)
 
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")
@@ -153,6 +154,7 @@ the project from among `projectile-known-projects'."
   (-if-let (treemacs-buffer (get-buffer treemacs--buffer-name))
       (treemacs--without-following
        (with-selected-window (get-buffer-window treemacs-buffer)
+         (treemacs--cancel-refresh-timer)
          (let* ((curr-line (line-number-at-pos))
                 (curr-path (treemacs--prop-at-point 'abs-path))
                 (win-start (window-start (get-buffer-window)))

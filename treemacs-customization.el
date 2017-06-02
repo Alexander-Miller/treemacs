@@ -137,6 +137,31 @@ instead."
   :type 'list
   :group 'treemacs-configuration)
 
+(defcustom treemacs-auto-filewatch nil
+  "When t automatically refresh the treemacs buffer on file system changes.
+
+Setting this to t will immediately make treemacs listen on *newly opened*
+directories, but will have no effect on e.g. the existing treemacs buffer's
+current root directory. Likewise when set to nil already established file watch
+processes will keep running.
+In either case an already existing treemacs buffer should be killed and treemacs
+restarted.
+
+See also `treemacs-file-event-delay'."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-file-event-delay 5000
+  "How long (in milliseconds) to collect file events before refreshing.
+When treemacs receives a file change notification it doesn't immediately refresh
+and instead waits `treemacs--file-event-delay' milliseconds to collect further
+file change events. This is done so as to avoid wasting resources to refresh
+the treemacs buffer a dozen times a second because e.g. a compilation process
+has produced a dozen new files.
+See also `treemacs-auto-filewatch'."
+  :type 'integer
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

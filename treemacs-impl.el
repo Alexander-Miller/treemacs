@@ -32,6 +32,7 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
+(require 'treemacs-filewatch)
 
 (declare-function treemacs-mode "treemacs-mode")
 (declare-function treemacs-refresh "treemacs-core")
@@ -132,7 +133,8 @@ Will return the treemacs window if true."
 (defsubst treemacs--select-not-visible ()
   "Switch to treemacs buffer, given that it not visible."
   (treemacs--setup-buffer)
-  (switch-to-buffer treemacs--buffer-name))
+  (switch-to-buffer treemacs--buffer-name)
+  (treemacs--refresh-catch-up))
 
 (defsubst treemacs--unqote (str)
   "Unquote STR if it is wrapped in quotes."
@@ -210,10 +212,7 @@ the file is unchanged)."
 
 (defsubst treemacs--current-root ()
   "Return the current root directory.
-Requires and assumes to be called inside the treemacs buffer.
-
-If both the root button and the root dir are needed it's more efficient to get
-the root button and then grab its 'abs-path property."
+Requires and assumes to be called inside the treemacs buffer."
   (f-long default-directory))
 
 (defsubst treemacs--maybe-filter-dotfiles (dirs)
@@ -286,6 +285,7 @@ FILE here is a list consisting of an absolute path and file attributes."
     ;; than desktop save mode) treemacs will attempt to restore the previous session
     (treemacs-mode)
     (setq treemacs--ready t)
+    (treemacs--start-watching root)
     ;; no warnings since follow mode is known to be defined
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
@@ -378,7 +378,6 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   "Insert the appropriate text image a path given IS-DIR?."
   ;; no warnings since the icon is known to be defined
   (when is-dir? (insert (with-no-warnings treemacs-icon-closed-text) " ")))
-
 (defun treemacs--create-branch (root indent-depth git-process &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at INDENT-DEPTH and uses the eventual output of
@@ -405,8 +404,11 @@ to PARENT."
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when the treemacs buffer gets killed."
+  (treemacs--stop-watching-all)
+  (treemacs--cancel-refresh-timer)
   (setq treemacs--open-dirs-cache nil
-        treemacs--ready nil))
+        treemacs--ready           nil
+        treemacs--missed-refresh  nil))
 
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
@@ -428,7 +430,8 @@ Do not reopen its previously open children when NO-ADD is given."
        ;; icon is known to be defined
        (treemacs--node-symbol-switch (with-no-warnings treemacs-icon-open))
        (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (or git-process (treemacs--git-status-process abs-path)) btn)
-       (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))))))
+       (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
+       (treemacs--start-watching abs-path)))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
@@ -446,7 +449,8 @@ Do not reopen its previously open children when NO-ADD is given."
                        (point-max))))
      (button-put btn 'state 'dir-closed)
      (delete-region pos-start pos-end)
-     (delete-trailing-whitespace))))
+     (delete-trailing-whitespace)
+     (treemacs--stop-watching (button-get btn 'abs-path)))))
 
 (defun treemacs--open-file (&optional window split-func)
   "Visit file of the current node.  Split WINDOW using SPLIT-FUNC.
@@ -594,12 +598,19 @@ The second test not apply if `treemacs-show-hidden-files' is t."
 
 (defun treemacs--std-ignore-file-predicate (file)
   "The default predicate to detect ignored files.
-Will return t when FILE starts with '#.' or 'flycheck_' or is '.' or '..'."
-       (s-matches? (rx bol
-                       (or (seq (or "#." "flycheck_") (1+ any))
-                           (or "." ".."))
-                       eol)
-                   file))
+Will return t when FILE
+1) starts with '.#' (lockfiles)
+2) starts with 'flycheck_' (flycheck temp files)
+3) ends with '~' (backup files)
+4) is surrounded with # (auto save files)
+5) is '.' or '..' (default dirs)"
+  (s-matches? (rx bol
+                  (or (seq (or ".#" "flycheck_") (1+ any))
+                      (seq (1+ any) "~")
+                      (seq "#" (1+ any) "#")
+                      (or "." ".."))
+                  eol)
+              file))
 
 (defun treemacs--current-visibility ()
   "Return whether the current visibility state of the treemacs buffer.

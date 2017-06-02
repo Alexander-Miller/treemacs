@@ -289,7 +289,13 @@
       (should-error (treemacs--reject-ignored-files nil)))
 
     (ert-deftest reject-ignored::rejects-emacs-lock-file ()
-      (should-not (treemacs--reject-ignored-files '("~/A/B/C/#.foo.el"))))
+      (should-not (treemacs--reject-ignored-files '("~/A/B/C/.#foo.el"))))
+
+    (ert-deftest reject-ignored::rejects-emacs-backup-file ()
+      (should-not (treemacs--reject-ignored-files '("~/A/B/C/foo.el~"))))
+
+    (ert-deftest reject-ignored::rejects-emacs-autosave-file ()
+      (should-not (treemacs--reject-ignored-files '("~/A/B/C/#foo.el#"))))
 
     (ert-deftest reject-ignored::rejects-flycheck-temp-file ()
       (should-not (treemacs--reject-ignored-files '("~/A/B/C/flycheck_foo.el"))))
@@ -323,7 +329,13 @@
       (should-error (treemacs--reject-ignored-and-dotfiles nil)))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-emacs-lock-file ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/#.foo.el"))))
+      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/.#foo.el"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::rejects-emacs-backup-file ()
+      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el~"))))
+
+    (ert-deftest reject-ignored-and-dotfiles::rejects-emacs-autosave-file ()
+      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/#foo.el#"))))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-flycheck-temp-file ()
       (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/flycheck_foo.el"))))
