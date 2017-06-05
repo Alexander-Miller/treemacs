@@ -143,8 +143,10 @@ Will return the treemacs window if true."
 (defun treemacs--git-status-process (path)
   "Create a new process future to get the git status under PATH."
   (when treemacs-git-integration
-    (let ((default-directory (f-canonical path)))
-      (pfuture-new "git" "status" "--porcelain" "--ignored" "-uall"))))
+    (let* ((default-directory (f-canonical path))
+           (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-uall")))
+      (process-put (pfuture-process future) 'default-directory default-directory)
+      future)))
 
 (defsubst treemacs--parse-git-status (git-future)
   "Parse the git status derived from the output of GIT-FUTURE."
@@ -155,7 +157,9 @@ Will return the treemacs window if true."
         (unless (s-blank? git-output)
           ;; need the actual git root since git status outputs paths relative to it
           ;; and the output must be valid also for files in dirs being reopened
-          (let* ((git-root (vc-call-backend 'Git 'root default-directory)))
+          (let* ((git-root (vc-call-backend
+                            'Git 'root
+                            (process-get (pfuture-process git-future) 'default-directory))))
             (let ((status
                    (->> (substring git-output 0 -1)
                         (s-split "\n")
