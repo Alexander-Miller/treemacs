@@ -41,12 +41,38 @@ Specifically a quick feature overview looks as follows:
 
 * Installation
 
-Treemacs is not available on MEPLA just yet (though I do plan to publish soon). If you want to use it anyway installtion
-has to be done the oldfashioned way - clone the repository, add it to your ~loadpath~, and ~require~ it. Also require
-~treemacs-evil~ if you use evil-mode.
+Treemacs is not available on MEPLA just yet. If you want to use it anyway you will a local clone of the respository.
+Then you can install treemacs with ~use-package~ as usual, you'll just need to point the ~:load-path~ keyword to
+directory treemacs was cloned into. A complete example, including key bindings for ~treemacs~, ~treemacs-toggle~ and
+~treemacs-projectile~ in spacemacs would look as follows, you just need to pick and chooose the right bits for yourself:
 
-Once this is done treemacs is ready to be used by calling ~treemacs~, ~treemacs-toggle~ or
-~treemacs-projectile~.
+#+BEGIN_SRC emacs-lisp
+  (use-package treemacs
+    :load-path "~/path/to/repo"
+    :defer t
+    :config
+    (require 'treemacs-evil)
+    (setq treemacs-header-function            #'treemacs--create-header-projectile
+          treemacs-follow-after-init          t
+          treemacs-width                      35
+          treemacs-indentation                2
+          treemacs-git-integration            t
+          treemacs-change-root-without-asking nil
+          treemacs-sorting                    'alphabetic-desc
+          treemacs-show-hidden-files          t
+          treemacs-never-persist              nil)
+    (treemacs-follow-mode t)
+    :bind
+    (:map
+     global-map
+     ([f8]        . treemacs-toggle)
+     ("<C-M-tab>" . treemacs-toggle)
+     :map
+     spacemacs-default-map
+     ("ft"    . treemacs)
+     ("fT"    . treemacs-projectile)
+     ("f C-t" . treemacs-find-file)))
+#+END_SRC
 
 * Configuration
 ** Variables
