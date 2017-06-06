@@ -86,7 +86,6 @@ An event counts as relevant when
 Start a timer to process the collected events if it has not been started
 already. Do nothing if this event's file is irrelevant as per
 `treemacs--is-event-relevant?'."
-  (message "evn %s" event)
   (when (treemacs--is-event-relevant? event)
     (if treemacs--collected-file-events
         (push event treemacs--collected-file-events)
@@ -106,28 +105,17 @@ already. Do nothing if this event's file is irrelevant as per
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected."
-  (message "process %s" treemacs--collected-file-events)
   (setq treemacs--refresh-timer nil)
   (while treemacs--collected-file-events
     (let* ((event  (pop treemacs--collected-file-events))
            (action (cl-second event))
            (dir    (cl-third event)))
-      (message "check evn %s" event)
       (when (eq 'deleted action)
         (treemacs--stop-watching dir)
         (treemacs--clear-from-cache dir t))))
   (if (treemacs--is-visible?)
       (treemacs-refresh)
-    (setq treemacs--missed-refresh t))
-  ;; (let ((dirs (->> treemacs--collected-file-events
-  ;;                  (-map #'cl-third)
-  ;;                  (--map (if (f-dir? it) it (f-dirname it)))
-  ;;                  (-uniq))))
-  ;;   (setq treemacs--collected-file-events nil)
-  ;;   (-if-let (window (treemacs--is-visible?))
-  ;;       (treemacs-refresh)
-  ;;     (setq treemacs--missed-refresh t)))
-  )
+    (setq treemacs--missed-refresh t)))
 
 (defun treemacs--stop-watching-all ()
   "Cancel any and all running file watch processes."
