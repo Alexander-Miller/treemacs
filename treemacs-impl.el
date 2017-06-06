@@ -285,7 +285,6 @@ FILE here is a list consisting of an absolute path and file attributes."
     ;; than desktop save mode) treemacs will attempt to restore the previous session
     (treemacs-mode)
     (setq treemacs--ready t)
-    (treemacs--start-watching root)
     ;; no warnings since follow mode is known to be defined
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
@@ -320,7 +319,12 @@ return t."
    (treemacs--create-branch root 0 (treemacs--git-status-process root))
    (goto-char 0)
    (forward-line 1)
-   (treemacs--evade-image)))
+   (treemacs--evade-image)
+   ;; watch must start here and not init treemacs--init: uproot calls build-tree, but not
+   ;; init since init runs teardown. we want to run filewatch on the new root, so the watch *must*
+   ;; be started here
+   ;; same goes for reopening
+   (treemacs--start-watching root)))
 
 (defun treemacs--delete-all ()
   "Delete all content of the buffer."
@@ -378,6 +382,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   "Insert the appropriate text image a path given IS-DIR?."
   ;; no warnings since the icon is known to be defined
   (when is-dir? (insert (with-no-warnings treemacs-icon-closed-text) " ")))
+
 (defun treemacs--create-branch (root indent-depth git-process &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at INDENT-DEPTH and uses the eventual output of
