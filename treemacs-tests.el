@@ -457,6 +457,32 @@
       (let ((treemacs--in-gui 'x))
         (should (treemacs--check-window-system))))))
 
+;; treemacs--is-event-relevant?
+(progn
+  (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
+    (ert-deftest file-event-relevance::stop-watching-is-not-relevant ()
+          (should-not (treemacs--is-event-relevant? '(nil stopped "~/A/a"))))
+
+    (ert-deftest file-event-relevance::file-change-without-git-is-not-relevant ()
+      (let ((treemacs-git-integration))
+        (should-not (treemacs--is-event-relevant? '(nil changed "~/A/a")))))
+
+    (ert-deftest file-event-relevance::lockfile-event-is-not-relevant ()
+      (should-not (treemacs--is-event-relevant? '(nil created "~/A/.#foo.el"))))
+
+    (ert-deftest file-event-relevance::filecheck-file-event-is-not-relevant ()
+      (should-not (treemacs--is-event-relevant? '(nil created "~/A/flycheck_foo.el"))))
+
+    (ert-deftest file-event-relevance::file-change-with-git-is-relevant ()
+      (let ((treemacs-git-integration t))
+        (should (treemacs--is-event-relevant? '(nil changed "~/A/a")))))
+
+    (ert-deftest file-event-relevance::file-creation-is-relevant ()
+      (should (treemacs--is-event-relevant? '(nil created "~/A/a"))))
+
+    (ert-deftest file-event-relevance::file-deletion-is-relevant ()
+      (should (treemacs--is-event-relevant? '(nil deleted "~/A/a"))))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
