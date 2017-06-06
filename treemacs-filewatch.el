@@ -58,7 +58,8 @@ This way treemacs knows to refresh itself the next time it becomes visible.")
 (defsubst treemacs--cancel-refresh-timer ()
   "Cancel a the running refresh timer if it is active."
   (when treemacs--refresh-timer
-    (cancel-timer treemacs--refresh-timer)))
+    (cancel-timer treemacs--refresh-timer)
+    (setq treemacs--refresh-timer nil)))
 
 (defsubst treemacs--start-watching (path)
   "Watch PATH for file system events."
