@@ -62,7 +62,7 @@ This way treemacs knows to refresh itself the next time it becomes visible.")
 
 (defsubst treemacs--start-watching (path)
   "Watch PATH for file system events."
-  (when (and treemacs-auto-filewatch
+  (when (and (bound-and-true-p treemacs-filewatch-mode)
              (not (assoc path treemacs--file-event-watchers)))
     (push `(,path . ,(file-notify-add-watch path '(change) #'treemacs--filewatch-callback))
           treemacs--file-event-watchers)))
@@ -121,7 +121,36 @@ already. Do nothing if this event's file is irrelevant as per
   "Cancel any and all running file watch processes."
   (while treemacs--file-event-watchers
     (file-notify-rm-watch (cdr (pop treemacs--file-event-watchers))))
-  (setq treemacs--collected-file-events nil))
+  (setq treemacs--collected-file-events nil
+        treemacs--missed-refresh nil))
+
+(defsubst treemacs--tear-down-filewatch-mode ()
+  "Stop watch processes, throw away file events, stop the timer."
+  (treemacs--stop-watching-all)
+  (treemacs--cancel-refresh-timer))
+
+(define-minor-mode treemacs-filewatch-mode
+  "Minor mode to let treemacs autorefresh itself on file system changes.
+
+When this mode is on treemacs will watch every directory it shows and call
+`treemacs-refresh' when it detects changes to the file system. The refresh is
+not called immediately, treemacs instead waits `treemacs-file-event-delay' ms
+to see if any more files have changed to avoid having to refresh multiple times
+over a short period of time.
+
+The change only applies to directories opened *after* this mode has been
+activated. This means that to enable file watching in an already existing
+treemacs buffer it needs to be torn down and rebuilt by calling `treemacs' or
+`treemacs-projectile'.
+
+Turning off this mode is, on the other hand, instantaneous - it will
+immediately turn off all existing file watch processes and outstanding refresh
+actions."
+  :init-value nil
+  :global     t
+  :lighter    nil
+  (unless treemacs-filewatch-mode
+    (treemacs--tear-down-filewatch-mode)))
 
 (provide 'treemacs-filewatch)
 
