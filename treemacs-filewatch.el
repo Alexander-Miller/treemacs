@@ -132,21 +132,28 @@ already. Do nothing if this event's file is irrelevant as per
 
 (define-minor-mode treemacs-filewatch-mode
   "Minor mode to let treemacs autorefresh itself on file system changes.
+Activating this mode enables treemacs to watch the files it is displaying for
+changes and automatically refresh itself by means of `treemacs-refresh' when it
+detects a change that it decides is relevant.
 
-When this mode is on treemacs will watch every directory it shows and call
-`treemacs-refresh' when it detects changes to the file system. The refresh is
-not called immediately, treemacs instead waits `treemacs-file-event-delay' ms
-to see if any more files have changed to avoid having to refresh multiple times
-over a short period of time.
+A file event is relevant for treemacs if a new file has been created or deleted
+or a file has been changed and `treemacs-git-integration' is t. Events caused
+by files that are ignored as per `treemacs-ignored-file-predicates' are likewise
+counted as not relevant.
+
+The refresh is not called immediately after an event was received, treemacs
+instead waits `treemacs-file-event-delay'ms to see if any more files have
+changed to avoid having to refresh multiple times over a short period of time.
+If the treemacs buffer exists, but is not visible, a refresh will be run the
+next time it is shown.
 
 The change only applies to directories opened *after* this mode has been
 activated. This means that to enable file watching in an already existing
 treemacs buffer it needs to be torn down and rebuilt by calling `treemacs' or
 `treemacs-projectile'.
 
-Turning off this mode is, on the other hand, instantaneous - it will
-immediately turn off all existing file watch processes and outstanding refresh
-actions."
+Turning off this mode is, on the other hand, instantaneous - it will immediately
+turn off all existing file watch processes and outstanding refresh actions."
   :init-value nil
   :global     t
   :lighter    nil

@@ -140,11 +140,10 @@ instead."
 (defcustom treemacs-file-event-delay 5000
   "How long (in milliseconds) to collect file events before refreshing.
 When treemacs receives a file change notification it doesn't immediately refresh
-and instead waits `treemacs--file-event-delay' milliseconds to collect further
-file change events. This is done so as to avoid wasting resources to refresh
-the treemacs buffer a dozen times a second because e.g. a compilation process
-has produced a dozen new files.
-See also `treemacs-auto-filewatch'."
+and instead waits `treemacs-file-event-delay' milliseconds to collect further
+file change events. This is done so as to avoid refreshing multiple times in a
+short time.
+See also `treemacs-filewatch-mode'."
   :type 'integer
   :group 'treemacs-configuration)
 

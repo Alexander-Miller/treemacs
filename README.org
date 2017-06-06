@@ -12,6 +12,7 @@
    - [[#variables][Variables]]
    - [[#faces][Faces]]
    - [[#treemacs-follow-mode][Treemacs-follow-mode]]
+   - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
    - [[#session-persistence][Session persistence]]
    - [[#terminal-compatibility][Terminal Compatibility]]
  - [[#keymap][Keymap]]
@@ -91,6 +92,7 @@ Treemacs offers the following configuration options:
 | treemacs-never-persist              | nil                                   | When t treemacs will never persist its state.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | treemacs-sorting                    | alphabetic-asc                        | Indicates how treemeacs will sort its files and directories. Files will still always be shown after directories. Valid values are ~alphabetic-asc~, ~alphabetic-desc~, ~size-asc~, ~size-desc~, ~mod-time-asc~, ~mod-time-desc~.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-ignored-file-predicates    | (treemacs--std-ignore-file-predicate) | List of predicates to test for files ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles) whose presence is controlled by ~treemacs-show-hidden-files~). Each predicate is a function that takes the filename as its only argument and returns t if the file should be ignored and nil otherwise. A file whose name returns t for *any* function in this list counts as ignored. By default this list contains ~treemacs--std-ignore-file-predicate~ which filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and therefore should not be directly overwritten, but added to and removed from instead. |
+| treemacs-file-event-delay           | 5000                                  | How long (in milliseconds) to collect file events before refreshing. When treemacs receives a file change notification it doesn't immediately refresh and instead waits ~treemacs--file-event-delay~ milliseconds to collect further file change events. This is done so as to avoid refreshing multiple times in a short time. See also ~treemacs-filewatch-mode~.                                                                                                                                                                                                                                                                                                      |
 
 ** Faces
 
@@ -114,6 +116,26 @@ multiple times in a row when emacs is working. This means two things:
 2) There may be times when something slips through (~which-key~ for exmaple would cause such a problem if treemacs
 wasn't made compatible with it by default). If you do see ~treemacs-follow~ behaving in a way it shouldn't open up
 an issue. The fix shouldn't be more than a single bit of advice away.
+
+** Treemacs-filewatch-mode
+
+~treemacs-filewatch-mode~ is a minor mode which enables treemacs to watch the files it is displaying for changes
+and automatically refresh itself by means of ~treemacs-refresh~ when it detects a change that it decides is relevant.
+
+A file event is relevant for treemacs if a new file has been created or deleted or a file has been changed and
+~treemacs-git-integration~ is t. Events caused by files that are ignored as per ~treemacs-ignored-file-predicates~
+are likewise counted as not relevant.
+
+The refresh is not called immediately after an event was received, treemacs instead waits ~treemacs-file-event-delay~
+ms to see if any more files have changed to avoid having to refresh multiple times over a short period of time. If
+the treemacs buffer exists, but is not visible, a refresh will be run the next time it is shown.
+
+The change only applies to directories opened *after* this mode has been activated. This means that to enable file
+watching in an already existing treemacs buffer it needs to be torn down and rebuilt by calling ~treemacs~ or
+~treemacs-projectile~.
+
+Turning off this mode is, on the other hand, instantaneous - it will immediately turn off all existing file watch
+processes and outstanding refresh actions.
 
 ** Session persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
