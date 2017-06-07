@@ -111,6 +111,7 @@ the project from among `projectile-known-projects'."
   (let* ((root      (treemacs--current-root))
          (new-root  (treemacs--parent root)))
     (unless (s-equals? root new-root)
+      (treemacs--stop-watching-all)
       (treemacs--build-tree new-root)
       (treemacs--goto-button-at root)
       (treemacs--evade-image))))
@@ -188,7 +189,9 @@ the project from among `projectile-known-projects'."
          (state     (button-get btn 'state))
          (new-root  (button-get btn 'abs-path)))
     (if (not (eq 'file state))
-        (treemacs--build-tree new-root)
+        (progn
+          (treemacs--stop-watching-all)
+          (treemacs--build-tree new-root))
       (goto-char point))))
 
 ;;;###autoload
