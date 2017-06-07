@@ -10,9 +10,9 @@
  - [[#installation][Installation]]
  - [[#configuration][Configuration]]
    - [[#variables][Variables]]
-   - [[#faces][Faces]]
    - [[#treemacs-follow-mode][Treemacs-follow-mode]]
    - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
+   - [[#faces][Faces]]
    - [[#session-persistence][Session persistence]]
    - [[#terminal-compatibility][Terminal Compatibility]]
  - [[#keymap][Keymap]]
@@ -64,6 +64,7 @@ directory treemacs was cloned into. A complete example, including key bindings f
           treemacs-show-hidden-files          t
           treemacs-never-persist              nil)
     (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
     :bind
     (:map
      global-map
@@ -93,17 +94,6 @@ Treemacs offers the following configuration options:
 | treemacs-sorting                    | alphabetic-asc                        | Indicates how treemeacs will sort its files and directories. Files will still always be shown after directories. Valid values are ~alphabetic-asc~, ~alphabetic-desc~, ~size-asc~, ~size-desc~, ~mod-time-asc~, ~mod-time-desc~.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-ignored-file-predicates    | (treemacs--std-ignore-file-predicate) | List of predicates to test for files ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles) whose presence is controlled by ~treemacs-show-hidden-files~). Each predicate is a function that takes the filename as its only argument and returns t if the file should be ignored and nil otherwise. A file whose name returns t for *any* function in this list counts as ignored. By default this list contains ~treemacs--std-ignore-file-predicate~ which filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and therefore should not be directly overwritten, but added to and removed from instead. |
 | treemacs-file-event-delay           | 5000                                  | How long (in milliseconds) to collect file events before refreshing. When treemacs receives a file change notification it doesn't immediately refresh and instead waits ~treemacs--file-event-delay~ milliseconds to collect further file change events. This is done so as to avoid refreshing multiple times in a short time. See also ~treemacs-filewatch-mode~.                                                                                                                                                                                                                                                                                                      |
-
-** Faces
-
-Treemacs defines and uses the following faces:
-| Face                    | Inherits from                                   | Description                                                                  |
-|-------------------------+-------------------------------------------------+------------------------------------------------------------------------------|
-| treemacs-directory-face | font-lock-function-name-face                    | Face used for directories.                                                   |
-| treemacs-file-face      | default                                         | Face used for files.                                                         |
-| treemacs-header-face    | font-lock-constant-face (underlined & size 1.4) | Face used for the treemacs header.                                           |
-| treemacs-term-node-face | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
-| treemacs-git-*-face     | various font lock faces                         | Faces used by treemacs for various git states.                               |
 
 ** Treemacs-follow-mode
 
@@ -136,6 +126,17 @@ watching in an already existing treemacs buffer it needs to be torn down and reb
 
 Turning off this mode is, on the other hand, instantaneous - it will immediately turn off all existing file watch
 processes and outstanding refresh actions.
+
+** Faces
+
+Treemacs defines and uses the following faces:
+| Face                    | Inherits from                                   | Description                                                                  |
+|-------------------------+-------------------------------------------------+------------------------------------------------------------------------------|
+| treemacs-directory-face | font-lock-function-name-face                    | Face used for directories.                                                   |
+| treemacs-file-face      | default                                         | Face used for files.                                                         |
+| treemacs-header-face    | font-lock-constant-face (underlined & size 1.4) | Face used for the treemacs header.                                           |
+| treemacs-term-node-face | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
+| treemacs-git-*-face     | various font lock faces                         | Faces used by treemacs for various git states.                               |
 
 ** Session persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
