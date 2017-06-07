@@ -30,7 +30,7 @@
 (require 'treemacs-customization)
 (require 'treemacs-impl)
 (require 'treemacs-follow-mode)
-(require 'treemacs-filewatch)
+(require 'treemacs-filewatch-mode)
 
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")

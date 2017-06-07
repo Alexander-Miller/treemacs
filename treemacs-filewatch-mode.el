@@ -160,6 +160,6 @@ turn off all existing file watch processes and outstanding refresh actions."
   (unless treemacs-filewatch-mode
     (treemacs--tear-down-filewatch-mode)))
 
-(provide 'treemacs-filewatch)
+(provide 'treemacs-filewatch-mode)
 
-;;; treemacs-filewatch.el ends here
+;;; treemacs-filewatch-mode.el ends here

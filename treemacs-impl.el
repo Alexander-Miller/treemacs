@@ -32,7 +32,7 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
-(require 'treemacs-filewatch)
+(require 'treemacs-filewatch-mode)
 
 (declare-function treemacs-mode "treemacs-mode")
 (declare-function treemacs-refresh "treemacs-core")
