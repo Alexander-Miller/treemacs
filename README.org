@@ -127,6 +127,10 @@ watching in an already existing treemacs buffer it needs to be torn down and reb
 Turning off this mode is, on the other hand, instantaneous - it will immediately turn off all existing file watch
 processes and outstanding refresh actions.
 
+_Known limitations_:
+Staging and comitting changes does not produce any file change events of its own, if you use ~treemacs-git-integration~
+you still need to do a manual refresh to see your files' face go from 'changed' and 'untracked' to 'unchanged' after a commit.
+
 ** Faces
 
 Treemacs defines and uses the following faces:
