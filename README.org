@@ -41,7 +41,7 @@ Specifically a quick feature overview looks as follows:
 
 * Installation
 
-Treemacs is not available on MEPLA just yet. If you want to use it anyway you will a local clone of the respository.
+Treemacs is not available on MELPA just yet. If you want to use it anyway you will a local clone of the respository.
 Then you can install treemacs with ~use-package~ as usual, you'll just need to point the ~:load-path~ keyword to
 directory treemacs was cloned into. A complete example, including key bindings for ~treemacs~, ~treemacs-toggle~ and
 ~treemacs-projectile~ in spacemacs would look as follows, you just need to pick and chooose the right bits for yourself:
