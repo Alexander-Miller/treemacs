@@ -15,6 +15,7 @@
    - [[#faces][Faces]]
    - [[#session-persistence][Session persistence]]
    - [[#terminal-compatibility][Terminal Compatibility]]
+   - [[#custom-header-function][Custom header function]]
  - [[#keymap][Keymap]]
  - [[#dependencies][Dependencies]]
 
@@ -165,6 +166,18 @@ When run in a terminal treemacs will fall back to a much simpler rendering syste
 simple ~+~ and ~-~ characters instead. Changes to the current rendering system are detected automatically - within some
 limits. The check for the change happens with treemacs' functions which build or show/hide the treemacs buffer, namely
 ~treemacs(-projectile)~. ~treemacs-toggle~ and ~treemacs-refresh~.
+** Custom header function
+
+The function which creates the header in treemacs is easily replaced (see the entry for ~treemacs-header-function~ in the
+section about [[#variables][configuration variables]] for details). To use your own custom header you just need to define a function that
+formats the header as you wish and then tell treemacs to use it:
+
+#+BEGIN_SRC emacs-lisp
+  (defun treemacs-header-with-brackets (current-root)
+    (format "<%s>" (file-name-nondirectory current-root)))
+  (setq treemacs-header-function #'treemacs-header-with-brackets)
+#+END_SRC
+
 * Keymap
 
 Activation functions are unbound by default. It's left up to users to find the most convenient key binds.
