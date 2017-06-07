@@ -72,13 +72,14 @@ If a prefix argument ARG is given manually select the root directory."
 If not in a project do nothing. If a prefix argument ARG is given select
 the project from among `projectile-known-projects'."
   (interactive "P")
-  (cond
-   ((and arg (bound-and-true-p projectile-known-projects))
-    ;; no warnings since `projectile-known-projects' is known here
-    (treemacs--init (completing-read "Project: " (with-no-warnings projectile-known-projects))))
-   ((projectile-project-p)
-    (treemacs--init (projectile-project-root)))
-   (t (message "You're not in a project."))))
+  (if (boundp 'projectile-known-projects)
+      (cond
+       (arg
+        (treemacs--init (completing-read "Project: " projectile-known-projects)))
+       ((projectile-project-p)
+        (treemacs--init (projectile-project-root)))
+       (t (message "You're not in a project.")))
+    (user-error "Could't initialize at project root - 'projectile-known-projects' is not defined. Is projectile loaded?")))
 
 ;;;###autoload
 (defun treemacs-next-line ()

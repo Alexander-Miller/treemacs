@@ -337,14 +337,13 @@ return t."
 (defun treemacs--create-header-projectile (root)
   "Try to use the projectile project name for ROOT as treemacs' header.
 If not projectile name was found call `treemacs--create-header' for ROOT instead."
-  (-if-let (project-name
-            (when (bound-and-true-p projectile-project-name-function)
-              (condition-case nil
-                  (projectile-project-root)
-                (error nil))))
-      ;; name function is known to be defined
-      (format "*%s*" (funcall (with-no-warnings projectile-project-name-function) project-name))
-    (treemacs--create-header root)))
+  (if (boundp 'projectile-project-name-function)
+      (-if-let (project-name (condition-case nil
+                                 (projectile-project-root)
+                               (error nil)))
+          (format "*%s*" (funcall projectile-project-name-function project-name))
+        (treemacs--create-header root))
+    (user-error "Couldn't create projectile header -'projectile-project-name-function' is not defined. Is projectile loaded?")))
 
 (defun treemacs--insert-header (root)
   "Insert the header line for the given ROOT."
