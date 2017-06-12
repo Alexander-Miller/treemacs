@@ -153,7 +153,7 @@ Will return the treemacs window if true."
 (defsubst treemacs--parse-git-status (git-future)
   "Parse the git status derived from the output of GIT-FUTURE."
   (when git-future
-    (pfuture-await git-future)
+    (pfuture-await-to-finish git-future)
     (when (equal 0 (process-exit-status (pfuture-process git-future)))
       (let ((git-output (pfuture-result git-future)))
         (unless (s-blank? git-output)
