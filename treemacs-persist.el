@@ -20,6 +20,7 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'f)
 (require 's)
 (require 'treemacs-customization)

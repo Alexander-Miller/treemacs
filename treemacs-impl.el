@@ -35,9 +35,9 @@
 (require 'treemacs-filewatch-mode)
 
 (declare-function treemacs-mode "treemacs-mode")
-(declare-function treemacs-refresh "treemacs-core")
+(declare-function treemacs-refresh "treemacs")
 (declare-function treemacs--follow "treemacs-follow-mode")
-(declare-function treemacs-visit-file-vertical-split "treemacs-core")
+(declare-function treemacs-visit-file-vertical-split "treemacs")
 (declare-function projectile-project-root "projectile")
 
 ;;;;;;;;;;;;;;;;;;
