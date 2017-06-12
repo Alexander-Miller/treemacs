@@ -15,6 +15,7 @@
    - [[#faces][Faces]]
    - [[#session-persistence][Session persistence]]
    - [[#terminal-compatibility][Terminal Compatibility]]
+   - [[#evil-compatibility][Evil compatibility]]
    - [[#custom-header-function][Custom header function]]
  - [[#keymap][Keymap]]
  - [[#dependencies][Dependencies]]
@@ -44,17 +45,24 @@ Specifically a quick feature overview looks as follows:
 
 * Installation
 
-Treemacs is not available on MELPA just yet. If you want to use it anyway you will a local clone of the respository.
-Then you can install treemacs with ~use-package~ as usual, you'll just need to point the ~:load-path~ keyword to
-directory treemacs was cloned into. A complete example, including key bindings for ~treemacs~, ~treemacs-toggle~ and
-~treemacs-projectile~ in spacemacs would look as follows, you just need to pick and chooose the right bits for yourself:
+Treemacs is available from MELPA. If you just want to quickly start using it you grab use the following ~use-package~
+example, and customize it as needed (remove ~treemacs-evil~ if you don't use it, use another map for keybinds if you
+don't use spacemacs etc).
+
+Either way keep in mind that treemacs has /no default keybinds/ for its globally callable initialization functions.
+Each user is supposed to select keybinds for ~treemacs~, ~treemacs-projectile~, ~treemacs-toggle~ and ~treemacs-find-file~
+based on whatever they find convenient.
+
+You can find an exhaustive overview of all functions and their keybinds [[#keymap][below]].
 
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
-    :load-path "~/path/to/repo"
+    :ensure t
     :defer t
     :config
-    (require 'treemacs-evil)
+    (use-package treemacs-evil
+      :ensure t
+      :demand t)
     (setq treemacs-header-function            #'treemacs--create-header-projectile
           treemacs-follow-after-init          t
           treemacs-width                      35
@@ -67,12 +75,10 @@ directory treemacs was cloned into. A complete example, including key bindings f
     (treemacs-follow-mode t)
     (treemacs-filewatch-mode t)
     :bind
-    (:map
-     global-map
+    (:map global-map
      ([f8]        . treemacs-toggle)
      ("<C-M-tab>" . treemacs-toggle)
-     :map
-     spacemacs-default-map
+     :map spacemacs-default-map
      ("ft"    . treemacs)
      ("fT"    . treemacs-projectile)
      ("f C-t" . treemacs-find-file)))
@@ -166,6 +172,9 @@ When run in a terminal treemacs will fall back to a much simpler rendering syste
 simple ~+~ and ~-~ characters instead. Changes to the current rendering system are detected automatically - within some
 limits. The check for the change happens with treemacs' functions which build or show/hide the treemacs buffer, namely
 ~treemacs(-projectile)~. ~treemacs-toggle~ and ~treemacs-refresh~.
+** Evil compatibility
+To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions
+or offer any configuration options, making sure it is loaded is sufficient.
 ** Custom header function
 
 The function which creates the header in treemacs is easily replaced (see the entry for ~treemacs-header-function~ in the
