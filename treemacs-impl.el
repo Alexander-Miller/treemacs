@@ -146,7 +146,7 @@ Will return the treemacs window if true."
   "Create a new process future to get the git status under PATH."
   (when treemacs-git-integration
     (let* ((default-directory (f-canonical path))
-           (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-uall")))
+           (future (pfuture-new "git" "status" "--porcelain" "--ignored" ".")))
       (process-put (pfuture-process future) 'default-directory default-directory)
       future)))
 
