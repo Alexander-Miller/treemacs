@@ -391,17 +391,19 @@ given and the current buffer is not editing a file."
 (defun treemacs-yank-path-at-point ()
   "Copy the absolute path of the node at point."
   (interactive)
-  (-> (treemacs--prop-at-point 'abs-path)
-      (f-full)
-      (kill-new)))
+  (let ((yank (-> (treemacs--prop-at-point 'abs-path)
+                  (f-full)
+                  (kill-new))))
+    (message "Yanked path: %s" yank)))
 
 ;;;###autoload
 (defun treemacs-yank-root ()
   "Copy the absolute path of the current treemacs root."
   (interactive)
-  (-> default-directory
-      (f-full)
-      (kill-new)))
+  (let ((yank (-> default-directory
+                  (f-full)
+                  (kill-new))))
+    (message "Yanked root: %s" yank)))
 
 (provide 'treemacs)
 
