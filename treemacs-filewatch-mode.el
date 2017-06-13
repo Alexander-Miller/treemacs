@@ -106,7 +106,6 @@ already. Do nothing if this event's file is irrelevant as per
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected."
-  (message "P %s" treemacs--collected-file-events)
   (setq treemacs--refresh-timer nil)
   (while treemacs--collected-file-events
     (let* ((event  (pop treemacs--collected-file-events))
