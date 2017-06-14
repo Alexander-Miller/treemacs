@@ -369,12 +369,26 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
           (_   'treemacs-git-unmodified-face))
       'treemacs-file-face)))
 
+(defsubst treemacs--file-extension (file)
+  "Same as `file-name-extension', but also works with leading periods.
+
+This is something a workaround to easily allow assigning icons to a FILE with a
+name like '.gitignore' without always having to check for both file extensions
+and special names like this."
+  (let ((filename (f-filename file)))
+    (save-match-data
+      (if (string-match "\\.[^.]*\\'" filename)
+          (substring filename (1+ (match-beginning 0)))
+        filename))))
+
 (defun treemacs--insert-image-png (path is-dir?)
   "Insert the appropriate png image for PATH given IS-DIR?."
   (insert-image
    ;; no warnings since both icons are known to be defined
    (if is-dir? (with-no-warnings treemacs-icon-closed)
-     (gethash (-some-> path (file-name-extension) (downcase)) treemacs-icons-hash (with-no-warnings treemacs-icon-text))))
+     (gethash (-some-> path (treemacs--file-extension) (downcase))
+              treemacs-icons-hash
+              (with-no-warnings treemacs-icon-text))))
   (insert " "))
 
 (defun treemacs--insert-image-text (_ is-dir?)

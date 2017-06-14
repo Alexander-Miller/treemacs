@@ -483,6 +483,35 @@
     (ert-deftest file-event-relevance::file-deletion-is-relevant ()
       (should (treemacs--is-event-relevant? '(nil deleted "~/A/a"))))))
 
+;; treemacs--file-extension
+(progn
+  (ert-deftest file-ext::fails-on-nil-file ()
+    (should-error (treemacs--file-extension nil)))
+
+  (ert-deftest file-ext::empty-in-empty-out ()
+    (should (equal "" (treemacs--file-extension ""))))
+
+  (ert-deftest file-ext::empty-when-input-is-dot ()
+    (should (equal "" (treemacs--file-extension "."))))
+
+  (ert-deftest file-ext::empty-when-input-is-many-dots ()
+    (should (equal "" (treemacs--file-extension "....."))))
+
+  (ert-deftest file-ext::return-filename-for-path-without-extension ()
+    (should (equal "foo" (treemacs--file-extension "/A/B/C/D/foo"))))
+
+  (ert-deftest file-ext::return-filename-for-file-without-extension ()
+    (should (equal "foo" (treemacs--file-extension "foo"))))
+
+  (ert-deftest file-ext::return-extension-for-absolute-path ()
+    (should (equal "el" (treemacs--file-extension "~/A/B/C/D/foo.el"))))
+
+  (ert-deftest file-ext::return-extension-for-filename ()
+    (should (equal "el" (treemacs--file-extension "foo.el"))))
+
+  (ert-deftest file-ext::return-extension-for-path-with-dots ()
+    (should (equal "el" (treemacs--file-extension "~/A/foo.bar/baz.qux/foo.el")))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
