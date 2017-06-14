@@ -95,14 +95,14 @@ already. Do nothing if this event's file is irrelevant as per
                                                  nil #'treemacs--process-file-events)))))
 
 (defsubst treemacs--stop-watching (path)
-  "Stop watching PATH for file events."
-  (-when-let (pair (assoc path treemacs--file-event-watchers))
-    (let (watcher (cdr pair))
-      (file-notify-rm-watch watcher)
-      (setq treemacs--file-event-watchers
-            (--remove (or (s-equals? path (car it))
-                          (treemacs--is-path-in-dir? (car it) path))
-                      treemacs--file-event-watchers)))))
+  "Stop watching PATH for file events.
+This also means stopping the watch over all dirs below path."
+  (setq treemacs--file-event-watchers
+        (--reject (when (or (equal (car it) path)
+                            (treemacs--is-path-in-dir? (car it) path))
+                    (file-notify-rm-watch (cdr it))
+                    t)
+                  treemacs--file-event-watchers)))
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected."
