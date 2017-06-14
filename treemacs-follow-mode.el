@@ -1,4 +1,4 @@
-;;; treemacs.el --- A tree style file viewer package
+;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Alexander Miller
 
@@ -70,8 +70,7 @@ not visible."
        (when treemacs--ready
          (let* ((treemacs-window (treemacs--is-visible?))
                 (current-buffer  (current-buffer))
-                (current-file    (buffer-file-name current-buffer))
-                (current-window  (get-buffer-window current-buffer)))
+                (current-file    (buffer-file-name current-buffer)))
            (when (and treemacs-window
                       current-file
                       (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))

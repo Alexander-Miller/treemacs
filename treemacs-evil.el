@@ -1,4 +1,4 @@
-;;; treemacs-evil.el --- Evil mode integration for treemacs
+;;; treemacs-evil.el --- Evil mode integration for treemacs -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Alexander Miller
 

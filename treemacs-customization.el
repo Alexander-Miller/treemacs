@@ -1,4 +1,4 @@
-;;; treemacs.el --- A tree style file viewer package
+;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Alexander Miller
 

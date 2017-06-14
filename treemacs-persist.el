@@ -1,4 +1,4 @@
-;;; treemacs.el --- A tree style file viewer package
+;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Alexander Miller
 
@@ -62,8 +62,7 @@
   (-if-let (buf (get-buffer treemacs--buffer-name))
       (with-current-buffer buf
         (save-excursion
-          (let ((window    (get-buffer-window buf t))
-                (root      (treemacs--current-root))
+          (let ((root      (treemacs--current-root))
                 (open-dirs (treemacs--get-open-dirs))
                 (point-at  (treemacs--prop-at-point 'abs-path))
                 (text      ""))
@@ -97,8 +96,7 @@ Create files/directories if necessary."
         (while lines
           (let ((split (s-split " : " (pop lines))))
             (when (= 2 (length split))
-              (add-to-list 'ret
-                           `(,(cl-first split) . ,(cl-second split))))))
+              (push `(,(cl-first split) . ,(cl-second split)) ret))))
         ret)))
 
 (defun treemacs--maybe-persist ()
@@ -122,9 +120,9 @@ desktop save mode is on."
           (dirs (list)))
       (while btn
         (when (eq 'dir-open (button-get btn 'state))
-          (add-to-list 'dirs (button-get btn 'abs-path) t))
+          (push (button-get btn 'abs-path) dirs))
         (setq btn (next-button (button-end btn))))
-      dirs)))
+      (nreverse dirs))))
 
 (with-eval-after-load "desktop"
 
