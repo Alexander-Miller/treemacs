@@ -102,11 +102,10 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (when (treemacs--check-window-system)
     (treemacs-refresh)))
 
-(defsubst treemacs--reopen (abs-path git-process)
-  "Reopen the node identified by its ABS-PATH.
-Pass GIT-PROCESS along till it's needed."
+(defsubst treemacs--reopen (abs-path)
+  "Reopen the node identified by its ABS-PATH."
   (treemacs--without-messages
-   (treemacs--open-node (treemacs--goto-button-at abs-path) git-process t)))
+   (treemacs--open-node (treemacs--goto-button-at abs-path) t)))
 
 (defsubst treemacs--add-to-cache (parent opened-child)
   "Add to PARENT's open dirs cache an entry for OPENED-CHILD."
@@ -418,7 +417,7 @@ to PARENT."
         (button-put first-file 'prev-node last-dir))
       ;; reopen here only since create-branch is called both when opening a node and
       ;; building the entire tree
-      (treemacs--reopen-at root git-process))))
+      (treemacs--reopen-at root))))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when the treemacs buffer gets killed."
@@ -435,9 +434,8 @@ to PARENT."
     ('dir-closed (treemacs--open-node btn))
     ('dir-open   (treemacs--close-node btn))))
 
-(defun treemacs--open-node (btn &optional git-process no-add)
+(defun treemacs--open-node (btn &optional no-add)
   "Open the node given by BTN.
-Pass on GIT-PROCESS to set faces when `treemacs-git-integration' is t.
 Do not reopen its previously open children when NO-ADD is given."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (message "Directory is not readable.")
@@ -447,7 +445,7 @@ Do not reopen its previously open children when NO-ADD is given."
        (beginning-of-line)
        ;; icon is known to be defined
        (treemacs--node-symbol-switch (with-no-warnings treemacs-icon-open))
-       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (or git-process (treemacs--git-status-process abs-path)) btn)
+       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (treemacs--git-status-process abs-path) btn)
        (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
        (treemacs--start-watching abs-path)))))
 
@@ -493,15 +491,14 @@ Use `next-window' if WINDOW is nil."
       (insert-image new-sym)
     (insert new-sym)))
 
-(defun treemacs--reopen-at (abs-path git-process)
-  "Reopen dirs below ABS-PATH.
-Pass GIT-PROCESS along till it's needed."
+(defun treemacs--reopen-at (abs-path)
+  "Reopen dirs below ABS-PATH."
   (-some->
    abs-path
    (assoc treemacs--open-dirs-cache)
    (cdr)
    (treemacs--maybe-filter-dotfiles)
-   (--each (treemacs--reopen it git-process))))
+   (--each (treemacs--reopen it))))
 
 (defun treemacs--clear-from-cache (path &optional purge)
   "Remove PATH from the open dirs cache.
