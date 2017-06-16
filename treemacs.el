@@ -127,12 +127,8 @@ the project from among `projectile-known-projects'."
   "Select parent of selected node, if possible."
   (interactive)
   (beginning-of-line)
-  (and (-some->
-        (next-button (point))
-        (button-get 'parent)
-        (button-start)
-        (goto-char))
-       (treemacs--evade-image)))
+  (-some-> (next-button (point)) (button-get 'parent) (button-start) (goto-char))
+  (treemacs--evade-image))
 
 ;;;###autoload
 (defun treemacs-next-neighbour ()
