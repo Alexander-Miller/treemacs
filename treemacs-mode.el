@@ -31,6 +31,7 @@
 (with-no-warnings
   (defvar treemacs-mode-map
     (let ((map (make-sparse-keymap)))
+      (define-key map [mouse-1]    #'treemacs-push-button)
       (define-key map [tab]        #'treemacs-push-button)
       (define-key map [?\t]        #'treemacs-push-button)
       (define-key map [return]     #'treemacs-visit-file-no-split)
