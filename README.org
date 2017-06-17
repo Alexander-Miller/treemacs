@@ -230,7 +230,7 @@ By default Treemacs's keymap looks as follows:
 | yy      | treemacs-yank-path-at-point              | Copy the absolute path of the node at point.                                                                                          |
 | yr      | treemacs-yank-root                       | Copy the absolute path of the current treemacs root.                                                                                  |
 * Dependencies
- * emacs >= 24.4
+ * emacs >= 25.1
  * f.el
  * s.el
  * dash
