@@ -679,9 +679,14 @@ Delete all elements whose car is ‘string=’ to KEY from ALIST."
       path
     (f-parent path)))
 
-(defalias 'treemacs--evade-image #'end-of-line
-  "The cursor blinks visibly when it is on top of an image. Always moving it to
-to end of the line prevents this from happening.")
+(defun treemacs--evade-image ()
+  "The cursor visibly blinks when on top of a png icon.
+It needs to be moved aside in a way that works for all indent depths and
+`treemacs-indentation' settings."
+  (let* ((depth (button-get (next-button (point) t) 'depth))
+         (r (+ 2 (* treemacs-indentation depth))))
+    (beginning-of-line)
+    (forward-char r)))
 
 (defun treemacs--kill-buffers-after-deletion (path is-file)
   "Clean up after a deleted file or directory.

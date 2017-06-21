@@ -107,8 +107,25 @@ the project from among `projectile-known-projects'."
   (save-excursion
     (beginning-of-line)
     (forward-button 1)
-    (call-interactively #'push-button))
+    (push-button))
   (treemacs--evade-image))
+
+;;;###autoload
+(defun treemacs-click-mouse1 (event)
+  "Do the same as `treemacs-push-button' when mouse1 clicking on an icon.
+Clicking anywhere other than an icon does nothing.
+Must be bound to a mouse click, or EVENT will not be supplied."
+  (interactive "e")
+  ;; save-excursion does not work here, presumably because point was already moved by
+  ;; the click before this function even runs
+  (let ((p (point)))
+    (when (and (eq 'mouse-1 (elt event 0))
+               (elt (elt event 1) 7)) ;; image object that's clicked on
+      (forward-button 1)
+      (push-button)
+      ;; for whatever reason a call to `treemacs--evade-image' here results in point
+      ;; jumping to the next line when a node is closed
+      (goto-char (1+ p)))))
 
 ;;;###autoload
 (defun treemacs-uproot ()
