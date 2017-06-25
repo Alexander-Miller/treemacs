@@ -684,9 +684,9 @@ Delete all elements whose car is ‘string=’ to KEY from ALIST."
   "The cursor visibly blinks when on top of a png icon.
 It needs to be moved aside in a way that works for all indent depths and
 `treemacs-indentation' settings."
+  (beginning-of-line)
   (let* ((depth (button-get (next-button (point) t) 'depth))
          (r (+ 2 (* treemacs-indentation depth))))
-    (beginning-of-line)
     (forward-char r)))
 
 (defun treemacs--kill-buffers-after-deletion (path is-file)
