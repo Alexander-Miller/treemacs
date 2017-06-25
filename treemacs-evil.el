@@ -47,7 +47,7 @@
 (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yr") #'treemacs-yank-root)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yy") #'treemacs-yank-path-at-point)
-(evil-define-key 'treemacs treemacs-mode-map (kbd "g")  #'treemacs-refresh)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "gr")  #'treemacs-refresh)
 
 (provide 'treemacs-evil)
 

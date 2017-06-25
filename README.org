@@ -215,7 +215,7 @@ By default Treemacs's keymap looks as follows:
 | w       | treemacs-reset-width                     | Reset the width of the treemacs buffer to treemacs-width. If a prefix argument is provided read a new value for treemacs-width first. |
 | TAB/RET | treemacs-push-button                     | Open/close directory. Open file with treemacs-visit-file-vertical-split.                                                              |
 | mouse1  | treemacs-click-mouse1                    | Do the same as `treemacs-push-button' when mouse1 clicking on an icon. Clicking anywhere other than an icon does nothing.             |
-| g/r     | treemacs-refresh                         | Refresh and rebuild treemacs buffer.                                                                                                  |
+| g/r/gr  | treemacs-refresh                         | Refresh and rebuild treemacs buffer.                                                                                                  |
 | d       | treemacs-delete                          | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                  |
 | cf      | treemacs-create-file                     | Create a file.                                                                                                                        |
 | cd      | treemacs-create-dir                      | Create a directory.                                                                                                                   |
