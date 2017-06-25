@@ -552,6 +552,7 @@ Also remove any dirs below if PURGE is given."
 (cl-defun treemacs--goto-button-at (abs-path &optional (start-from (point-min)))
   "Move point to button identified by ABS-PATH, starting search at START.
 Also return that button."
+  ;; Callers must make sure to save match data
   (let ((keep-looking t)
         (filename (f-filename abs-path))
         (start (point))
