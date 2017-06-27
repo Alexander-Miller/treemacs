@@ -37,6 +37,8 @@
 (declare-function treemacs-mode "treemacs-mode")
 (declare-function treemacs-refresh "treemacs")
 (declare-function treemacs--follow "treemacs-follow-mode")
+(declare-function treemacs--check-window-system "treemacs-branch-creation")
+(declare-function treemacs--create-branch "treemacs-branch-creation")
 (declare-function treemacs-visit-file-vertical-split "treemacs")
 (declare-function projectile-project-root "projectile")
 
@@ -56,16 +58,27 @@
                       default-directory))
   "The directory treemacs.el is stored in.")
 
-(defvar treemacs--in-gui (window-system)
+(defvar treemacs--in-gui 'unset
   "Indicates whether Emacs is running in a gui or a terminal.")
-
-(defvar treemacs--insert-image #'treemacs--insert-image-png)
 
 (defvar treemacs--ready nil
   "Signals to `treemacs-follow-mode' if a follow action may be run.
 Must be set to nil when no follow actions should be triggered, e.g. when the
 treemacs buffer is being rebuilt or during treemacs' own window selection
 functions.")
+
+(defvar treemacs--insert-file-image-function 'unset
+  "Function used to insert the image/icon for file nodes.
+Set by `treemacs--check-window-system' to either
+`treemacs--insert-file-image-png' or `treemacs--insert-file-image-txt',
+depending on whether treemacs is currently shown in a GUI or TUI frame.")
+
+(defvar treemacs--insert-dir-image-function 'unset
+  "Function used to insert the image/icon for file nodes.
+Set by `treemacs--check-window-system' to either
+`treemacs--insert-dir-image-png' or `treemacs--insert-dir-image-txt',
+depending on whether treemacs is currently shown in a GUI or TUI frame.")
+
 
 ;;;;;;;;;;;;
 ;; Macros ;;
@@ -169,41 +182,11 @@ Will return the treemacs window if true."
                 (setcdr it (->> (cl-second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
               status)))))))
 
-(defsubst treemacs--insert-node (path prefix depth parent &optional git-info)
- "Insert a single button node.
-PATH is the node's absolute path.
-PREFIX is an empty string used for indentation.
-DEPTH is the nesting depth, used for calculating the prefix length
-of all potential child branches.
-PARENT is the node the new node is nested under, if any.
-GIT-INFO is an alist mapping each file to its git state (no mapping meaning
-the file is unchanged)."
-  (end-of-line)
-  (let ((is-dir? (f-directory? path)))
-    (insert prefix)
-    (funcall treemacs--insert-image path is-dir?)
-    (insert-text-button (f-filename path)
-                        'state     (if is-dir? 'dir-closed 'file)
-                        'action    #'treemacs--push-button
-                        'abs-path  path
-                        'parent    parent
-                        'depth     depth
-                        'face      (treemacs--get-face path is-dir? git-info))))
-
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point."
   (save-excursion
     (beginning-of-line)
     (button-get (next-button (point) t) prop)))
-
-(defsubst treemacs--set-neighbours (buttons)
-  "Set next- and previous-node properties for each button in BUTTONS."
-  (when buttons
-    (cl-dolist (i (number-sequence 0 (- (length buttons) 2)))
-      (let ((b1 (nth i buttons))
-            (b2 (nth (1+ i) buttons)))
-        (button-put b1 'next-node b2)
-        (button-put b2 'prev-node b1)))))
 
 (defsubst treemacs--is-path-in-dir? (path dir)
   "Is PATH in directory DIR?"
@@ -225,42 +208,43 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
                             (f-split (substring it (length root)))))
                 dirs))))
 
-(defsubst treemacs--sort-alphabetic-asc (files)
-  "Sort FILES alphabetically asc."
-  (--sort (string> (cl-first it) (cl-first other)) files))
-
-(defsubst treemacs--sort-alphabetic-desc (files)
-  "Sort FILES alphabetically desc."
-  (--sort (string< (cl-first it) (cl-first other)) files))
-
-(defsubst treemacs--sort-size-asc (files)
-  "Sort FILES by size asc."
-  (--sort (> (file-attribute-size (cdr it)) (file-attribute-size (cdr other))) files))
-
-(defsubst treemacs--sort-size-desc (files)
-  "Sort FILES by size desc."
-  (--sort (< (file-attribute-size (cdr it)) (file-attribute-size (cdr other))) files))
-
-(defsubst treemacs--sort-mod-time-asc (files)
-  "Sort FILES by modification time asc."
-   (--sort (not (time-less-p (file-attribute-modification-time (cdr it)) (file-attribute-modification-time (cdr other)))) files))
-
-(defsubst treemacs--sort-mod-time-desc (files)
-  "Sort FILES by modification time desc."
-  (--sort (time-less-p (file-attribute-modification-time (cdr it)) (file-attribute-modification-time (cdr other))) files))
-
 (defsubst treemacs--reject-ignored-files (file)
   "Return t if FILE is *not* an ignored file.
 FILE here is a list consisting of an absolute path and file attributes."
-  (--none? (funcall it (f-filename (cl-first file))) treemacs-ignored-file-predicates))
+  (--none? (funcall it (f-filename file)) treemacs-ignored-file-predicates))
 
 (defsubst treemacs--reject-ignored-and-dotfiles (file)
   "Return t when FILE is neither ignored, nor a dotfile.
 FILE here is a list consisting of an absolute path and file attributes."
-  (let ((filename (f-filename (cl-first file))))
+  (let ((filename (f-filename file)))
     (and (not (s-matches? treemacs-dotfiles-regex filename))
          (--none? (funcall it (f-filename filename)) treemacs-ignored-file-predicates))))
 
+(defsubst treemacs--get-face (path git-info)
+  "Return the appropriate face for PATH GIT-INFO."
+  (if treemacs-git-integration
+      ;; for the sake of simplicity we only look at the state in the working tree
+      ;; see OUTPUT section `git help status'
+      (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
+        ("M" 'treemacs-git-modified-face)
+        ("U" 'treemacs-git-conflict-face)
+        ("?" 'treemacs-git-untracked-face)
+        ("!" 'treemacs-git-ignored-face)
+        ("A" 'treemacs-git-added-face)
+        (_   'treemacs-git-unmodified-face))
+    'treemacs-file-face))
+
+(defsubst treemacs--file-extension (file)
+  "Same as `file-name-extension', but also works with leading periods.
+
+This is something a workaround to easily allow assigning icons to a FILE with a
+name like '.gitignore' without always having to check for both file extensions
+and special names like this."
+  (let ((filename (f-filename file)))
+    (save-match-data
+      (if (string-match "\\.[^.]*\\'" filename)
+          (substring filename (1+ (match-beginning 0)))
+        filename))))
 
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
@@ -288,26 +272,6 @@ FILE here is a list consisting of an absolute path and file attributes."
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
         (treemacs--follow)))))
-
-(defun treemacs--check-window-system ()
-  "Check if the window system has changed since the last call.
-Make the necessary render function changes changes if so and explicitly
-return t."
-  (let ((current-ui (window-system)))
-    (unless (eq current-ui treemacs--in-gui)
-        (setq treemacs--in-gui current-ui)
-        (if current-ui
-            ;; icon variables are known to exist
-            (with-no-warnings
-              (setf treemacs--insert-image #'treemacs--insert-image-png)
-              (setq treemacs-icon-closed treemacs-icon-closed-png
-                    treemacs-icon-open   treemacs-icon-open-png))
-          ;; icon variables are known to exist
-          (with-no-warnings
-            (setf treemacs--insert-image #'treemacs--insert-image-text)
-            (setq treemacs-icon-closed treemacs-icon-closed-text
-                  treemacs-icon-open   treemacs-icon-open-text)))
-        t)))
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
@@ -352,72 +316,6 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
                  'face 'treemacs-header-face
                  'abs-path root
                  'action #'ignore))
-
-(defun treemacs--get-face (path is-dir? git-info)
-  "Return the appropriate face for PATH given IS-DIR? and GIT-INFO."
-  (if is-dir? 'treemacs-directory-face
-    (if treemacs-git-integration
-        ;; for the sake of simplicity we only look at the state in the working tree
-        ;; see OUTPUT section `git help status'
-        (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
-          ("M" 'treemacs-git-modified-face)
-          ("U" 'treemacs-git-conflict-face)
-          ("?" 'treemacs-git-untracked-face)
-          ("!" 'treemacs-git-ignored-face)
-          ("A" 'treemacs-git-added-face)
-          (_   'treemacs-git-unmodified-face))
-      'treemacs-file-face)))
-
-(defsubst treemacs--file-extension (file)
-  "Same as `file-name-extension', but also works with leading periods.
-
-This is something a workaround to easily allow assigning icons to a FILE with a
-name like '.gitignore' without always having to check for both file extensions
-and special names like this."
-  (let ((filename (f-filename file)))
-    (save-match-data
-      (if (string-match "\\.[^.]*\\'" filename)
-          (substring filename (1+ (match-beginning 0)))
-        filename))))
-
-(defun treemacs--insert-image-png (path is-dir?)
-  "Insert the appropriate png image for PATH given IS-DIR?."
-  (insert-image
-   ;; no warnings since both icons are known to be defined
-   (if is-dir? (with-no-warnings treemacs-icon-closed)
-     (gethash (-some-> path (treemacs--file-extension) (downcase))
-              treemacs-icons-hash
-              (with-no-warnings treemacs-icon-text))))
-  (insert " "))
-
-(defun treemacs--insert-image-text (_ is-dir?)
-  "Insert the appropriate text image a path given IS-DIR?."
-  ;; no warnings since the icon is known to be defined
-  (when is-dir? (insert (with-no-warnings treemacs-icon-closed-text) " ")))
-
-(defun treemacs--create-branch (root indent-depth git-process &optional parent)
-  "Create a new treemacs branch under ROOT.
-The branch is indented at INDENT-DEPTH and uses the eventual output of
-GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
-to PARENT."
-  (save-excursion
-    (let* ((prefix       (concat "\n" (make-string (* indent-depth treemacs-indentation) ?\ )))
-           (entries      (treemacs--get-dir-content root))
-           (directories  (cl-first entries))
-           (files        (cl-second entries))
-           (git-info     (treemacs--parse-git-status git-process))
-           (dir-buttons  (--map (-> (treemacs--insert-node it prefix indent-depth parent git-info) (button-at)) directories))
-           (file-buttons (--map (-> (treemacs--insert-node it prefix indent-depth parent git-info) (button-at)) files))
-           (last-dir     (-some-> (last dir-buttons) (car)))
-           (first-file   (cl-first file-buttons)))
-      (treemacs--set-neighbours dir-buttons)
-      (treemacs--set-neighbours file-buttons)
-      (when (and last-dir first-file)
-        (button-put last-dir 'next-node first-file)
-        (button-put first-file 'prev-node last-dir))
-      ;; reopen here only since create-branch is called both when opening a node and
-      ;; building the entire tree
-      (treemacs--reopen-at root))))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when the treemacs buffer gets killed."
@@ -545,8 +443,8 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
   (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
 
-  (defvar treemacs-icon-closed-text (propertize "+" 'face 'treemacs-term-node-face))
-  (defvar treemacs-icon-open-text   (propertize "-" 'face 'treemacs-term-node-face))
+  (defvar treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
+  (defvar treemacs-icon-open-text   (propertize "- " 'face 'treemacs-term-node-face))
   (defvar treemacs-icon-closed treemacs-icon-closed-png)
   (defvar treemacs-icon-open treemacs-icon-open-png))
 
@@ -581,30 +479,6 @@ Also return that button."
         (shrink-window-horizontally  (- (window-width) w)))
        ((< (window-width) w)
         (enlarge-window-horizontally (- w (window-width))))))))
-
-(defun treemacs--get-dir-content (dir)
-  "Get the list of files in DIR.
-Returns a list of two lists - first directories, then files, both sorted
-according to `treemacs-sorting'."
-  (let* ((attr-entries (directory-files-and-attributes dir t nil t))
-         (sep (->> attr-entries
-                   (treemacs--filter-files-to-be-shown)
-                   (--separate (f-directory? (cl-first it)))))
-         (sort-func (cl-case treemacs-sorting
-                      (alphabetic-asc  #'treemacs--sort-alphabetic-asc)
-                      (alphabetic-desc #'treemacs--sort-alphabetic-desc)
-                      (size-asc        #'treemacs--sort-size-asc)
-                      (size-desc       #'treemacs--sort-size-desc)
-                      (mod-time-asc    #'treemacs--sort-mod-time-asc)
-                      (mod-time-desc   #'treemacs--sort-mod-time-desc)
-                      (t               (user-error "Unknown treemacs-sorting value '%s'" treemacs-sorting)))))
-    (list
-     (->> (cl-first sep)
-          (funcall sort-func)
-          (-map #'cl-first))
-     (->> (cl-second sep)
-          (funcall sort-func)
-          (-map #'cl-first)))))
 
 (defun treemacs--filter-files-to-be-shown (files)
   "Filter FILES for those files which treemacs should show.

@@ -35,6 +35,7 @@
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-mode)
 (require 'treemacs-persist)
+(require 'treemacs-branch-creation)
 
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")

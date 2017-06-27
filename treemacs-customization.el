@@ -102,15 +102,35 @@ on the next launch."
   :group 'treemacs-configuration)
 
 (defcustom treemacs-sorting 'alphabetic-desc
-  "Indicates how treemeacs will sort its files and directories.
+  "Indicates how treemacs will sort its files and directories.
 Files will still always be shown after directories.
+
 Valid values are
  * alphabetic-asc,
  * alphabetic-desc,
  * size-asc,
  * size-desc,
  * mod-time-asc,
- * mod-time-desc."
+ * mod-time-desc.
+
+Note about performance:
+Treemacs does its best to optimize its performance critical path, it does so
+by doing as little work as possible and producing as little garbage as possible.
+Deciding on the order in which its nodes are inserted is a part of this path. As
+such certain tradeoffs need to be accounted far.
+
+In plaintext: some sort settings are much slower than others. Alphabetic sorting
+\(the default) is fastest and causes no additional overhead (even when
+foregoing sorting altogether).
+
+Modification time sorting takes the middle, being ca. 4x slower than alphabetic.
+Sorting by size is slowest, being ca. 5-6x slower than alphabetic. It also
+produces the most garbage, making it more like for you to run into a garbage
+collection pause.
+
+Lest these numbers scare you off keep in mind that they will likely have little
+to no effect on your usage of treemacs until you begin frequently refreshing
+treemacs views containing hundreds or even thousands of nodes."
   :type '(choice (const alphabetic-asc)
                  (const alphabetic-desc)
                  (const size-asc)
