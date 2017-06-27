@@ -55,7 +55,7 @@ If no treemacs buffer exists call `treemacs'."
     (treemacs--refresh-on-ui-change)
     (if (one-window-p)
         (switch-to-buffer (other-buffer))
-      (delete-window)))
+      (bury-buffer)))
    ((treemacs--buffer-exists?)
     (treemacs--select-not-visible)
     (treemacs--refresh-on-ui-change))

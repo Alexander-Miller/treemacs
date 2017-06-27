@@ -237,8 +237,8 @@ FILE here is a list consisting of an absolute path and file attributes."
 (defsubst treemacs--file-extension (file)
   "Same as `file-name-extension', but also works with leading periods.
 
-This is something a workaround to easily allow assigning icons to a FILE with a
-name like '.gitignore' without always having to check for both file extensions
+This is something a of workaround to easily allow assigning icons to a FILE with
+a name like '.gitignore' without always having to check for both file extensions
 and special names like this."
   (let ((filename (f-filename file)))
     (save-match-data
@@ -523,7 +523,8 @@ Valid states are 'visible, 'exists and 'none."
   "Create and setup a buffer for treemacs in the right position and size."
   (select-window
    (display-buffer-in-side-window
-    (get-buffer-create treemacs--buffer-name) '((side . left))))
+    (get-buffer-create treemacs--buffer-name) '((side . left)))
+   t)
   (treemacs--set-width treemacs-width)
   (let ((window-size-fixed))
     (set-window-dedicated-p (get-buffer-window) t)))

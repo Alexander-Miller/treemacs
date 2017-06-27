@@ -26,8 +26,7 @@
 (require 'treemacs-impl)
 
 (defsubst treemacs--button-put (button prop val)
-  "Set BUTTON's PROP property to VAL.
-Return BUTTON."
+  "Set BUTTON's PROP property to VAL and return BUTTON."
   (put-text-property
    (or (previous-single-property-change (1+ button) 'button)
        (point-min))
@@ -36,7 +35,7 @@ Return BUTTON."
    prop val)
   button)
 
-(defsubst treemacs-button-at (pos)
+(defsubst treemacs--button-at (pos)
   "Return the button at position POS in the current buffer, or nil.
 If the button at POS is a text property button, the return value
 is a marker pointing to POS."
@@ -168,16 +167,16 @@ to PARENT."
       ;; Do all the work in a single pass through all the dirs and files - insert the icon, the filename
       ;; and set the next/prev node properties
       (when (> (length dirs) 0)
-        (setq prev-dir (treemacs-button-at (treemacs--insert-dir-node (cl-first dirs) prefix parent indent-depth ins-depth))))
+        (setq prev-dir (treemacs--button-at (treemacs--insert-dir-node (cl-first dirs) prefix parent indent-depth ins-depth))))
       (--each (cdr dirs)
-        (let ((b (treemacs-button-at (treemacs--insert-dir-node it prefix parent indent-depth ins-depth))))
+        (let ((b (treemacs--button-at (treemacs--insert-dir-node it prefix parent indent-depth ins-depth))))
           (treemacs--button-put prev-dir 'next-node b)
           (setq prev-dir (treemacs--button-put b 'prev-node prev-dir))))
       (when (> (length files) 0)
-        (setq prev-file (treemacs-button-at (treemacs--insert-file-node (cl-first files) prefix parent indent-depth ins-depth git-info)))
+        (setq prev-file (treemacs--button-at (treemacs--insert-file-node (cl-first files) prefix parent indent-depth ins-depth git-info)))
         (setq first-file prev-file))
       (--each (cdr files)
-        (let ((b (treemacs-button-at (treemacs--insert-file-node it prefix parent indent-depth ins-depth git-info))))
+        (let ((b (treemacs--button-at (treemacs--insert-file-node it prefix parent indent-depth ins-depth git-info))))
           (treemacs--button-put prev-file 'next-node b)
           (setq prev-file (treemacs--button-put b 'prev-node prev-file))))
       (when (and first-file prev-dir)
