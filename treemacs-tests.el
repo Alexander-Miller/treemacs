@@ -193,42 +193,36 @@
 
 ;; treemacs--get-face
 (progn
-  (ert-deftest get-face::dir-face-for-path-without-git-info ()
-    (should (eq 'treemacs-directory-face (treemacs--get-face "~/A" t nil))))
-
-  (ert-deftest get-face::dir-face-for-path-with-git-info ()
-    (should (eq 'treemacs-directory-face (treemacs--get-face "~/A" t '(("M" . "~/A"))))))
-
   (ert-deftest get-face::unmodified-face-for-file-without-git-info ()
-    (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil nil))))
+    (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil))))
 
   (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
     (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
-      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
+      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
 
   (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
     (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
-      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
+      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
 
   (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-status ()
     (let ((git-info '(("0" . "~/A"))))
-      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil git-info)))))
+      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
 
   (ert-deftest get-face::modified-face-for-modified-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("M" . "~/A"))))
-      (should (eq 'treemacs-git-modified-face (treemacs--get-face "~/A" nil git-info)))))
+      (should (eq 'treemacs-git-modified-face (treemacs--get-face "~/A" git-info)))))
 
   (ert-deftest get-face::untracked-face-for-untracked-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("??" . "~/A"))))
-      (should (eq 'treemacs-git-untracked-face (treemacs--get-face "~/A" nil git-info)))))
+      (should (eq 'treemacs-git-untracked-face (treemacs--get-face "~/A" git-info)))))
 
   (ert-deftest get-face::ignored-face-for-ignored-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("!!" . "~/A"))))
-      (should (eq 'treemacs-git-ignored-face (treemacs--get-face "~/A" nil git-info)))))
+      (should (eq 'treemacs-git-ignored-face (treemacs--get-face "~/A" git-info)))))
 
   (ert-deftest get-face::added-face-for-added-file ()
     (let ((git-info '(("!!" . "~/A/B/c") ("A" . "~/A"))))
-      (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" nil git-info))))))
+      (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" git-info))))))
 
 ;; treemacs--current-visibility
 (progn
@@ -289,37 +283,37 @@
       (should-error (treemacs--reject-ignored-files nil)))
 
     (ert-deftest reject-ignored::rejects-emacs-lock-file ()
-      (should-not (treemacs--reject-ignored-files '("~/A/B/C/.#foo.el"))))
+      (should-not (treemacs--reject-ignored-files "~/A/B/C/.#foo.el")))
 
     (ert-deftest reject-ignored::rejects-emacs-backup-file ()
-      (should-not (treemacs--reject-ignored-files '("~/A/B/C/foo.el~"))))
+      (should-not (treemacs--reject-ignored-files "~/A/B/C/foo.el~")))
 
     (ert-deftest reject-ignored::rejects-emacs-autosave-file ()
-      (should-not (treemacs--reject-ignored-files '("~/A/B/C/#foo.el#"))))
+      (should-not (treemacs--reject-ignored-files "~/A/B/C/#foo.el#")))
 
     (ert-deftest reject-ignored::rejects-flycheck-temp-file ()
-      (should-not (treemacs--reject-ignored-files '("~/A/B/C/flycheck_foo.el"))))
+      (should-not (treemacs--reject-ignored-files "~/A/B/C/flycheck_foo.el")))
 
     (ert-deftest reject-ignored::rejects-dot ()
-      (should-not (treemacs--reject-ignored-files '("."))))
+      (should-not (treemacs--reject-ignored-files ".")))
 
     (ert-deftest reject-ignored::rejects-dot-dot ()
-      (should-not (treemacs--reject-ignored-files '(".."))))
+      (should-not (treemacs--reject-ignored-files "..")))
 
     (ert-deftest reject-ignored::accepts-dotfile ()
-      (should (treemacs--reject-ignored-files '("~/A/B/C/.foo.el"))))
+      (should (treemacs--reject-ignored-files "~/A/B/C/.foo.el")))
 
     (ert-deftest reject-ignored::accepts-std-file ()
-      (should (treemacs--reject-ignored-files '("~/A/B/C/foo.el"))))
+      (should (treemacs--reject-ignored-files "~/A/B/C/foo.el")))
 
     (ert-deftest reject-ignored::accepts-empty-file ()
-      (should (treemacs--reject-ignored-files '(""))))
+      (should (treemacs--reject-ignored-files "")))
 
     (ert-deftest reject-ignored::accepts-dir ()
-      (should (treemacs--reject-ignored-files '("~/A/B/C/"))))
+      (should (treemacs--reject-ignored-files "~/A/B/C/")))
 
     (ert-deftest reject-ignored::accepts-abs-file ()
-      (should (treemacs--reject-ignored-files '("foo.el"))))))
+      (should (treemacs--reject-ignored-files "foo.el")))))
 
 ;; treemacs--reject-ignored-and-dotfiles
 (progn
@@ -329,43 +323,43 @@
       (should-error (treemacs--reject-ignored-and-dotfiles nil)))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-emacs-lock-file ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/.#foo.el"))))
+      (should-not (treemacs--reject-ignored-and-dotfiles "~/A/B/C/.#foo.el")))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-emacs-backup-file ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el~"))))
+      (should-not (treemacs--reject-ignored-and-dotfiles "~/A/B/C/foo.el~")))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-emacs-autosave-file ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/#foo.el#"))))
+      (should-not (treemacs--reject-ignored-and-dotfiles "~/A/B/C/#foo.el#")))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-flycheck-temp-file ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/flycheck_foo.el"))))
+      (should-not (treemacs--reject-ignored-and-dotfiles "~/A/B/C/flycheck_foo.el")))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-dotfile ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/.foo.el"))))
+      (should-not (treemacs--reject-ignored-and-dotfiles "~/A/B/C/.foo.el")))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-dot ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '("."))))
+      (should-not (treemacs--reject-ignored-and-dotfiles ".")))
 
     (ert-deftest reject-ignored-and-dotfiles::rejects-dot-dot ()
-      (should-not (treemacs--reject-ignored-and-dotfiles '(".."))))
+      (should-not (treemacs--reject-ignored-and-dotfiles "..")))
 
     (ert-deftest reject-ignored-and-dotfiles::accepts-std-file ()
-      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el"))))
+      (should (treemacs--reject-ignored-and-dotfiles "~/A/B/C/foo.el")))
 
     (ert-deftest reject-ignored-and-dotfiles::accepts-std-file ()
-      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el"))))
+      (should (treemacs--reject-ignored-and-dotfiles "~/A/B/C/foo.el")))
 
     (ert-deftest reject-ignored-and-dotfiles::accepts-std-file ()
-      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/foo.el"))))
+      (should (treemacs--reject-ignored-and-dotfiles "~/A/B/C/foo.el")))
 
     (ert-deftest reject-ignored-and-dotfiles::accepts-empty-file ()
-      (should (treemacs--reject-ignored-and-dotfiles '(""))))
+      (should (treemacs--reject-ignored-and-dotfiles "")))
 
     (ert-deftest reject-ignored-and-dotfiles::accepts-dir ()
-      (should (treemacs--reject-ignored-and-dotfiles '("~/A/B/C/"))))
+      (should (treemacs--reject-ignored-and-dotfiles "~/A/B/C/")))
 
     (ert-deftest reject-ignored-and-dotfiles::accepts-abs-file ()
-      (should (treemacs--reject-ignored-and-dotfiles '("foo.el"))))))
+      (should (treemacs--reject-ignored-and-dotfiles "foo.el")))))
 
 ;; str-assq-delete-all
 (progn
