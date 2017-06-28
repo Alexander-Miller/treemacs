@@ -420,6 +420,16 @@ given and the current buffer is not editing a file."
                   (kill-new))))
     (message "Yanked root: %s" yank)))
 
+;;;###autoload
+(defun treemacs-select-window ()
+  "Select the treemacs window if it is visible.
+Call `treemacs-toggle' if it is not."
+  (interactive)
+  (-if-let (w (treemacs--is-visible?))
+      (select-window w t)
+    (treemacs-toggle)))
+
+
 (provide 'treemacs)
 
 ;;; treemacs.el ends here
