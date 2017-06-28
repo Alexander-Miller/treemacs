@@ -421,6 +421,16 @@ given and the current buffer is not editing a file."
     (message "Yanked root: %s" yank)))
 
 ;;;###autoload
+(defun treemacs-delete-other-windows ()
+  "Same as `delete-other-windows', but will not delete the treemacs window."
+  (interactive)
+  (let ((w (selected-window)))
+    (--each (window-list (selected-frame))
+      (unless (or (eq it w)
+                  (-> it (window-buffer) (buffer-name) (string-equal treemacs--buffer-name)))
+        (delete-window it)))))
+
+;;;###autoload
 (defun treemacs-select-window ()
   "Select the treemacs window if it is visible.
 Call `treemacs-toggle' if it is not."

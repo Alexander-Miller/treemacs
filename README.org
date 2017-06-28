@@ -82,6 +82,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
      ([f8]        . treemacs-toggle)
      ("<C-M-tab>" . treemacs-toggle)
      ("M-0"       . treemacs-select-window)
+     ("C-c 1"     . treemacs-delete-other-windows)
      :map spacemacs-default-map
      ("ft"    . treemacs)
      ("fT"    . treemacs-projectile)
@@ -197,13 +198,14 @@ These functions are not bound to any keys by default. It's left up to users to f
 Additionally ~treemacs-refresh~, ~treemacs-select-window~ and ~treemacs-find-file~ may also be called from outside
 the treemacs window and might therefore need their own global binding.
 
-| Action                 | Description                                                                                                                                                                                                                                                                              |
-|------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| treemacs               | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
-| treemacs-projectile    | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
-| treemacs-toggle        | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.                                                                                                |
-| treemacs-find-file     | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
-| treemacs-select-window | Select the treemacs window if it is visible. Call `treemacs-toggle' if it is not.                                                                                                                                                                                                        |
+| Action                        | Description                                                                                                                                                                                                                                                                              |
+|-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs                      | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
+| treemacs-projectile           | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
+| treemacs-toggle               | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.                                                                                                |
+| treemacs-find-file            | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
+| treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs-toggle~ if it is not.                                                                                                                                                                                                        |
+| treemacs-delete-other-windows | Same as ~delete-other-windows~, but will not delete the treemacs window.                                                                                                                                                                                                                 |
 ** Default keymap
 By default Treemacs's keymap looks as follows:
 
