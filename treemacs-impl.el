@@ -70,13 +70,13 @@ functions.")
 (defvar treemacs--insert-file-image-function 'unset
   "Function used to insert the image/icon for file nodes.
 Set by `treemacs--check-window-system' to either
-`treemacs--insert-file-image-png' or `treemacs--insert-file-image-txt',
+`treemacs--insert-file-image-xpm' or `treemacs--insert-file-image-txt',
 depending on whether treemacs is currently shown in a GUI or TUI frame.")
 
 (defvar treemacs--insert-dir-image-function 'unset
   "Function used to insert the image/icon for file nodes.
 Set by `treemacs--check-window-system' to either
-`treemacs--insert-dir-image-png' or `treemacs--insert-dir-image-txt',
+`treemacs--insert-dir-image-xpm' or `treemacs--insert-dir-image-txt',
 depending on whether treemacs is currently shown in a GUI or TUI frame.")
 
 
@@ -90,7 +90,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   `(progn
      (defconst ,var
        (create-image (f-join treemacs-dir "icons/" ,file-name)
-                     'png nil :ascent 'center))
+                     'xpm nil :ascent 'center))
      (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
 
 (defmacro treemacs--with-writable-buffer (&rest body)
@@ -557,7 +557,7 @@ Delete all elements whose car is ‘string=’ to KEY from ALIST."
     (f-parent path)))
 
 (defun treemacs--evade-image ()
-  "The cursor visibly blinks when on top of a png icon.
+  "The cursor visibly blinks when on top of an icon.
 It needs to be moved aside in a way that works for all indent depths and
 `treemacs-indentation' settings."
   (beginning-of-line)
