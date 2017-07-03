@@ -84,7 +84,7 @@ is a marker pointing to POS."
             ('size-desc       #'treemacs--sort-size-desc)
             ('mod-time-asc    #'treemacs--sort-mod-time-asc)
             ('mod-time-desc   #'treemacs--sort-mod-time-desc)
-            (_               (user-error "Unknown treemacs-sorting value '%s'" treemacs-sorting))))
+            (_                (user-error "Unknown treemacs-sorting value '%s'" treemacs-sorting))))
          (entries (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown)))
          (dirs-files (-separate #'file-directory-p entries)))
     (list (sort (cl-first dirs-files) sort-func)
@@ -152,39 +152,58 @@ GIT-INFO (if any) is used to determine the node's face."
 The branch is indented at INDENT-DEPTH and uses the eventual output of
 GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
 to PARENT."
-  (save-excursion
-           ;; pass down to save recalculating every time an icon is inserted
-    (let* ((ins-depth  (* indent-depth treemacs-indentation))
-           ;; extra 2 spaces for the icon
-           (prefix     (concat "\n" (make-string (+ 2 ins-depth) ?\ )))
-           (entries    (treemacs--get-dir-content root))
-           (dirs       (cl-first entries))
-           (files      (cl-second entries))
-           (git-info   (treemacs--parse-git-status git-process))
-           (prev-file  nil)
-           (prev-dir   nil)
-           (first-file nil))
-      ;; Do all the work in a single pass through all the dirs and files - insert the icon, the filename
-      ;; and set the next/prev node properties
-      (when (> (length dirs) 0)
-        (setq prev-dir (treemacs--button-at (treemacs--insert-dir-node (cl-first dirs) prefix parent indent-depth ins-depth))))
-      (--each (cdr dirs)
-        (let ((b (treemacs--button-at (treemacs--insert-dir-node it prefix parent indent-depth ins-depth))))
-          (treemacs--button-put prev-dir 'next-node b)
-          (setq prev-dir (treemacs--button-put b 'prev-node prev-dir))))
-      (when (> (length files) 0)
-        (setq prev-file (treemacs--button-at (treemacs--insert-file-node (cl-first files) prefix parent indent-depth ins-depth git-info)))
-        (setq first-file prev-file))
-      (--each (cdr files)
-        (let ((b (treemacs--button-at (treemacs--insert-file-node it prefix parent indent-depth ins-depth git-info))))
-          (treemacs--button-put prev-file 'next-node b)
-          (setq prev-file (treemacs--button-put b 'prev-node prev-file))))
-      (when (and first-file prev-dir)
-          (button-put prev-dir 'next-node first-file)
-          (button-put first-file 'prev-node prev-dir))
+    (save-excursion
+      (let* ((dirs-and-files (treemacs--get-dir-content root))
+             (dirs (cl-first dirs-and-files))
+             (files (cl-second dirs-and-files))
+             (last-dir
+              (with-no-warnings
+                (treemacs--create-buttons
+                 :nodes dirs
+                 :indent-depth indent-depth
+                 :node-name node
+                 :return-value prev-button
+                 :node-action (treemacs--insert-dir-node node prefix parent indent-depth insert-depth))))
+             (git-info (treemacs--parse-git-status git-process))
+             (first-file
+              (with-no-warnings
+                (treemacs--create-buttons
+                 :nodes files
+                 :indent-depth indent-depth
+                 :node-name node
+                 :extra-vars (first-file)
+                 :return-value first-file
+                 :node-action (treemacs--insert-file-node node prefix parent indent-depth insert-depth git-info)
+                 :first-node-action (setq first-file prev-button)))))
+        (when (and last-dir first-file)
+          (button-put last-dir 'next-node first-file)
+          (button-put first-file 'prev-node last-dir)))
       ;; reopen here only since create-branch is called both when opening a node and
       ;; building the entire tree
-      (treemacs--reopen-at root))))
+      (treemacs--reopen-at root)))
+
+(cl-defmacro treemacs--create-buttons (&key nodes indent-depth extra-vars return-value node-action first-node-action node-name)
+  "Building block macro for creating buttons from a list of items.
+NODES is the list to create buttons from.
+INDENT-DEPTH is the indentation level buttons will be created on.
+EXTRA-VARS are additional var bindings inserted into the initial let block.
+RETURN-VALUE will be inserted as the final expression.
+NODE-ACTION is the button creating form inserted for every NODE.
+FIRST-NODE-ACTION is the form inserted after processing the very first node.
+NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
+  `(let* ((insert-depth (* ,indent-depth treemacs-indentation))
+          (prefix (concat "\n" (make-string (+ 2 insert-depth) ?\ )))
+          (,node-name (cl-first ,nodes))
+          (prev-button)
+          ,@extra-vars)
+     (when ,node-name
+       (setq prev-button (treemacs--button-at ,node-action))
+       ,first-node-action
+       (dolist (,node-name (cdr ,nodes))
+         (let ((b (treemacs--button-at ,node-action)))
+           (treemacs--button-put prev-button 'next-node b)
+           (setq prev-button (treemacs--button-put b 'prev-node prev-button)))))
+     ,return-value))
 
 (defun treemacs--check-window-system ()
   "Check if the window system has changed since the last call.
