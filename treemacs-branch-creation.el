@@ -147,6 +147,16 @@ GIT-INFO (if any) is used to determine the node's face."
                            'depth     depth
                            'face      (treemacs--get-face path git-info)))
 
+(cl-defmacro treemacs--button-open (&key btn new-state new-icon open-action post-open-action)
+  "Fixme BTN NEW-STATE NEW-ICON."
+  `(treemacs--with-writable-buffer
+    (button-put ,btn 'state ,new-state)
+    (beginning-of-line)
+    (when ,new-icon
+      (treemacs--node-symbol-switch ,new-icon))
+    ,open-action
+    ,post-open-action))
+
 (defun treemacs--create-branch (root indent-depth git-process &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at INDENT-DEPTH and uses the eventual output of
@@ -191,7 +201,8 @@ RETURN-VALUE will be inserted as the final expression.
 NODE-ACTION is the button creating form inserted for every NODE.
 FIRST-NODE-ACTION is the form inserted after processing the very first node.
 NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
-  `(let* ((insert-depth (* ,indent-depth treemacs-indentation))
+  `(let* ((indent-depth ,indent-depth)
+          (insert-depth (* indent-depth treemacs-indentation))
           (prefix (concat "\n" (make-string (+ 2 insert-depth) ?\ )))
           (,node-name (cl-first ,nodes))
           (prev-button)

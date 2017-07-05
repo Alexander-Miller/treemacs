@@ -335,17 +335,20 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
 (defun treemacs--open-node (btn &optional no-add)
   "Open the node given by BTN.
 Do not reopen its previously open children when NO-ADD is given."
-  (if (not (f-readable? (button-get btn 'abs-path)))
-      (message "Directory is not readable.")
-    (treemacs--with-writable-buffer
-     (let ((abs-path (button-get btn 'abs-path)))
-       (button-put btn 'state 'dir-open)
-       (beginning-of-line)
-       ;; icon is known to be defined
-       (treemacs--node-symbol-switch (with-no-warnings treemacs-icon-open))
-       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (treemacs--git-status-process abs-path) btn)
-       (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
-       (treemacs--start-watching abs-path)))))
+       (if (not (f-readable? (button-get btn 'abs-path)))
+           (message "Directory is not readable.")
+         (let ((abs-path (button-get btn 'abs-path)))
+           (with-no-warnings
+             (treemacs--button-open
+              :btn btn
+              :new-state 'dir-open
+              :new-icon treemacs-icon-open
+              :open-action
+              (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (treemacs--git-status-process abs-path) btn)
+              :post-open-action
+              (progn
+                (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
+                (treemacs--start-watching abs-path)))))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
