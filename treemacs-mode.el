@@ -92,6 +92,7 @@
 
   (setq-local show-paren-mode nil)
   (electric-indent-local-mode -1)
+  (visual-line-mode -1)
   (hl-line-mode t)
   ;; treemacs buffer is only completely empty when it has been revived
   ;; by something like persp.el
