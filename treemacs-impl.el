@@ -543,6 +543,7 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "conf" "ini" "xdefaults" "xresources")
   (treemacs--setup-icon treemacs-icon-html       "html.png"       "html" "htm")
   (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
+  (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
 
   (defvar treemacs-icon-closed-text (propertize "+" 'face 'treemacs-term-node-face))
   (defvar treemacs-icon-open-text   (propertize "-" 'face 'treemacs-term-node-face))
