@@ -167,6 +167,25 @@ See also `treemacs-filewatch-mode'."
   :type 'integer
   :group 'treemacs-configuration)
 
+(defcustom treemacs-goto-tag-strategy 'refetch-index
+  "Inidicates how to move to a tag when its buffer is dead.
+The tags in the treemacs view store their position as markers (or overlays if
+semantic mode is on) pointing to a buffer. If that buffer is killed, or has
+never really been open, as treemacs kills buffer after fetching their tags if
+they did no exist before, the stored positions become stale, and treemacs needs
+to use a different method to move to that tag. This variale sets that method.
+
+Its possible values are:
+
+ * refetch-index
+   Call up the file's imenu index again and use its information to jump.
+ * call-xref
+   Call `xref-find-definitions' to find the tag.
+ * issue-warning
+   Just issue a warning that the tag's position pointer is invalid."
+  :type 'integer
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

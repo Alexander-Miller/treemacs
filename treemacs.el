@@ -36,6 +36,7 @@
 (require 'treemacs-mode)
 (require 'treemacs-persist)
 (require 'treemacs-branch-creation)
+(require 'treemacs-tags)
 
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")
@@ -177,28 +178,36 @@ Must be bound to a mouse click, or EVENT will not be supplied."
       (treemacs--without-following
        (with-selected-window (get-buffer-window treemacs-buffer)
          (treemacs--cancel-refresh-timer)
-         (let* ((curr-line (line-number-at-pos))
-                (curr-path (treemacs--prop-at-point 'abs-path))
-                (win-start (window-start (get-buffer-window)))
-                (root-btn  (treemacs--current-root-btn))
-                (root      (button-get root-btn 'abs-path)))
+         (let* ((curr-line    (line-number-at-pos))
+                (curr-btn     (progn (beginning-of-line) (next-button (point) t)))
+                (curr-state   (button-get curr-btn 'state))
+                (curr-file    (treemacs--nearest-path))
+                (curr-tagpath (treemacs--tags-path-of curr-btn))
+                (win-start    (window-start (get-buffer-window)))
+                (root-btn     (treemacs--current-root-btn))
+                (root         (button-get root-btn 'abs-path)))
            (treemacs--build-tree root)
            ;; move point to the same file it was with before the refresh if the file
            ;; still exists and is visible, stay in the same line otherwise
-           (if (and (f-exists? curr-path)
-                    (or treemacs-show-hidden-files
-                        (not (s-matches? treemacs-dotfiles-regex (f-filename curr-path)))))
-               (treemacs--goto-button-at curr-path)
-             ;; not pretty, but there can still be some off by one jitter when
-             ;; using forwald-line
-             (treemacs--without-messages (with-no-warnings (goto-line curr-line))))
+           (pcase curr-state
+             ((or 'dir-open 'dir-closed 'file-open 'file-closed)
+              (if (and (f-exists? curr-file)
+                       (or treemacs-show-hidden-files
+                           (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
+                  (treemacs--goto-button-at curr-file)
+                ;; not pretty, but there can still be some off by one jitter when
+                ;; using forwald-line
+                (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
+             ((or 'node-open 'node-closed 'tag)
+              (treemacs--goto-tag-button-at curr-tagpath curr-file win-start))
+             (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
            (treemacs--evade-image)
            (set-window-start (get-buffer-window) win-start)
            ;; needs to be turned on again when refresh is called from outside the
            ;; treemacs window, otherwise it looks like the selection disappears
            (hl-line-mode t)
-           (message "Treemacs buffer refreshed."))))
-    (message "Treemacs buffer does not exist.")))
+           (treemacs--log "Refresh complete."))))
+    (treemacs--log "Thereis nothing to refresh.")))
 
 ;;;###autoload
 (defun treemacs-change-root ()
@@ -209,7 +218,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
          (btn       (next-button point))
          (state     (button-get btn 'state))
          (new-root  (button-get btn 'abs-path)))
-    (if (not (eq 'file state))
+    (if (memq state '(dir-open dir-closed))
         (progn
           (treemacs--stop-watching-all)
           (treemacs--build-tree new-root))

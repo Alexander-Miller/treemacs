@@ -34,12 +34,31 @@
 (require 'treemacs-customization)
 (require 'treemacs-filewatch-mode)
 
+(defmacro treemacs--import-functions-from (file &rest functions)
+  "Import FILE's FUNCTIONS."
+  (declare (indent 1))
+  (let ((imports (--map (list 'declare-function it file) functions)))
+    `(progn ,@imports)))
+
+(treemacs--import-functions-from "treemacs-tags"
+  treemacs--clear-tags-cache
+  treemacs--open-tags-for-file
+  treemacs--close-tags-for-file
+  treemacs--open-tag-node
+  treemacs--close-tag-node
+  treemacs--close-tag-node
+  treemacs--goto-tag)
+
+(treemacs--import-functions-from "treemacs"
+  treemacs-refresh
+  treemacs-visit-file-vertical-split)
+
+(treemacs--import-functions-from "treemacs-branch-creation"
+  treemacs--check-window-system
+  treemacs--create-branch)
+
 (declare-function treemacs-mode "treemacs-mode")
-(declare-function treemacs-refresh "treemacs")
 (declare-function treemacs--follow "treemacs-follow-mode")
-(declare-function treemacs--check-window-system "treemacs-branch-creation")
-(declare-function treemacs--create-branch "treemacs-branch-creation")
-(declare-function treemacs-visit-file-vertical-split "treemacs")
 (declare-function projectile-project-root "projectile")
 
 ;;;;;;;;;;;;;;;;;;
@@ -106,19 +125,26 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   `(cl-flet ((message (_) (ignore)))
      ,@body))
 
+(defmacro treemacs--log (msg &rest args)
+  "Write a log statement given formart string MSG and ARGS."
+  `(message
+    "%s %s"
+    (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
+    (format ,msg ,@args)))
+
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
 ;;;;;;;;;;;;;;;;;;;
+
+(defsubst treemacs--get-label-of (btn)
+  "Return the text label of BTN."
+  (interactive)
+  (buffer-substring-no-properties (button-start btn) (button-end btn)))
 
 (defsubst treemacs--refresh-on-ui-change ()
   "Refresh the treemacs buffer when the window system has changed."
   (when (treemacs--check-window-system)
     (treemacs-refresh)))
-
-(defsubst treemacs--reopen (abs-path)
-  "Reopen the node identified by its ABS-PATH."
-  (treemacs--without-messages
-   (treemacs--open-node (treemacs--goto-button-at abs-path) t)))
 
 (defsubst treemacs--add-to-cache (parent opened-child)
   "Add to PARENT's open dirs cache an entry for OPENED-CHILD."
@@ -150,9 +176,22 @@ Will return the treemacs window if true."
 
 (defsubst treemacs--unqote (str)
   "Unquote STR if it is wrapped in quotes."
+  (declare (pure t) (side-effect-free t))
   (if (s-starts-with? "\"" str)
       (replace-regexp-in-string "\"" "" str)
     str))
+
+(defun treemacs--get-children-of (parent-btn)
+  "Get all buttons exactly one level deeper than PARENT-BTN.
+The child buttons are returned in the same order as they appear in the treemacs
+buffer."
+  (let ((ret)
+        (btn (next-button (button-end parent-btn) t)))
+    (when (equal (1+ (button-get parent-btn 'depth)) (button-get btn 'depth))
+      (setq ret (cons btn ret))
+      (while (setq btn (button-get btn 'next-node))
+        (push btn ret)))
+    (nreverse ret)))
 
 (defun treemacs--git-status-process (path)
   "Create a new process future to get the git status under PATH."
@@ -321,34 +360,48 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   "Cleanup to be run when the treemacs buffer gets killed."
   (treemacs--stop-watching-all)
   (treemacs--cancel-refresh-timer)
+  (treemacs--clear-tags-cache)
   (setq treemacs--open-dirs-cache nil
         treemacs--ready           nil
         treemacs--missed-refresh  nil))
 
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
-  (cl-case (button-get btn 'state)
-    ('file       (treemacs-visit-file-vertical-split))
-    ('dir-closed (treemacs--open-node btn))
-    ('dir-open   (treemacs--close-node btn))))
+  (pcase (button-get btn 'state)
+    ('dir-closed  (treemacs--open-node btn))
+    ('dir-open    (treemacs--close-node btn))
+    ('file-open   (treemacs--close-tags-for-file btn))
+    ('file-closed (treemacs--open-tags-for-file btn))
+    ('node-open   (treemacs--close-tag-node btn))
+    ('node-closed (treemacs--open-tag-node btn))
+    ('tag         (treemacs--goto-tag btn))
+    (_            (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
+
+(defun treemacs--reopen-node (btn)
+  "Reopen file BTN."
+  (pcase (button-get btn 'state)
+    ('dir-closed  (treemacs--open-node btn t))
+    ('file-closed (treemacs--open-tags-for-file btn t))
+    ('node-closed (treemacs--open-tag-node btn t))
+    (_            (error "[Treemacs] Cannot reopen butt at path %s with state %s" (button-get btn 'abs-path) (button-get btn 'state)))))
 
 (defun treemacs--open-node (btn &optional no-add)
   "Open the node given by BTN.
 Do not reopen its previously open children when NO-ADD is given."
-       (if (not (f-readable? (button-get btn 'abs-path)))
-           (message "Directory is not readable.")
-         (let ((abs-path (button-get btn 'abs-path)))
-           (with-no-warnings
-             (treemacs--button-open
-              :btn btn
-              :new-state 'dir-open
-              :new-icon treemacs-icon-open
-              :open-action
-              (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (treemacs--git-status-process abs-path) btn)
-              :post-open-action
-              (progn
-                (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
-                (treemacs--start-watching abs-path)))))))
+  (if (not (f-readable? (button-get btn 'abs-path)))
+      (message "[Treemacs] Directory %s is not readable." (button-get btn 'abs-path))
+    (let ((abs-path (button-get btn 'abs-path)))
+      (with-no-warnings
+        (treemacs--button-open
+         :button btn
+         :new-state 'dir-open
+         :new-icon treemacs-icon-open
+         :open-action
+         (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (treemacs--git-status-process abs-path) btn)
+         :post-open-action
+         (progn
+           (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
+           (treemacs--start-watching abs-path)))))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."
@@ -392,14 +445,15 @@ Use `next-window' if WINDOW is nil."
       (insert-image new-sym)
     (insert new-sym)))
 
-(defun treemacs--reopen-at (abs-path)
-  "Reopen dirs below ABS-PATH."
-  (-some->
-   abs-path
-   (assoc treemacs--open-dirs-cache)
-   (cdr)
-   (treemacs--maybe-filter-dotfiles)
-   (--each (treemacs--reopen it))))
+(defun treemacs--reopen-at (path)
+  "Reopen dirs below PATH."
+  (treemacs--without-messages
+   (-some->
+    path
+    (assoc treemacs--open-dirs-cache)
+    (cdr)
+    (treemacs--maybe-filter-dotfiles)
+    (--each (treemacs--reopen-node (treemacs--goto-button-at it))))))
 
 (defun treemacs--clear-from-cache (path &optional purge)
   "Remove PATH from the open dirs cache.
@@ -446,15 +500,25 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
   (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
 
-  (defvar treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
-  (defvar treemacs-icon-open-text   (propertize "- " 'face 'treemacs-term-node-face))
+  (defconst treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
+  (defconst treemacs-icon-open-text   (propertize "- " 'face 'treemacs-term-node-face))
   (defvar treemacs-icon-closed treemacs-icon-closed-png)
   (defvar treemacs-icon-open treemacs-icon-open-png))
 
+(cl-defun treemacs--nearest-path (&optional (btn (save-excursion (beginning-of-line) (next-button (point) t))))
+  "Return the 'abs-path' property of the current button (or BTN).
+If the property is not set keep looking upward, via the 'parent' property.
+Useful to e.g. find the path of the file of the currently selected tags entry."
+  (let* ((path (button-get btn 'abs-path)))
+    (while (null path)
+      (setq btn (button-get btn 'parent)
+            path (button-get btn 'abs-path)))
+    path))
+
 (cl-defun treemacs--goto-button-at (abs-path &optional (start-from (point-min)))
   "Move point to button identified by ABS-PATH, starting search at START.
-Also return that button."
-  ;; Callers must make sure to save match data
+Also return that button.
+Callers must make sure to save match data"
   (let ((keep-looking t)
         (filename (f-filename abs-path))
         (start (point))
@@ -572,7 +636,6 @@ It needs to be moved aside in a way that works for all indent depths and
   "Clean up after a deleted file or directory.
 Just kill the buffer visiting PATH if IS-FILE. Otherwise, go
 through the buffer list and kill buffer if PATH is a prefix."
-
   (if is-file
       (let ((buf (get-file-buffer path)))
         (and buf

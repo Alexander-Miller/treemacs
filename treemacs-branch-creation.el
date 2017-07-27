@@ -140,17 +140,17 @@ INSERT-DEPTH indicates where the icon is to be inserted.
 GIT-INFO (if any) is used to determine the node's face."
   (funcall treemacs--insert-file-image-function path prefix insert-depth)
   (treemacs--insert-button (f-filename path)
-                           'state     'file
+                           'state     'file-closed
                            'action    #'treemacs--push-button
                            'abs-path  path
                            'parent    parent
                            'depth     depth
                            'face      (treemacs--get-face path git-info)))
 
-(cl-defmacro treemacs--button-open (&key btn new-state new-icon open-action post-open-action)
+(cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action)
   "Fixme BTN NEW-STATE NEW-ICON."
   `(treemacs--with-writable-buffer
-    (button-put ,btn 'state ,new-state)
+    (button-put ,button 'state ,new-state)
     (beginning-of-line)
     (when ,new-icon
       (treemacs--node-symbol-switch ,new-icon))
@@ -215,6 +215,20 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (treemacs--button-put prev-button 'next-node b)
            (setq prev-button (treemacs--button-put b 'prev-node prev-button)))))
      ,return-value))
+
+(cl-defmacro treemacs--button-close (&key button new-state post-close-action)
+  "Close node given by BTN and set state of BTN to NEW-STATE."
+  `(treemacs--with-writable-buffer
+    (end-of-line)
+    (forward-button 1)
+    (beginning-of-line)
+    (let* ((pos-start (point))
+           (next (treemacs--next-node ,button))
+           (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
+      (button-put ,button 'state ,new-state)
+      (delete-region pos-start pos-end)
+      (delete-trailing-whitespace))
+    ,post-close-action))
 
 (defun treemacs--check-window-system ()
   "Check if the window system has changed since the last call.

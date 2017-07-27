@@ -77,8 +77,10 @@ not visible."
                       (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))
                       (f-exists? current-file))
              (with-current-buffer (window-buffer treemacs-window)
-               (let ((root (treemacs--current-root)))
-                 (when (treemacs--is-path-in-dir? current-file root)
+               (let ((root (treemacs--current-root))
+                     (selected-file (treemacs--nearest-path)))
+                 (when (and (not (equal selected-file current-file))
+                            (treemacs--is-path-in-dir? current-file root))
                    (treemacs--do-follow current-file root))))))))
 
 ;; this is only to stop the compiler from complaining about unknown functions
