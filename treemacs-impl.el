@@ -628,9 +628,8 @@ Delete all elements whose car is ‘string=’ to KEY from ALIST."
 It needs to be moved aside in a way that works for all indent depths and
 `treemacs-indentation' settings."
   (beginning-of-line)
-  (let* ((depth (button-get (next-button (point) t) 'depth))
-         (r (+ 2 (* treemacs-indentation depth))))
-    (forward-char r)))
+  (when (get-text-property (point) 'display)
+    (forward-char 1)))
 
 (defun treemacs--kill-buffers-after-deletion (path is-file)
   "Clean up after a deleted file or directory.
