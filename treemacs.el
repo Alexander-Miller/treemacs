@@ -86,7 +86,7 @@ the project from among `projectile-known-projects'."
         (treemacs--init (completing-read "Project: " projectile-known-projects)))
        ((projectile-project-p)
         (treemacs--init (projectile-project-root)))
-       (t (message "You're not in a project.")))
+       (t (treemacs--log "You're not in a project.")))
     (user-error "Could't initialize at project root - 'projectile-known-projects' is not defined. Is projectile loaded?")))
 
 ;;;###autoload
@@ -346,9 +346,9 @@ A delete action must always be confirmed. Directories are deleted recursively."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
   (treemacs-refresh)
-  (message (concat "Dotfiles will now be "
-                   (if treemacs-show-hidden-files
-                       "displayed." "hidden."))))
+  (treemacs--log (concat "Dotfiles will now be "
+                         (if treemacs-show-hidden-files
+                             "displayed." "hidden."))))
 
 ;;;###autoload
 (defun treemacs-toggle-fixed-width ()
@@ -358,8 +358,8 @@ See also `treemacs-width.'"
   (if window-size-fixed
       (setq window-size-fixed nil)
     (setq window-size-fixed 'width))
-  (message "Treemacs buffer width has been %s."
-           (if window-size-fixed "locked" "unlocked")))
+  (treemacs--log "Treemacs buffer width has been %s."
+                 (if window-size-fixed "locked" "unlocked")))
 
 ;;;###autoload
 (defun treemacs-reset-width (&optional arg)
@@ -418,7 +418,7 @@ given and the current buffer is not editing a file."
   (let ((yank (-> (treemacs--prop-at-point 'abs-path)
                   (f-full)
                   (kill-new))))
-    (message "Yanked path: %s" yank)))
+    (treemacs--log "Yanked path: %s" (propertize yank 'face 'font-lock-string-face))))
 
 ;;;###autoload
 (defun treemacs-yank-root ()
@@ -427,7 +427,7 @@ given and the current buffer is not editing a file."
   (let ((yank (-> default-directory
                   (f-full)
                   (kill-new))))
-    (message "Yanked root: %s" yank)))
+    (treemacs--log "Yanked root: %s" (propertize yank 'face 'font-lock-string-face))))
 
 ;;;###autoload
 (defun treemacs-delete-other-windows ()

@@ -37,8 +37,8 @@
       (let ((root      (cdr (assoc "ROOT"      stored-data)))
             (open-dirs (cdr (assoc "OPEN-DIRS" stored-data)))
             (point-at  (cdr (assoc "POINT-AT"  stored-data))))
-        (unless (f-dir? root)      (error "%s is not a directory, cannot be restored by treemacs" root))
-        (unless (f-readable? root) (error "%s is not readable, cannot be restored by treemacs"    root))
+        (unless (f-dir? root)      (error "[Treemacs] %s is not a directory, so it cannot be restored" root))
+        (unless (f-readable? root) (error "[Treemacs] %s is not readable, so it cannot be restored" root))
         (treemacs--buffer-teardown)
         (treemacs--init root)
         ;; Don't always start searching from the very top

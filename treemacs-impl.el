@@ -389,7 +389,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   "Open the node given by BTN.
 Do not reopen its previously open children when NO-ADD is given."
   (if (not (f-readable? (button-get btn 'abs-path)))
-      (message "[Treemacs] Directory %s is not readable." (button-get btn 'abs-path))
+      (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
     (let ((abs-path (button-get btn 'abs-path)))
       (with-no-warnings
         (treemacs--button-open
