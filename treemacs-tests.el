@@ -529,6 +529,26 @@
         (button-put b4 'abs-path "A")
         (should (equal '("b1" "b3" "b2") (treemacs--tags-path-of b1)))))))
 
+;; treemacs--partition-imenu-index
+(progn
+  (ert-deftest partition-index::returns-nil-on-nil-input ()
+    (should-not (treemacs--partition-imenu-index nil)))
+
+  (ert-deftest partition-index::returns-index-unchanged-when-input-has-no-top-level-leaves ()
+    (let ((input '(("A" ("a1" "a2")) ("B" ("b1" "b2")))))
+      (should (equal input (treemacs--partition-imenu-index '(("A" ("a1" "a2")) ("B" ("b1" "b2"))))))))
+
+  (ert-deftest partition-index::partitions-single-top-level-list-into-functions ()
+    (should (equal
+             '(("Functions" ("x" "y" "z")))
+             (treemacs--partition-imenu-index '(("x" "y" "z"))))))
+
+  (ert-deftest partition-index::partitions-top-level-tails-into-functions ()
+    (let ((input '(("A" ("a1" "a2")) ("B" ("b1" "b2")) ("x" "y" "z"))))
+      (should (equal
+               '(("A" ("a1" "a2")) ("B" ("b1" "b2")) ("Functions" ("x" "y" "z")))
+               (treemacs--partition-imenu-index input))))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here

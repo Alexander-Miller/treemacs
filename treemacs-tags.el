@@ -75,8 +75,8 @@ Make it look like helm-imenu."
               (setq ret (cons item ret))
               (setq rest (cdr rest)))
           (progn
-            (setq ret (cons (cons "Functions" rest) ret))
-            (setq rest nil)))))
+            (setq ret (cons (cons "Functions" rest) ret)
+                  rest nil)))))
     (nreverse ret)))
 
 (defun treemacs--get-imenu-index (file)
