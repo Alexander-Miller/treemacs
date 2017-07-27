@@ -19,9 +19,7 @@
 
 ;;; Code:
 
-(require 'treemacs-impl)
-(require 'treemacs-customization)
-(require 'treemacs-persist)
+(require 'treemacs)
 (require 'ert)
 (require 'el-mock)
 
@@ -548,6 +546,70 @@
       (should (equal
                '(("A" ("a1" "a2")) ("B" ("b1" "b2")) ("Functions" ("x" "y" "z")))
                (treemacs--partition-imenu-index input))))))
+
+;; treemacs--add-to-tags-cache
+(progn
+
+  (ert-deftest add-to-tags-cache::fails-on-nil-btn ()
+    (should-error (treemacs--add-to-tags-cache nil)))
+
+  (ert-deftest add-to-tags-cache::creates-new-table-if-one-doesnt-yet-exist ()
+    (with-temp-buffer
+      (let ((treemacs--tags-cache (make-hash-table :test #'equal))
+            (b (button-at (insert-text-button "b")))
+            (p (button-at (insert-text-button "p"))))
+        (button-put p 'abs-path "/A/B/C")
+        (button-put b 'parent p)
+        (treemacs--add-to-tags-cache b)
+        (should-not (null (gethash "/A/B/C" treemacs--tags-cache))))))
+
+  (ert-deftest add-to-tags-cache::creates-new-cache-entry-if-one-doesnt-yet-exist ()
+    (with-temp-buffer
+      (let ((treemacs--tags-cache (make-hash-table :test #'equal))
+            (b (button-at (insert-text-button "button-lbl")))
+            (p (button-at (insert-text-button "parent-lbl"))))
+        (button-put p 'abs-path "/parent/path")
+        (button-put b 'parent p)
+        (treemacs--add-to-tags-cache b)
+        (should (equal '(("button-lbl"))
+                       (gethash '("/parent/path") (gethash "/parent/path" treemacs--tags-cache)))))))
+
+  (ert-deftest add-to-tags-cache::adds-to-existing-cache-entry ()
+    (with-temp-buffer
+      (let ((treemacs--tags-cache (make-hash-table :test #'equal))
+            (b1 (button-at (insert-text-button "button-lbl-1")))
+            (b2 (button-at (insert-text-button "button-lbl-2")))
+            (p (button-at (insert-text-button "parent-lbl"))))
+        (button-put p 'abs-path "/parent/path")
+        (button-put b1 'parent p)
+        (button-put b2 'parent p)
+        (treemacs--add-to-tags-cache b1)
+        (treemacs--add-to-tags-cache b2)
+        (should (equal '(("button-lbl-2") ("button-lbl-1"))
+                       (gethash '("/parent/path") (gethash "/parent/path" treemacs--tags-cache)))))))
+
+  (ert-deftest add-to-tags-cache::adds-to-existing-cache-entry-in-long-tag-path ()
+    (with-temp-buffer
+      (let ((treemacs--tags-cache (make-hash-table :test #'equal))
+            (b1 (button-at (insert-text-button "button-lbl-1")))
+            (b2 (button-at (insert-text-button "button-lbl-2")))
+            (p1 (button-at (insert-text-button "parent-lbl-1")))
+            (p2 (button-at (insert-text-button "parent-lbl-2")))
+            (p3 (button-at (insert-text-button "parent-lbl-3")))
+            (p4 (button-at (insert-text-button "parent-lbl-4"))))
+        (button-put b1 'parent p1)
+        (button-put b2 'parent p1)
+        (button-put p1 'parent p2)
+        (button-put p2 'parent p3)
+        (button-put p3 'parent p4)
+        (button-put p4 'abs-path "/parent/path")
+        (treemacs--add-to-tags-cache b1)
+        (treemacs--add-to-tags-cache b2)
+        (should
+         (equal '(("button-lbl-2" "parent-lbl-3" "parent-lbl-2" "parent-lbl-1")
+                  ("button-lbl-1" "parent-lbl-3" "parent-lbl-2" "parent-lbl-1"))
+                (gethash '("parent-lbl-1" "parent-lbl-3" "parent-lbl-2")
+                         (gethash "/parent/path" treemacs--tags-cache))))))))
 
 (provide 'treemacs-tests)
 
