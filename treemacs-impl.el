@@ -89,13 +89,13 @@ functions.")
 (defvar treemacs--insert-file-image-function 'unset
   "Function used to insert the image/icon for file nodes.
 Set by `treemacs--check-window-system' to either
-`treemacs--insert-file-image-xpm' or `treemacs--insert-file-image-txt',
+`treemacs--insert-file-image-png' or `treemacs--insert-file-image-txt',
 depending on whether treemacs is currently shown in a GUI or TUI frame.")
 
 (defvar treemacs--insert-dir-image-function 'unset
   "Function used to insert the image/icon for file nodes.
 Set by `treemacs--check-window-system' to either
-`treemacs--insert-dir-image-xpm' or `treemacs--insert-dir-image-txt',
+`treemacs--insert-dir-image-png' or `treemacs--insert-dir-image-txt',
 depending on whether treemacs is currently shown in a GUI or TUI frame.")
 
 
@@ -109,7 +109,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   `(progn
      (defconst ,var
        (create-image (f-join treemacs-dir "icons/" ,file-name)
-                     'xpm nil :ascent 'center))
+                     'png nil :ascent 'center))
      (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
 
 (defmacro treemacs--with-writable-buffer (&rest body)
@@ -490,7 +490,7 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-python     "python.png"     "py" "pyc")
   (treemacs--setup-icon treemacs-icon-markdown   "markdown.png"   "md")
   (treemacs--setup-icon treemacs-icon-rust       "rust.png"       "rs" "toml")
-  (treemacs--setup-icon treemacs-icon-image      "image.png"      "jpg" "jpeg" "bmp" "svg" "png")
+  (treemacs--setup-icon treemacs-icon-image      "image.png"      "jpg" "jpeg" "bmp" "svg" "png" "xpm")
   (treemacs--setup-icon treemacs-icon-emacs      "emacs.png"      "el" "elc" "org")
   (treemacs--setup-icon treemacs-icon-clojure    "clojure.png"    "clj" "cljs" "cljc")
   (treemacs--setup-icon treemacs-icon-typescript "typescript.png" "ts")

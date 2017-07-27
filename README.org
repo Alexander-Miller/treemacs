@@ -5,22 +5,22 @@
 [[file:screenshot.png]]
 
 * Content                                                                            :TOC:noexport:
- - [[#treemacs---a-tree-layout-file-explorer-for-emacs][Treemacs - a tree layout file explorer for Emacs]]
- - [[#feature-overview][Feature Overview]]
- - [[#installation][Installation]]
- - [[#configuration][Configuration]]
-   - [[#variables][Variables]]
-   - [[#treemacs-follow-mode][Treemacs-follow-mode]]
-   - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
-   - [[#faces][Faces]]
-   - [[#session-persistence][Session persistence]]
-   - [[#terminal-compatibility][Terminal Compatibility]]
-   - [[#evil-compatibility][Evil compatibility]]
-   - [[#custom-header-function][Custom header function]]
- - [[#keymap][Keymap]]
-   - [[#unbound-functions][Unbound functions]]
-   - [[#default-keymap][Default keymap]]
- - [[#dependencies][Dependencies]]
+- [[#treemacs---a-tree-layout-file-explorer-for-emacs][Treemacs - a tree layout file explorer for Emacs]]
+- [[#feature-overview][Feature Overview]]
+- [[#installation][Installation]]
+- [[#configuration][Configuration]]
+  - [[#variables][Variables]]
+  - [[#treemacs-follow-mode][Treemacs-follow-mode]]
+  - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
+  - [[#faces][Faces]]
+  - [[#session-persistence][Session persistence]]
+  - [[#terminal-compatibility][Terminal Compatibility]]
+  - [[#evil-compatibility][Evil compatibility]]
+  - [[#custom-header-function][Custom header function]]
+- [[#keymap][Keymap]]
+  - [[#unbound-functions][Unbound functions]]
+  - [[#default-keymap][Default keymap]]
+- [[#dependencies][Dependencies]]
 
 * Feature Overview
 
@@ -38,7 +38,7 @@ Specifically a quick feature overview looks as follows:
    layout of your other windows.
  * Projectile integration - quickly open treemacs at any known project's root directory.
  * (Limimted) mouse interface - you can close/expand folders and open files by left-clicking on icons.
- * Dashing good looks - treemacs uses genuine xpm images in HD 22x22 resolution for its icons (quantity is, of course,
+ * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
    another matter). When run in a terminal a very simple fallback is used.
  * Session persistence with ~desktop-save-mode~
  * Ease of use - treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
@@ -173,7 +173,7 @@ will be called and the previously saved state (if available) will be restored. I
 still possible to invoke ~treemacs-restore~ manually when the right conditions are met.
 
 ** Terminal Compatibility
-When run in a terminal treemacs will fall back to a much simpler rendering system, foregoing its usual xpm icons and using
+When run in a terminal treemacs will fall back to a much simpler rendering system, foregoing its usual png icons and using
 simple ~+~ and ~-~ characters instead. Changes to the current rendering system are detected automatically - within some
 limits. The check for the change happens with treemacs' functions which build or show/hide the treemacs buffer, namely
 ~treemacs(-projectile)~. ~treemacs-toggle~ and ~treemacs-refresh~.

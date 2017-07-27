@@ -100,8 +100,8 @@ is a marker pointing to POS."
   (end-of-line)
   (insert (substring prefix 0 -2) (with-no-warnings treemacs-icon-closed-text)))
 
-(defsubst treemacs--insert-file-image-xpm (path prefix insert-depth)
-  "Insert the appropriate file xpm icon for PATH given PREFIX and INSERT-DEPTH."
+(defsubst treemacs--insert-file-image-png (path prefix insert-depth)
+  "Insert the appropriate file png icon for PATH given PREFIX and INSERT-DEPTH."
   (end-of-line)
   (let ((start (+ 1 (point) insert-depth)))
     (insert prefix)
@@ -109,8 +109,8 @@ is a marker pointing to POS."
                                                               treemacs-icons-hash
                                                               (with-no-warnings treemacs-icon-text))))))
 
-(defsubst treemacs--insert-dir-image-xpm (prefix insert-depth)
-  "Insert the appropriate dir xpm icon for PREFIX and INSERT-DEPTH."
+(defsubst treemacs--insert-dir-image-png (prefix insert-depth)
+  "Insert the appropriate dir png icon for PREFIX and INSERT-DEPTH."
   (end-of-line)
   (let ((start (+ 1 (point) insert-depth)))
     (insert prefix)
@@ -241,10 +241,10 @@ return t."
       (with-no-warnings
         (if current-ui
             (progn
-              (setf treemacs--insert-dir-image-function #'treemacs--insert-dir-image-xpm)
-              (setf treemacs--insert-file-image-function #'treemacs--insert-file-image-xpm)
-              (setq treemacs-icon-open treemacs-icon-open-xpm
-                    treemacs-icon-closed treemacs-icon-closed-xpm))
+              (setf treemacs--insert-dir-image-function #'treemacs--insert-dir-image-png)
+              (setf treemacs--insert-file-image-function #'treemacs--insert-file-image-png)
+              (setq treemacs-icon-open treemacs-icon-open-png
+                    treemacs-icon-closed treemacs-icon-closed-png))
           (progn
             (setf treemacs--insert-dir-image-function #'treemacs--insert-dir-image-txt)
             (setf treemacs--insert-file-image-function #'treemacs--insert-file-image-txt)
