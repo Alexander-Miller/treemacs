@@ -506,6 +506,29 @@
   (ert-deftest file-ext::return-extension-for-path-with-dots ()
     (should (equal "el" (treemacs--file-extension "~/A/foo.bar/baz.qux/foo.el")))))
 
+;; treemacs--tags-path-of
+(progn
+  (ert-deftest tags-path-of::fails-on-nil-btn ()
+    (should-error (treemacs--tags-path-of nil)))
+
+  (ert-deftest tags-path-of::directly-returns-path-when-possible ()
+    (with-temp-buffer
+      (let ((b (make-button 0 0)))
+        (button-put b 'abs-path "/a/b/c")
+        (should (equal '("/a/b/c") (treemacs--tags-path-of b))))))
+
+  (ert-deftest tags-path-of::walks-up-to-the-first-file-button ()
+    (with-temp-buffer
+      (let ((b1 (button-at (insert-text-button "b1")))
+            (b2 (button-at (insert-text-button "b2")))
+            (b3 (button-at (insert-text-button "b3")))
+            (b4 (button-at (insert-text-button "b4"))))
+        (button-put b1 'parent b2)
+        (button-put b2 'parent b3)
+        (button-put b3 'parent b4)
+        (button-put b4 'abs-path "A")
+        (should (equal '("b1" "b3" "b2") (treemacs--tags-path-of b1)))))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
