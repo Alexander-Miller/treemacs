@@ -28,9 +28,12 @@
 (require 'treemacs-branch-creation)
 (require 'treemacs-customization)
 
-(defconst treemacs-icon-tag-leaf        (create-image (f-join treemacs-dir "icons/" "tags-leaf.xpm")   'xpm nil :ascent 'center))
-(defconst treemacs-icon-tag-node-closed (create-image (f-join treemacs-dir "icons/" "tags-closed.xpm") 'xpm nil :ascent 'center))
-(defconst treemacs-icon-tag-node-open   (create-image (f-join treemacs-dir "icons/" "tags-open.xpm")   'xpm nil :ascent 'center))
+(defconst treemacs-icon-tag-leaf
+  (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-leaf.xpm") 'xpm nil :ascent 'center)) " "))
+(defconst treemacs-icon-tag-node-closed
+  (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-closed.xpm") 'xpm nil :ascent 'center)) " "))
+(defconst treemacs-icon-tag-node-open
+  (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-open.xpm") 'xpm nil :ascent 'center)) " "))
 
 (defvar treemacs--tags-cache (make-hash-table :test #'equal :size 100)
   "Cache storing all opened tags in treemacs view.
@@ -139,12 +142,14 @@ during a reopen process."
            :open-action
            (treemacs--create-buttons
             :nodes index
-            :indent-depth (1+ (button-get btn 'depth))
+            :extra-vars ((node-prefix (concat prefix treemacs-icon-tag-node-closed))
+                         (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
+            :depth (1+ (button-get btn 'depth))
             :node-name item
             :node-action
             (if (imenu--subalist-p item)
-                (treemacs--insert-tag-node item prefix treemacs-icon-tag-node-closed btn indent-depth insert-depth)
-              (treemacs--insert-tag-leaf item prefix treemacs-icon-tag-leaf btn indent-depth insert-depth))))
+                (treemacs--insert-tag-node item node-prefix btn depth)
+              (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
       (treemacs--log "No imenu index found for %s" (propertize path 'face 'font-lock-string-face)))))
 
 (defun treemacs--close-tags-for-file (btn)
@@ -155,16 +160,12 @@ during a reopen process."
    :post-close-action
    (treemacs--clear-from-cache (button-get btn 'abs-path))))
 
-(defun treemacs--insert-tag-node (node prefix icon parent depth insert-depth)
+(defun treemacs--insert-tag-node (node prefix parent depth)
   "Insert tags NODE.
 Use PREFIX for indentation.
-Use ICON for the node.
-Set PARENT and DEPTH button properties.
-Insert ICON at INSERT-DEPTH."
+Set PARENT and DEPTH button properties."
   (end-of-line)
-  (let ((start (+ 1 (point) insert-depth)))
-    (insert prefix)
-    (add-text-properties start (1+ start) `(display ,icon)))
+  (insert prefix)
   (treemacs--insert-button (car node)
                            'face 'font-lock-builtin-face
                            'state 'node-closed
@@ -187,24 +188,22 @@ NOADD is usually given during a reopen process."
         :open-action
         (treemacs--create-buttons
          :nodes index
-         :indent-depth (1+ (button-get btn 'depth))
+         :depth (1+ (button-get btn 'depth))
          :node-name item
+         :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))
+                      (node-prefix (concat prefix treemacs-icon-tag-node-closed)))
          :node-action
          (if (imenu--subalist-p item)
-             (treemacs--insert-tag-node item prefix treemacs-icon-tag-node-closed btn indent-depth insert-depth)
-           (treemacs--insert-tag-leaf item prefix treemacs-icon-tag-leaf btn indent-depth insert-depth))))
+             (treemacs--insert-tag-node item node-prefix btn depth)
+           (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
     (treemacs--reopen-tags-under btn)))
 
-(defun treemacs--insert-tag-leaf (item prefix icon parent depth insert-depth)
+(defun treemacs--insert-tag-leaf (item prefix parent depth)
   "Insert tag node ITEM.
 Use PREFIX for indentation.
-Use ICON for the item.
-Set PARENT and DEPTH button properties.
-Insert ICON at INSERT-DEPTH."
+Set PARENT and DEPTH button properties."
   (end-of-line)
-  (let ((start (+ 1 (point) insert-depth)))
-    (insert prefix)
-    (add-text-properties start (1+ start) `(display ,icon)))
+  (insert prefix)
   (treemacs--insert-button (car item)
                            'face 'font-lock-builtin-face
                            'state 'tag
@@ -271,21 +270,21 @@ exist."
               (select-window buf-window)
             (select-window (next-window (selected-window) nil (selected-frame)))
             (switch-to-buffer tag-buffer nil t))
-          (goto-char tag-pos)))
-    (progn
-      (pcase treemacs-goto-tag-strategy
-        ('refetch-index
-         (treemacs--call-imenu-and-goto-tag
-          (treemacs--nearest-path btn)
-          (treemacs--tags-path-of btn)
-          (next-window (selected-window) nil (selected-frame))))
-        ('call-xref
-         (select-window (next-window (selected-window) nil (selected-frame)))
-         (xref-find-definitions tag-name))
-        ('issue-warning
-         (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-                        (propertize tag-name 'face 'font-lock-type-face)))
-        (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy))))))
+          (goto-char tag-pos))
+      (progn
+        (pcase treemacs-goto-tag-strategy
+          ('refetch-index
+           (treemacs--call-imenu-and-goto-tag
+            (treemacs--nearest-path btn)
+            (treemacs--tags-path-of btn)
+            (next-window (selected-window) nil (selected-frame))))
+          ('call-xref
+           (select-window (next-window (selected-window) nil (selected-frame)))
+           (xref-find-definitions tag-name))
+          ('issue-warning
+           (treemacs--log "Tag '%s' is located in a buffer that does not exist."
+                          (propertize tag-name 'face 'font-lock-type-face)))
+          (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))))))
 
 (defun treemacs--goto-tag-button-at (tag-path file &optional start)
   "Goto tag given by TAG-PATH for button of FILE.

@@ -106,10 +106,10 @@ depending on whether treemacs is currently shown in a GUI or TUI frame.")
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define a variable VAR with the value being the image created from FILE-NAME.
 Insert VAR into icon-cache for each of the given file EXTENSIONS."
-  `(progn
+  `(let ((image (create-image (f-join treemacs-dir "icons/" ,file-name)
+                              'png nil :ascent 'center)))
      (defconst ,var
-       (create-image (f-join treemacs-dir "icons/" ,file-name)
-                     'png nil :ascent 'center))
+       (concat (propertize " " 'display image) " "))
      (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
 
 (defmacro treemacs--with-writable-buffer (&rest body)
@@ -181,25 +181,14 @@ Will return the treemacs window if true."
       (replace-regexp-in-string "\"" "" str)
     str))
 
-(defun treemacs--get-children-of (parent-btn)
-  "Get all buttons exactly one level deeper than PARENT-BTN.
-The child buttons are returned in the same order as they appear in the treemacs
-buffer."
-  (let ((ret)
-        (btn (next-button (button-end parent-btn) t)))
-    (when (equal (1+ (button-get parent-btn 'depth)) (button-get btn 'depth))
-      (setq ret (cons btn ret))
-      (while (setq btn (button-get btn 'next-node))
-        (push btn ret)))
-    (nreverse ret)))
-
-(defun treemacs--git-status-process (path)
-  "Create a new process future to get the git status under PATH."
-  (when treemacs-git-integration
-    (let* ((default-directory (f-canonical path))
-           (future (pfuture-new "git" "status" "--porcelain" "--ignored" ".")))
-      (process-put (pfuture-process future) 'default-directory default-directory)
-      future)))
+(defsubst treemacs--node-symbol-switch (new-sym)
+  "Replace icon in current line with NEW-SYM."
+  (let* ((b   (next-button (point-at-bol) t))
+         (pos (- (button-start b) 2)))
+    (save-excursion
+      (goto-char pos)
+      (delete-char 2)
+      (insert new-sym))))
 
 (defsubst treemacs--parse-git-status (git-future)
   "Parse the git status derived from the output of GIT-FUTURE."
@@ -288,6 +277,26 @@ and special names like this."
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
+
+(defun treemacs--get-children-of (parent-btn)
+  "Get all buttons exactly one level deeper than PARENT-BTN.
+The child buttons are returned in the same order as they appear in the treemacs
+buffer."
+  (let ((ret)
+        (btn (next-button (button-end parent-btn) t)))
+    (when (equal (1+ (button-get parent-btn 'depth)) (button-get btn 'depth))
+      (setq ret (cons btn ret))
+      (while (setq btn (button-get btn 'next-node))
+        (push btn ret)))
+    (nreverse ret)))
+
+(defun treemacs--git-status-process (path)
+  "Create a new process future to get the git status under PATH."
+  (when treemacs-git-integration
+    (let* ((default-directory (f-canonical path))
+           (future (pfuture-new "git" "status" "--porcelain" "--ignored" ".")))
+      (process-put (pfuture-process future) 'default-directory default-directory)
+      future)))
 
 (defun treemacs--init (root)
   "Initialize and build treemacs buffer for ROOT."
@@ -436,15 +445,6 @@ Use `next-window' if WINDOW is nil."
         (call-interactively 'other-window))
       (find-file path))))
 
-(defun treemacs--node-symbol-switch (new-sym)
-  "Replace icon in current line with NEW-SYM."
-  (beginning-of-line)
-  (forward-char (* treemacs-indentation (treemacs--prop-at-point 'depth)))
-  (delete-char 1)
-  (if (window-system)
-      (insert-image new-sym)
-    (insert new-sym)))
-
 (defun treemacs--reopen-at (path)
   "Reopen dirs below PATH."
   (treemacs--without-messages
@@ -500,10 +500,11 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
   (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
 
-  (defconst treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
-  (defconst treemacs-icon-open-text   (propertize "- " 'face 'treemacs-term-node-face))
-  (defvar treemacs-icon-closed treemacs-icon-closed-png)
-  (defvar treemacs-icon-open treemacs-icon-open-png))
+  (defconst treemacs-icon-closed-text (propertize "+" 'face 'treemacs-term-node-face))
+  (defconst treemacs-icon-open-text   (propertize "-" 'face 'treemacs-term-node-face))
+  (with-no-warnings
+    (defvar treemacs-icon-closed treemacs-icon-closed-png)
+    (defvar treemacs-icon-open treemacs-icon-open-png)))
 
 (cl-defun treemacs--nearest-path (&optional (btn (save-excursion (beginning-of-line) (next-button (point) t))))
   "Return the 'abs-path' property of the current button (or BTN).

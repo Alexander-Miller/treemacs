@@ -25,6 +25,11 @@
 (require 'cl-lib)
 (require 'treemacs-impl)
 
+(defvar treemacs-icon-fallback nil
+  "The fallback icon for files.
+Is set to either the generic text png icon when in a GUI, or blank spaces when
+in a terminal.")
+
 (defsubst treemacs--button-put (button prop val)
   "Set BUTTON's PROP property to VAL and return BUTTON."
   (put-text-property
@@ -84,45 +89,28 @@ is a marker pointing to POS."
             ('size-desc       #'treemacs--sort-size-desc)
             ('mod-time-asc    #'treemacs--sort-mod-time-asc)
             ('mod-time-desc   #'treemacs--sort-mod-time-desc)
-            (_                (user-error "Unknown treemacs-sorting value '%s'" treemacs-sorting))))
+            (_                (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting))))
          (entries (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown)))
          (dirs-files (-separate #'file-directory-p entries)))
     (list (sort (cl-first dirs-files) sort-func)
           (sort (cl-second dirs-files) sort-func))))
 
-(defsubst treemacs--insert-file-image-txt (_ prefix __)
-  "Insert PREFIX for a file, minus the space that would be used for the icon."
+(defsubst treemacs--insert-file-image (path prefix)
+  "Insert the appropriate file png icon for PATH given PREFIX."
   (end-of-line)
-  (insert (substring prefix 0 -2)))
+  (insert (concat prefix
+                  (gethash (-some-> path (treemacs--file-extension) (downcase))
+                           treemacs-icons-hash
+                           (with-no-warnings treemacs-icon-text)))))
 
-(defsubst treemacs--insert-dir-image-txt (prefix _)
-  "Insert text icon for a directory given PREFIX."
-  (end-of-line)
-  (insert (substring prefix 0 -2) (with-no-warnings treemacs-icon-closed-text)))
-
-(defsubst treemacs--insert-file-image-png (path prefix insert-depth)
-  "Insert the appropriate file png icon for PATH given PREFIX and INSERT-DEPTH."
-  (end-of-line)
-  (let ((start (+ 1 (point) insert-depth)))
-    (insert prefix)
-    (add-text-properties start (1+ start) `(display ,(gethash (-some-> path (treemacs--file-extension) (downcase))
-                                                              treemacs-icons-hash
-                                                              (with-no-warnings treemacs-icon-text))))))
-
-(defsubst treemacs--insert-dir-image-png (prefix insert-depth)
-  "Insert the appropriate dir png icon for PREFIX and INSERT-DEPTH."
-  (end-of-line)
-  (let ((start (+ 1 (point) insert-depth)))
-    (insert prefix)
-    (add-text-properties start (1+ start) `(display ,(with-no-warnings treemacs-icon-closed)))))
-
-(defsubst treemacs--insert-dir-node (path prefix parent depth insert-depth)
+(defsubst treemacs--insert-dir-node (path prefix parent depth)
   "Insert a directory node for PATH.
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
-DEPTH indicates how deep in the filetree the current button is.
-INSERT-DEPTH indicates where the icon is to be inserted."
-  (funcall treemacs--insert-dir-image-function prefix insert-depth)
+DEPTH indicates how deep in the filetree the current button is."
+  (end-of-line)
+  ;; for directories the icon is included in the prefix since it's always known
+  (insert prefix)
   (treemacs--insert-button (f-filename path)
                            'state     'dir-closed
                            'action    #'treemacs--push-button
@@ -131,14 +119,13 @@ INSERT-DEPTH indicates where the icon is to be inserted."
                            'depth     depth
                            'face      'treemacs-directory-face))
 
-(defsubst treemacs--insert-file-node (path prefix parent depth insert-depth git-info)
+(defsubst treemacs--insert-file-node (path prefix parent depth git-info)
   "Insert a directory node for PATH.
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
 DEPTH indicates how deep in the filetree the current button is.
-INSERT-DEPTH indicates where the icon is to be inserted.
 GIT-INFO (if any) is used to determine the node's face."
-  (funcall treemacs--insert-file-image-function path prefix insert-depth)
+  (treemacs--insert-file-image path prefix)
   (treemacs--insert-button (f-filename path)
                            'state     'file-closed
                            'action    #'treemacs--push-button
@@ -157,9 +144,9 @@ GIT-INFO (if any) is used to determine the node's face."
     ,open-action
     ,post-open-action))
 
-(defun treemacs--create-branch (root indent-depth git-process &optional parent)
+(defun treemacs--create-branch (root depth git-process &optional parent)
   "Create a new treemacs branch under ROOT.
-The branch is indented at INDENT-DEPTH and uses the eventual output of
+The branch is indented at DEPTH and uses the eventual output of
 GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
 to PARENT."
     (save-excursion
@@ -170,20 +157,21 @@ to PARENT."
               (with-no-warnings
                 (treemacs--create-buttons
                  :nodes dirs
-                 :indent-depth indent-depth
+                 :extra-vars (list (dir-prefix (concat prefix treemacs-icon-closed)))
+                 :depth depth
                  :node-name node
                  :return-value prev-button
-                 :node-action (treemacs--insert-dir-node node prefix parent indent-depth insert-depth))))
+                 :node-action (treemacs--insert-dir-node node dir-prefix parent depth))))
              (git-info (treemacs--parse-git-status git-process))
              (first-file
               (with-no-warnings
                 (treemacs--create-buttons
                  :nodes files
-                 :indent-depth indent-depth
+                 :depth depth
                  :node-name node
                  :extra-vars (first-file)
                  :return-value first-file
-                 :node-action (treemacs--insert-file-node node prefix parent indent-depth insert-depth git-info)
+                 :node-action (treemacs--insert-file-node node prefix parent depth git-info)
                  :first-node-action (setq first-file prev-button)))))
         (when (and last-dir first-file)
           (button-put last-dir 'next-node first-file)
@@ -192,18 +180,17 @@ to PARENT."
       ;; building the entire tree
       (treemacs--reopen-at root)))
 
-(cl-defmacro treemacs--create-buttons (&key nodes indent-depth extra-vars return-value node-action first-node-action node-name)
+(cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars return-value node-action first-node-action node-name)
   "Building block macro for creating buttons from a list of items.
 NODES is the list to create buttons from.
-INDENT-DEPTH is the indentation level buttons will be created on.
+DEPTH is the indentation level buttons will be created on.
 EXTRA-VARS are additional var bindings inserted into the initial let block.
 RETURN-VALUE will be inserted as the final expression.
 NODE-ACTION is the button creating form inserted for every NODE.
 FIRST-NODE-ACTION is the form inserted after processing the very first node.
 NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
-  `(let* ((indent-depth ,indent-depth)
-          (insert-depth (* indent-depth treemacs-indentation))
-          (prefix (concat "\n" (make-string (+ 2 insert-depth) ?\ )))
+  `(let* ((depth ,depth)
+          (prefix (concat "\n" (make-string (* depth treemacs-indentation) ?\ )))
           (,node-name (cl-first ,nodes))
           (prev-button)
           ,@extra-vars)
@@ -237,19 +224,18 @@ return t."
   (let ((current-ui (window-system)))
     (unless (eq current-ui treemacs--in-gui)
       (setq treemacs--in-gui current-ui)
-      ;; icon variables are known to exist
       (with-no-warnings
         (if current-ui
             (progn
-              (setf treemacs--insert-dir-image-function #'treemacs--insert-dir-image-png)
-              (setf treemacs--insert-file-image-function #'treemacs--insert-file-image-png)
+              (treemacs--create-icons)
               (setq treemacs-icon-open treemacs-icon-open-png
-                    treemacs-icon-closed treemacs-icon-closed-png))
+                    treemacs-icon-closed treemacs-icon-closed-png
+                    treemacs-icon-fallback treemacs-icon-text))
           (progn
-            (setf treemacs--insert-dir-image-function #'treemacs--insert-dir-image-txt)
-            (setf treemacs--insert-file-image-function #'treemacs--insert-file-image-txt)
+            (clrhash treemacs-icons-hash)
             (setq treemacs-icon-open treemacs-icon-open-text
-                  treemacs-icon-closed treemacs-icon-closed-text))))
+                  treemacs-icon-closed treemacs-icon-closed-text
+                  treemacs-icon-fallback "  "))))
       t)))
 
 (provide 'treemacs-branch-creation)
