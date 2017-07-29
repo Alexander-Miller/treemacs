@@ -207,7 +207,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
            ;; treemacs window, otherwise it looks like the selection disappears
            (hl-line-mode t)
            (treemacs--log "Refresh complete."))))
-    (treemacs--log "Thereis nothing to refresh.")))
+    (treemacs--log "There is nothing to refresh.")))
 
 ;;;###autoload
 (defun treemacs-change-root ()

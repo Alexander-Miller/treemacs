@@ -70,6 +70,11 @@
   "Face for conlicting files."
   :group 'treemacs-faces)
 
+(defface treemacs-tags-face
+  '((t :inherit font-lock-builtin-face))
+  "Face for tags."
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here

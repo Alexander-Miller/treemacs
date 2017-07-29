@@ -27,6 +27,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-branch-creation)
 (require 'treemacs-customization)
+(require 'treemacs-faces)
 
 (defconst treemacs-icon-tag-leaf
   (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-leaf.xpm") 'xpm nil :ascent 'center)) " "))
@@ -167,7 +168,7 @@ Set PARENT and DEPTH button properties."
   (end-of-line)
   (insert prefix)
   (treemacs--insert-button (car node)
-                           'face 'font-lock-builtin-face
+                           'face 'treemacs-tags-face
                            'state 'node-closed
                            'action 'treemacs--push-button
                            'parent parent
@@ -205,7 +206,7 @@ Set PARENT and DEPTH button properties."
   (end-of-line)
   (insert prefix)
   (treemacs--insert-button (car item)
-                           'face 'font-lock-builtin-face
+                           'face 'treemacs-tags-face
                            'state 'tag
                            'action 'treemacs--push-button
                            'parent parent
@@ -254,7 +255,7 @@ exist."
        (progn
          (select-window current-window)
          (treemacs--log "Something went run when finding tag '%s': %s"
-                        (propertize tag 'face font-lock-type-face)
+                        (propertize tag 'face 'treemacs-tags-face)
                         e))))))
 
 (defun treemacs--goto-tag (btn)
@@ -283,7 +284,7 @@ exist."
            (xref-find-definitions tag-name))
           ('issue-warning
            (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-                          (propertize tag-name 'face 'font-lock-type-face)))
+                          (propertize tag-name 'face 'treemacs-tags-face)))
           (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))))))
 
 (defun treemacs--goto-tag-button-at (tag-path file &optional start)
