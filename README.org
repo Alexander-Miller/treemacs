@@ -121,7 +121,7 @@ missing certain features:
 
  * It won't look right in the terminal, there arent't any terminal icons for tags yet.
  * Calling ~treemacs-push-button~ on a tag will make the jump to the tag's definition, but there is now way to decide
-   which window will be used, like with the [[#default keymap][treemacs-visi-file-*]] functions. For now treemacs will
+   which window will be used, like with the [[#default-keymap][treemacs-visi-file-*]] functions. For now treemacs will
    simply make the call using ~next-window~.
 
 * Installation
