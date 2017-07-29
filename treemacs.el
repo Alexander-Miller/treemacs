@@ -105,7 +105,8 @@ the project from among `projectile-known-projects'."
 
 ;;;###autoload
 (defun treemacs-push-button ()
-  "Open/close directory. Open file with `treemacs-visit-file-vertical-split'."
+  "Open/close directory or hide/show tags.
+Open file with `treemacs-visit-file-vertical-split'."
   (interactive)
   (save-excursion
     (beginning-of-line)
