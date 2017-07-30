@@ -119,7 +119,7 @@ desktop save mode is on."
     (let ((btn  (next-button (point)))
           (dirs (list)))
       (while btn
-        (when (eq 'dir-open (button-get btn 'state))
+        (when (eq 'dir-node-open (button-get btn 'state))
           (push (button-get btn 'abs-path) dirs))
         (setq btn (next-button (button-end btn))))
       (nreverse dirs))))

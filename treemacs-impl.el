@@ -136,6 +136,10 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 ;; Substitutions ;;
 ;;;;;;;;;;;;;;;;;;;
 
+(defsubst treemacs--current-button ()
+  "Get the button in the current line."
+  (next-button (point-at-bol) t))
+
 (defsubst treemacs--get-label-of (btn)
   "Return the text label of BTN."
   (interactive)
@@ -377,21 +381,21 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
   (pcase (button-get btn 'state)
-    ('dir-closed  (treemacs--open-node btn))
-    ('dir-open    (treemacs--close-node btn))
-    ('file-open   (treemacs--close-tags-for-file btn))
-    ('file-closed (treemacs--open-tags-for-file btn))
-    ('node-open   (treemacs--close-tag-node btn))
-    ('node-closed (treemacs--open-tag-node btn))
-    ('tag         (treemacs--goto-tag btn))
-    (_            (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
+    ('dir-node-closed  (treemacs--open-node btn))
+    ('dir-node-open    (treemacs--close-node btn))
+    ('file-node-open   (treemacs--close-tags-for-file btn))
+    ('file-node-closed (treemacs--open-tags-for-file btn))
+    ('tag-node-open    (treemacs--close-tag-node btn))
+    ('tag-node-closed  (treemacs--open-tag-node btn))
+    ('tag-node         (treemacs--goto-tag btn))
+    (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
 
 (defun treemacs--reopen-node (btn)
   "Reopen file BTN."
   (pcase (button-get btn 'state)
-    ('dir-closed  (treemacs--open-node btn t))
-    ('file-closed (treemacs--open-tags-for-file btn t))
-    ('node-closed (treemacs--open-tag-node btn t))
+    ('dir-node-closed  (treemacs--open-node btn t))
+    ('file-node-closed (treemacs--open-tags-for-file btn t))
+    ('tag-node-closed (treemacs--open-tag-node btn t))
     (_            (error "[Treemacs] Cannot reopen butt at path %s with state %s" (button-get btn 'abs-path) (button-get btn 'state)))))
 
 (defun treemacs--open-node (btn &optional no-add)
@@ -403,7 +407,7 @@ Do not reopen its previously open children when NO-ADD is given."
       (with-no-warnings
         (treemacs--button-open
          :button btn
-         :new-state 'dir-open
+         :new-state 'dir-node-open
          :new-icon treemacs-icon-open
          :open-action
          (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (treemacs--git-status-process abs-path) btn)
@@ -426,7 +430,7 @@ Do not reopen its previously open children when NO-ADD is given."
           (pos-end   (if next-node
                          (-> next-node (button-start) (previous-button) (button-end) (1+))
                        (point-max))))
-     (button-put btn 'state 'dir-closed)
+     (button-put btn 'state 'dir-node-closed)
      (delete-region pos-start pos-end)
      (delete-trailing-whitespace)
      (treemacs--stop-watching (button-get btn 'abs-path)))))

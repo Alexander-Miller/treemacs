@@ -112,7 +112,7 @@ DEPTH indicates how deep in the filetree the current button is."
   ;; for directories the icon is included in the prefix since it's always known
   (insert prefix)
   (treemacs--insert-button (f-filename path)
-                           'state     'dir-closed
+                           'state     'dir-node-closed
                            'action    #'treemacs--push-button
                            'abs-path  path
                            'parent    parent
@@ -127,7 +127,7 @@ DEPTH indicates how deep in the filetree the current button is.
 GIT-INFO (if any) is used to determine the node's face."
   (treemacs--insert-file-image path prefix)
   (treemacs--insert-button (f-filename path)
-                           'state     'file-closed
+                           'state     'file-node-closed
                            'action    #'treemacs--push-button
                            'abs-path  path
                            'parent    parent

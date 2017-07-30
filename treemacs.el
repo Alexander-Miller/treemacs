@@ -191,7 +191,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
            ;; move point to the same file it was with before the refresh if the file
            ;; still exists and is visible, stay in the same line otherwise
            (pcase curr-state
-             ((or 'dir-open 'dir-closed 'file-open 'file-closed)
+             ((or 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
               (if (and (f-exists? curr-file)
                        (or treemacs-show-hidden-files
                            (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
@@ -199,7 +199,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
                 ;; not pretty, but there can still be some off by one jitter when
                 ;; using forwald-line
                 (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
-             ((or 'node-open 'node-closed 'tag)
+             ((or 'tag-node-open 'tag-node-closed 'tag-node)
               (treemacs--goto-tag-button-at curr-tagpath curr-file win-start))
              (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
            (treemacs--evade-image)
@@ -214,16 +214,13 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 (defun treemacs-change-root ()
   "Use currently selected directory as new root. Do nothing for files."
   (interactive)
-  (beginning-of-line)
-  (let* ((point     (point))
-         (btn       (next-button point))
-         (state     (button-get btn 'state))
-         (new-root  (button-get btn 'abs-path)))
-    (if (memq state '(dir-open dir-closed))
-        (progn
-          (treemacs--stop-watching-all)
-          (treemacs--build-tree new-root))
-      (goto-char point))))
+  (let ((btn (treemacs--current-button)))
+    (pcase (button-get btn 'state)
+      ((or 'dir-node-open 'dir-node-closed)
+       (treemacs--stop-watching-all)
+       (treemacs--build-tree (button-get btn 'abs-path)))
+      (_
+       (treemacs--log "Button in current line is not a directory.")))))
 
 ;;;###autoload
 (defun treemacs-visit-file-vertical-split ()

@@ -39,7 +39,7 @@
                   (throw 'follow-failed 'follow-failed)))
             ;; don't open dir at the very end of the list since we only want to put
             ;; point in its line
-            (when (and (eq 'dir-closed (button-get btn 'state))
+            (when (and (eq 'dir-node-closed (button-get btn 'state))
                        (< it-index last-index))
               (treemacs--open-node btn)))
           (setq search-start (point)))))))

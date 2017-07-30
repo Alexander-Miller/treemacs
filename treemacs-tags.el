@@ -135,7 +135,7 @@ during a reopen process."
     (-if-let (index (treemacs--get-imenu-index path))
           (treemacs--button-open
            :button btn
-           :new-state 'file-open
+           :new-state 'file-node-open
            :post-open-action
            (progn
              (unless noadd (treemacs--add-to-cache (treemacs--parent path) path))
@@ -157,7 +157,7 @@ during a reopen process."
   "Close node given by BTN."
   (treemacs--button-close
    :button btn
-   :new-state 'file-closed
+   :new-state 'file-node-closed
    :post-close-action
    (treemacs--clear-from-cache (button-get btn 'abs-path))))
 
@@ -169,7 +169,7 @@ Set PARENT and DEPTH button properties."
   (insert prefix)
   (treemacs--insert-button (car node)
                            'face 'treemacs-tags-face
-                           'state 'node-closed
+                           'state 'tag-node-closed
                            'action 'treemacs--push-button
                            'parent parent
                            'depth depth
@@ -182,7 +182,7 @@ NOADD is usually given during a reopen process."
   (let ((index (button-get btn 'index)))
     (treemacs--button-open
         :button btn
-        :new-state 'node-open
+        :new-state 'tag-node-open
         :new-icon treemacs-icon-tag-node-open
         :post-open-action
         (unless noadd (treemacs--add-to-tags-cache btn))
@@ -207,7 +207,7 @@ Set PARENT and DEPTH button properties."
   (insert prefix)
   (treemacs--insert-button (car item)
                            'face 'treemacs-tags-face
-                           'state 'tag
+                           'state 'tag-node
                            'action 'treemacs--push-button
                            'parent parent
                            'depth depth
@@ -219,7 +219,7 @@ Set PARENT and DEPTH button properties."
   (treemacs--node-symbol-switch treemacs-icon-tag-node-closed))
  (treemacs--button-close
   :button btn
-  :new-state 'node-closed
+  :new-state 'tag-node-closed
   :post-close-action
   (treemacs--remove-from-tags-cache btn)))
 
@@ -316,7 +316,7 @@ Start the search at START."
           (dolist (item cache)
             (-if-let (node-btn (--first (equal item (treemacs--tags-path-of it))
                                         (treemacs--get-children-of btn)))
-                (when (eq 'node-closed (button-get node-btn 'state))
+                (when (eq 'tag-node-closed (button-get node-btn 'state))
                   (goto-char (button-start node-btn))
                   (treemacs--open-tag-node node-btn t))
               (remhash item cache-table)
