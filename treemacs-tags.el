@@ -70,6 +70,7 @@ returned as a singleton list instead."
 (defsubst treemacs--partition-imenu-index (index)
   "Make sure that top level items in INDEX are put under a 'Functions' sublist.
 Make it look like helm-imenu."
+  (declare (pure t) (side-effect-free t))
   (let ((ret)
         (rest index))
     (while rest
@@ -237,14 +238,12 @@ exist."
       (list (overlay-buffer m) (overlay-start m))
     (list (marker-buffer m) (marker-position m))))
 
-(defsubst treemacs--call-imenu-and-goto-tag (file tag-path window)
-  "Call the imenu index of FILE to go to position of TAG-PATH in WINDOW."
-  (let ((current-window (selected-window))
-        (tag (car tag-path))
+(defsubst treemacs--call-imenu-and-goto-tag (file tag-path)
+  "Call the imenu index of FILE to go to position of TAG-PATH."
+  (let ((tag (car tag-path))
         (path (cdr tag-path)))
     (condition-case e
         (progn
-          (select-window window)
           (find-file-existing file)
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
@@ -252,11 +251,9 @@ exist."
             (-let [(_ pos) (treemacs--pos-from-marker (cdr (--first (equal (car it) tag) index)))]
               (goto-char pos))))
       (error
-       (progn
-         (select-window current-window)
-         (treemacs--log "Something went run when finding tag '%s': %s"
-                        (propertize tag 'face 'treemacs-tags-face)
-                        e))))))
+       (treemacs--log "Something went wrong when finding tag '%s': %s"
+                      (propertize tag 'face 'treemacs-tags-face)
+                      e)))))
 
 (defun treemacs--goto-tag (btn)
   "Go to the tag at BTN."
@@ -267,20 +264,15 @@ exist."
          (tag-name   (treemacs--get-label-of btn)))
     (if tag-buffer
         (progn
-          (-if-let (buf-window (get-buffer-window tag-buffer (selected-frame)))
-              (select-window buf-window)
-            (select-window (next-window (selected-window) nil (selected-frame)))
-            (switch-to-buffer tag-buffer nil t))
+          (switch-to-buffer tag-buffer nil t)
           (goto-char tag-pos))
       (progn
         (pcase treemacs-goto-tag-strategy
           ('refetch-index
            (treemacs--call-imenu-and-goto-tag
             (treemacs--nearest-path btn)
-            (treemacs--tags-path-of btn)
-            (next-window (selected-window) nil (selected-frame))))
+            (treemacs--tags-path-of btn)))
           ('call-xref
-           (select-window (next-window (selected-window) nil (selected-frame)))
            (xref-find-definitions tag-name))
           ('issue-warning
            (treemacs--log "Tag '%s' is located in a buffer that does not exist."

@@ -106,7 +106,7 @@ the project from among `projectile-known-projects'."
 ;;;###autoload
 (defun treemacs-push-button ()
   "Open/close directory or hide/show tags.
-Open file with `treemacs-visit-file-vertical-split'."
+Open node via `treemacs-visit-node-vertical-split'."
   (interactive)
   (save-excursion
     (beginning-of-line)
@@ -223,68 +223,73 @@ Must be bound to a mouse click, or EVENT will not be supplied."
        (treemacs--log "Button in current line is not a directory.")))))
 
 ;;;###autoload
-(defun treemacs-visit-file-vertical-split ()
-  "Open current file by vertically splitting `next-window'.
-Do nothing for directories."
+(defun treemacs-visit-node-vertical-split ()
+  "Open current file or tag by vertically splitting `next-window'."
   (interactive)
-  (treemacs--without-following
-   (treemacs--open-file nil #'split-window-vertically)))
+  (treemacs--execute-button-action
+   :split-function #'split-window-vertically
+   :file-action (find-file (button-get btn 'abs-path))
+   :tag-action (treemacs--goto-tag btn)
+   :no-match-explanation "This action only works for files and tags."))
 
 ;;;###autoload
-(defun treemacs-visit-file-horizontal-split ()
-  "Open current file by horizontally splitting `next-window'.
-Do nothing for directories."
+(defun treemacs-visit-node-horizontal-split ()
+  "Open current file or tag by horizontally splitting `next-window'."
   (interactive)
-  (treemacs--without-following
-   (treemacs--open-file nil #'split-window-horizontally)))
+  (treemacs--execute-button-action
+   :split-function #'split-window-horizontally
+   :file-action (find-file (button-get btn 'abs-path))
+   :tag-action (treemacs--goto-tag btn)
+   :no-match-explanation "This action only works for files and tags."))
 
 ;;;###autoload
-(defun treemacs-visit-file-no-split ()
-  "Open current file within `next-window'.
-Do nothing for directories."
+(defun treemacs-visit-node-no-split ()
+  "Open current file or tag within `next-window'."
   (interactive)
-  (treemacs--without-following
-   (treemacs--open-file)))
+  (treemacs--execute-button-action
+   :file-action (find-file (button-get btn 'abs-path))
+   :tag-action (treemacs--goto-tag btn)
+   :no-match-explanation "This action only works for files and tags."))
 
 ;;;###autoload
-(defun treemacs-visit-file-ace ()
-  "Open current file in window selected by `ace-window'.
-Do nothing for directories."
+(defun treemacs-visit-node-ace ()
+  "Open current file or tag in window selected by `ace-window'."
   (interactive)
-  (treemacs--without-following
-   (treemacs--open-file
-    (aw-select "Select buffer"))))
+  (treemacs--execute-button-action
+   :window (aw-select "Select window")
+   :file-action (find-file (button-get btn 'abs-path))
+   :tag-action (treemacs--goto-tag btn)
+   :no-match-explanation "This action only works for files and tags."))
 
 ;;;###autoload
-(defun treemacs-visit-file-ace-horizontal-split ()
-  "Open current file by horizontally splitting window selected by `ace-window'.
-Do nothing for directories."
+(defun treemacs-visit-node-ace-horizontal-split ()
+  "Open current file by horizontally splitting window selected by `ace-window'."
   (interactive)
-  (save-excursion
-    (treemacs--without-following
-     (treemacs--open-file
-      (aw-select "Select buffer") #'split-window-horizontally))))
+  (treemacs--execute-button-action
+   :split-function #'split-window-horizontally
+   :window (aw-select "Select window")
+   :file-action (find-file (button-get btn 'abs-path))
+   :tag-action (treemacs--goto-tag btn)
+   :no-match-explanation "This action only works for files and tags."))
 
 ;;;###autoload
-(defun treemacs-visit-file-ace-vertical-split ()
-  "Open current file by vertically splitting window selected by `ace-window'.
-Do nothing for directories."
+(defun treemacs-visit-node-ace-vertical-split ()
+  "Open current file by vertically splitting window selected by `ace-window'."
   (interactive)
-  (save-excursion
-    (treemacs--without-following
-     (treemacs--open-file
-      (aw-select "Select buffer") #'split-window-vertically))))
+  (treemacs--execute-button-action
+   :split-function #'split-window-vertically
+   :window (aw-select "Select window")
+   :file-action (find-file (button-get btn 'abs-path))
+   :tag-action (treemacs--goto-tag btn)
+   :no-match-explanation "This action only works for files and tags."))
 
 ;;;###autoload
 (defun treemacs-xdg-open ()
-  "Open current file, using the `xdg-open' shell command.
-Do nothing for directories."
+  "Open current file, using the `xdg-open' shell command."
   (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (let ((abs-path (button-get (next-button (point)) 'abs-path)))
-      (when (f-file? abs-path)
-        (call-process-shell-command (format "xdg-open \"%s\" &" abs-path))))))
+  (-when-let (path (treemacs--prop-at-point 'abs-path))
+    (when (f-exists? path)
+      (call-process-shell-command (format "xdg-open \"%s\" &" path)))))
 
 ;;;###autoload
 (defun treemacs-kill-buffer ()

@@ -51,7 +51,7 @@
 
 (treemacs--import-functions-from "treemacs"
   treemacs-refresh
-  treemacs-visit-file-vertical-split)
+  treemacs-visit-node-vertical-split)
 
 (treemacs--import-functions-from "treemacs-branch-creation"
   treemacs--check-window-system
@@ -103,6 +103,54 @@ depending on whether treemacs is currently shown in a GUI or TUI frame.")
 ;; Macros ;;
 ;;;;;;;;;;;;
 
+(defmacro treemacs--log (msg &rest args)
+  "Write a log statement given formart string MSG and ARGS."
+  `(message
+    "%s %s"
+    (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
+    (format ,msg ,@args)))
+
+(cl-defmacro treemacs--execute-button-action
+    (&key split-function window dir-action file-action tag-action no-match-explanation)
+  "Infrastructure macro for setting up actions on different button states.
+Fetches the currently selected button and verifies it's in the correct state
+based on the given state actions.
+If it isn't it will log NO-MATCH-EXPLANATION, if it is it selects WINDOW (or
+`next-window' if none is given) and splits it with SPLIT-FUNCTION if given.
+DIR-ACTION, FILE-ACTION, and TAG-ACTION are inserted into a `pcase' statement
+matching the buttons state."
+  (let ((valid-states (list)))
+    (when dir-action
+      (push 'dir-node-open valid-states)
+      (push 'dir-node-closed valid-states))
+    (when file-action
+      (push 'file-node-open valid-states)
+      (push 'file-node-closed valid-states))
+    (when tag-action
+      (push 'tag-node valid-states))
+    `(treemacs--without-following
+      (let* ((btn (treemacs--current-button))
+             (state (button-get btn 'state)))
+        (if (not (memq state ',valid-states))
+            (treemacs--log "%s" ,no-match-explanation)
+          (progn
+            (select-window (or ,window (next-window (selected-window) nil nil)))
+            ,@(if split-function
+                  `((funcall ,split-function)
+                    (other-window 1)))
+            (pcase state
+              ,@(when dir-action
+                  `(((or 'dir-node-open 'dir-node-closed)
+                     ,dir-action)))
+              ,@(when file-action
+                  `(((or 'file-node-open 'file-node-closed)
+                     ,file-action)))
+              ,@(when tag-action
+                  `(('tag-node
+                     ,tag-action)))
+              (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
+                        state ',valid-states)))))))))
+
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define a variable VAR with the value being the image created from FILE-NAME.
 Insert VAR into icon-cache for each of the given file EXTENSIONS."
@@ -124,13 +172,6 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   "Temporarily turn off messages to execute BODY."
   `(cl-flet ((message (_) (ignore)))
      ,@body))
-
-(defmacro treemacs--log (msg &rest args)
-  "Write a log statement given formart string MSG and ARGS."
-  `(message
-    "%s %s"
-    (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
-    (format ,msg ,@args)))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
