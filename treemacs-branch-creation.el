@@ -24,6 +24,7 @@
 
 (require 'cl-lib)
 (require 'treemacs-impl)
+(require 'treemacs-visuals)
 
 (defvar treemacs-icon-fallback nil
   "The fallback icon for files.

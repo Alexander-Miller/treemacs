@@ -30,6 +30,7 @@
 (require 'f)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
+(require 'treemacs-visuals)
 (require 'treemacs-impl)
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)
