@@ -540,7 +540,7 @@ Also remove any dirs below if PURGE is given."
   (treemacs--setup-icon treemacs-icon-clojure    "clojure.png"    "clj" "cljs" "cljc")
   (treemacs--setup-icon treemacs-icon-typescript "typescript.png" "ts")
   (treemacs--setup-icon treemacs-icon-css        "css.png"        "css")
-  (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "conf" "ini" "xdefaults" "xresources")
+  (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "conf" "config" "ini" "xdefaults" "xresources")
   (treemacs--setup-icon treemacs-icon-html       "html.png"       "html" "htm")
   (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
   (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
