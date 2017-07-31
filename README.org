@@ -225,34 +225,34 @@ the treemacs window and might therefore need their own global binding.
 ** Default keymap
 By default Treemacs's keymap looks as follows:
 
-| Key     | Action                                   | Description                                                                                                                           |
-|---------+------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------|
-| j/n     | treemacs-next-line                       | Goto next/prev line.                                                                                                                  |
-| h       | treemacs-uproot                          | Switch treemacs' root directory to current root's parent, if possible.                                                                |
-| l       | treemacs-change-root                     | Use currently selected directory as new root. Do nothing for files.                                                                   |
-| M-j/M-n | treemacs-next/previous-neighbour         | Select next node at the same depth as currently selected node, if possible.                                                           |
-| th      | treemacs-toggle-show-dotfiles            | Toggle the hiding and displaying of dotfiles.                                                                                         |
-| tw      | treemacs-toggle-fixed-width              | Toggle whether the treemacs buffer should have a fixed width. See also treemacs-width.                                                |
-| tf      | treemacs-follow-mode                     | Toggle treemacs-follow-mode (see above).                                                                                              |
-| w       | treemacs-reset-width                     | Reset the width of the treemacs buffer to treemacs-width. If a prefix argument is provided read a new value for treemacs-width first. |
-| TAB/RET | treemacs-push-button                     | Open/close directory. Open file with treemacs-visit-node-vertical-split.                                                              |
-| mouse1  | treemacs-click-mouse1                    | Do the same as `treemacs-push-button' when mouse1 clicking on an icon. Clicking anywhere other than an icon does nothing.             |
-| g/r/gr  | treemacs-refresh                         | Refresh and rebuild treemacs buffer.                                                                                                  |
-| d       | treemacs-delete                          | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                  |
-| cf      | treemacs-create-file                     | Create a file.                                                                                                                        |
-| cd      | treemacs-create-dir                      | Create a directory.                                                                                                                   |
-| u       | treemacs-goto-parent-node                | Select parent of selected node, if possible.                                                                                          |
-| q       | treemacs-toggle                          | Hide/show an existing treemacs buffer. Create one if it does not exist.                                                               |
-| Q       | treemacs-kill-buffer                     | Kill the treemacs buffer.                                                                                                             |
-| ov      | treemacs-visit-node-vertical-split       | Open current file or tag by vertically splitting next-window.                                                                         |
-| oh      | treemacs-visit-node-horizontal-split     | Open current file or tag by horizontally splitting next-window.                                                                       |
-| oo/RET  | treemacs-visit-node-no-split             | Open current file or tag, performing no split and using next-window directly.                                                         |
-| oaa     | treemacs-visit-node-ace                  | Open current file or tag, using ace-window to decide which buffer to open the file in.                                                |
-| oah     | treemacs-visit-node-ace-horizontal-split | Open current file or tag by horizontally splitting a buffer selected by ace-window.                                                   |
-| oav     | treemacs-visit-node-ace-vertical-split   | Open current file or tag by vertically splitting a buffer selected by ace-window.                                                     |
-| ox      | treemacs-xdg-open                        | Open current file, using the xdg-open shell-command.                                                                                  |
-| yy      | treemacs-yank-path-at-point              | Copy the absolute path of the node at point.                                                                                          |
-| yr      | treemacs-yank-root                       | Copy the absolute path of the current treemacs root.                                                                                  |
+| Key     | Action                                   | Description                                                                                                                                                               |
+|---------+------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| j/n     | treemacs-next-line                       | Goto next/prev line.                                                                                                                                                      |
+| h       | treemacs-uproot                          | Switch treemacs' root directory to current root's parent, if possible.                                                                                                    |
+| l       | treemacs-change-root                     | Use currently selected directory as new root. Do nothing for files.                                                                                                       |
+| M-j/M-n | treemacs-next/previous-neighbour         | Select next node at the same depth as currently selected node, if possible.                                                                                               |
+| th      | treemacs-toggle-show-dotfiles            | Toggle the hiding and displaying of dotfiles.                                                                                                                             |
+| tw      | treemacs-toggle-fixed-width              | Toggle whether the treemacs buffer should have a fixed width. See also treemacs-width.                                                                                    |
+| tf      | treemacs-follow-mode                     | Toggle treemacs-follow-mode (see above).                                                                                                                                  |
+| w       | treemacs-reset-width                     | Reset the width of the treemacs buffer to treemacs-width. If a prefix argument is provided read a new value for treemacs-width first.                                     |
+| TAB/RET | treemacs-push-button                     | Push the button in the current line. For directories, files and tag sections expand/close the button. For tags go to the tag definition via treemacs-visit-node-no-split. |
+| mouse1  | treemacs-click-mouse1                    | Do the same as `treemacs-push-button' when mouse1 clicking on an icon. Clicking anywhere other than an icon does nothing.                                                 |
+| g/r/gr  | treemacs-refresh                         | Refresh and rebuild treemacs buffer.                                                                                                                                      |
+| d       | treemacs-delete                          | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                                                      |
+| cf      | treemacs-create-file                     | Create a file.                                                                                                                                                            |
+| cd      | treemacs-create-dir                      | Create a directory.                                                                                                                                                       |
+| u       | treemacs-goto-parent-node                | Select parent of selected node, if possible.                                                                                                                              |
+| q       | treemacs-toggle                          | Hide/show an existing treemacs buffer. Create one if it does not exist.                                                                                                   |
+| Q       | treemacs-kill-buffer                     | Kill the treemacs buffer.                                                                                                                                                 |
+| ov      | treemacs-visit-node-vertical-split       | Open current file or tag by vertically splitting next-window.                                                                                                             |
+| oh      | treemacs-visit-node-horizontal-split     | Open current file or tag by horizontally splitting next-window.                                                                                                           |
+| oo/RET  | treemacs-visit-node-no-split             | Open current file or tag, performing no split and using next-window directly.                                                                                             |
+| oaa     | treemacs-visit-node-ace                  | Open current file or tag, using ace-window to decide which buffer to open the file in.                                                                                    |
+| oah     | treemacs-visit-node-ace-horizontal-split | Open current file or tag by horizontally splitting a buffer selected by ace-window.                                                                                       |
+| oav     | treemacs-visit-node-ace-vertical-split   | Open current file or tag by vertically splitting a buffer selected by ace-window.                                                                                         |
+| ox      | treemacs-xdg-open                        | Open current file, using the xdg-open shell-command.                                                                                                                      |
+| yy      | treemacs-yank-path-at-point              | Copy the absolute path of the node at point.                                                                                                                              |
+| yr      | treemacs-yank-root                       | Copy the absolute path of the current treemacs root.                                                                                                                      |
 * Dependencies
  * emacs >= 25.1
  * f.el

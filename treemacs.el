@@ -105,8 +105,9 @@ the project from among `projectile-known-projects'."
 
 ;;;###autoload
 (defun treemacs-push-button ()
-  "Open/close directory or hide/show tags.
-Open node via `treemacs-visit-node-vertical-split'."
+  "Push the button in the current line.
+For directories, files and tag sections expand/close the button.
+For tags go to the tag definition via `treemacs-visit-node-no-split'."
   (interactive)
   (save-excursion
     (beginning-of-line)

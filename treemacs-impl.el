@@ -428,7 +428,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
     ('file-node-closed (treemacs--open-tags-for-file btn))
     ('tag-node-open    (treemacs--close-tag-node btn))
     ('tag-node-closed  (treemacs--open-tag-node btn))
-    ('tag-node         (treemacs--goto-tag btn))
+    ('tag-node         (call-interactively 'treemacs-visit-node-no-split))
     (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
 
 (defun treemacs--reopen-node (btn)
