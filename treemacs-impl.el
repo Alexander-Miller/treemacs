@@ -86,19 +86,6 @@ Must be set to nil when no follow actions should be triggered, e.g. when the
 treemacs buffer is being rebuilt or during treemacs' own window selection
 functions.")
 
-(defvar treemacs--insert-file-image-function 'unset
-  "Function used to insert the image/icon for file nodes.
-Set by `treemacs--check-window-system' to either
-`treemacs--insert-file-image-png' or `treemacs--insert-file-image-txt',
-depending on whether treemacs is currently shown in a GUI or TUI frame.")
-
-(defvar treemacs--insert-dir-image-function 'unset
-  "Function used to insert the image/icon for file nodes.
-Set by `treemacs--check-window-system' to either
-`treemacs--insert-dir-image-png' or `treemacs--insert-dir-image-txt',
-depending on whether treemacs is currently shown in a GUI or TUI frame.")
-
-
 ;;;;;;;;;;;;
 ;; Macros ;;
 ;;;;;;;;;;;;
