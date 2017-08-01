@@ -22,48 +22,49 @@
 (require 'treemacs)
 (require 'ert)
 (require 'el-mock)
+(require 'subr-x)
 
 ;; treemacs--maybe-filter-dotfiles
 (progn
   (ert-deftest filter-dotfiles::do-nothing-when-dotfiles-are-shown ()
-    (with-mock (stub treemacs--current-root => "/home/")
-               (let ((treemacs-show-hidden-files t)
-                     (input '("/home/.A" "/home/B/C" "/home/.A/B" "/home/.A/.B/.C")))
-                 (should (equal input (treemacs--maybe-filter-dotfiles input))))))
+    (let ((treemacs-show-hidden-files t)
+          (default-directory "/home/")
+          (input '("/home/.A" "/home/B/C" "/home/.A/B" "/home/.A/.B/.C")))
+      (should (equal input (treemacs--maybe-filter-dotfiles input)))))
 
   (ert-deftest filter-dotfiles::do-nothing-for-nulls ()
-    (with-mock (stub treemacs--current-root => "/home/")
-               (let ((treemacs-show-hidden-files nil))
-                 (should (null (treemacs--maybe-filter-dotfiles nil))))))
+    (let ((treemacs-show-hidden-files nil)
+          (default-directory "/home/"))
+      (should (null (treemacs--maybe-filter-dotfiles nil)))))
 
   (ert-deftest filter-dotfiles::do-nothing-for-empty-input ()
-    (with-mock (stub treemacs--current-root => "/home/")
-               (let ((treemacs-show-hidden-files nil))
-                 (should (null (treemacs--maybe-filter-dotfiles '()))))))
+    (let ((treemacs-show-hidden-files nil)
+          (default-directory "/home/"))
+      (should (null (treemacs--maybe-filter-dotfiles '())))))
 
   (ert-deftest filter-dotfiles::filter-single-dotfile ()
-    (with-mock (stub treemacs--current-root => "/home/")
-               (let ((treemacs-show-hidden-files nil)
-                     (input '("/home/A/B/C/D/.d")))
-                 (should (null (treemacs--maybe-filter-dotfiles input))))))
+    (let ((treemacs-show-hidden-files nil)
+          (default-directory "/home/")
+          (input '("/home/A/B/C/D/.d")))
+      (should (null (treemacs--maybe-filter-dotfiles input)))))
 
   (ert-deftest filter-dotfiles::filter-dotfile-based-on-parent ()
-    (with-mock (stub treemacs--current-root => "/home/")
-               (let ((treemacs-show-hidden-files nil)
-                     (input '("/home/A/B/C/.D/d")))
-                 (should (null (treemacs--maybe-filter-dotfiles input))))))
+    (let ((treemacs-show-hidden-files nil)
+          (default-directory "/home/")
+          (input '("/home/A/B/C/.D/d")))
+      (should (null (treemacs--maybe-filter-dotfiles input)))))
 
   (ert-deftest filter-dotfiles::dont-filter-dotfile-above-root ()
-    (with-mock (stub treemacs--current-root => "/home/.A/B")
-               (let ((treemacs-show-hidden-files nil)
-                     (input '("/home/.A/B/C/d")))
-                 (should (equal input (treemacs--maybe-filter-dotfiles input))))))
+    (let ((treemacs-show-hidden-files nil)
+          (default-directory "/home/.A/B")
+          (input '("/home/.A/B/C/d")))
+      (should (equal input (treemacs--maybe-filter-dotfiles input)))))
 
   (ert-deftest filter-dotfiles::filter-long-input ()
-    (with-mock (stub treemacs--current-root => "/home/.A/B")
-               (let ((treemacs-show-hidden-files nil)
-                     (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
-                 (should (equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E") (treemacs--maybe-filter-dotfiles input)))))))
+    (let ((treemacs-show-hidden-files nil)
+          (default-directory "/home/.A/B")
+          (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
+      (should (equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E") (treemacs--maybe-filter-dotfiles input))))))
 
 ;; treemacs--add-to-cache
 (progn
@@ -191,61 +192,61 @@
 
 ;; treemacs--get-face
 (progn
-  (ert-deftest get-face::unmodified-face-for-file-without-git-info ()
-    (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil))))
+  (let ((treemacs-git-integration t))
+    (ert-deftest get-face::unmodified-face-for-file-without-git-info ()
+      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil))))
 
-  (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
-    (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
-      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
+    (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
+      (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
+        (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
 
-  (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
-    (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
-      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
+    (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
+      (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
+        (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
 
-  (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-status ()
-    (let ((git-info '(("0" . "~/A"))))
-      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
+    (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-status ()
+      (let ((git-info '(("0" . "~/A"))))
+        (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
 
-  (ert-deftest get-face::modified-face-for-modified-file ()
-    (let ((git-info '(("!!" . "~/A/B/c") ("M" . "~/A"))))
-      (should (eq 'treemacs-git-modified-face (treemacs--get-face "~/A" git-info)))))
+    (ert-deftest get-face::modified-face-for-modified-file ()
+      (let ((git-info '(("!!" . "~/A/B/c") ("M" . "~/A"))))
+        (should (eq 'treemacs-git-modified-face (treemacs--get-face "~/A" git-info)))))
 
-  (ert-deftest get-face::untracked-face-for-untracked-file ()
-    (let ((git-info '(("!!" . "~/A/B/c") ("??" . "~/A"))))
-      (should (eq 'treemacs-git-untracked-face (treemacs--get-face "~/A" git-info)))))
+    (ert-deftest get-face::untracked-face-for-untracked-file ()
+      (let ((git-info '(("!!" . "~/A/B/c") ("??" . "~/A"))))
+        (should (eq 'treemacs-git-untracked-face (treemacs--get-face "~/A" git-info)))))
 
-  (ert-deftest get-face::ignored-face-for-ignored-file ()
-    (let ((git-info '(("!!" . "~/A/B/c") ("!!" . "~/A"))))
-      (should (eq 'treemacs-git-ignored-face (treemacs--get-face "~/A" git-info)))))
+    (ert-deftest get-face::ignored-face-for-ignored-file ()
+      (let ((git-info '(("!!" . "~/A/B/c") ("!!" . "~/A"))))
+        (should (eq 'treemacs-git-ignored-face (treemacs--get-face "~/A" git-info)))))
 
-  (ert-deftest get-face::added-face-for-added-file ()
-    (let ((git-info '(("!!" . "~/A/B/c") ("A" . "~/A"))))
-      (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" git-info))))))
+    (ert-deftest get-face::added-face-for-added-file ()
+      (let ((git-info '(("!!" . "~/A/B/c") ("A" . "~/A"))))
+        (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" git-info)))))))
 
 ;; treemacs--current-visibility
 (progn
   (ert-deftest current-visibility::visible-buffer ()
       (with-mock
-        (stub treemacs--is-visible? => t)
-        (stub treemacs--buffer-exists? => t)
+        (mock (get-buffer-window treemacs--buffer-name) => t)
         (should (eq 'visible (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::visible-buffer-even-when-exists?-is-nil ()
     (with-mock
-      (stub treemacs--is-visible? => t)
-      (stub treemacs--buffer-exists? => nil)
+      (mock (get-buffer-window treemacs--buffer-name) => t)
+      (stub -contains? => t)
       (should (eq 'visible (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::existing-buffer ()
     (with-mock
-      (stub treemacs--is-visible? => nil)
-      (stub treemacs--buffer-exists? => t)
+      (stub get-buffer-window => nil)
+      (stub -contains? => t)
       (should (eq 'exists (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::no-buffer ()
     (with-mock
-      (stub treemacs--is-visible? => nil)
-      (stub treemacs--buffer-exists? => nil)
+      (mock (get-buffer-window treemacs--buffer-name) => nil)
+      (stub -contains? => nil)
       (should (eq 'none (treemacs--current-visibility))))))
 
 ;; treemacs--unquote
@@ -549,7 +550,6 @@
 
 ;; treemacs--add-to-tags-cache
 (progn
-
   (ert-deftest add-to-tags-cache::fails-on-nil-btn ()
     (should-error (treemacs--add-to-tags-cache nil)))
 

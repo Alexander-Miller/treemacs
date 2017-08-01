@@ -31,12 +31,12 @@
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-visuals)
+(require 'treemacs-branch-creation)
 (require 'treemacs-impl)
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-mode)
 (require 'treemacs-persist)
-(require 'treemacs-branch-creation)
 (require 'treemacs-tags)
 
 (declare-function projectile-project-p "projectile")

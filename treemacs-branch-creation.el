@@ -133,7 +133,9 @@ GIT-INFO (if any) is used to determine the node's face."
                            'abs-path  path
                            'parent    parent
                            'depth     depth
-                           'face      (treemacs--get-face path git-info)))
+                           'face      (if treemacs-git-integration
+                                          (treemacs--get-face path git-info)
+                                        'treemacs-file-face)))
 
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action)
   "Fixme BTN NEW-STATE NEW-ICON."
@@ -144,42 +146,6 @@ GIT-INFO (if any) is used to determine the node's face."
       (treemacs--node-symbol-switch ,new-icon))
     ,open-action
     ,post-open-action))
-
-(defun treemacs--create-branch (root depth git-process &optional parent)
-  "Create a new treemacs branch under ROOT.
-The branch is indented at DEPTH and uses the eventual output of
-GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
-to PARENT."
-    (save-excursion
-      (let* ((dirs-and-files (treemacs--get-dir-content root))
-             (dirs (cl-first dirs-and-files))
-             (files (cl-second dirs-and-files))
-             (last-dir
-              (with-no-warnings
-                (treemacs--create-buttons
-                 :nodes dirs
-                 :extra-vars (list (dir-prefix (concat prefix treemacs-icon-closed)))
-                 :depth depth
-                 :node-name node
-                 :return-value prev-button
-                 :node-action (treemacs--insert-dir-node node dir-prefix parent depth))))
-             (git-info (treemacs--parse-git-status git-process))
-             (first-file
-              (with-no-warnings
-                (treemacs--create-buttons
-                 :nodes files
-                 :depth depth
-                 :node-name node
-                 :extra-vars (first-file)
-                 :return-value first-file
-                 :node-action (treemacs--insert-file-node node prefix parent depth git-info)
-                 :first-node-action (setq first-file prev-button)))))
-        (when (and last-dir first-file)
-          (button-put last-dir 'next-node first-file)
-          (button-put first-file 'prev-node last-dir)))
-      ;; reopen here only since create-branch is called both when opening a node and
-      ;; building the entire tree
-      (treemacs--reopen-at root)))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars return-value node-action first-node-action node-name)
   "Building block macro for creating buttons from a list of items.
@@ -203,6 +169,44 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (treemacs--button-put prev-button 'next-node b)
            (setq prev-button (treemacs--button-put b 'prev-node prev-button)))))
      ,return-value))
+
+(defun treemacs--create-branch (root depth git-process &optional parent)
+  "Create a new treemacs branch under ROOT.
+The branch is indented at DEPTH and uses the eventual output of
+GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
+to PARENT."
+    (save-excursion
+      (let* ((dirs-and-files (treemacs--get-dir-content root))
+             (dirs (cl-first dirs-and-files))
+             (files (cl-second dirs-and-files))
+             (last-dir
+              (with-no-warnings
+                (treemacs--create-buttons
+                 :nodes dirs
+                 :extra-vars ((dir-prefix (concat prefix treemacs-icon-closed)))
+                 :depth depth
+                 :node-name node
+                 :return-value prev-button
+                 :node-action (treemacs--insert-dir-node node dir-prefix parent depth))))
+             (git-info (treemacs--parse-git-status git-process))
+             (first-file
+              (with-no-warnings
+                (treemacs--create-buttons
+                 :nodes files
+                 :depth depth
+                 :node-name node
+                 :extra-vars (first-file)
+                 :return-value first-file
+                 :node-action (treemacs--insert-file-node node prefix parent depth git-info)
+                 :first-node-action (setq first-file prev-button)))))
+        (when (and last-dir first-file)
+          (button-put last-dir 'next-node first-file)
+          (button-put first-file 'prev-node last-dir)))
+      ;; reopen here only since create-branch is called both when opening a node and
+      ;; building the entire tree
+      (treemacs--reopen-at root)))
+
+
 
 (cl-defmacro treemacs--button-close (&key button new-state post-close-action)
   "Close node given by BTN and set state of BTN to NEW-STATE."

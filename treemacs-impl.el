@@ -248,17 +248,6 @@ Will return the treemacs window if true."
 Requires and assumes to be called inside the treemacs buffer."
   (f-long default-directory))
 
-(defsubst treemacs--maybe-filter-dotfiles (dirs)
-  "Remove from DIRS directories that shouldn't be reopened.
-That is, directories (and their descendants) that are in the reopen cache, but
-are not being shown on account of `treemacs-show-hidden-files' being nil."
-  (if treemacs-show-hidden-files
-      dirs
-    (let ((root (treemacs--current-root)))
-      (--filter (not (--any (s-matches? treemacs-dotfiles-regex it)
-                            (f-split (substring it (length root)))))
-                dirs))))
-
 (defsubst treemacs--reject-ignored-files (file)
   "Return t if FILE is *not* an ignored file.
 FILE here is a list consisting of an absolute path and file attributes."
@@ -273,17 +262,15 @@ FILE here is a list consisting of an absolute path and file attributes."
 
 (defsubst treemacs--get-face (path git-info)
   "Return the appropriate face for PATH GIT-INFO."
-  (if treemacs-git-integration
-      ;; for the sake of simplicity we only look at the state in the working tree
-      ;; see OUTPUT section `git help status'
-      (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
-        ("M" 'treemacs-git-modified-face)
-        ("U" 'treemacs-git-conflict-face)
-        ("?" 'treemacs-git-untracked-face)
-        ("!" 'treemacs-git-ignored-face)
-        ("A" 'treemacs-git-added-face)
-        (_   'treemacs-git-unmodified-face))
-    'treemacs-file-face))
+  ;; for the sake of simplicity we only look at the state in the working tree
+  ;; see OUTPUT section `git help status'
+  (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
+    ("M" 'treemacs-git-modified-face)
+    ("U" 'treemacs-git-conflict-face)
+    ("?" 'treemacs-git-untracked-face)
+    ("!" 'treemacs-git-ignored-face)
+    ("A" 'treemacs-git-added-face)
+    (_   'treemacs-git-unmodified-face)))
 
 (defsubst treemacs--file-extension (file)
   "Same as `file-name-extension', but also works with leading periods.
@@ -300,6 +287,17 @@ and special names like this."
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
+
+(defun treemacs--maybe-filter-dotfiles (dirs)
+  "Remove from DIRS directories that shouldn't be reopened.
+That is, directories (and their descendants) that are in the reopen cache, but
+are not being shown on account of `treemacs-show-hidden-files' being nil."
+  (if treemacs-show-hidden-files
+      dirs
+    (let ((root (treemacs--current-root)))
+      (--filter (not (--any (s-matches? treemacs-dotfiles-regex it)
+                            (f-split (substring it (length root)))))
+                dirs))))
 
 (defun treemacs--get-children-of (parent-btn)
   "Get all buttons exactly one level deeper than PARENT-BTN.
