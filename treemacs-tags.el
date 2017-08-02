@@ -261,7 +261,7 @@ exist."
          (pos-info   (treemacs--pos-from-marker marker))
          (tag-buffer (car pos-info))
          (tag-pos    (cadr pos-info))
-         (tag-name   (treemacs--get-label-of btn)))
+         (tag-name   (with-current-buffer (marker-buffer btn) (treemacs--get-label-of btn))))
     (if tag-buffer
         (progn
           (switch-to-buffer tag-buffer nil t)
