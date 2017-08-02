@@ -611,6 +611,36 @@
                 (gethash '("parent-lbl-1" "parent-lbl-3" "parent-lbl-2")
                          (gethash "/parent/path" treemacs--tags-cache))))))))
 
+;; treemacs--remove-from-tags-cache
+(progn
+  (ert-deftest remove-from-tags-cache::fails-on-nil-btn ()
+    (should-error (treemacs--remove-from-tags-cache nil)))
+
+  (ert-deftest remove-from-tags-cache::fully-remove-cache-list ()
+    (with-temp-buffer
+      (let ((treemacs--tags-cache (make-hash-table :test #'equal))
+            (b (button-at (insert-text-button "b")))
+            (p (button-at (insert-text-button "p"))))
+        (button-put p 'abs-path "/A/B/C")
+        (button-put b 'parent p)
+        (treemacs--add-to-tags-cache b)
+        (treemacs--remove-from-tags-cache b)
+        (should (hash-table-empty-p (gethash "/A/B/C" treemacs--tags-cache))))))
+
+  (ert-deftest remove-from-tags-cache::remove-single-entry-from-cache-list ()
+    (with-temp-buffer
+      (let ((treemacs--tags-cache (make-hash-table :test #'equal))
+            (b1 (button-at (insert-text-button "b1")))
+            (b2 (button-at (insert-text-button "b2")))
+            (p  (button-at (insert-text-button "p"))))
+        (button-put p 'abs-path "/A/B/C")
+        (button-put b1 'parent p)
+        (button-put b2 'parent p)
+        (treemacs--add-to-tags-cache b1)
+        (treemacs--add-to-tags-cache b2)
+        (treemacs--remove-from-tags-cache b2)
+        (should (equal '(("b1")) (gethash '("/A/B/C") (gethash "/A/B/C" treemacs--tags-cache))))))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
