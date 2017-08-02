@@ -641,6 +641,40 @@
         (treemacs--remove-from-tags-cache b2)
         (should (equal '(("b1")) (gethash '("/A/B/C") (gethash "/A/B/C" treemacs--tags-cache))))))))
 
+;; treemacs--tags-path-of
+(progn
+  (ert-deftest tags-path::fails-on-nil-btn ()
+    (should-error (treemacs--tags-path-of nil)))
+
+  (ert-deftest tags-path::returns-abs-path-for-non-tag-buttons ()
+    (with-temp-buffer
+      (let ((b (insert-text-button "b")))
+        (button-put b 'abs-path "/A/B/C/")
+        (should (equal '("/A/B/C/") (treemacs--tags-path-of b))))))
+
+  (ert-deftest tags-path::returns-label-for-depth-1-button ()
+    (with-temp-buffer
+      (let ((p (insert-text-button "p"))
+            (b (insert-text-button "label")))
+        (button-put p 'abs-path "/A/B/C/")
+        (button-put b 'parent p)
+        (should (equal '("label") (treemacs--tags-path-of b))))))
+
+  (ert-deftest tags-path::returns-full-path-for-deeply-nested-button ()
+    (with-temp-buffer
+      (let ((b1 (insert-text-button "b1"))
+            (b2 (insert-text-button "b2"))
+            (b3 (insert-text-button "b3"))
+            (b4 (insert-text-button "b4"))
+            (b5 (insert-text-button "b5")))
+        (button-put b5 'parent b4)
+        (button-put b4 'parent b3)
+        (button-put b3 'parent b2)
+        (button-put b2 'parent b1)
+        (button-put b2 'parent b1)
+        (button-put b1 'abs-path "/A/B/C")
+        (should (equal '("b5" "b2" "b3" "b4") (treemacs--tags-path-of b5)))))))
+
 (provide 'treemacs-tests)
 
 ;;; treemacs-tests.el ends here
