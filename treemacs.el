@@ -231,8 +231,9 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
    :file-action (find-file (button-get btn 'abs-path))
+   :dir-action (dired (button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
-   :no-match-explanation "This action only works for files and tags."))
+   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
 (defun treemacs-visit-node-horizontal-split ()
@@ -241,8 +242,9 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
    :file-action (find-file (button-get btn 'abs-path))
+   :dir-action (dired (button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
-   :no-match-explanation "This action only works for files and tags."))
+   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
 (defun treemacs-visit-node-no-split ()
@@ -250,8 +252,9 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive)
   (treemacs--execute-button-action
    :file-action (find-file (button-get btn 'abs-path))
+   :dir-action (dired (button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
-   :no-match-explanation "This action only works for files and tags."))
+   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
 (defun treemacs-visit-node-ace ()
@@ -260,8 +263,9 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (treemacs--execute-button-action
    :window (aw-select "Select window")
    :file-action (find-file (button-get btn 'abs-path))
+   :dir-action (dired (button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
-   :no-match-explanation "This action only works for files and tags."))
+   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
 (defun treemacs-visit-node-ace-horizontal-split ()
@@ -271,8 +275,9 @@ Must be bound to a mouse click, or EVENT will not be supplied."
    :split-function #'split-window-horizontally
    :window (aw-select "Select window")
    :file-action (find-file (button-get btn 'abs-path))
+   :dir-action (dired (button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
-   :no-match-explanation "This action only works for files and tags."))
+   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
 (defun treemacs-visit-node-ace-vertical-split ()
@@ -282,8 +287,9 @@ Must be bound to a mouse click, or EVENT will not be supplied."
    :split-function #'split-window-vertically
    :window (aw-select "Select window")
    :file-action (find-file (button-get btn 'abs-path))
+   :dir-action (dired (button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
-   :no-match-explanation "This action only works for files and tags."))
+   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
 (defun treemacs-xdg-open ()
