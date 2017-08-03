@@ -271,7 +271,8 @@ exist."
           ('refetch-index
            (treemacs--call-imenu-and-goto-tag
             (treemacs--nearest-path btn)
-            (treemacs--tags-path-of btn)))
+            (with-current-buffer (get-buffer treemacs--buffer-name)
+              (treemacs--tags-path-of btn))))
           ('call-xref
            (xref-find-definitions tag-name))
           ('issue-warning
