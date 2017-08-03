@@ -78,7 +78,7 @@ not visible."
                       (f-exists? current-file))
              (with-current-buffer (window-buffer treemacs-window)
                (let ((root (treemacs--current-root))
-                     (selected-file (treemacs--nearest-path)))
+                     (selected-file (treemacs--nearest-path (treemacs--current-button))))
                  (when (and (not (equal selected-file current-file))
                             (treemacs--is-path-in-dir? current-file root))
                    (treemacs--do-follow current-file root))))))))

@@ -184,7 +184,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
          (let* ((curr-line    (line-number-at-pos))
                 (curr-btn     (progn (beginning-of-line) (next-button (point) t)))
                 (curr-state   (button-get curr-btn 'state))
-                (curr-file    (treemacs--nearest-path))
+                (curr-file    (treemacs--nearest-path curr-btn))
                 (curr-tagpath (treemacs--tags-path-of curr-btn))
                 (win-start    (window-start (get-buffer-window)))
                 (root-btn     (treemacs--current-root-btn))

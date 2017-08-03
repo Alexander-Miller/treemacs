@@ -496,10 +496,11 @@ Also remove any dirs below if PURGE is given."
                      (-flatten)))
           (--each children (treemacs--clear-from-cache it t))))))
 
-(cl-defun treemacs--nearest-path (&optional (btn (save-excursion (beginning-of-line) (next-button (point) t))))
+(defun treemacs--nearest-path (btn)
   "Return the 'abs-path' property of the current button (or BTN).
 If the property is not set keep looking upward, via the 'parent' property.
-Useful to e.g. find the path of the file of the currently selected tags entry."
+Useful to e.g. find the path of the file of the currently selected tags entry.
+Must be called from treemacs buffer when BTN is not given. FIXME CHECK"
   (let* ((path (button-get btn 'abs-path)))
     (while (null path)
       (setq btn (button-get btn 'parent)
