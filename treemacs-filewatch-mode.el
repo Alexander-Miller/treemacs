@@ -26,11 +26,9 @@
 (require 'filenotify)
 (require 'cl-lib)
 (require 'treemacs-customization)
+(require 'treemacs-impl)
 
 (declare-function treemacs-refresh "treemacs")
-(declare-function treemacs--is-path-in-dir? "treemacs-impl")
-(declare-function treemacs--is-visible? "treemacs-impl")
-(declare-function treemacs--clear-from-cache "treemacs-impl")
 
 (defvar treemacs--collected-file-events nil
   "List of file change events treemacs needs to process.
@@ -54,6 +52,10 @@ This way treemacs knows to refresh itself the next time it becomes visible.")
   (when treemacs--missed-refresh
     (treemacs-refresh)
     (setq treemacs--missed-refresh nil)))
+
+(defsubst treemacs--cancel-missed-refresh ()
+  "Refresh missed refresh flag."
+  (setq treemacs--missed-refresh nil))
 
 (defsubst treemacs--cancel-refresh-timer ()
   "Cancel a the running refresh timer if it is active."

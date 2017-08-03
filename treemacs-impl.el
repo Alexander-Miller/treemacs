@@ -32,7 +32,6 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
-(require 'treemacs-filewatch-mode)
 
 (defmacro treemacs--import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS."
@@ -54,11 +53,23 @@
   treemacs-visit-node-vertical-split)
 
 (treemacs--import-functions-from "treemacs-branch-creation"
+  treemacs--button-open
   treemacs--check-window-system
   treemacs--create-branch)
 
+(treemacs--import-functions-from "treemacs-filewatch-mode"
+  treemacs--start-watching
+  treemacs--stop-watching
+  treemacs--stop-watching-all
+  treemacs--cancel-refresh-timer
+  treemacs--cancel-missed-refresh
+  treemacs--refresh-catch-up)
+
+(treemacs--import-functions-from "treemacs-follow-mode"
+  treemacs--follow
+  treemacs--without-following)
+
 (declare-function treemacs-mode "treemacs-mode")
-(declare-function treemacs--follow "treemacs-follow-mode")
 (declare-function projectile-project-root "projectile")
 
 ;;;;;;;;;;;;;;;;;;
@@ -390,10 +401,10 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   "Cleanup to be run when the treemacs buffer gets killed."
   (treemacs--stop-watching-all)
   (treemacs--cancel-refresh-timer)
+  (treemacs--cancel-missed-refresh)
   (treemacs--clear-tags-cache)
   (setq treemacs--open-dirs-cache nil
-        treemacs--ready           nil
-        treemacs--missed-refresh  nil))
+        treemacs--ready nil))
 
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
