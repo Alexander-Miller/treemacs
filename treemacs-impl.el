@@ -101,6 +101,17 @@ functions.")
 ;; Macros ;;
 ;;;;;;;;;;;;
 
+(defmacro treemacs--safe-button-get (button &rest properties)
+  "Safely extract BUTTON's PROPERTIES.
+
+Using `button-get' on a button located in a buffer that is not the current
+buffer does not work, so this function will run the property extaction from
+inside BUTTON's buffer."
+  `(with-current-buffer (marker-buffer ,button)
+     ,(if (= 1 (length properties))
+           `(button-get ,button ,(car properties))
+         `(--map (button-get ,button it) ,properties))))
+
 (defmacro treemacs--with-button-buffer (btn &rest body)
   "Use BTN's buffer to execute BODY.
 Required for button interactions (like `button-get') that do not work when
@@ -302,17 +313,6 @@ and special names like this."
       (if (string-match "\\.[^.]*\\'" filename)
           (substring filename (1+ (match-beginning 0)))
         filename))))
-
-(defmacro treemacs--safe-button-get (button &rest properties)
-  "Safely extract BUTTON's PROPERTIES.
-
-Using `button-get' on a button located in a buffer that is not the current
-buffer does not work, so this function will run the property extaction from
-inside BUTTON's buffer."
-  `(with-current-buffer (marker-buffer ,button)
-     ,(if (= 1 (length properties))
-           `(button-get ,button ,(car properties))
-         `(--map (button-get ,button it) ,properties))))
 
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
