@@ -70,9 +70,8 @@ returned as a singleton list instead."
         (setq btn (button-get btn 'parent)))
       (cons lbl ret))))
 
-(defsubst treemacs--partition-imenu-index (index)
-  "Make sure that top level items in INDEX are put under a 'Functions' sublist.
-Make it look like helm-imenu."
+(defun treemacs--partition-imenu-index (index default-name)
+  "Put top level leaf nodes in INDEX under DEFAULT-NAME."
   (declare (pure t) (side-effect-free t))
   (let ((ret)
         (rest index))
@@ -83,26 +82,41 @@ Make it look like helm-imenu."
               (setq ret (cons item ret))
               (setq rest (cdr rest)))
           (progn
-            (setq ret (cons (cons "Functions" rest) ret)
+            (setq ret (cons (cons default-name rest) ret)
                   rest nil)))))
     (nreverse ret)))
+
+(defun treemacs--post-process-index (index index-mode)
+  "Post process an tags INDEX based on the major INDEX-MODE they're fetched in.
+As of now only decides which (if any) section name top level leaves should be
+placed under."
+  (declare (pure t) (side-effect-free t))
+  (pcase index-mode
+    ('org-mode
+     index)
+    ((guard (provided-mode-derived-p index-mode 'conf-mode))
+     (treemacs--partition-imenu-index index "Sections"))
+    (_
+     (treemacs--partition-imenu-index index "Functions"))))
 
 (defun treemacs--get-imenu-index (file)
   "Fetch imenu index of FILE."
   (let ((buff)
         (result)
+        (mode)
         (existing-buffer (get-file-buffer file)))
     (if existing-buffer
         (setq buff existing-buffer)
       (setq buff (find-file-noselect file)))
     (with-current-buffer buff
-      (setq result (imenu--make-index-alist t)))
+      (setq result (imenu--make-index-alist t)
+            mode major-mode))
     (unless existing-buffer (kill-buffer buff))
     (when result
       (when (string= "*Rescan*" (car (car result)))
         (setq result (cdr result)))
       (unless (equal result '(nil))
-        (treemacs--partition-imenu-index result)))))
+        (treemacs--post-process-index result mode)))))
 
 (defun treemacs--add-to-tags-cache (btn)
   "Add BTN's path to the cache of open nodes."
@@ -132,7 +146,7 @@ Make it look like helm-imenu."
       (remhash cache-key cache-table))))
 
 (defun treemacs--remove-all-tags-under-path-from-cache (path)
-  "Remove all tag cache entries under path after it was deleted."
+  "Remove all tag cache entries under PATH after it was deleted."
   ;; Don't think it's a good idea to modify the hash table while iterating it
   (let ((keys-to-remove (list)))
     (maphash
@@ -272,6 +286,9 @@ exist."
 
 (defun treemacs--goto-tag (btn)
   "Go to the tag at BTN."
+  ;; The only code currently calling this is run through `treemacs--execute-button-action' which always
+  ;; switches windows before running it, so we need to be really careful here when querying any button
+  ;; properties.
   (-let [(tag-buf tag-pos)
          (treemacs--with-button-buffer btn
            (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]

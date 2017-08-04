@@ -531,22 +531,22 @@
 ;; treemacs--partition-imenu-index
 (progn
   (ert-deftest partition-index::returns-nil-on-nil-input ()
-    (should-not (treemacs--partition-imenu-index nil)))
+    (should-not (treemacs--partition-imenu-index nil "A")))
 
   (ert-deftest partition-index::returns-index-unchanged-when-input-has-no-top-level-leaves ()
     (let ((input '(("A" ("a1" "a2")) ("B" ("b1" "b2")))))
-      (should (equal input (treemacs--partition-imenu-index '(("A" ("a1" "a2")) ("B" ("b1" "b2"))))))))
+      (should (equal input (treemacs--partition-imenu-index '(("A" ("a1" "a2")) ("B" ("b1" "b2"))) "Functions")))))
 
   (ert-deftest partition-index::partitions-single-top-level-list-into-functions ()
     (should (equal
              '(("Functions" ("x" "y" "z")))
-             (treemacs--partition-imenu-index '(("x" "y" "z"))))))
+             (treemacs--partition-imenu-index '(("x" "y" "z")) "Functions"))))
 
   (ert-deftest partition-index::partitions-top-level-tails-into-functions ()
     (let ((input '(("A" ("a1" "a2")) ("B" ("b1" "b2")) ("x" "y" "z"))))
       (should (equal
                '(("A" ("a1" "a2")) ("B" ("b1" "b2")) ("Functions" ("x" "y" "z")))
-               (treemacs--partition-imenu-index input))))))
+               (treemacs--partition-imenu-index input "Functions"))))))
 
 ;; treemacs--add-to-tags-cache
 (progn
