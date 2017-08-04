@@ -441,11 +441,15 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
 
 (defun treemacs--reopen-node (btn)
   "Reopen file BTN."
-  (pcase (button-get btn 'state)
-    ('dir-node-closed  (treemacs--open-node btn t))
-    ('file-node-closed (treemacs--open-tags-for-file btn t))
-    ('tag-node-closed (treemacs--open-tag-node btn t))
-    (_            (error "[Treemacs] Cannot reopen butt at path %s with state %s" (button-get btn 'abs-path) (button-get btn 'state)))))
+  (if (null btn)
+      ;; the most likely reason for receiving a nil button here is that the undelying file has been deleted,
+      ;; so we'll just throw the path out of the cache and assume that all is well
+      (treemacs--clear-from-cache (button-get btn 'abs-path))
+    (pcase (button-get btn 'state)
+      ('dir-node-closed  (treemacs--open-node btn t))
+      ('file-node-closed (treemacs--open-tags-for-file btn t))
+      ('tag-node-closed (treemacs--open-tag-node btn t))
+      (_            (error "[Treemacs] Cannot reopen butt at path %s with state %s" (button-get btn 'abs-path) (button-get btn 'state))))))
 
 (defun treemacs--open-node (btn &optional no-add)
   "Open the node given by BTN.
