@@ -5,7 +5,7 @@
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "25.1") (cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0") (pfuture "1.1"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
-;; Version: 1.8.2
+;; Version: 1.8.3
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")
 
-(defconst treemacs-version "1.8.2")
+(defconst treemacs-version "1.8.3")
 
 ;;;###autoload
 (defun treemacs-toggle ()
@@ -313,24 +313,26 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   "Delete node at point.
 A delete action must always be confirmed. Directories are deleted recursively."
   (interactive)
-  (beginning-of-line)
-  (-if-let (btn (next-button (point)))
-      (let* ((path      (button-get btn 'abs-path))
-             (file-name (f-filename path)))
-        (when
-            (cond
-             ((f-file? path)
-              (when (y-or-n-p (format "Delete %s ? " file-name))
-                (f-delete path)
-                (treemacs--kill-buffers-after-deletion path t)
-                t))
-             ((f-directory? path)
-              (when (y-or-n-p (format "Recursively delete %s ? " file-name))
-                (f-delete path t)
-                (treemacs--clear-from-cache path t)
-                (treemacs--kill-buffers-after-deletion path nil)
-                t)))
-          (treemacs--without-messages (treemacs-refresh)))))
+  (-if-let (btn (treemacs--current-button))
+      (if (not (memq (button-get btn 'state) '(file-node-open file-node-closed dir-node-open dir-node-closed)))
+          (treemacs--log "Only files and directories can be deleted.")
+        (let* ((path      (button-get btn 'abs-path))
+               (file-name (f-filename path)))
+          (when
+              (cond
+               ((f-file? path)
+                (when (y-or-n-p (format "Delete %s ? " file-name))
+                  (f-delete path)
+                  (treemacs--kill-buffers-after-deletion path t)
+                  t))
+               ((f-directory? path)
+                (when (y-or-n-p (format "Recursively delete %s ? " file-name))
+                  (f-delete path t)
+                  (treemacs--kill-buffers-after-deletion path nil)
+                  t)))
+            (treemacs--clear-from-cache path t)
+            (treemacs--remove-all-tags-under-path-from-cache path)
+            (treemacs--without-messages (treemacs-refresh))))))
   (treemacs--evade-image))
 
 ;;;###autoload

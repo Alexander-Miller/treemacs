@@ -131,6 +131,17 @@ Make it look like helm-imenu."
         (puthash cache-key new-cache-value cache-table)
       (remhash cache-key cache-table))))
 
+(defun treemacs--remove-all-tags-under-path-from-cache (path)
+  "Remove all tag cache entries under path after it was deleted."
+  ;; Don't think it's a good idea to modify the hash table while iterating it
+  (let ((keys-to-remove (list)))
+    (maphash
+     (lambda (key _)
+       (when (treemacs--is-path-in-dir? key path)
+         (push key keys-to-remove)))
+     treemacs--tags-cache)
+    (--each keys-to-remove (remhash it treemacs--tags-cache))))
+
 (defun treemacs--open-tags-for-file (btn &optional noadd)
   "Open tag items for file BTN.
 Do not add the file to the open file cache when NOADD is given. NOADD is given
