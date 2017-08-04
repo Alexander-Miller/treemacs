@@ -27,6 +27,7 @@
 (require 'cl-lib)
 (require 'treemacs-customization)
 (require 'treemacs-impl)
+(require 'treemacs-tags)
 
 (declare-function treemacs-refresh "treemacs")
 
@@ -90,6 +91,10 @@ Start a timer to process the collected events if it has not been started
 already. Do nothing if this event's file is irrelevant as per
 `treemacs--is-event-relevant?'."
   (when (treemacs--is-event-relevant? event)
+    (when (eq 'deleted (cadr event))
+      (let ((path (cl-third event)))
+        (treemacs--clear-from-cache  path t)
+        (treemacs--remove-all-tags-under-path-from-cache path)))
     (if treemacs--collected-file-events
         (push event treemacs--collected-file-events)
       (setq treemacs--collected-file-events (list event)
