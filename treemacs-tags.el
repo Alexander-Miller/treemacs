@@ -17,6 +17,9 @@
 
 ;;; Commentary:
 ;;; Tags display functionality.
+;;; Need to be very careful here - many of the functions in this module need to be run inside the treemacs buffer, while
+;;; the `treemacs--execute-button-action' macro that runs them will switch windows before doing so. Heavy use of
+;;; `treemacs--safe-button-get' or `treemacs--with-button-buffer' is necessary.
 
 ;;; Code:
 
@@ -244,11 +247,12 @@ exist."
         (path (cdr tag-path)))
     (condition-case e
         (progn
-          (find-file-existing file)
+          (find-file-noselect file)
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
-            (-let [(_ pos) (treemacs--pos-from-marker (cdr (--first (equal (car it) tag) index)))]
+            (-let [(buf pos) (treemacs--pos-from-marker (cdr (--first (equal (car it) tag) index)))]
+              (switch-to-buffer buf)
               (goto-char pos))))
       (error
        (treemacs--log "Something went wrong when finding tag '%s': %s"
@@ -257,28 +261,28 @@ exist."
 
 (defun treemacs--goto-tag (btn)
   "Go to the tag at BTN."
-  (let* ((marker     (button-get btn 'marker))
-         (pos-info   (treemacs--pos-from-marker marker))
-         (tag-buffer (car pos-info))
-         (tag-pos    (cadr pos-info))
-         (tag-name   (with-current-buffer (marker-buffer btn) (treemacs--get-label-of btn))))
-    (if tag-buffer
+  (-let [(tag-buf tag-pos)
+         (treemacs--with-button-buffer btn
+           (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
+    (if tag-buf
         (progn
-          (switch-to-buffer tag-buffer nil t)
+          (switch-to-buffer tag-buf nil t)
           (goto-char tag-pos))
-      (progn
-        (pcase treemacs-goto-tag-strategy
-          ('refetch-index
-           (treemacs--call-imenu-and-goto-tag
-            (treemacs--nearest-path btn)
-            (with-current-buffer (get-buffer treemacs--buffer-name)
-              (treemacs--tags-path-of btn))))
-          ('call-xref
-           (xref-find-definitions tag-name))
-          ('issue-warning
-           (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-                          (propertize tag-name 'face 'treemacs-tags-face)))
-          (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))))))
+      (pcase treemacs-goto-tag-strategy
+        ('refetch-index
+         (let (file tag-path)
+           (with-current-buffer (marker-buffer btn)
+             (setq file (treemacs--nearest-path btn)
+                   tag-path (treemacs--tags-path-of btn)))
+           (treemacs--call-imenu-and-goto-tag file tag-path)))
+        ('call-xref
+         (xref-find-definitions
+          (treemacs--with-button-buffer btn
+            (treemacs--get-label-of btn))))
+        ('issue-warning
+         (treemacs--log "Tag '%s' is located in a buffer that does not exist."
+                        (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
+        (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy))))))
 
 (defun treemacs--goto-tag-button-at (tag-path file &optional start)
   "Goto tag given by TAG-PATH for button of FILE.

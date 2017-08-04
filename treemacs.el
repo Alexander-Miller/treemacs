@@ -230,8 +230,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive)
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
-   :file-action (find-file (button-get btn 'abs-path))
-   :dir-action (dired (button-get btn 'abs-path))
+   :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
+   :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
@@ -241,8 +241,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive)
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
-   :file-action (find-file (button-get btn 'abs-path))
-   :dir-action (dired (button-get btn 'abs-path))
+   :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
+   :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
@@ -251,8 +251,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   "Open current file or tag within `next-window'."
   (interactive)
   (treemacs--execute-button-action
-   :file-action (find-file (button-get btn 'abs-path))
-   :dir-action (dired (button-get btn 'abs-path))
+   :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
+   :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
@@ -262,8 +262,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive)
   (treemacs--execute-button-action
    :window (aw-select "Select window")
-   :file-action (find-file (button-get btn 'abs-path))
-   :dir-action (dired (button-get btn 'abs-path))
+   :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
+   :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
@@ -274,8 +274,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
    :window (aw-select "Select window")
-   :file-action (find-file (button-get btn 'abs-path))
-   :dir-action (dired (button-get btn 'abs-path))
+   :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
+   :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
@@ -286,8 +286,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
    :window (aw-select "Select window")
-   :file-action (find-file (button-get btn 'abs-path))
-   :dir-action (dired (button-get btn 'abs-path))
+   :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
+   :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
