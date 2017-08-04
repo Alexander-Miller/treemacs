@@ -138,12 +138,14 @@ GIT-INFO (if any) is used to determine the node's face."
                                         'treemacs-file-face)))
 
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action)
-  "Fixme BTN NEW-STATE NEW-ICON."
+  "Open BUTTON.
+Give it NEW-STATE, and, optionally, NEW-ICON. Perform first OPEN-ACTION and,
+optionally, POST-OPEN-ACTION."
   `(treemacs--with-writable-buffer
     (button-put ,button 'state ,new-state)
     (beginning-of-line)
-    (when ,new-icon
-      (treemacs--node-symbol-switch ,new-icon))
+    ,@(when new-icon
+      `((treemacs--node-symbol-switch ,new-icon)))
     ,open-action
     ,post-open-action))
 
