@@ -178,7 +178,7 @@ matching the buttons state."
 
 (defmacro treemacs--without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
-  `(cl-flet ((message (_) (ignore)))
+  `(cl-flet ((message (&rest _) (ignore)))
      ,@body))
 
 ;;;;;;;;;;;;;;;;;;;
