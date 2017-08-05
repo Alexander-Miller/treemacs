@@ -64,6 +64,21 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (defvar treemacs-icon-closed treemacs-icon-closed-png)
     (defvar treemacs-icon-open treemacs-icon-open-png)))
 
+(defun treemacs-define-custom-icon (icon &rest file-extensions)
+  "Define a custom ICON to use for FILE-EXTENSIONS.
+
+Note that treemacs has a very loose definition of what constitutes a file
+extension - it's either everything past the last period, or just the file's full
+name if there is no period. This makes it possible to match file names like
+'.gitignore' and 'Makefile'.
+
+FILE-EXTENSIONS are also not case sensitive and will be downcased before they're
+inserted into `treemacs-icons-hash'."
+  (--each file-extensions
+    (puthash (downcase it)
+             (concat icon " ")
+             treemacs-icons-hash)))
+
 (provide 'treemacs-visuals)
 
 ;;; treemacs-visuals.el ends here
