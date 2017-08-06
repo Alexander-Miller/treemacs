@@ -431,7 +431,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
 (defun treemacs--push-button (btn)
   "Execute the appropriate action given the state of the BTN that has been pushed."
   (pcase (button-get btn 'state)
-    ('dir-node-closed  (treemacs--open-node btn))
+    ('dir-node-closed  (treemacs--open-dir-node btn))
     ('dir-node-open    (treemacs--close-node btn))
     ('file-node-open   (treemacs--close-tags-for-file btn))
     ('file-node-closed (treemacs--open-tags-for-file btn))
@@ -449,12 +449,12 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
       ;; so we'll just throw the path out of the cache and assume that all is well
       (treemacs--clear-from-cache (button-get btn 'abs-path))
     (pcase (button-get btn 'state)
-      ('dir-node-closed  (treemacs--open-node btn t))
+      ('dir-node-closed  (treemacs--open-dir-node btn t))
       ('file-node-closed (treemacs--open-tags-for-file btn t))
       ('tag-node-closed (treemacs--open-tag-node btn t))
       (_            (error "[Treemacs] Cannot reopen butt at path %s with state %s" (button-get btn 'abs-path) (button-get btn 'state))))))
 
-(defun treemacs--open-node (btn &optional no-add)
+(defun treemacs--open-dir-node (btn &optional no-add)
   "Open the node given by BTN.
 Do not reopen its previously open children when NO-ADD is given."
   (if (not (f-readable? (button-get btn 'abs-path)))

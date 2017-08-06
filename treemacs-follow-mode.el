@@ -41,7 +41,7 @@
             ;; point in its line
             (when (and (eq 'dir-node-closed (button-get btn 'state))
                        (< it-index last-index))
-              (treemacs--open-node btn)))
+              (treemacs--open-dir-node btn)))
           (setq search-start (point)))))))
 
 (cl-defun treemacs--do-follow (followed-file &optional (root (treemacs--current-root)))
