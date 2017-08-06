@@ -128,7 +128,7 @@ called from another buffer than the one the button resides in and
     (format ,msg ,@args)))
 
 (cl-defmacro treemacs--execute-button-action
-    (&key split-function window dir-action file-action tag-action no-match-explanation)
+    (&key save-window split-function window dir-action file-action tag-action no-match-explanation)
   "Infrastructure macro for setting up actions on different button states.
 Fetches the currently selected button and verifies it's in the correct state
 based on the given state actions.
@@ -147,7 +147,8 @@ matching the buttons state."
       (push 'tag-node valid-states))
     `(treemacs--without-following
       (let* ((btn (treemacs--current-button))
-             (state (button-get btn 'state)))
+             (state (button-get btn 'state))
+             (current-window (selected-window)))
         (if (not (memq state ',valid-states))
             (treemacs--log "%s" ,no-match-explanation)
           (progn
@@ -166,7 +167,9 @@ matching the buttons state."
                   `(('tag-node
                      ,tag-action)))
               (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
-                        state ',valid-states)))))))))
+                        state ',valid-states)))
+            (when ,save-window
+              (select-window current-window))))))))
 
 (defmacro treemacs--with-writable-buffer (&rest body)
   "Temporarily turn off read-ony mode to execute BODY."

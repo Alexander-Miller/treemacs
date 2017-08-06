@@ -225,70 +225,82 @@ Must be bound to a mouse click, or EVENT will not be supplied."
        (treemacs--log "Button in current line is not a directory.")))))
 
 ;;;###autoload
-(defun treemacs-visit-node-vertical-split ()
-  "Open current file or tag by vertically splitting `next-window'."
-  (interactive)
+(defun treemacs-visit-node-vertical-split (&optional arg)
+  "Open current file or tag by vertically splitting `next-window'.
+Stay in current window with a prefix argument ARG."
+  (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
    :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
+   :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
-(defun treemacs-visit-node-horizontal-split ()
-  "Open current file or tag by horizontally splitting `next-window'."
-  (interactive)
+(defun treemacs-visit-node-horizontal-split (&optional arg)
+  "Open current file or tag by horizontally splitting `next-window'.
+Stay in current window with a prefix argument ARG."
+  (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
    :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
+   :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
-(defun treemacs-visit-node-no-split ()
-  "Open current file or tag within `next-window'."
-  (interactive)
+(defun treemacs-visit-node-no-split (&optional arg)
+  "Open current file or tag within `next-window'.
+Stay in current window with a prefix argument ARG."
+  (interactive "P")
   (treemacs--execute-button-action
    :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
+   :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
-(defun treemacs-visit-node-ace ()
-  "Open current file or tag in window selected by `ace-window'."
-  (interactive)
+(defun treemacs-visit-node-ace (&optional arg)
+  "Open current file or tag in window selected by `ace-window'.
+Stay in current window with a prefix argument ARG."
+  (interactive "P")
   (treemacs--execute-button-action
    :window (aw-select "Select window")
    :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
+   :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
-(defun treemacs-visit-node-ace-horizontal-split ()
-  "Open current file by horizontally splitting window selected by `ace-window'."
-  (interactive)
+(defun treemacs-visit-node-ace-horizontal-split (&optional arg)
+  "Open current file by horizontally splitting window selected by `ace-window'.
+Stay in current window with a prefix argument ARG."
+  (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
    :window (aw-select "Select window")
    :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
+   :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload
-(defun treemacs-visit-node-ace-vertical-split ()
-  "Open current file by vertically splitting window selected by `ace-window'."
-  (interactive)
+(defun treemacs-visit-node-ace-vertical-split (&optional arg)
+  "Open current file by vertically splitting window selected by `ace-window'.
+Stay in current window with a prefix argument ARG."
+  (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
    :window (aw-select "Select window")
    :file-action (find-file (treemacs--safe-button-get btn 'abs-path))
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
+   :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 ;;;###autoload

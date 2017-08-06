@@ -171,42 +171,39 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (treemacs--button-put prev-button 'next-node b)
            (setq prev-button (treemacs--button-put b 'prev-node prev-button)))))
      ,return-value))
-
 (defun treemacs--create-branch (root depth git-process &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at DEPTH and uses the eventual output of
 GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
 to PARENT."
-    (save-excursion
-      (let* ((dirs-and-files (treemacs--get-dir-content root))
-             (dirs (cl-first dirs-and-files))
-             (files (cl-second dirs-and-files))
-             (last-dir
-              (with-no-warnings
-                (treemacs--create-buttons
-                 :nodes dirs
-                 :extra-vars ((dir-prefix (concat prefix treemacs-icon-closed)))
-                 :depth depth
-                 :node-name node
-                 :return-value prev-button
-                 :node-action (treemacs--insert-dir-node node dir-prefix parent depth))))
-             (git-info (treemacs--parse-git-status git-process))
-             (first-file
-              (with-no-warnings
-                (treemacs--create-buttons
-                 :nodes files
-                 :depth depth
-                 :node-name node
-                 :extra-vars (first-file)
-                 :return-value first-file
-                 :node-action (treemacs--insert-file-node node prefix parent depth git-info)
-                 :first-node-action (setq first-file prev-button)))))
-        (when (and last-dir first-file)
-          (button-put last-dir 'next-node first-file)
-          (button-put first-file 'prev-node last-dir)))
-      ;; reopen here only since create-branch is called both when opening a node and
-      ;; building the entire tree
-      (treemacs--reopen-at root)))
+  (save-excursion
+    (let* ((dirs-and-files (treemacs--get-dir-content root))
+           (dirs (cl-first dirs-and-files))
+           (files (cl-second dirs-and-files))
+           (last-dir
+            (treemacs--create-buttons
+             :nodes dirs
+             :extra-vars ((dir-prefix (concat prefix (with-no-warnings treemacs-icon-closed))))
+             :depth depth
+             :node-name node
+             :return-value prev-button
+             :node-action (treemacs--insert-dir-node node dir-prefix parent depth)))
+           (git-info (treemacs--parse-git-status git-process))
+           (first-file
+            (treemacs--create-buttons
+             :nodes files
+             :depth depth
+             :node-name node
+             :extra-vars (first-file)
+             :return-value first-file
+             :node-action (treemacs--insert-file-node node prefix parent depth git-info)
+             :first-node-action (setq first-file prev-button))))
+      (when (and last-dir first-file)
+        (button-put last-dir 'next-node first-file)
+        (button-put first-file 'prev-node last-dir)))
+    ;; reopen here only since create-branch is called both when opening a node and
+    ;; building the entire tree
+    (treemacs--reopen-at root)))
 
 
 
