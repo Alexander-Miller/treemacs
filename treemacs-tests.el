@@ -23,6 +23,7 @@
 (require 'ert)
 (require 'el-mock)
 (require 'subr-x)
+(require 'f)
 
 ;; treemacs--maybe-filter-dotfiles
 (progn
@@ -674,6 +675,101 @@
         (button-put b2 'parent b1)
         (button-put b1 'abs-path "/A/B/C")
         (should (equal '("b5" "b2" "b3" "b4") (treemacs--tags-path-of b5)))))))
+
+;;; Thorough Sys Test
+(ert-deftest treemacs::sys-test ()
+  (save-window-excursion
+    (save-match-data
+      (let ((test-buffer (get-buffer-create "*Treemacs Sys Test*"))
+            (imenu-auto-rescan t))
+        (if noninteractive
+            (message "Sys Test not run in batch mode.")
+          (unwind-protect
+              (progn
+                (switch-to-buffer test-buffer)
+                (delete-other-windows)
+                (-when-let (b (get-buffer treemacs--buffer-name)) (kill-buffer b))
+                (call-interactively 'treemacs)
+
+                (let ((b (get-buffer treemacs--buffer-name)))
+                  (should b)
+                  (switch-to-buffer b))
+
+                (treemacs--goto-button-at (f-join default-directory "test"))
+                (should (equal "test"
+                               (treemacs--get-label-of
+                                (treemacs--current-button))))
+
+                (call-interactively 'treemacs-change-root)
+                (should (equal "testfolder1" (treemacs--get-label-of
+                                              (treemacs--current-button))))
+
+                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-next-line)
+
+                (should (equal "testfolder2" (treemacs--get-label-of
+                                              (treemacs--current-button))))
+
+                (call-interactively 'treemacs-push-button)
+
+                (should (equal '("testfile.el" "testfile.org")
+                               (-map #'treemacs--get-label-of
+                                     (treemacs--get-children-of (treemacs--current-button)))))
+
+                (call-interactively 'treemacs-next-line)
+                (call-interactively 'treemacs-push-button)
+
+                (should (equal '("Variables" "Functions")
+                               (-map #'treemacs--get-label-of
+                                     (treemacs--get-children-of (treemacs--current-button)))))
+
+                (call-interactively 'treemacs-next-line)
+                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-next-neighbour)
+                (call-interactively 'treemacs-push-button)
+
+                (should (equal '("fn1" "fn2")
+                               (-map #'treemacs--get-label-of
+                                     (treemacs--get-children-of (treemacs--current-button)))))
+
+                (call-interactively 'treemacs-next-line)
+                (call-interactively 'treemacs-visit-node-no-split)
+
+                (should (equal "testfile.el" (f-filename buffer-file-name)))
+                (should (equal "(defun fn1 ())\n" (thing-at-point 'line t)))
+                (should (equal 2 (length (window-list))))
+
+                (call-interactively 'treemacs-select-window)
+                (call-interactively 'treemacs-goto-parent-node)
+                (call-interactively 'treemacs-goto-parent-node)
+                (call-interactively 'treemacs-next-neighbour)
+                (call-interactively 'treemacs-push-button)
+
+                (should (equal '("Foo" "Bar")
+                               (-map #'treemacs--get-label-of
+                                     (treemacs--get-children-of (treemacs--current-button)))))
+
+                (call-interactively 'treemacs-next-line)
+                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-next-line)
+                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-next-line)
+
+                (should (equal "Foo3" (treemacs--get-label-of (treemacs--current-button))))
+
+                (funcall #'treemacs-visit-node-vertical-split t)
+                (should (and (equal major-mode 'treemacs-mode)
+                             (equal 3 (length (window-list)))
+                             (equal 1 (length (--filter (with-current-buffer (window-buffer it)
+                                                          (equal major-mode 'org-mode))
+                                                        (window-list))))))
+
+                (dotimes (_ 3) (call-interactively 'treemacs-goto-parent-node))
+                (dotimes (_ 2) (call-interactively 'treemacs-push-button))
+                (dotimes (_ 3) (call-interactively 'treemacs-next-line))
+                (should (equal "Foo3" (treemacs--get-label-of (treemacs--current-button)))))
+
+            (kill-buffer test-buffer)))))))
 
 (provide 'treemacs-tests)
 
