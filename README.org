@@ -150,7 +150,8 @@ You can find an exhaustive overview of all functions, their keybinds and functio
           treemacs-change-root-without-asking nil
           treemacs-sorting                    'alphabetic-desc
           treemacs-show-hidden-files          t
-          treemacs-never-persist              nil)
+          treemacs-never-persist              nil
+          treemacs-goto-tag-strategy          'refetch-index)
     (treemacs-follow-mode t)
     (treemacs-filewatch-mode t)
     :bind
