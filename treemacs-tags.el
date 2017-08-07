@@ -86,6 +86,16 @@ returned as a singleton list instead."
                   rest nil)))))
     (nreverse ret)))
 
+;; this function was recently added in emacs 26 (as of august 2017)
+;; code copied here for earler releases
+(defun treemacs--provided-mode-derived-p (mode &rest modes)
+  "Non-nil if MODE is derived from one of MODES.
+Uses the `derived-mode-parent' property of the symbol to trace backwards.
+If you just want to check `major-mode', use `derived-mode-p'."
+  (while (and (not (memq mode modes))
+              (setq mode (get mode 'derived-mode-parent))))
+  mode)
+
 (defun treemacs--post-process-index (index index-mode)
   "Post process an tags INDEX based on the major INDEX-MODE they're fetched in.
 As of now only decides which (if any) section name top level leaves should be
