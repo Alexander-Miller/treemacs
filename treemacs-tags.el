@@ -97,14 +97,14 @@ If you just want to check `major-mode', use `derived-mode-p'."
   mode)
 
 (defun treemacs--post-process-index (index index-mode)
-  "Post process an tags INDEX based on the major INDEX-MODE they're fetched in.
-As of now only decides which (if any) section name top level leaves should be
-placed under."
+  "Post process a tags INDEX for the major INDEX-MODE the tags were gathered in.
+As of now this only decides which (if any) section name the top level leaves
+should be placed under."
   (declare (pure t) (side-effect-free t))
   (pcase index-mode
     ('org-mode
      index)
-    ((guard (provided-mode-derived-p index-mode 'conf-mode))
+    ((guard (treemacs--provided-mode-derived-p index-mode 'conf-mode))
      (treemacs--partition-imenu-index index "Sections"))
     (_
      (treemacs--partition-imenu-index index "Functions"))))
