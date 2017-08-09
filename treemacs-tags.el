@@ -274,8 +274,7 @@ button from cache. Easiest way is to just do it manually here."
     (when (eq 'tag-node-open (button-get it 'state))
       (treemacs--close-tag-node-recursive it)
       (goto-char (button-start it))
-      (treemacs--close-tag-node it)
-      (message "Close %s" (treemacs--get-label-of it))))
+      (treemacs--close-tag-node it)))
   (goto-char (button-start btn))
   (treemacs--close-tag-node btn))
 

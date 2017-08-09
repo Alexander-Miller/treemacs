@@ -496,6 +496,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
      (treemacs--clear-from-cache path recursive))))
 
+
 (defun treemacs--open-file (&optional window split-func)
   "Visit file of the current node.  Split WINDOW using SPLIT-FUNC.
 Do nothing if current node is a directory.
