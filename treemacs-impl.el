@@ -344,11 +344,12 @@ buffer."
         (push btn ret)))
     (nreverse ret)))
 
-(defun treemacs--git-status-process (path)
-  "Create a new process future to get the git status under PATH."
+(defun treemacs--git-status-process (path &optional recursive)
+  "Create a new process future to get the git status under PATH.
+Optionally make the git request RECURSIVE."
   (when treemacs-git-integration
     (let* ((default-directory (f-canonical path))
-           (future (pfuture-new "git" "status" "--porcelain" "--ignored" ".")))
+           (future (pfuture-new "git" "status" "--porcelain" "--ignored" (if recursive "./*" "."))))
       (process-put (pfuture-process future) 'default-directory default-directory)
       future)))
 
@@ -416,8 +417,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   (insert-button (propertize (funcall treemacs-header-function root)
                              'face 'treemacs-header-face)
                  'face 'treemacs-header-face
-                 'abs-path root
-                 'action #'ignore))
+                 'abs-path root))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when the treemacs buffer gets killed."
@@ -428,10 +428,11 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   (setq treemacs--open-dirs-cache nil
         treemacs--ready nil))
 
-(defun treemacs--push-button (btn)
-  "Execute the appropriate action given the state of the BTN that has been pushed."
+(defun treemacs--push-button (btn &optional recursive)
+  "Execute the appropriate action given the state of the pushed BTN.
+Optionally do so in a RECURSIVE fashion."
   (pcase (button-get btn 'state)
-    ('dir-node-closed  (treemacs--open-dir-node btn))
+    ('dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
     ('dir-node-open    (treemacs--close-node btn))
     ('file-node-open   (treemacs--close-tags-for-file btn))
     ('file-node-closed (treemacs--open-tags-for-file btn))
@@ -449,28 +450,36 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
       ;; so we'll just throw the path out of the cache and assume that all is well
       (treemacs--clear-from-cache (button-get btn 'abs-path))
     (pcase (button-get btn 'state)
-      ('dir-node-closed  (treemacs--open-dir-node btn t))
+      ('dir-node-closed  (treemacs--open-dir-node btn :no-add t))
       ('file-node-closed (treemacs--open-tags-for-file btn t))
-      ('tag-node-closed (treemacs--open-tag-node btn t))
-      (_            (error "[Treemacs] Cannot reopen butt at path %s with state %s" (button-get btn 'abs-path) (button-get btn 'state))))))
+      ('tag-node-closed  (treemacs--open-tag-node btn t))
+      (_                 (error "[Treemacs] Cannot reopen button at path %s with state %s"
+                                (button-get btn 'abs-path) (button-get btn 'state))))))
 
-(defun treemacs--open-dir-node (btn &optional no-add)
+(cl-defun treemacs--open-dir-node (btn &key no-add git-future recursive)
   "Open the node given by BTN.
-Do not reopen its previously open children when NO-ADD is given."
+Do not reopen its previously open children when NO-ADD is given.
+Reuse given GIT-FUTURE when this call is RECURSIVE."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
-    (let ((abs-path (button-get btn 'abs-path)))
-      (with-no-warnings
-        (treemacs--button-open
-         :button btn
-         :new-state 'dir-node-open
-         :new-icon treemacs-icon-open
-         :open-action
-         (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) (treemacs--git-status-process abs-path) btn)
-         :post-open-action
-         (progn
-           (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
-           (treemacs--start-watching abs-path)))))))
+    (let* ((abs-path (button-get btn 'abs-path))
+           (git-future (or git-future (treemacs--git-status-process abs-path t))))
+      (treemacs--button-open
+       :button btn
+       :new-state 'dir-node-open
+       :new-icon (with-no-warnings treemacs-icon-open)
+       :open-action
+       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future btn)
+       :post-open-action
+       (progn
+         (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
+         (treemacs--start-watching abs-path)))
+      (when recursive
+        (--each (treemacs--get-children-of btn)
+          (when (eq 'dir-node-closed (button-get it 'state))
+            (goto-char (button-start it))
+            (treemacs--open-dir-node
+             it :git-future git-future :recursive t)))))))
 
 (defun treemacs--close-node (btn)
   "Close node given by BTN."

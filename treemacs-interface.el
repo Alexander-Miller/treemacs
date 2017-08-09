@@ -44,15 +44,17 @@
   (forward-line -1)
   (treemacs--evade-image))
 
-(defun treemacs-push-button ()
+(defun treemacs-push-button (&optional arg)
   "Push the button in the current line.
 For directories, files and tag sections expand/close the button.
-For tags go to the tag definition via `treemacs-visit-node-no-split'."
-  (interactive)
+For tags go to the tag definition via `treemacs-visit-node-no-split'.
+
+With a prefix argument ARG recursively open directories."
+  (interactive "P")
   (save-excursion
     (beginning-of-line)
     (forward-button 1)
-    (push-button))
+    (treemacs--push-button (treemacs--current-button) arg))
   (treemacs--evade-image))
 
 (defun treemacs-click-mouse1 (event)

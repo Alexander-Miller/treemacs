@@ -209,7 +209,6 @@ Set PARENT and DEPTH button properties."
   (treemacs--insert-button (car node)
                            'face 'treemacs-tags-face
                            'state 'tag-node-closed
-                           'action 'treemacs--push-button
                            'parent parent
                            'depth depth
                            'index (cdr node)))
@@ -247,7 +246,6 @@ Set PARENT and DEPTH button properties."
   (treemacs--insert-button (car item)
                            'face 'treemacs-tags-face
                            'state 'tag-node
-                           'action 'treemacs--push-button
                            'parent parent
                            'depth depth
                            'marker (cdr item)))
