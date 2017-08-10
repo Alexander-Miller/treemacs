@@ -275,7 +275,11 @@ If a prefix argument ARG is provided read a new value for
 `treemacs-buffer-width' first."
   (interactive "P")
   (let ((window-size-fixed nil))
-    (when arg (setq treemacs-width (read-number "New Width: ")))
+    (when arg
+      (setq treemacs-width
+            (->> treemacs-width
+                 (format "New Width (current = %s): ")
+                 (read-number))))
     (treemacs--set-width treemacs-width)))
 
 (cl-defun treemacs-find-file (&optional (path (buffer-file-name (current-buffer))))
