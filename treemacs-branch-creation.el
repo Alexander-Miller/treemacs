@@ -203,11 +203,11 @@ to PARENT."
     ;; building the entire tree
     (treemacs--reopen-at root)))
 
-
-
-(cl-defmacro treemacs--button-close (&key button new-state post-close-action)
-  "Close node given by BTN and set state of BTN to NEW-STATE."
+(cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
+  "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
   `(treemacs--with-writable-buffer
+    ,@(when new-icon
+        `((treemacs--node-symbol-switch ,new-icon)))
     (end-of-line)
     (forward-button 1)
     (beginning-of-line)

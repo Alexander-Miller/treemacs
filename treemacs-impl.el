@@ -489,6 +489,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
   (treemacs--button-close
    :button btn
    :new-state 'dir-node-closed
+   :new-icon (with-no-warnings treemacs-icon-closed)
    :post-close-action
    (let ((path (button-get btn 'abs-path)))
      (treemacs--stop-watching path)
