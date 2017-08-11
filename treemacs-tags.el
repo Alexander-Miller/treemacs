@@ -198,13 +198,17 @@ during a reopen process. Recursively open all tag below BTN when RECURSIVE is t.
                 (treemacs--open-tag-node it :recursive t)))))
       (treemacs--log "No imenu index found for %s" (propertize path 'face 'font-lock-string-face)))))
 
-(defun treemacs--close-tags-for-file (btn)
-  "Close node given by BTN."
+(defun treemacs--close-tags-for-file (btn recursive)
+  "Close node given by BTN.
+Remove all open tag entries under BTN when RECURSIVE."
   (treemacs--button-close
    :button btn
    :new-state 'file-node-closed
    :post-close-action
-   (treemacs--clear-from-cache (button-get btn 'abs-path))))
+   (let ((path (button-get btn 'abs-path)))
+     (treemacs--clear-from-cache path)
+     (when recursive
+       (treemacs--remove-all-tags-under-path-from-cache path)))))
 
 (defun treemacs--insert-tag-node (node prefix parent depth)
   "Insert tags NODE.
@@ -262,15 +266,30 @@ Set PARENT and DEPTH button properties."
                            'depth depth
                            'marker (cdr item)))
 
-(defun treemacs--close-tag-node (btn)
- "Close tags node at BTN."
- (treemacs--with-writable-buffer
-  (treemacs--node-symbol-switch treemacs-icon-tag-node-closed))
- (treemacs--button-close
-  :button btn
-  :new-state 'tag-node-closed
-  :post-close-action
-  (treemacs--remove-from-tags-cache btn)))
+(defun treemacs--close-tag-node-recursive (btn)
+  "Recursively close tag section BTN.
+Workaround for tag section having no easy way to purge all open tags below a
+button from cache. Easiest way is to just do it manually here."
+  (--each (treemacs--get-children-of btn)
+    (when (eq 'tag-node-open (button-get it 'state))
+      (treemacs--close-tag-node-recursive it)
+      (goto-char (button-start it))
+      (treemacs--close-tag-node it)
+      (message "Close %s" (treemacs--get-label-of it))))
+  (goto-char (button-start btn))
+  (treemacs--close-tag-node btn))
+
+(defun treemacs--close-tag-node (btn &optional recursive)
+  "Close tags node at BTN.
+Remove all open tag entries under BTN when RECURSIVE."
+  (if recursive
+      (treemacs--close-tag-node-recursive btn)
+    (treemacs--button-close
+     :button btn
+     :new-state 'tag-node-closed
+     :new-icon treemacs-icon-tag-node-closed
+     :post-close-action
+     (treemacs--remove-from-tags-cache btn))))
 
 (defsubst treemacs--pos-from-marker (m)
   "Extract the tag position stored in marker M.

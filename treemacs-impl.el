@@ -436,9 +436,9 @@ Optionally do so in a RECURSIVE fashion."
   (pcase (button-get btn 'state)
     ('dir-node-open    (treemacs--close-node btn recursive))
     ('dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
-    ('file-node-open   (treemacs--close-tags-for-file btn))
+    ('file-node-open   (treemacs--close-tags-for-file btn recursive))
     ('file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
-    ('tag-node-open    (treemacs--close-tag-node btn))
+    ('tag-node-open    (treemacs--close-tag-node btn recursive))
     ('tag-node-closed  (treemacs--open-tag-node btn :recursive recursive))
     ('tag-node         (treemacs--execute-button-action
                         :tag-action (treemacs--goto-tag btn)
