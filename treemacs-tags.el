@@ -278,13 +278,18 @@ The position can be stored in M in 2 ways:
 
 * M is a marker pointing to a tag provided by imenu
 * M is an overlay pointing to a tag provided by imenu with semantic mode
+* M is a raw number pointing to a buffer position
 
 Either way the return value is a 2 element list consisting of the buffer and the
 position of the tag. They might also be nil if the pointed-to buffer does not
 exist."
-  (if (overlayp m)
-      (list (overlay-buffer m) (overlay-start m))
-    (list (marker-buffer m) (marker-position m))))
+  (pcase (type-of m)
+    ('marker
+     (list (marker-buffer m) (marker-position m)))
+    ('overlay
+     (list (overlay-buffer m) (overlay-start m)))
+    ('integer
+     (list nil m))))
 
 (defsubst treemacs--call-imenu-and-goto-tag (file tag-path)
   "Call the imenu index of FILE to go to position of TAG-PATH."
@@ -296,8 +301,13 @@ exist."
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
-            (-let [(buf pos) (treemacs--pos-from-marker (cdr (--first (equal (car it) tag) index)))]
-              (switch-to-buffer buf)
+            (-let [(buf pos) (treemacs--pos-from-marker
+                              (cdr (--first
+                                    (equal (car it) tag)
+                                    index)))]
+              ;; some imenu implementations, like markdown, will only provide
+              ;; a raw buffer position (an int) to move to
+              (switch-to-buffer (or buf (get-file-buffer file)))
               (goto-char pos))))
       (error
        (treemacs--log "Something went wrong when finding tag '%s': %s"
