@@ -166,18 +166,19 @@ should be placed under."
      treemacs--tags-cache)
     (--each keys-to-remove (remhash it treemacs--tags-cache))))
 
-(defun treemacs--open-tags-for-file (btn &optional noadd)
+(cl-defun treemacs--open-tags-for-file (btn &key no-add recursive)
   "Open tag items for file BTN.
 Do not add the file to the open file cache when NOADD is given. NOADD is given
-during a reopen process."
+during a reopen process. Recursively open all tag below BTN when RECURSIVE is t."
   (let ((path (button-get btn 'abs-path)))
     (-if-let (index (treemacs--get-imenu-index path))
+        (progn
           (treemacs--button-open
            :button btn
            :new-state 'file-node-open
            :post-open-action
            (progn
-             (unless noadd (treemacs--add-to-cache (treemacs--parent path) path))
+             (unless no-add (treemacs--add-to-cache (treemacs--parent path) path))
              (treemacs--reopen-tags-under btn))
            :open-action
            (treemacs--create-buttons
@@ -190,6 +191,11 @@ during a reopen process."
             (if (imenu--subalist-p item)
                 (treemacs--insert-tag-node item node-prefix btn depth)
               (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
+          (when recursive
+            (--each (treemacs--get-children-of btn)
+              (when (eq 'tag-node-closed (button-get it 'state))
+                (goto-char (button-start it))
+                (treemacs--open-tag-node it :recursive t)))))
       (treemacs--log "No imenu index found for %s" (propertize path 'face 'font-lock-string-face)))))
 
 (defun treemacs--close-tags-for-file (btn)
@@ -213,17 +219,18 @@ Set PARENT and DEPTH button properties."
                            'depth depth
                            'index (cdr node)))
 
-(defun treemacs--open-tag-node (btn &optional noadd)
+(cl-defun treemacs--open-tag-node (btn &key no-add recursive)
   "Open tags node items for BTN.
-Do not add the node the open file cache when NOADD is given.
-NOADD is usually given during a reopen process."
+Do not add the node the open file cache when NO-ADD is given.
+NO-ADD is usually given during a reopen process.
+Open all tag section under BTN when call is RECURSIVE."
   (let ((index (button-get btn 'index)))
     (treemacs--button-open
         :button btn
         :new-state 'tag-node-open
         :new-icon treemacs-icon-tag-node-open
         :post-open-action
-        (unless noadd (treemacs--add-to-tags-cache btn))
+        (unless no-add (treemacs--add-to-tags-cache btn))
         :open-action
         (treemacs--create-buttons
          :nodes index
@@ -235,7 +242,12 @@ NOADD is usually given during a reopen process."
          (if (imenu--subalist-p item)
              (treemacs--insert-tag-node item node-prefix btn depth)
            (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
-    (treemacs--reopen-tags-under btn)))
+    (if recursive
+        (--each (treemacs--get-children-of btn)
+          (when (eq 'tag-node-closed (button-get it 'state))
+            (goto-char (button-start it))
+            (treemacs--open-tag-node it :recursive t)))
+      (treemacs--reopen-tags-under btn))))
 
 (defun treemacs--insert-tag-leaf (item prefix parent depth)
   "Insert tag node ITEM.
@@ -351,7 +363,7 @@ Start the search at START."
                                         (treemacs--get-children-of btn)))
                 (when (eq 'tag-node-closed (button-get node-btn 'state))
                   (goto-char (button-start node-btn))
-                  (treemacs--open-tag-node node-btn t))
+                  (treemacs--open-tag-node node-btn :no-add t))
               (remhash item cache-table)
               (push item rejects)))
           ;; nodes that could not be moved to - probably due to those nodes

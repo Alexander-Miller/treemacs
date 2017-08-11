@@ -432,12 +432,12 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
   (pcase (button-get btn 'state)
-    ('dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
     ('dir-node-open    (treemacs--close-node btn))
+    ('dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
     ('file-node-open   (treemacs--close-tags-for-file btn))
-    ('file-node-closed (treemacs--open-tags-for-file btn))
+    ('file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
     ('tag-node-open    (treemacs--close-tag-node btn))
-    ('tag-node-closed  (treemacs--open-tag-node btn))
+    ('tag-node-closed  (treemacs--open-tag-node btn :recursive recursive))
     ('tag-node         (treemacs--execute-button-action
                         :tag-action (treemacs--goto-tag btn)
                         :no-match-explanation "This button should be a tag"))
@@ -451,8 +451,8 @@ Optionally do so in a RECURSIVE fashion."
       (treemacs--clear-from-cache (button-get btn 'abs-path))
     (pcase (button-get btn 'state)
       ('dir-node-closed  (treemacs--open-dir-node btn :no-add t))
-      ('file-node-closed (treemacs--open-tags-for-file btn t))
-      ('tag-node-closed  (treemacs--open-tag-node btn t))
+      ('file-node-closed (treemacs--open-tags-for-file btn :no-add t))
+      ('tag-node-closed  (treemacs--open-tag-node btn :no-add t))
       (_                 (error "[Treemacs] Cannot reopen button at path %s with state %s"
                                 (button-get btn 'abs-path) (button-get btn 'state))))))
 
