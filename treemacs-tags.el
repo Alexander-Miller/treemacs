@@ -147,7 +147,7 @@ should be placed under."
          (cache-table    (gethash file treemacs--tags-cache))
          (cache-key      (-if-let (path (button-get (button-get btn 'parent) 'abs-path))
                              (list path)
-                           (treemacs--tags-path-of btn)))
+                           (treemacs--tags-path-of (button-get btn 'parent))))
          (present-cache   (gethash cache-key cache-table))
          (entry-to-delete (treemacs--tags-path-of btn))
          (new-cache-value (delete entry-to-delete present-cache)))

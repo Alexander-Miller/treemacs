@@ -640,7 +640,23 @@
         (treemacs--add-to-tags-cache b1)
         (treemacs--add-to-tags-cache b2)
         (treemacs--remove-from-tags-cache b2)
-        (should (equal '(("b1")) (gethash '("/A/B/C") (gethash "/A/B/C" treemacs--tags-cache))))))))
+        (should (equal '(("b1")) (gethash '("/A/B/C") (gethash "/A/B/C" treemacs--tags-cache)))))))
+
+  (ert-deftest remove-from-tags-cache::correctly-remove-entry-under-section ()
+    (with-temp-buffer
+      (let ((treemacs--tags-cache (make-hash-table :test #'equal))
+            (b1 (button-at (insert-text-button "b1")))
+            (b2 (button-at (insert-text-button "b2")))
+            (b3 (button-at (insert-text-button "b3")))
+            (p  (button-at (insert-text-button "p"))))
+        (button-put p 'abs-path "/A/B/C")
+        (button-put b1 'parent p)
+        (button-put b2 'parent b1)
+        (button-put b3 'parent b2)
+        (treemacs--add-to-tags-cache b1)
+        (treemacs--add-to-tags-cache b2)
+        (treemacs--remove-from-tags-cache b1)
+        (should-not (gethash '((b1)) (gethash "/A/B/C" treemacs--tags-cache)))))))
 
 ;; treemacs--tags-path-of
 (progn
