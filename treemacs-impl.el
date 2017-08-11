@@ -46,7 +46,8 @@
   treemacs--open-tag-node
   treemacs--close-tag-node
   treemacs--close-tag-node
-  treemacs--goto-tag)
+  treemacs--goto-tag
+  treemacs--remove-all-tags-under-path-from-cache)
 
 (treemacs--import-functions-from "treemacs"
   treemacs-refresh
@@ -54,6 +55,7 @@
 
 (treemacs--import-functions-from "treemacs-branch-creation"
   treemacs--button-open
+  treemacs--button-close
   treemacs--check-window-system
   treemacs--create-branch)
 
@@ -349,7 +351,7 @@ buffer."
 Optionally make the git request RECURSIVE."
   (when treemacs-git-integration
     (let* ((default-directory (f-canonical path))
-           (future (pfuture-new "git" "status" "--porcelain" "--ignored" (if recursive "./*" "."))))
+           (future (pfuture-new "git" "status" "--porcelain" "--ignored" (if recursive "-uall" "."))))
       (process-put (pfuture-process future) 'default-directory default-directory)
       future)))
 
@@ -432,7 +434,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
   (pcase (button-get btn 'state)
-    ('dir-node-open    (treemacs--close-node btn))
+    ('dir-node-open    (treemacs--close-node btn recursive))
     ('dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
     ('file-node-open   (treemacs--close-tags-for-file btn))
     ('file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
@@ -481,24 +483,17 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
             (treemacs--open-dir-node
              it :git-future git-future :recursive t)))))))
 
-(defun treemacs--close-node (btn)
-  "Close node given by BTN."
-  (treemacs--with-writable-buffer
-   ;; no warnings since icon is known to be defined
-   (treemacs--node-symbol-switch (with-no-warnings treemacs-icon-closed))
-   (treemacs--clear-from-cache (button-get btn 'abs-path))
-   (end-of-line)
-   (forward-button 1)
-   (beginning-of-line)
-   (let* ((pos-start (point))
-          (next-node (treemacs--next-node btn))
-          (pos-end   (if next-node
-                         (-> next-node (button-start) (previous-button) (button-end) (1+))
-                       (point-max))))
-     (button-put btn 'state 'dir-node-closed)
-     (delete-region pos-start pos-end)
-     (delete-trailing-whitespace)
-     (treemacs--stop-watching (button-get btn 'abs-path)))))
+(defun treemacs--close-node (btn recursive)
+  "Close node given by BTN.
+Remove all open dir and tag entries under BTN when RECURSIVE."
+  (treemacs--button-close
+   :button btn
+   :new-state 'dir-node-closed
+   :post-close-action
+   (let ((path (button-get btn 'abs-path)))
+     (treemacs--stop-watching path)
+     (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
+     (treemacs--clear-from-cache path recursive))))
 
 (defun treemacs--open-file (&optional window split-func)
   "Visit file of the current node.  Split WINDOW using SPLIT-FUNC.
