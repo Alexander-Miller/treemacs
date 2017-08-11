@@ -102,7 +102,7 @@ As of now this only decides which (if any) section name the top level leaves
 should be placed under."
   (declare (pure t) (side-effect-free t))
   (pcase index-mode
-    ('org-mode
+    ((or 'markdown-mode 'org-mode)
      index)
     ((guard (treemacs--provided-mode-derived-p index-mode 'conf-mode))
      (treemacs--partition-imenu-index index "Sections"))
