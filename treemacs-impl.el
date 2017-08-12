@@ -465,7 +465,7 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
     (let* ((abs-path (button-get btn 'abs-path))
-           (git-future (or git-future (treemacs--git-status-process abs-path t))))
+           (git-future (or git-future (treemacs--git-status-process abs-path recursive))))
       (treemacs--button-open
        :button btn
        :new-state 'dir-node-open
