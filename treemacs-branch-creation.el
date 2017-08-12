@@ -212,7 +212,7 @@ to PARENT."
     (forward-button 1)
     (beginning-of-line)
     (let* ((pos-start (point))
-           (next (treemacs--next-node ,button))
+           (next (treemacs--non-child-node ,button))
            (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
       (button-put ,button 'state ,new-state)
       (delete-region pos-start pos-end)

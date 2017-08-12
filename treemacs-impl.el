@@ -631,12 +631,12 @@ Valid states are 'visible, 'exists and 'none."
   (let ((window-size-fixed))
     (set-window-dedicated-p (get-buffer-window) t)))
 
-(defun treemacs--next-node (node)
-  "Return NODE's lower same-indentation neighbour or nil if there is none."
-  (when node
-    (-if-let (next (button-get node 'next-node))
+(defun treemacs--non-child-node (btn)
+  "Return the next node after BTN that is not a child of BTB."
+  (when btn
+    (-if-let (next (button-get btn 'next-node))
         next
-      (treemacs--next-node (button-get node 'parent)))))
+      (treemacs--non-child-node (button-get next 'parent)))))
 
 (defun str-assq-delete-all (key alist)
   "Same as `assq-delete-all', but use `string=' instead of `eq'.
