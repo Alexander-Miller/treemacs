@@ -27,10 +27,21 @@
 (require 'treemacs-impl)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-follow-mode)
+(require 'treemacs-customization)
 
 (treemacs--import-functions-from "treemacs"
   treemacs-refresh
   treemacs-toggle)
+
+(defconst treemacs-valid-button-states
+  '(dir-node-open
+    dir-node-closed
+    file-node-open
+    file-node-closed
+    tag-node-open
+    tag-node-closed
+    tag-node)
+  "List of all valid values for treemacs buttons' 'state' property.")
 
 (defun treemacs-next-line ()
   "Goto next line."
@@ -192,6 +203,23 @@ Stay in current window with a prefix argument ARG."
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+
+(defun treemacs-visit-node-default-action (&optional arg)
+  "Run the action defined in `treemacs-default-actions' for the current button.
+Pass on prefix ARG to the action."
+  (interactive "P")
+  (-when-let (state (treemacs--prop-at-point 'state))
+    (funcall (alist-get state treemacs-default-actions) arg)))
+
+(defun treemacs-define-default-action (state action)
+  "Define the behaviour of `treemacs-visit-default-action'.
+Determines that a button with state STATE should lead to the execution of
+ACTION.
+
+First deleted the previous entry with key STATE from `treemacs-default-actions'
+and then inserts the new touple."
+  (assq-delete-all state treemacs-default-actions)
+  (push (cons state action) treemacs-default-actions))
 
 (defun treemacs-xdg-open ()
   "Open current file, using the `xdg-open' shell command."

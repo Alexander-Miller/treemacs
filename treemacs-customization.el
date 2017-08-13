@@ -51,6 +51,27 @@
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-default-actions
+  '((dir-node-open    . treemacs-push-button)
+    (dir-node-closed  . treemacs-push-button)
+    (file-node-open   . treemacs-visit-node-no-split)
+    (file-node-closed . treemacs-visit-node-no-split)
+    (tag-node-open    . treemacs-push-button)
+    (tag-node-closed  . treemacs-push-button)
+    (tag-node         . treemacs-visit-node-no-split))
+  "Defines the behaviour of `treemacs-visit-node-default-action'.
+
+Each alist element maps from a button state to the function that should be used
+for that state. The list of all possible button states is defined in
+`treemacs-valid-button-states'. Possible values are all treemacs-visit-node-*
+functions as well as `treemacs-push-button' for simple open/close actions.
+
+To keep the alist clean changes should not be made directly, but with
+`treemacs-define-default-action',for example like this:
+\(treemacs-define-default-action 'file-node-closed #'treemacs-visit-node-ace\)"
+  :type 'alist
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-follow-after-init nil
   "When t always run `treemacs-follow' after building a treemacs-buffer.
 
