@@ -68,7 +68,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (when (and (eq 'mouse-1 (elt event 0))
                (elt (elt event 1) 7)) ;; image object that's clicked on
       (forward-button 1)
-      (push-button)
+      (treemacs-push-button)
       ;; for whatever reason a call to `treemacs--evade-image' here results in point
       ;; jumping to the next line when a node is closed
       (goto-char (1+ p)))))
