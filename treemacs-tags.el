@@ -119,7 +119,9 @@ should be placed under."
         (setq buff existing-buffer)
       (setq buff (find-file-noselect file)))
     (with-current-buffer buff
-      (setq result (imenu--make-index-alist t)
+      (setq result (condition-case _
+                       (imenu--make-index-alist t)
+                     (error nil))
             mode major-mode))
     (unless existing-buffer (kill-buffer buff))
     (when result
