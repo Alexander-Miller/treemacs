@@ -63,8 +63,6 @@ For tags go to the tag definition via `treemacs-visit-node-no-split'.
 With a prefix argument ARG recursively open directories."
   (interactive "P")
   (save-excursion
-    (beginning-of-line)
-    (forward-button 1)
     (treemacs--push-button (treemacs--current-button) arg))
   (treemacs--evade-image))
 

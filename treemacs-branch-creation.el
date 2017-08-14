@@ -31,6 +31,9 @@
 Is set to either the generic text png icon when in a GUI, or blank spaces when
 in a terminal.")
 
+(defvar treemacs-icons-stash nil
+  "`treemacs-icons-hash' is stored here while treemacs is run in a terminal.")
+
 (defsubst treemacs--button-put (button prop val)
   "Set BUTTON's PROP property to VAL and return BUTTON."
   (put-text-property
@@ -100,9 +103,9 @@ is a marker pointing to POS."
   "Insert the appropriate file png icon for PATH given PREFIX."
   (end-of-line)
   (insert (concat prefix
-                  (gethash (-some-> path (treemacs--file-extension) (downcase))
+                  (gethash (-> path (treemacs--file-extension) (downcase))
                            treemacs-icons-hash
-                           (with-no-warnings treemacs-icon-text)))))
+                           treemacs-icon-fallback))))
 
 (defsubst treemacs--insert-dir-node (path prefix parent depth)
   "Insert a directory node for PATH.
@@ -229,15 +232,18 @@ return t."
       (with-no-warnings
         (if current-ui
             (progn
-              (treemacs--create-icons)
-              (setq treemacs-icon-open treemacs-icon-open-png
+              (when treemacs-icons-stash
+                (setq treemacs-icons-hash treemacs-icons-stash))
+              (setq treemacs-icons-stash nil
+                    treemacs-icon-open treemacs-icon-open-png
                     treemacs-icon-closed treemacs-icon-closed-png
                     treemacs-icon-fallback treemacs-icon-text))
           (progn
-            (clrhash treemacs-icons-hash)
-            (setq treemacs-icon-open treemacs-icon-open-text
+            (setq treemacs-icons-stash treemacs-icons-hash
+                  treemacs-icons-hash (make-hash-table :test #'equal)
+                  treemacs-icon-open treemacs-icon-open-text
                   treemacs-icon-closed treemacs-icon-closed-text
-                  treemacs-icon-fallback "  "))))
+                  treemacs-icon-fallback ""))))
       t)))
 
 (provide 'treemacs-branch-creation)
