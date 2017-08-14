@@ -192,7 +192,7 @@ matching the buttons state."
 
 (defsubst treemacs--current-button ()
   "Get the button in the current line."
-  (next-button (point-at-bol) t))
+  (next-button (point-at-bol)))
 
 (defsubst treemacs--get-label-of (btn)
   "Return the text label of BTN."
