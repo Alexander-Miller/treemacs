@@ -57,6 +57,8 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (treemacs--setup-icon treemacs-icon-html       "html.png"       "html" "htm")
   (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
   (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
+  (treemacs--setup-icon treemacs-icon-js         "js.png"         "js" "jsx")
+  (treemacs--setup-icon treemacs-icon-json       "json.png"       "json")
 
   (defconst treemacs-icon-closed-text (propertize "+" 'face 'treemacs-term-node-face))
   (defconst treemacs-icon-open-text   (propertize "-" 'face 'treemacs-term-node-face))
