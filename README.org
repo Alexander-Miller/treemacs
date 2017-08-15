@@ -7,6 +7,7 @@
 * Content                                                                            :TOC:noexport:
 - [[#treemacs---a-tree-layout-file-explorer-for-emacs][Treemacs - a tree layout file explorer for Emacs]]
 - [[#quick-feature-overview][Quick Feature Overview]]
+- [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
   - [[#treemacs-follow-mode][Treemacs-follow-mode]]
   - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
@@ -52,6 +53,16 @@ Specifically a quick feature overview looks as follows:
    treemacs and 2) If you use evil: requiring ~treemacs-evil~ to integrate treemacs with evil and enable j/k navigation.
    More on both below.
 
+* Quick Start
+If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
+ * If you use evil don't forget to also install ~treemacs-evil~
+ * Treemacs doesn' bind any global keys, you need to use whatever fits you best. A basic install setup for
+   spacemacs can be found [[#installation][below]]. Otherwise just bind ~treemacs~, ~treemacs-toggle~ and ~treemacs-projectile~.
+ * For navigation use n/p (j/k when evil), M-n/M-p to move to same-height neighbour u to go to parent, h to
+   move up a dir, l to move root to selected dir
+ * TAB always opens and closes nodes. Files can be opened, too - treemacs will show their imenu index.
+ * There's half a dozen different ways to open nodes, all bound under o as prefix. Pick your favourite.
+ * RET runs a default action, configurable to your tastes under ~treemacs-default-actions~
 * Detailed Feature List
 ** Treemacs-follow-mode
 
