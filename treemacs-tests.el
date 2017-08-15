@@ -25,7 +25,7 @@
 (require 'subr-x)
 (require 'f)
 
-;; treemacs--maybe-filter-dotfiles
+;; `treemacs--maybe-filter-dotfiles'
 (progn
   (ert-deftest filter-dotfiles::do-nothing-when-dotfiles-are-shown ()
     (let ((treemacs-show-hidden-files t)
@@ -67,7 +67,7 @@
           (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
       (should (equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E") (treemacs--maybe-filter-dotfiles input))))))
 
-;; treemacs--add-to-cache
+;; `treemacs--add-to-cache'
 (progn
   (ert-deftest add-to-dirs-cache::add-single-item ()
     (let ((parent "/home/A")
@@ -107,7 +107,7 @@
       (treemacs--add-to-cache parent1 child11)
       (should (equal `((,parent2 ,child2) (,parent1 ,child11 ,child1)) treemacs--open-dirs-cache)))))
 
-;; treemacs--clear-from-cache
+;; `treemacs--clear-from-cache'
 (progn
   (ert-deftest clear-from-dirs-cache::clear-item-from-empty-cache ()
     (let ((treemacs--open-dirs-cache nil))
@@ -169,7 +169,7 @@
       (treemacs--clear-from-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A2" "/home/A2/B1" "/home/A2/B2")))))))
 
-;; treemacs--is-path-in-dir?
+;; `treemacs--is-path-in-dir?'
 (progn
   (ert-deftest path-in-dir::direct-parent ()
     (let ((path "~/A/B/c")
@@ -191,7 +191,7 @@
           (parent "~/A/prefixp"))
       (should-not (treemacs--is-path-in-dir? path parent)))))
 
-;; treemacs--get-face
+;; `treemacs--get-face'
 (progn
   (let ((treemacs-git-integration t))
     (ert-deftest get-face::unmodified-face-for-file-without-git-info ()
@@ -225,7 +225,7 @@
       (let ((git-info '(("!!" . "~/A/B/c") ("A" . "~/A"))))
         (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" git-info)))))))
 
-;; treemacs--current-visibility
+;; `treemacs--current-visibility'
 (progn
   (ert-deftest current-visibility::visible-buffer ()
       (with-mock
@@ -250,7 +250,7 @@
       (stub -contains? => nil)
       (should (eq 'none (treemacs--current-visibility))))))
 
-;; treemacs--unquote
+;; `treemacs--unquote'
 (progn
   (ert-deftest unquote::does-not-fail-on-nil-string ()
     (should (null (treemacs--unqote nil))))
@@ -275,7 +275,7 @@
     (let ((input "\"input"))
       (should (equal "input" (treemacs--unqote input))))))
 
-;; treemacs--reject-ignored-files
+;; `treemacs--reject-ignored-files'
 (progn
   (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
 
@@ -315,7 +315,7 @@
     (ert-deftest reject-ignored::accepts-abs-file ()
       (should (treemacs--reject-ignored-files "foo.el")))))
 
-;; treemacs--reject-ignored-and-dotfiles
+;; `treemacs--reject-ignored-and-dotfiles'
 (progn
   (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
 
@@ -361,7 +361,7 @@
     (ert-deftest reject-ignored-and-dotfiles::accepts-abs-file ()
       (should (treemacs--reject-ignored-and-dotfiles "foo.el")))))
 
-;; str-assq-delete-all
+;; `str-assq-delete-all'
 (progn
   (ert-deftest str-assq-delete::does-nothing-for-nil-key-and-list ()
     (should-not (str-assq-delete-all nil nil)))
@@ -382,7 +382,7 @@
       (should (equal '(("A" . 2) ("B" . 4))
                      (str-assq-delete-all "X" input))))))
 
-;; treemacs--parent
+;; `treemacs--parent'
 (progn
   (ert-deftest parent::fails-on-nil-path ()
     (should-error (treemacs--parent nil)))
@@ -396,7 +396,7 @@
   (ert-deftest parent::returns-root ()
     (should (equal "/" (treemacs--parent "/")))))
 
-;; treemacs--read-persist-data
+;; `treemacs--read-persist-data'
 (progn
   (ert-deftest read-persist::reads-nil-from-empty-file ()
     (with-mock
@@ -425,7 +425,7 @@
                              '(("ROOT" . "~/A")
                                ("POINT-AT" . "~/A/p")))))))))
 
-;; treemacs--check-window-system
+;; `treemacs--check-window-system'
 (progn
   (ert-deftest check-window-system::returns-nil-when-no-change-from-x ()
     (with-mock
@@ -451,7 +451,7 @@
       (let ((treemacs--in-gui 'x))
         (should (treemacs--check-window-system))))))
 
-;; treemacs--is-event-relevant?
+;; `treemacs--is-event-relevant?'
 (progn
   (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
     (ert-deftest file-event-relevance::stop-watching-is-not-relevant ()
@@ -477,7 +477,7 @@
     (ert-deftest file-event-relevance::file-deletion-is-relevant ()
       (should (treemacs--is-event-relevant? '(nil deleted "~/A/a"))))))
 
-;; treemacs--file-extension
+;; `treemacs--file-extension'
 (progn
   (ert-deftest file-ext::fails-on-nil-file ()
     (should-error (treemacs--file-extension nil)))
@@ -506,7 +506,7 @@
   (ert-deftest file-ext::return-extension-for-path-with-dots ()
     (should (equal "el" (treemacs--file-extension "~/A/foo.bar/baz.qux/foo.el")))))
 
-;; treemacs--tags-path-of
+;; `treemacs--tags-path-of'
 (progn
   (ert-deftest tags-path-of::fails-on-nil-btn ()
     (should-error (treemacs--tags-path-of nil)))
@@ -529,7 +529,7 @@
         (button-put b4 'abs-path "A")
         (should (equal '("b1" "b3" "b2") (treemacs--tags-path-of b1)))))))
 
-;; treemacs--partition-imenu-index
+;; `treemacs--partition-imenu-index'
 (progn
   (ert-deftest partition-index::returns-nil-on-nil-input ()
     (should-not (treemacs--partition-imenu-index nil "A")))
@@ -549,7 +549,7 @@
                '(("A" ("a1" "a2")) ("B" ("b1" "b2")) ("Functions" ("x" "y" "z")))
                (treemacs--partition-imenu-index input "Functions"))))))
 
-;; treemacs--add-to-tags-cache
+;; `treemacs--add-to-tags-cache'
 (progn
   (ert-deftest add-to-tags-cache::fails-on-nil-btn ()
     (should-error (treemacs--add-to-tags-cache nil)))
@@ -612,7 +612,7 @@
                 (gethash '("parent-lbl-1" "parent-lbl-3" "parent-lbl-2")
                          (gethash "/parent/path" treemacs--tags-cache))))))))
 
-;; treemacs--remove-from-tags-cache
+;; `treemacs--remove-from-tags-cache'
 (progn
   (ert-deftest remove-from-tags-cache::fails-on-nil-btn ()
     (should-error (treemacs--remove-from-tags-cache nil)))
@@ -658,7 +658,7 @@
         (treemacs--remove-from-tags-cache b1)
         (should-not (gethash '((b1)) (gethash "/A/B/C" treemacs--tags-cache)))))))
 
-;; treemacs--tags-path-of
+;; `treemacs--tags-path-of'
 (progn
   (ert-deftest tags-path::fails-on-nil-btn ()
     (should-error (treemacs--tags-path-of nil)))
@@ -691,6 +691,38 @@
         (button-put b2 'parent b1)
         (button-put b1 'abs-path "/A/B/C")
         (should (equal '("b5" "b2" "b3" "b4") (treemacs--tags-path-of b5)))))))
+
+;; `treemacs--next-non-child-node'
+(progn
+  (ert-deftest next-non-child::returns-nil-for-nil-input ()
+    (should-not (treemacs--next-non-child-node nil)))
+
+  (ert-deftest next-non-child::returns-nil-for-single-button ()
+    (with-temp-buffer
+      (let ((b (insert-text-button "b")))
+        (should-not (treemacs--next-non-child-node b)))))
+
+  (ert-deftest next-non-child::directly-retuns-next-btn-property ()
+    (with-temp-buffer
+      (let ((b1 (insert-text-button "b1"))
+            (b2 (insert-text-button "b2")))
+        (button-put b1 'next-node b2)
+        (should (equal b2 (treemacs--next-non-child-node b1))))))
+
+  (ert-deftest next-non-child::searches-through-parent-hierarchy ()
+    (with-temp-buffer
+      (let ((b1 (insert-text-button "b1"))
+            (b2 (insert-text-button "b2"))
+            (b3 (insert-text-button "b3"))
+            (b4 (insert-text-button "b4"))
+            (b5 (insert-text-button "b5"))
+            (b6 (insert-text-button "b6")))
+        (button-put b1 'parent b2)
+        (button-put b2 'parent b3)
+        (button-put b3 'parent b4)
+        (button-put b4 'parent b5)
+        (button-put b5 'next-node b6)
+        (should (equal b6 (treemacs--next-non-child-node b1)))))))
 
 ;;; Thorough Sys Test
 (ert-deftest treemacs::sys-test ()
