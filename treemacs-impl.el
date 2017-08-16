@@ -192,7 +192,7 @@ matching the buttons state."
 
 (defsubst treemacs--current-button ()
   "Get the button in the current line."
-  (next-button (point-at-bol) t))
+  (next-button (point-at-bol)))
 
 (defsubst treemacs--get-label-of (btn)
   "Return the text label of BTN."
@@ -631,12 +631,12 @@ Valid states are 'visible, 'exists and 'none."
   (let ((window-size-fixed))
     (set-window-dedicated-p (get-buffer-window) t)))
 
-(defun treemacs--non-child-node (btn)
+(defun treemacs--next-non-child-node (btn)
   "Return the next node after BTN that is not a child of BTB."
   (when btn
     (-if-let (next (button-get btn 'next-node))
         next
-      (treemacs--non-child-node (button-get next 'parent)))))
+      (treemacs--next-non-child-node (button-get btn 'parent)))))
 
 (defun str-assq-delete-all (key alist)
   "Same as `assq-delete-all', but use `string=' instead of `eq'.
