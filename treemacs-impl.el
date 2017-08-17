@@ -236,7 +236,6 @@ Will return the treemacs window if true."
 (defsubst treemacs--select-not-visible ()
   "Switch to treemacs buffer, given that it not visible."
   (treemacs--setup-buffer)
-  (switch-to-buffer treemacs--buffer-name)
   (treemacs--refresh-catch-up))
 
 (defsubst treemacs--unqote (str)
@@ -368,10 +367,7 @@ Optionally make the git request RECURSIVE."
     (treemacs--buffer-teardown)
     (if (treemacs--is-visible?)
         (treemacs--select-visible)
-      (progn
-        (treemacs--setup-buffer)
-        (switch-to-buffer (get-buffer-create treemacs--buffer-name))
-        (bury-buffer treemacs--buffer-name)))
+      (treemacs--setup-buffer))
     ;; f-long to expand ~ and remove final slash
     ;; needed for root dirs given by projectile
     (treemacs--build-tree (f-long root))
@@ -395,7 +391,7 @@ Optionally make the git request RECURSIVE."
    (goto-char 0)
    (forward-line 1)
    (treemacs--evade-image)
-   ;; watch must start here and not init treemacs--init: uproot calls build-tree, but not
+   ;; watch must start here and not in `treemacs--init': uproot calls build-tree, but not
    ;; init since init runs teardown. we want to run filewatch on the new root, so the watch *must*
    ;; be started here
    ;; same goes for reopening
@@ -630,13 +626,15 @@ Valid states are 'visible, 'exists and 'none."
 
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
-  (select-window
-   (display-buffer-in-side-window
-    (get-buffer-create treemacs--buffer-name) '((side . left)))
-   t)
-  (treemacs--set-width treemacs-width)
+  (-> (selected-window)
+      (frame-root-window)
+      (split-window nil 'left)
+      (select-window))
+  (switch-to-buffer (get-buffer-create treemacs--buffer-name))
+  (set-window-dedicated-p (selected-window) t)
+  (bury-buffer treemacs--buffer-name)
   (let ((window-size-fixed))
-    (set-window-dedicated-p (get-buffer-window) t)))
+    (treemacs--set-width treemacs-width)))
 
 (defun treemacs--next-non-child-node (btn)
   "Return the next node after BTN that is not a child of BTB."
