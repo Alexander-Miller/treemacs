@@ -99,6 +99,10 @@ Must be set to nil when no follow actions should be triggered, e.g. when the
 treemacs buffer is being rebuilt or during treemacs' own window selection
 functions.")
 
+(defvar treemacs--no-messages nil
+  "When set to t `treemacs--log' will produce no output.
+Not used directly, but as part of `treemacs--without-messages'.")
+
 ;;;;;;;;;;;;
 ;; Macros ;;
 ;;;;;;;;;;;;
@@ -124,10 +128,11 @@ called from another buffer than the one the button resides in and
 
 (defmacro treemacs--log (msg &rest args)
   "Write a log statement given formart string MSG and ARGS."
-  `(message
-    "%s %s"
-    (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
-    (format ,msg ,@args)))
+  `(unless treemacs--no-messages
+     (message
+      "%s %s"
+      (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
+      (format ,msg ,@args))))
 
 (cl-defmacro treemacs--execute-button-action
     (&key save-window split-function window dir-action file-action tag-action no-match-explanation)
@@ -183,8 +188,10 @@ matching the buttons state."
 
 (defmacro treemacs--without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
-  `(cl-flet ((message (&rest _) (ignore)))
-     ,@body))
+  `(let ((treemacs--no-messages t))
+     (unwind-protect
+         ,@body
+       (setq treemacs--no-messages nil))))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
