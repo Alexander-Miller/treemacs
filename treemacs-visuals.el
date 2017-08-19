@@ -21,14 +21,113 @@
 ;;; Code:
 
 (require 'treemacs-impl)
+(require 'image)
+(require 'hl-line)
+
+;; An explanation for the what and why of the icon highlighting code below:
+;; Using png images in treemacs has one annoying visual flaw: they overwrite the overlay
+;; used by hl-line, such that the line marked by hl-line will always show a 22x22 pixel
+;; gap wherever treemacs places an icon, regardessof transparency.
+;; Using xpm instead of png images is one way to work around this, but it degrades icon
+;; quality to an unacceptable degree. Another way is to directly change images' :background
+;; property. The backgrounds colors are derived from the current theme with `treemacs--setup-icon-highlight'
+;; and saved in `treemacs--selected-icon-background' and `treemacs--not-selected-icon-background'.
+;; Every icon string stores two images with the proper :background values in its properties
+;; 'img-selected and 'img-unselected. The 'display property of the icon in the current line
+;; is then highlighted, and the previously highlighted icon unhighlighted, by advising
+;; `hl-line-highlight'. The last displayed icon is saved as a button marker in `treemacs--last-highlight'.
+;; Since it is a marker in the treemacs buffer it is important for it to be reset whenever it might
+;; become invalid.
+
+(defvar treemacs--icons nil
+  "Stash of all created icons.
+Used by `treemacs--setup-icon-highlight' to realign icons' highlight colors
+after a theme change.")
+
+(defvar treemacs--last-highlight nil
+  "The last button treemacs has highlighted.")
+
+(defvar treemacs--selected-icon-background
+  (face-attribute 'hl-line :background)
+  "Background for selected icons.")
+
+(defvar treemacs--not-selected-icon-background
+  (face-attribute 'default :background)
+  "Background for non-selected icons.")
+
+(defsubst treemacs--set-img-property (image property value)
+  "Set IMAGE's PROPERTY to VALUE."
+  ;; the emacs26 code where this is copied from says it's for internal
+  ;; use only - let's se how that goes
+  (plist-put (cdr image) property value)
+  value)
+
+(defsubst treemacs--forget-last-highlight ()
+  "Set `treemacs--last-highlight' to nil."
+  (setq treemacs--last-highlight nil))
+
+(defun treemacs--setup-icon-highlight ()
+  "Make sure treemacs icons background aligns with hi-line's."
+  (advice-add #'hl-line-highlight :after #'treemacs--update-icon-selection)
+  (advice-add #'load-theme        :after #'treemacs--setup-icon-background-colors))
+
+(defun treemacs--tear-down-icon-highlight ()
+  "Tear down highlighting advice when no treemacs buffer exists anymore."
+  (advice-remove #'hl-line-highlight #'treemacs--update-icon-selection)
+  (advice-remove #'load-theme        #'treemacs--setup-icon-background-colors)
+  (treemacs--forget-last-highlight))
+
+(defun treemacs--setup-icon-background-colors (&rest _)
+  "Align icon backgrounds with current theme.
+Fetch the current theme's background & hl-line colors and inject them into
+`treemacs--icons'. Also called as advice after `load-theme', hence the ignored
+argument."
+  (setq treemacs--not-selected-icon-background (face-attribute 'default :background)
+        treemacs--selected-icon-background     (face-attribute 'hl-line :background))
+  ;; adwaita workaround
+  (when (equal treemacs--selected-icon-background 'unspecified)
+    (setq treemacs--selected-icon-background (face-attribute 'highlight :background)))
+  (--each treemacs--icons
+    (progn
+      (treemacs--set-img-property
+       (get-text-property 0 'img-selected it)
+       :background treemacs--selected-icon-background)
+      (treemacs--set-img-property
+       (get-text-property 0 'img-unselected it)
+       :background treemacs--not-selected-icon-background))))
+
+(defun treemacs--update-icon-selection ()
+  "Highlight current icon, unhighlight `treemacs--last-highlight'."
+  (when (eq major-mode 'treemacs-mode)
+    (condition-case e
+        (let* ((btn (treemacs--current-button))
+               (pos (- (button-start btn) 2))
+               (img-selected (get-text-property pos 'img-selected)))
+          (treemacs--with-writable-buffer
+           (when treemacs--last-highlight
+             (let* ((last-pos (- (button-start treemacs--last-highlight) 2))
+                    (img-unselected (get-text-property last-pos 'img-unselected)))
+               (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
+           (when img-selected
+             (put-text-property pos (1+ pos) 'display img-selected)
+             (setq treemacs--last-highlight btn))))
+      (error
+       (treemacs--log "Error on highlight, this shouldn't happen: %s" e)))))
 
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define string VAR with its display being the image created from FILE-NAME.
 Insert VAR into icon-cache for each of the given file EXTENSIONS."
-  `(let ((image (create-image (f-join treemacs-dir "icons/" ,file-name)
-                              'png nil :ascent 'center)))
+  `(let* ((image-unselected (create-image (f-join treemacs-dir "icons/" ,file-name) 'png nil :ascent 'center))
+          (image-selected   (create-image (f-join treemacs-dir "icons/" ,file-name) 'png nil :ascent 'center)))
+     (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
+     (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
      (defconst ,var
-       (concat (propertize " " 'display image) " "))
+       (concat (propertize " "
+                           'display image-unselected
+                           'img-selected image-selected
+                           'img-unselected image-unselected)
+               " "))
+     (push ,var treemacs--icons)
      (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))))
 
 (defun treemacs--create-icons ()
@@ -76,6 +175,7 @@ name if there is no period. This makes it possible to match file names like
 
 FILE-EXTENSIONS are also not case sensitive and will be downcased before they're
 inserted into `treemacs-icons-hash'."
+  (push icon treemacs--icons)
   (--each file-extensions
     (puthash (downcase it)
              (concat icon " ")

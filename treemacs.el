@@ -98,6 +98,7 @@ the project from among `projectile-known-projects'."
       (treemacs--without-following
        (with-selected-window (get-buffer-window treemacs-buffer)
          (treemacs--cancel-refresh-timer)
+         (treemacs--forget-last-highlight)
          (let* ((curr-line    (line-number-at-pos))
                 (curr-btn     (progn (beginning-of-line) (next-button (point) t)))
                 (curr-state   (button-get curr-btn 'state))

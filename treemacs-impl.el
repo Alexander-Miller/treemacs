@@ -71,6 +71,10 @@
   treemacs--follow
   treemacs--without-following)
 
+(treemacs--import-functions-from "treemacs-visuals"
+  treemacs--tear-down-icon-highlight
+  treemacs--forget-last-highlight)
+
 (declare-function treemacs-mode "treemacs-mode")
 (declare-function projectile-project-root "projectile")
 
@@ -384,6 +388,7 @@ Optionally make the git request RECURSIVE."
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
   (treemacs--check-window-system)
+  (treemacs--forget-last-highlight)
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
@@ -430,6 +435,7 @@ If not projectile name was found call `treemacs--create-header' for ROOT instead
   (treemacs--cancel-refresh-timer)
   (treemacs--cancel-missed-refresh)
   (treemacs--clear-tags-cache)
+  (treemacs--tear-down-icon-highlight)
   (setq treemacs--open-dirs-cache nil
         treemacs--ready nil))
 
@@ -626,6 +632,7 @@ Valid states are 'visible, 'exists and 'none."
 
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
+  (treemacs--forget-last-highlight)
   (-> (selected-window)
       (frame-root-window)
       (split-window nil 'left)

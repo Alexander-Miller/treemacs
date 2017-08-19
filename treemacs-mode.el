@@ -101,6 +101,7 @@
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
 
+  (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))
 
 (provide 'treemacs-mode)
