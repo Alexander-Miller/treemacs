@@ -5,7 +5,7 @@
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "25.1") (cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0") (pfuture "1.1"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
-;; Version: 1.9.1
+;; Version: 1.9.2
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")
 
-(defconst treemacs-version "1.9.1")
+(defconst treemacs-version "1.9.2")
 
 ;;;###autoload
 (defun treemacs-toggle ()

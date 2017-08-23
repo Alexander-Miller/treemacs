@@ -136,6 +136,22 @@ desktop save mode is on."
   (add-to-list 'desktop-buffer-mode-handlers
                '(treemacs-mode . treemacs--desktop-handler)))
 
+(with-eval-after-load "persp-mode"
+
+  (defun treemacs--persp-save (b)
+    (with-current-buffer b
+      (when (eq major-mode 'treemacs-mode)
+        (treemacs-persist)
+        '(def-treemacs))))
+
+  (defun treemacs--persp-load (save-list)
+    (when (eq (car save-list) 'def-treemacs)
+      (treemacs-restore)
+      t))
+
+  (add-to-list 'persp-save-buffer-functions #'treemacs--persp-save)
+  (add-to-list 'persp-load-buffer-functions #'treemacs--persp-load))
+
 (provide 'treemacs-persist)
 
 ;;; treemacs-persist.el ends here

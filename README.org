@@ -102,8 +102,8 @@ you still need to do a manual refresh to see your files' face go from 'changed' 
 
 ** Session persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
-~desktop-save-mode~. This integration shoud work out of the box and require zero setup and configuration
-(aside from the option to turn it off with ~treemacs-never-persist~).
+~desktop-save-mode~ and the ~persp-mode's~ layout saving. This integration shoud work out of the box and
+require zero setup and configuration (aside from the option to turn it off with ~treemacs-never-persist~).
 
 The persisted state is saved under ~user-emacs-directory/.cache/treemacs-persist~. The exact file location
 is saved in the variable ~treemacs--persist-file~.
