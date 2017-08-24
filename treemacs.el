@@ -40,9 +40,6 @@
 (require 'treemacs-tags)
 (require 'treemacs-async)
 
-(declare-function projectile-project-p "projectile")
-(declare-function projectile-project-root "projectile")
-
 (defconst treemacs-version "1.9.2")
 
 ;;;###autoload
@@ -75,21 +72,6 @@ If a prefix argument ARG is given manually select the root directory."
                    (arg (read-directory-name "Treemacs root: "))
                    (default-directory default-directory)
                    (t (getenv "HOME")))))
-
-;;;###autoload
-(defun treemacs-projectile (&optional arg)
-  "Open treemacs for the current projectile project.
-If not in a project do nothing. If a prefix argument ARG is given select
-the project from among `projectile-known-projects'."
-  (interactive "P")
-  (if (boundp 'projectile-known-projects)
-      (cond
-       (arg
-        (treemacs--init (completing-read "Project: " projectile-known-projects)))
-       ((projectile-project-p)
-        (treemacs--init (projectile-project-root)))
-       (t (treemacs--log "You're not in a project.")))
-    (user-error "Could't initialize at project root - 'projectile-known-projects' is not defined. Is projectile loaded?")))
 
 ;;;###autoload
 (defun treemacs-refresh ()
@@ -128,7 +110,6 @@ the project from among `projectile-known-projects'."
            (hl-line-mode t)
            (treemacs--log "Refresh complete."))))
     (treemacs--log "There is nothing to refresh.")))
-
 
 (provide 'treemacs)
 

@@ -11,9 +11,12 @@
 - [[#detailed-feature-list][Detailed Feature List]]
   - [[#treemacs-follow-mode][Treemacs-follow-mode]]
   - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
-  - [[#session-persistence][Session persistence]]
+  - [[#session-persistence][Session Persistence]]
   - [[#terminal-compatibility][Terminal Compatibility]]
   - [[#tag-view][Tag View]]
+  - [[#additional-packages][Additional Packages]]
+    - [[#treemacs-evil][treemacs-evil]]
+    - [[#treemacs-projectile][treemacs-projectile]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
   - [[#variables][Variables]]
@@ -41,7 +44,7 @@ Specifically a quick feature overview looks as follows:
    The git process runs asynchronously and so won't cause any perceptible delay.
  * [[https://github.com/deb0ch/emacs-winum][Winum]] integration - treemacs will always be assigned window number 10, never interfering with the numbering
    layout of your other windows.
- * Projectile integration - quickly open treemacs at any known project's root directory.
+ * Projectile integration via the ~treemacs-projectile~ package to quickly open treemacs at any known project's root directory.
  * (Limimted) mouse interface - you can close/expand folders and open files by left-clicking on icons.
  * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
    another matter). When run in a terminal a very simple fallback is used.
@@ -56,8 +59,9 @@ Specifically a quick feature overview looks as follows:
 * Quick Start
 If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
  * If you use evil don't forget to also install ~treemacs-evil~
- * Treemacs doesn' bind any global keys, you need to use whatever fits you best. A basic install setup for
-   spacemacs can be found [[#installation][below]]. Otherwise just bind ~treemacs~, ~treemacs-toggle~ and ~treemacs-projectile~.
+ * If you use projectile you can install ~treemacs-projectile~ to allow treemacs to interact with projects.
+ * Treemacs doesn' bind any global keys, you need to use whatever fits you best. A full install setup for
+   spacemacs can be found [[#installation][below]]. Otherwise just bind ~treemacs~ and ~treemacs-toggle~.
  * For navigation use n/p (j/k when evil), M-n/M-p to move to same-height neighbour u to go to parent, h to
    move up a dir, l to move root to selected dir
  * TAB always opens and closes nodes. Files can be opened, too - treemacs will show their imenu index.
@@ -100,7 +104,7 @@ _Known limitations_:
 Staging and comitting changes does not produce any file change events of its own, if you use ~treemacs-git-integration~
 you still need to do a manual refresh to see your files' face go from 'changed' and 'untracked' to 'unchanged' after a commit.
 
-** Session persistence
+** Session Persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
 ~desktop-save-mode~ and the ~persp-mode's~ layout saving. This integration shoud work out of the box and
 require zero setup and configuration (aside from the option to turn it off with ~treemacs-never-persist~).
@@ -121,7 +125,7 @@ still possible to invoke ~treemacs-restore~ manually when the right conditions a
 When run in a terminal treemacs will fall back to a much simpler rendering system, foregoing its usual png icons and using
 simple ~+~ and ~-~ characters instead. Changes to the current rendering system are detected automatically - within some
 limits. The check for the change happens with treemacs' functions which build or show/hide the treemacs buffer, namely
-~treemacs(-projectile)~. ~treemacs-toggle~ and ~treemacs-refresh~.
+~treemacs(-projectile)~. ~treemacs(-projectile)-toggle~ and ~treemacs-refresh~.
 
 ** Tag View
 Treemacs is able to display not only the file system, but also tags found in individual files. The tags list is sourced
@@ -133,6 +137,15 @@ Tag view support is in an early beta release stage, and so (other than the incre
 missing certain features:
 
  * It won't look right in the terminal, there arent't any terminal icons for tags yet.
+** Additional Packages
+Next to treemacs itself you can optionally install:
+*** treemacs-evil
+Must be installed and loaded if you use evil. The keybindings and the cursor will not be setup
+propertĺy otherwise. It'll also enable navigation  navigation with j/k instead of n/p.
+*** treemacs-projectile
+Introduces projectile-centric counterparts for treemacs-launching commands, namely ~treemacs-projectile~
+and ~treemacs-projectile-toggle~. Also adds ~treemacs-create-header-projectile~ to be used as a value
+for ~treemacs-header-function~.
 * Installation
 
 Treemacs is available from MELPA. If you just want to quickly start using it you grab use the following ~use-package~
@@ -140,8 +153,8 @@ example, and customize it as needed (remove ~treemacs-evil~ if you don't use it,
 don't use spacemacs etc).
 
 Either way keep in mind that treemacs has /no default keybinds/ for its globally callable initialization functions.
-Each user is supposed to select keybinds for functions like ~treemacs~, ~treemacs-projectile~ and ~treemacs-toggle~
-based on whatever they find convenient.
+Each user is supposed to select keybinds for functions like ~treemacs~, ~treemacs-toggle~ and their projectile
+counterparts based on whatever they find convenient.
 
 You can find an exhaustive overview of all functions, their keybinds and functions you need to bind yourself [[#keymap][below]].
 
@@ -150,21 +163,30 @@ You can find an exhaustive overview of all functions, their keybinds and functio
     :ensure t
     :defer t
     :config
-    (use-package treemacs-evil
-      :ensure t
-      :demand t)
-    (setq treemacs-header-function            #'treemacs--create-header-projectile
-          treemacs-follow-after-init          t
-          treemacs-width                      35
-          treemacs-indentation                2
-          treemacs-git-integration            t
-          treemacs-change-root-without-asking nil
-          treemacs-sorting                    'alphabetic-desc
-          treemacs-show-hidden-files          t
-          treemacs-never-persist              nil
-          treemacs-goto-tag-strategy          'refetch-index)
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
+    (progn
+      (use-package treemacs-evil
+        :ensure t
+        :demand t)
+
+      (use-package treemacs-projectile
+        :config
+        (setq treemacs-header-function #'treemacs-create-header-projectile)
+        (:bind :map spacemacs-default-map
+               ("pT" . treemacs-projectile)
+               ("pt" . treemacs-projectile-toggle)))
+
+      (setq treemacs-follow-after-init          t
+            treemacs-width                      35
+            treemacs-indentation                2
+            treemacs-git-integration            t
+            treemacs-change-root-without-asking nil
+            treemacs-sorting                    'alphabetic-desc
+            treemacs-show-hidden-files          t
+            treemacs-never-persist              nil
+            treemacs-goto-tag-strategy          'refetch-index)
+
+      (treemacs-follow-mode t)
+      (treemacs-filewatch-mode t))
     :bind
     (:map global-map
      ([f8]        . treemacs-toggle)
@@ -172,8 +194,8 @@ You can find an exhaustive overview of all functions, their keybinds and functio
      ("M-0"       . treemacs-select-window)
      ("C-c 1"     . treemacs-delete-other-windows)
      :map spacemacs-default-map
-     ("ft"    . treemacs)
-     ("fT"    . treemacs-projectile)
+     ("ft"    . treemacs-toggle)
+     ("fT"    . treemacs)
      ("f C-t" . treemacs-find-file)))
 #+END_SRC
 
@@ -260,6 +282,7 @@ the treemacs window and might therefore need their own global binding.
 | treemacs                      | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.                                                                                          |
 | treemacs-projectile           | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                                                                                                               |
 | treemacs-toggle               | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.                                                                                                |
+| treemacs-toggle-projectile    | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-projectile.                                                                                     |
 | treemacs-find-file            | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed. If PATH is not under the current root ask to change the root. If not treemacs buffer exists create it. Do nothing if PATH is not given and the current buffer is not editing a file. |
 | treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs-toggle~ if it is not.                                                                                                                                                                                                        |
 | treemacs-delete-other-windows | Same as ~delete-other-windows~, but will not delete the treemacs window.                                                                                                                                                                                                                 |

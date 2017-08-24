@@ -77,7 +77,6 @@
 
 (declare-function treemacs-mode "treemacs-mode")
 (declare-function treemacs--collapsed-dirs-process "treemacs-async")
-(declare-function projectile-project-root "projectile")
 
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
@@ -378,7 +377,7 @@ Optionally make the git request RECURSIVE."
         (treemacs--select-visible)
       (treemacs--setup-buffer))
     ;; f-long to expand ~ and remove final slash
-    ;; needed for root dirs given by projectile
+    ;; needed for root dirs given by projectile if it's used
     (treemacs--build-tree (f-long root))
     ;; do mode activation last - if the treemacs buffer is empty when the major
     ;; mode is activated (this may happen when treemacs is restored from other
@@ -418,17 +417,6 @@ Optionally make the git request RECURSIVE."
 (defun treemacs--create-header (root)
   "Use ROOT's directory name as treemacs' header."
    (format "*%s*" (f-filename root)))
-
-(defun treemacs--create-header-projectile (root)
-  "Try to use the projectile project name for ROOT as treemacs' header.
-If not projectile name was found call `treemacs--create-header' for ROOT instead."
-  (if (boundp 'projectile-project-name-function)
-      (-if-let (project-name (condition-case nil
-                                 (projectile-project-root)
-                               (error nil)))
-          (format "*%s*" (funcall projectile-project-name-function project-name))
-        (treemacs--create-header root))
-    (user-error "Couldn't create projectile header -'projectile-project-name-function' is not defined. Is projectile loaded?")))
 
 (defun treemacs--insert-header (root)
   "Insert the header line for the given ROOT."
