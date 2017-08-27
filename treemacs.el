@@ -38,6 +38,7 @@
 (require 'treemacs-interface)
 (require 'treemacs-persist)
 (require 'treemacs-tags)
+(require 'treemacs-async)
 
 (declare-function projectile-project-p "projectile")
 (declare-function projectile-project-root "projectile")

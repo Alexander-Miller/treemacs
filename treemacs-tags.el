@@ -180,7 +180,7 @@ during a reopen process. Recursively open all tag below BTN when RECURSIVE is t.
            :new-state 'file-node-open
            :post-open-action
            (progn
-             (unless no-add (treemacs--add-to-cache (treemacs--parent path) path))
+             (unless no-add (treemacs--add-to-cache btn))
              (treemacs--reopen-tags-under btn))
            :open-action
            (treemacs--create-buttons

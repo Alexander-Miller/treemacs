@@ -93,7 +93,7 @@ already. Do nothing if this event's file is irrelevant as per
   (when (treemacs--is-event-relevant? event)
     (when (eq 'deleted (cadr event))
       (let ((path (cl-third event)))
-        (treemacs--clear-from-cache  path t)
+        (treemacs--clear-from-cache path t)
         (treemacs--remove-all-tags-under-path-from-cache path)))
     (if treemacs--collected-file-events
         (push event treemacs--collected-file-events)

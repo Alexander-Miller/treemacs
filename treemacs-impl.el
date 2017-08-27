@@ -76,6 +76,7 @@
   treemacs--forget-last-highlight)
 
 (declare-function treemacs-mode "treemacs-mode")
+(declare-function treemacs--collapsed-dirs-process "treemacs-async")
 (declare-function projectile-project-root "projectile")
 
 ;;;;;;;;;;;;;;;;;;
@@ -215,12 +216,16 @@ matching the buttons state."
   (when (treemacs--check-window-system)
     (treemacs-refresh)))
 
-(defsubst treemacs--add-to-cache (parent opened-child)
-  "Add to PARENT's open dirs cache an entry for OPENED-CHILD."
-  (let ((cache (assoc parent treemacs--open-dirs-cache)))
-    (if cache
-        (push opened-child (cdr cache))
-      (add-to-list 'treemacs--open-dirs-cache `(,parent ,opened-child)))))
+(defsubst treemacs--add-to-cache (btn)
+  "Add a cache entry for BTN's path under its parent.
+The parent may be stored in BTN's parent-path property if BTN is a collapsed
+directory."
+  (let* ((opened-child (button-get btn 'abs-path))
+         (parent (or (button-get btn 'parent-path) (treemacs--parent opened-child))))
+    (let ((cache (assoc parent treemacs--open-dirs-cache)))
+      (if cache
+          (push opened-child (cdr cache))
+        (add-to-list 'treemacs--open-dirs-cache `(,parent ,opened-child))))))
 
 (defsubst treemacs--is-visible? ()
   "Inidicates whether the treemacs buffer is currently visible.
@@ -392,7 +397,9 @@ Optionally make the git request RECURSIVE."
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
-   (treemacs--create-branch root 0 (treemacs--git-status-process root))
+   (treemacs--create-branch root 0
+                            (treemacs--git-status-process root)
+                            (treemacs--collapsed-dirs-process root))
    (goto-char 0)
    (forward-line 1)
    (treemacs--evade-image)
@@ -459,7 +466,7 @@ Optionally do so in a RECURSIVE fashion."
   (if (null btn)
       ;; the most likely reason for receiving a nil button here is that the undelying file has been deleted,
       ;; so we'll just throw the path out of the cache and assume that all is well
-      (treemacs--clear-from-cache (button-get btn 'abs-path))
+      (treemacs--clear-from-cache btn)
     (pcase (button-get btn 'state)
       ('dir-node-closed  (treemacs--open-dir-node btn :no-add t))
       ('file-node-closed (treemacs--open-tags-for-file btn :no-add t))
@@ -474,16 +481,17 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
     (let* ((abs-path (button-get btn 'abs-path))
-           (git-future (or git-future (treemacs--git-status-process abs-path recursive))))
+           (git-future (or git-future (treemacs--git-status-process abs-path recursive)))
+           (collapse-future (treemacs--collapsed-dirs-process abs-path)))
       (treemacs--button-open
        :button btn
        :new-state 'dir-node-open
        :new-icon (with-no-warnings treemacs-icon-open)
        :open-action
-       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future btn)
+       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future collapse-future btn)
        :post-open-action
        (progn
-         (unless no-add (treemacs--add-to-cache (treemacs--parent abs-path) abs-path))
+         (unless no-add (treemacs--add-to-cache btn))
          (treemacs--start-watching abs-path)))
       (when recursive
         (--each (treemacs--get-children-of btn)
@@ -503,7 +511,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
    (let ((path (button-get btn 'abs-path)))
      (treemacs--stop-watching path)
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
-     (treemacs--clear-from-cache path recursive))))
+     (treemacs--clear-from-cache btn recursive))))
 
 
 (defun treemacs--open-file (&optional window split-func)
@@ -530,10 +538,20 @@ Use `next-window' if WINDOW is nil."
     (treemacs--maybe-filter-dotfiles)
     (--each (treemacs--reopen-node (treemacs--goto-button-at it))))))
 
-(defun treemacs--clear-from-cache (path &optional purge)
-  "Remove PATH from the open dirs cache.
-Also remove any dirs below if PURGE is given."
-  (let* ((parent (treemacs--parent path))
+(defun treemacs--clear-from-cache (path-or-btn &optional purge)
+  "Remove PATH-OR-BTN from the open dirs cache.
+Also remove any dirs below if PURGE is given.
+
+PATH-OR-BTN is a button only when instead of simply grabbing a path's parent may
+lead to incorrect results since the button may belong to a collapsed directory.
+In this case the parent must be determined by first checking the button's
+parent-path property."
+  (let* ((is-path? (stringp path-or-btn))
+         (path     (if is-path? path-or-btn (button-get path-or-btn 'abs-path)))
+         (parent   (if is-path?
+                       (treemacs--parent path)
+                     (or (button-get path-or-btn 'parent-path)
+                         (treemacs--parent (button-get path-or-btn 'abs-path)))))
          (cache  (assoc parent treemacs--open-dirs-cache))
          (values (cdr cache)))
     (when values

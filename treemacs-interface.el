@@ -255,7 +255,7 @@ A delete action must always be confirmed. Directories are deleted recursively."
                   (f-delete path t)
                   (treemacs--kill-buffers-after-deletion path nil)
                   t)))
-            (treemacs--clear-from-cache path t)
+            (treemacs--clear-from-cache btn t)
             (treemacs--remove-all-tags-under-path-from-cache path)
             (treemacs--without-messages (treemacs-refresh))))))
   (treemacs--evade-image))

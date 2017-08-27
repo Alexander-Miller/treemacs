@@ -70,42 +70,82 @@
 ;; `treemacs--add-to-cache'
 (progn
   (ert-deftest add-to-dirs-cache::add-single-item ()
-    (let ((parent "/home/A")
-          (child  "/home/A/B")
-          (treemacs--open-dirs-cache nil))
-      (treemacs--add-to-cache parent child)
-      (should (equal `((,parent ,child)) treemacs--open-dirs-cache))))
+    (with-temp-buffer
+      (let ((b (insert-text-button "b"))
+            (p (insert-text-button "p"))
+            (child  "/home/A/B")
+            (treemacs--open-dirs-cache nil))
+        (button-put p 'abs-path "/home/A")
+        (button-put b 'abs-path "/home/A/B")
+        (button-put b 'parent p)
+        (treemacs--add-to-cache b)
+        (should (equal '(("/home/A" "/home/A/B")) treemacs--open-dirs-cache)))))
+
+  (ert-deftest add-to-dirs-cache::add-single-collapsed-item ()
+    (with-temp-buffer
+      (let ((b (insert-text-button "b"))
+            (p (insert-text-button "p"))
+            (child  "/home/A/B")
+            (treemacs--open-dirs-cache nil))
+        (button-put p 'abs-path "/home/A")
+        (button-put b 'abs-path "/home/A/B")
+        (button-put b 'parent p)
+        (button-put b 'parent-path "/home/P")
+        (treemacs--add-to-cache b)
+        (should (equal '(("/home/P" "/home/A/B")) treemacs--open-dirs-cache)))))
 
   (ert-deftest add-to-dirs-cache::add-two-same-parent-items ()
-    (let ((parent "/home/A")
-          (child1 "/home/A/B1")
-          (child2 "/home/A/B2")
-          (treemacs--open-dirs-cache nil))
-      (treemacs--add-to-cache parent child1)
-      (treemacs--add-to-cache parent child2)
-      (should (equal `((,parent ,child2 ,child1)) treemacs--open-dirs-cache))))
+    (with-temp-buffer
+      (let ((p  (insert-text-button "p"))
+            (b1 (insert-text-button "b1"))
+            (b2 (insert-text-button "b2"))
+            (treemacs--open-dirs-cache nil))
+        (button-put p 'abs-path "/home/A")
+        (button-put b1 'abs-path "/home/A/B1")
+        (button-put b2 'abs-path "/home/A/B2")
+        (button-put b1 'parent p)
+        (button-put b2 'parent p)
+        (treemacs--add-to-cache b1)
+        (treemacs--add-to-cache b2)
+        (should (equal '(("/home/A" "/home/A/B2" "/home/A/B1")) treemacs--open-dirs-cache)))))
 
   (ert-deftest add-to-dirs-cache::add-two-different-parent-items ()
-    (let ((parent1 "/home/A1")
-          (parent2 "/home/A2")
-          (child1  "/home/A/B1")
-          (child2  "/home/A/B2")
-          (treemacs--open-dirs-cache nil))
-      (treemacs--add-to-cache parent1 child1)
-      (treemacs--add-to-cache parent2 child2)
-      (should (equal `((,parent2 ,child2) (,parent1 ,child1)) treemacs--open-dirs-cache))))
+    (with-temp-buffer
+      (let ((p1 (insert-text-button "p1"))
+            (p2 (insert-text-button "p2"))
+            (b1 (insert-text-button "b1"))
+            (b2 (insert-text-button "b2"))
+            (treemacs--open-dirs-cache nil))
+        (button-put p1 'abs-path "/A1")
+        (button-put p2 'abs-path "/A2")
+        (button-put b1 'abs-path "/A1/B1")
+        (button-put b2 'abs-path "/A2/B2")
+        (button-put b1 'parent p1)
+        (button-put b2 'parent p2)
+        (treemacs--add-to-cache b1)
+        (treemacs--add-to-cache b2)
+        (should (equal `(("/A2" "/A2/B2") ("/A1" "/A1/B1")) treemacs--open-dirs-cache)))))
 
   (ert-deftest add-to-dirs-cache::add-new-child-to-cache-with-multiple-items ()
-    (let ((parent1 "/home/A1")
-          (parent2 "/home/A2")
-          (child1  "/home/A/B1")
-          (child11 "/home/A/B11")
-          (child2  "/home/A/B2")
-          (treemacs--open-dirs-cache nil))
-      (treemacs--add-to-cache parent1 child1)
-      (treemacs--add-to-cache parent2 child2)
-      (treemacs--add-to-cache parent1 child11)
-      (should (equal `((,parent2 ,child2) (,parent1 ,child11 ,child1)) treemacs--open-dirs-cache)))))
+    (with-temp-buffer
+      (let ((p1 (insert-text-button "p1"))
+            (p2 (insert-text-button "p2"))
+            (b1 (insert-text-button "b1"))
+            (b2 (insert-text-button "b2"))
+            (b3 (insert-text-button "b3"))
+            (treemacs--open-dirs-cache nil))
+        (button-put p1 'abs-path "/A1")
+        (button-put p2 'abs-path "/A2")
+        (button-put b1 'abs-path "/A1/B1")
+        (button-put b2 'abs-path "/A2/B2")
+        (button-put b3 'abs-path "/A1/B3")
+        (button-put b1 'parent p1)
+        (button-put b2 'parent p2)
+        (button-put b3 'parent p1)
+        (treemacs--add-to-cache b1)
+        (treemacs--add-to-cache b2)
+        (treemacs--add-to-cache b3)
+        (should (equal `(("/A2" "/A2/B2") ("/A1" "/A1/B3" "/A1/B1")) treemacs--open-dirs-cache))))))
 
 ;; `treemacs--clear-from-cache'
 (progn
@@ -729,7 +769,8 @@
   (save-window-excursion
     (save-match-data
       (let ((test-buffer (get-buffer-create "*Treemacs Sys Test*"))
-            (imenu-auto-rescan t))
+            (imenu-auto-rescan t)
+            (treemacs-collapse-dirs t))
         (if noninteractive
             (message "Sys Test not run in batch mode.")
           (unwind-protect
@@ -743,28 +784,15 @@
                   (should b)
                   (switch-to-buffer b))
 
-                (treemacs--goto-button-at (f-join default-directory "test"))
-                (should (equal "test"
+                (treemacs--goto-button-at (f-join default-directory "test/testfolder1/testfolder2"))
+                (should (equal "test/testfolder1/testfolder2"
                                (treemacs--get-label-of
                                 (treemacs--current-button))))
 
                 (call-interactively 'treemacs-change-root)
-                (should (equal "testfolder1" (treemacs--get-label-of
-                                              (treemacs--current-button))))
+                (should (equal "testfile.el"
+                               (treemacs--get-label-of (treemacs--current-button))))
 
-                (call-interactively 'treemacs-push-button)
-                (call-interactively 'treemacs-next-line)
-
-                (should (equal "testfolder2" (treemacs--get-label-of
-                                              (treemacs--current-button))))
-
-                (call-interactively 'treemacs-push-button)
-
-                (should (equal '("testfile.el" "testfile.org")
-                               (-map #'treemacs--get-label-of
-                                     (treemacs--get-children-of (treemacs--current-button)))))
-
-                (call-interactively 'treemacs-next-line)
                 (call-interactively 'treemacs-push-button)
 
                 (should (equal '("Variables" "Functions")

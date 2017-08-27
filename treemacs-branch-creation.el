@@ -25,6 +25,7 @@
 (require 'cl-lib)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
+(require 'treemacs-async)
 
 (defvar treemacs-icon-fallback nil
   "The fallback icon for files.
@@ -172,10 +173,28 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (treemacs--button-put prev-button 'next-node b)
            (setq prev-button (treemacs--button-put b 'prev-node prev-button)))))
      ,return-value))
-(defun treemacs--create-branch (root depth git-process &optional parent)
+
+(defsubst treemacs--collpase-dirs (dirs root)
+  "Display DIRS as collpased under ROOT.
+Go to each dir button, expand its label with the collpased dirs, set its new
+path and give it a special parent-path property so opening it will add the
+correct cache entries."
+  (let ((search-start (button-start (treemacs--goto-button-at root))))
+    (--each dirs
+      (let* ((b (treemacs--goto-button-at (car it) search-start))
+             (props (text-properties-at (button-start b))))
+        (button-put b 'abs-path (nth (- (length it) 1) it))
+        (button-put b 'parent-path root)
+        (end-of-line)
+        (let ((beg (point)))
+          (insert (cadr it))
+          (add-text-properties beg (point) props))))))
+
+(defun treemacs--create-branch (root depth git-process collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
-The branch is indented at DEPTH and uses the eventual output of
-GIT-PROCESS to decide on file nodes' faces. The nodes' parent property is set
+The branch is indented at DEPTH and uses the eventual outputs of
+GIT-PROCESS to decide on file nodes' faces and COLLAPSE-PROCESS to determine
+which directories should be displayed as one. The nodes' parent property is set
 to PARENT."
   (save-excursion
     (let* ((dirs-and-files (treemacs--get-dir-content root))
@@ -198,10 +217,12 @@ to PARENT."
              :extra-vars (first-file)
              :return-value first-file
              :node-action (treemacs--insert-file-node node prefix parent depth git-info)
-             :first-node-action (setq first-file prev-button))))
+             :first-node-action (setq first-file prev-button)))
+           (collapsed-dirs (treemacs--parse-collapsed-dirs collapse-process)))
       (when (and last-dir first-file)
         (button-put last-dir 'next-node first-file)
-        (button-put first-file 'prev-node last-dir)))
+        (button-put first-file 'prev-node last-dir))
+      (treemacs--collpase-dirs collapsed-dirs root))
     ;; reopen here only since create-branch is called both when opening a node and
     ;; building the entire tree
     (treemacs--reopen-at root)))

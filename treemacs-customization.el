@@ -207,6 +207,20 @@ Its possible values are:
   :type 'integer
   :group 'treemacs-configuration)
 
+(defcustom treemacs-collapse-dirs 0
+  "When > 0 treemacs will collapse directories into one when possible.
+A directory is collapsible when its content consists of nothing but another
+directory.
+
+The value determines how many directories can be collapsed at once, both as a
+performance cap and to prevent a too long directory names in the treemacs view.
+
+To minimize this option's impact on display performace the search for
+directories to collapse is done asynchronously in a python script and will thus
+only work when python installed. The script should work both on python2 and 3."
+  :type 'integer
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here
