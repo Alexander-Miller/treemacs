@@ -61,7 +61,7 @@ If no treemacs buffer exists call `treemacs'."
    (t
     (treemacs))))
 
-(defun treemacs-create-header-projectile (root)
+(defun treemacs-projectile-create-header (root)
   "Try to use the projectile project name for ROOT as treemacs' header.
 If not projectile name was found call `treemacs--create-header' for ROOT instead."
   (-if-let (project-name (condition-case nil
