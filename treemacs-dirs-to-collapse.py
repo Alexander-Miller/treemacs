@@ -13,28 +13,23 @@ out   = sys.stdout
 if LIMIT <= 0:
     exit(0)
 
-for d in dirs:
-    content = dir_content(d)
-    collapsed = None
-    steps = []
-    depth = 0
-    if len(content) > 0:
-        first = content[0]
-        if len(content) == 1 and isdir(first):
-            collapsed = join(d, first)
-            steps.append(first)
-            while True:
-                depth += 1
-                if depth >= LIMIT:
-                    break
-                content = dir_content(collapsed)
-                first = content[0]
-                if len(content) == 1 and isdir(first):
-                    collapsed = join(collapsed, first)
-                    steps.append(first)
-                else:
-                    break
-        if collapsed:
-            final_dir = steps[len(steps) - 1]
-            display_dir = final_dir[len(d):]
-            out.write("\n"  + d + "//" + display_dir + "//" + "//".join(steps))
+for current_dir in dirs:
+    content   = dir_content(current_dir)
+    collapsed = current_dir
+    steps     = []
+    depth     = 0
+    while True:
+        if len(content) == 1 and isdir(content[0]):
+            single_path = content[0]
+            collapsed   = join(collapsed, single_path)
+            content     = dir_content(collapsed)
+            depth      += 1
+            steps.append(single_path)
+            if depth >= LIMIT:
+                break
+        else:
+            break
+    if depth > 0:
+        final_dir      = steps[-1]
+        display_suffix = final_dir[len(current_dir):]
+        out.write("\n"  + current_dir + "//" + display_suffix + "//" + "//".join(steps))
