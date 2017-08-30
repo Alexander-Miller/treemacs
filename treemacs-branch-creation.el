@@ -174,7 +174,7 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (setq prev-button (treemacs--button-put b 'prev-node prev-button)))))
      ,return-value))
 
-(defsubst treemacs--collpase-dirs (dirs root)
+(defsubst treemacs--collapse-dirs (dirs root)
   "Display DIRS as collpased under ROOT.
 Go to each dir button, expand its label with the collpased dirs, set its new
 path and give it a special parent-path property so opening it will add the
@@ -222,7 +222,7 @@ to PARENT."
       (when (and last-dir first-file)
         (button-put last-dir 'next-node first-file)
         (button-put first-file 'prev-node last-dir))
-      (treemacs--collpase-dirs collapsed-dirs root))
+      (treemacs--collapse-dirs collapsed-dirs root))
     ;; reopen here only since create-branch is called both when opening a node and
     ;; building the entire tree
     (treemacs--reopen-at root)))
