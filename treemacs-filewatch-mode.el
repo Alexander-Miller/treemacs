@@ -36,6 +36,24 @@
 If this is non-nil a timer to execute `treemacs--process-file-events' is
 currently running.")
 
+(defvar treemacs--collapsed-filewatch-hash (make-hash-table :size 100 :test #'equal)
+  "Keeps track of dirs under filewatch due to being collapsed into one.
+
+Collapsed directories require special handling since all directories of a series
+need to be put under watch so as to be notified when the collapsed structure
+needs to change, but removing the file watch is not straight forward:
+
+Assume a series of directories are collapsed into one as '/c1/c2/c3/c4' and a
+new file is created in '/c1/c2'. A refresh is started and only '/c1/c2' is
+collapsed now, c3 and c4 are no longer part of the treemacs view and must be
+removed from the filewatch list. However the event that triggered the refresh
+was one of a file being created, so it is not possible to know that c3 and c4
+need to stop being watched unless one also knows that they and c2 are under file
+watch because they have been collapsed.
+
+This is why this hash is used to keep track of collapsed directories under file
+watch.")
+
 (defvar treemacs--file-event-watchers nil
   "Alist of the descriptors of all currently active file event watch processes.
 Car is the watched directory, cdr is the descriptor.")
@@ -64,11 +82,15 @@ This way treemacs knows to refresh itself the next time it becomes visible.")
     (cancel-timer treemacs--refresh-timer)
     (setq treemacs--refresh-timer nil)))
 
-(defsubst treemacs--start-watching (path)
-  "Watch PATH for file system events."
-  (when (and (bound-and-true-p treemacs-filewatch-mode)
+(defsubst treemacs--start-watching (path &optional collapse)
+  "Watch PATH for file system events.
+Also add PATH to `treemacs--collapsed-filewatch-hash' when COLLAPSE is non-nil."
+  ;; no warning since the mode is defined in the same file
+  (when (and (with-no-warnings treemacs-filewatch-mode)
              (not (assoc path treemacs--file-event-watchers)))
-    (push `(,path . ,(file-notify-add-watch path '(change) #'treemacs--filewatch-callback))
+    (when collapse
+      (puthash path t treemacs--collapsed-filewatch-hash))
+    (push `(,path ,(file-notify-add-watch path '(change) #'treemacs--filewatch-callback))
           treemacs--file-event-watchers)))
 
 (defsubst treemacs--is-event-relevant? (event)
@@ -105,20 +127,24 @@ already. Do nothing if this event's file is irrelevant as per
   "Stop watching PATH for file events.
 This also means stopping the watch over all dirs below path."
   (setq treemacs--file-event-watchers
-        (--reject (when (or (equal (car it) path)
-                            (treemacs--is-path-in-dir? (car it) path))
-                    (file-notify-rm-watch (cdr it))
-                    t)
+        (--reject (let ((watcher-path (car it)))
+                    (when (or (equal watcher-path path)
+                              (treemacs--is-path-in-dir? watcher-path path))
+                      (file-notify-rm-watch (cdr it))
+                      (remhash watcher-path treemacs--collapsed-filewatch-hash)
+                      t))
                   treemacs--file-event-watchers)))
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected."
   (setq treemacs--refresh-timer nil)
   (while treemacs--collected-file-events
-    (let* ((event  (pop treemacs--collected-file-events))
-           (action (cl-second event))
-           (dir    (cl-third event)))
-      (when (eq 'deleted action)
+    (let* ((event   (pop treemacs--collected-file-events))
+           (action  (cl-second event))
+           (path    (cl-third event))
+           (dir     (if (f-dir? path) path (f-dirname path))))
+      (when (or (eq 'deleted action)
+                (gethash dir treemacs--collapsed-filewatch-hash))
         (treemacs--stop-watching dir)
         (treemacs--clear-from-cache dir t))))
   (if (treemacs--is-visible?)
@@ -129,6 +155,7 @@ This also means stopping the watch over all dirs below path."
   "Cancel any and all running file watch processes."
   (while treemacs--file-event-watchers
     (file-notify-rm-watch (cdr (pop treemacs--file-event-watchers))))
+  (clrhash treemacs--collapsed-filewatch-hash)
   (setq treemacs--collected-file-events nil
         treemacs--missed-refresh nil))
 

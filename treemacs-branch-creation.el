@@ -27,6 +27,8 @@
 (require 'treemacs-visuals)
 (require 'treemacs-async)
 
+(declare-function treemacs--start-watching "treemacs-filewatch-mode")
+
 (defvar treemacs-icon-fallback nil
   "The fallback icon for files.
 Is set to either the generic text png icon when in a GUI, or blank spaces when
@@ -181,6 +183,11 @@ path and give it a special parent-path property so opening it will add the
 correct cache entries."
   (let ((search-start (button-start (treemacs--goto-button-at root))))
     (--each dirs
+      ;; no warning since filewatch mode is known to be defined
+      (when (with-no-warnings treemacs-filewatch-mode)
+        (treemacs--start-watching (car it))
+        (dolist (step (nthcdr 2 it))
+          (treemacs--start-watching step t)))
       (let* ((b (treemacs--goto-button-at (car it) search-start))
              (props (text-properties-at (button-start b))))
         (button-put b 'abs-path (nth (- (length it) 1) it))
