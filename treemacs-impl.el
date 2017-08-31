@@ -394,6 +394,8 @@ Optionally make the git request RECURSIVE."
   "Build the file tree starting at the given ROOT."
   (treemacs--check-window-system)
   (treemacs--forget-last-highlight)
+  (treemacs--stop-watching-all)
+  (treemacs--forget-last-highlight)
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
