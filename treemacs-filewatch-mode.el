@@ -90,7 +90,7 @@ Also add PATH to `treemacs--collapsed-filewatch-hash' when COLLAPSE is non-nil."
              (not (assoc path treemacs--file-event-watchers)))
     (when collapse
       (puthash path t treemacs--collapsed-filewatch-hash))
-    (push `(,path ,(file-notify-add-watch path '(change) #'treemacs--filewatch-callback))
+    (push `(,path . ,(file-notify-add-watch path '(change) #'treemacs--filewatch-callback))
           treemacs--file-event-watchers)))
 
 (defsubst treemacs--is-event-relevant? (event)
