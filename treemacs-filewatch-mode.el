@@ -111,7 +111,9 @@ An event counts as relevant when
   "Add EVENT to the list of file change events.
 Start a timer to process the collected events if it has not been started
 already. Do nothing if this event's file is irrelevant as per
-`treemacs--is-event-relevant?'."
+`treemacs--is-event-relevant?'.
+Also immediately remove the changed file from caches if it has been deleted
+instead of waiting for file processing."
   (when (treemacs--is-event-relevant? event)
     (when (eq 'deleted (cadr event))
       (let ((path (cl-third event)))
@@ -141,12 +143,11 @@ This also means stopping the watch over all dirs below path."
   (while treemacs--collected-file-events
     (let* ((event   (pop treemacs--collected-file-events))
            (action  (cl-second event))
-           (path    (cl-third event))
-           (dir     (if (f-dir? path) path (f-dirname path))))
-      (when (or (eq 'deleted action)
-                (gethash dir treemacs--collapsed-filewatch-hash))
-        (treemacs--stop-watching dir)
-        (treemacs--clear-from-cache dir t))))
+           (path    (cl-third event)))
+      (cond ((eq 'deleted action)
+             (treemacs--stop-watching path))
+            ((gethash dir treemacs--collapsed-filewatch-hash)
+             (treemacs--stop-watching (if (f-dir? path) path (f-dirname path)))))))
   (if (treemacs--is-visible?)
       (treemacs-refresh)
     (setq treemacs--missed-refresh t)))
