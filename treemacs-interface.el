@@ -229,10 +229,11 @@ and then inserts the new touple."
 (defun treemacs-kill-buffer ()
   "Kill the treemacs buffer."
   (interactive)
-  (when (s-equals? treemacs--buffer-name (buffer-name))
-    (kill-this-buffer)
-    (when (not (one-window-p))
-      (delete-window))))
+  (when (eq 'treemacs-mode major-mode)
+    (treemacs--buffer-teardown)
+    (if (one-window-p)
+        (kill-this-buffer)
+      (kill-buffer-and-window))))
 
 (defun treemacs-delete ()
   "Delete node at point.
