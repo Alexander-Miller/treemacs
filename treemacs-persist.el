@@ -149,8 +149,12 @@ desktop save mode is on."
       (treemacs-restore)
       t))
 
-  (add-to-list 'persp-save-buffer-functions #'treemacs--persp-save)
-  (add-to-list 'persp-load-buffer-functions #'treemacs--persp-load))
+  (if (and (boundp 'persp-save-buffer-functions)
+           (boundp 'persp-load-buffer-functions))
+      (progn
+        (add-to-list 'persp-save-buffer-functions (with-no-warnings #'treemacs--persp-save))
+        (add-to-list 'persp-load-buffer-functions (with-no-warnings #'treemacs--persp-load)))
+    (treemacs--log "Persp's save and load buffer function vars don't seem to be defined. Failed to set persist hooks.")))
 
 (provide 'treemacs-persist)
 
