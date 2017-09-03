@@ -46,7 +46,7 @@ the project from among `projectile-known-projects'."
   "If a treemacs buffer exists and is visible hide it.
 If a treemacs buffer exists, but is not visible bring it to the foreground
 and select it.
-If no treemacs buffer exists call `treemacs'."
+If no treemacs buffer exists call `treemacs-projectile'."
   (interactive)
   (cond
    ((treemacs--is-visible?)
@@ -59,7 +59,7 @@ If no treemacs buffer exists call `treemacs'."
     (treemacs--select-not-visible)
     (treemacs--refresh-on-ui-change))
    (t
-    (treemacs))))
+    (treemacs-projectile))))
 
 (defun treemacs-projectile-create-header (root)
   "Try to use the projectile project name for ROOT as treemacs' header.
