@@ -770,7 +770,7 @@
     (save-match-data
       (let ((test-buffer (get-buffer-create "*Treemacs Sys Test*"))
             (imenu-auto-rescan t)
-            (treemacs-collapse-dirs t))
+            (treemacs-collapse-dirs 3))
         (if noninteractive
             (message "Sys Test not run in batch mode.")
           (unwind-protect
