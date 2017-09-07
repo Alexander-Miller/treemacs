@@ -269,25 +269,27 @@
 (progn
   (ert-deftest current-visibility::visible-buffer ()
       (with-mock
-        (mock (get-buffer-window treemacs--buffer-name) => t)
+        (stub s-starts-with? => t)
         (should (eq 'visible (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::visible-buffer-even-when-exists?-is-nil ()
     (with-mock
-      (mock (get-buffer-window treemacs--buffer-name) => t)
-      (stub -contains? => t)
+      (stub s-starts-with? => t)
+      (stub assoc => '(t . t))
+      ;; (mock (get-buffer-window treemacs--buffer-name) => t)
+      ;; (stub -contains? => t)
       (should (eq 'visible (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::existing-buffer ()
     (with-mock
-      (stub get-buffer-window => nil)
-      (stub buffer-list => (list (get-buffer-create treemacs--buffer-name)))
+      (stub s-starts-with? => nil)
+      (stub assoc => '(t . t))
       (should (eq 'exists (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::no-buffer ()
     (with-mock
-      (mock (get-buffer-window treemacs--buffer-name) => nil)
-      (stub buffer-list => (list))
+      (stub s-starts-with? => nil)
+      (stub assoc => '(nil . nil))
       (should (eq 'none (treemacs--current-visibility))))))
 
 ;; `treemacs--unquote'
@@ -916,7 +918,7 @@
                 (-when-let (b (get-buffer treemacs--buffer-name)) (kill-buffer b))
                 (call-interactively 'treemacs)
 
-                (let ((b (get-buffer treemacs--buffer-name)))
+                (let ((b (treemacs--get-framelocal-buffer)))
                   (should b)
                   (switch-to-buffer b))
 
