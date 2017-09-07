@@ -83,11 +83,16 @@
 ;; Private vars ;;
 ;;;;;;;;;;;;;;;;;;
 
+(defvar treemacs--buffer-access nil
+  "Alist mapping treemacs buffers to frames.")
+
 (defvar treemacs--open-dirs-cache '()
   "Cache to keep track of opened subfolders.")
 
 (defconst treemacs--buffer-name "*Treemacs*"
   "Name of the treemacs buffer.")
+
+(defconst treemacs--buffer-name-prefix "*Treemacs-")
 
 (defconst treemacs-dir
   (expand-file-name (if load-file-name
@@ -267,20 +272,27 @@ the keys its argument and returns the new key."
       (recentf-remove-if-non-kept old-file))))
 
 (defsubst treemacs--is-visible? ()
-  "Inidicates whether the treemacs buffer is currently visible.
+  "Inidicates whether this frame's treemacs buffer is currently visible.
 Will return the treemacs window if true."
-  (get-buffer-window treemacs--buffer-name))
+  (->> (window-list (selected-frame))
+       (--first (->> it
+                     (window-buffer)
+                     (buffer-name)
+                     (s-starts-with? treemacs--buffer-name-prefix)))))
 
 (defsubst treemacs--buffer-exists? ()
-  "Indicates whether the treemacs buffer exists even if it is not visible.
+  "Indicates whether this frame's treemacs buffer exists.
 Returns the buffer if it does exist."
-  (--first
-   (string= treemacs--buffer-name (buffer-name it))
-   (buffer-list)))
+  (cdr
+   (assoc (selected-frame) treemacs--buffer-access)))
 
 (defsubst treemacs--select-visible ()
   "Switch to treemacs buffer, given that it is currently visible."
-  (select-window (get-buffer-window treemacs--buffer-name)))
+  (->> treemacs--buffer-access
+       (assoc (selected-frame))
+       (cdr)
+       (get-buffer-window)
+       (select-window)))
 
 (defsubst treemacs--select-not-visible ()
   "Switch to treemacs buffer, given that it not visible."
@@ -538,6 +550,7 @@ Optionally make the git request RECURSIVE."
   (treemacs--clear-tags-cache)
   (treemacs--tear-down-icon-highlight)
   (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
+  (treemacs--remove-framelocal-buffer)
   (setq treemacs--open-dirs-cache nil
         treemacs--ready nil))
 
@@ -785,6 +798,29 @@ Valid states are 'visible, 'exists and 'none."
    ((treemacs--buffer-exists?) 'exists)
    (t 'none)))
 
+(defun treemacs--remove-framelocal-buffer (&optional frame)
+  "Remove FRAME's local treemacs buffer.
+FRAME is given when this is called via `delete-frame-functions' \(during
+treemacs buffer teardown\) otherwise the currently selected frame is used."
+  (setq treemacs--buffer-access
+        (assq-delete-all (or frame (selected-frame)) treemacs--buffer-access))
+  (unless treemacs--buffer-access
+    (setq delete-frame-functions
+          (delete #'treemacs--remove-framelocal-buffer delete-frame-functions))))
+
+(defsubst treemacs--get-framelocal-buffer ()
+  "Get this frame's local buffer, creating it if necessary.
+Will also perforrm cleanup if the buffer is dead."
+  (let* ((frame (selected-frame))
+         (buf   (assoc frame treemacs--buffer-access)))
+    (when (or (null buf)
+              (not (buffer-live-p buf)))
+      (setq treemacs--buffer-access
+            (assq-delete-all frame treemacs--buffer-access))
+      (setq buf (get-buffer-create (format "%s%s*" treemacs--buffer-name-prefix frame)))
+      (push (cons frame buf) treemacs--buffer-access))
+    buf))
+
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
   (treemacs--forget-last-highlight)
@@ -792,9 +828,10 @@ Valid states are 'visible, 'exists and 'none."
       (frame-root-window)
       (split-window nil treemacs-position)
       (select-window))
-  (switch-to-buffer (get-buffer-create treemacs--buffer-name))
+  (let ((buf (treemacs--get-framelocal-buffer)))
+    (switch-to-buffer buf)
+    (bury-buffer buf))
   (set-window-dedicated-p (selected-window) t)
-  (bury-buffer treemacs--buffer-name)
   (let ((window-size-fixed))
     (treemacs--set-width treemacs-width)))
 

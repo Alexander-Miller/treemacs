@@ -243,6 +243,7 @@ to it will instead show a blank."
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
   (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
+  (add-to-list 'delete-frame-functions #'treemacs--remove-framelocal-buffer)
 
   (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))
