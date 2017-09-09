@@ -108,7 +108,8 @@ If a prefix argument ARG is given manually select the root directory."
            ;; needs to be turned on again when refresh is called from outside the
            ;; treemacs window, otherwise it looks like the selection disappears
            (hl-line-mode t)
-           (treemacs--log "Refresh complete."))))
+           (unless treemacs-silent-refresh
+             (treemacs--log "Refresh complete.")))))
     (treemacs--log "There is nothing to refresh.")))
 
 (provide 'treemacs)

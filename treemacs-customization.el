@@ -221,6 +221,13 @@ only work when python installed. The script should work both on python2 and 3."
   :type 'integer
   :group 'treemacs-configuration)
 
+(defcustom treemacs-silent-refresh nil
+  "When non-nil a completed refresh will not be announced with a message.
+This applies to refreshing both manual as well as automatic (due to e.g.
+`treemacs-filewatch-mode')."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here
