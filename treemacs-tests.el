@@ -764,6 +764,33 @@
         (button-put b5 'next-node b6)
         (should (equal b6 (treemacs--next-non-child-node b1)))))))
 
+;; `treemacs--update-caches-after-rename'
+(progn
+  (ert-deftest update-caches-after-rename::update-runs-correctly ()
+    (let ((treemacs--open-dirs-cache)
+          (treemacs--tags-cache (make-hash-table :size 100 :test #'equal)))
+      (push '("/old/name/A" "/old/name/A/B1" "/old/name/A/B2") treemacs--open-dirs-cache)
+      (push '("/other/A" "/other/A/B1" "/other/A/B2") treemacs--open-dirs-cache)
+      (let ((hash (make-hash-table :test #'equal)))
+        (puthash (list "/old/name/A") '(("/old/name/A/B" "/old/name/A/B/C") ("/X" "/X/Y")) hash)
+        (puthash (list "/other/A") '(("/other/A/B" "/other/A/B/C")) hash)
+        (puthash "/X" hash treemacs--tags-cache))
+      (let ((hash (make-hash-table :test #'equal)))
+        (puthash (list "/other/A") '(("/other/A/B" "/other/A/B/C")) hash)
+        (puthash "/old/name" hash treemacs--tags-cache))
+      (treemacs--update-caches-after-rename "/old/name" "/new/name")
+      (should (equal treemacs--open-dirs-cache
+                     '(("/other/A" "/other/A/B1" "/other/A/B2")
+                       ("/new/name/A" "/new/name/A/B1" "/new/name/A/B2"))))
+      (should-not (gethash "/old/name" treemacs--tags-cache))
+      (should (equal (gethash (list "/other/A") (gethash "/new/name" treemacs--tags-cache))
+                     '(("/other/A/B" "/other/A/B/C"))))
+      (should (equal (gethash (list "/other/A") (gethash "/X" treemacs--tags-cache))
+                     '(("/other/A/B" "/other/A/B/C"))))
+      (should (equal (gethash (list "/new/name/A") (gethash "/X" treemacs--tags-cache))
+                     '(("/old/name/A/B" "/old/name/A/B/C") ("/X" "/X/Y"))))
+      (should-not (gethash (list "/old/name/A") (gethash "/X" treemacs--tags-cache))))))
+
 ;;; Thorough Sys Test
 (ert-deftest treemacs::sys-test ()
   (save-window-excursion
