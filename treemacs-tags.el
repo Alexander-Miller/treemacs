@@ -144,10 +144,10 @@ should be placed under."
       (puthash cache-key new-cache-value cache-table))))
 
 (defun treemacs--remove-from-tags-cache (btn)
-  "Remove BTN's path from the cache of open nodes."
+  "Remove BTN's path from the cache of open tag nodes."
   (let* ((file           (treemacs--nearest-path btn))
          (cache-table    (gethash file treemacs--tags-cache))
-         (cache-key      (-if-let (path (button-get (button-get btn 'parent) 'abs-path))
+         (cache-key      (-if-let (path (-some-> (button-get btn 'parent) (button-get 'abs-path)))
                              (list path)
                            (treemacs--tags-path-of (button-get btn 'parent))))
          (present-cache   (gethash cache-key cache-table))
@@ -178,21 +178,18 @@ during a reopen process. Recursively open all tag below BTN when RECURSIVE is t.
           (treemacs--button-open
            :button btn
            :new-state 'file-node-open
-           :post-open-action
-           (progn
-             (unless no-add (treemacs--add-to-cache btn))
-             (treemacs--reopen-tags-under btn))
-           :open-action
-           (treemacs--create-buttons
-            :nodes index
-            :extra-vars ((node-prefix (concat prefix treemacs-icon-tag-node-closed))
-                         (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
-            :depth (1+ (button-get btn 'depth))
-            :node-name item
-            :node-action
-            (if (imenu--subalist-p item)
-                (treemacs--insert-tag-node item node-prefix btn depth)
-              (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
+           :post-open-action (progn
+                               (unless no-add (treemacs--add-to-cache btn))
+                               (treemacs--reopen-tags-under btn))
+           :open-action (treemacs--create-buttons
+                         :nodes index
+                         :extra-vars ((node-prefix (concat prefix treemacs-icon-tag-node-closed))
+                                      (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
+                         :depth (1+ (button-get btn 'depth))
+                         :node-name item
+                         :node-action (if (imenu--subalist-p item)
+                                          (treemacs--insert-tag-node item node-prefix btn depth)
+                                        (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
           (when recursive
             (--each (treemacs--get-children-of btn)
               (when (eq 'tag-node-closed (button-get it 'state))
@@ -235,19 +232,16 @@ Open all tag section under BTN when call is RECURSIVE."
         :button btn
         :new-state 'tag-node-open
         :new-icon treemacs-icon-tag-node-open
-        :post-open-action
-        (unless no-add (treemacs--add-to-tags-cache btn))
-        :open-action
-        (treemacs--create-buttons
-         :nodes index
-         :depth (1+ (button-get btn 'depth))
-         :node-name item
-         :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))
-                      (node-prefix (concat prefix treemacs-icon-tag-node-closed)))
-         :node-action
-         (if (imenu--subalist-p item)
-             (treemacs--insert-tag-node item node-prefix btn depth)
-           (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
+        :post-open-action (unless no-add (treemacs--add-to-tags-cache btn))
+        :open-action (treemacs--create-buttons
+                      :nodes index
+                      :depth (1+ (button-get btn 'depth))
+                      :node-name item
+                      :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))
+                                   (node-prefix (concat prefix treemacs-icon-tag-node-closed)))
+         :node-action (if (imenu--subalist-p item)
+                          (treemacs--insert-tag-node item node-prefix btn depth)
+                        (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
     (if recursive
         (--each (treemacs--get-children-of btn)
           (when (eq 'tag-node-closed (button-get it 'state))

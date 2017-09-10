@@ -226,6 +226,30 @@ directory."
           (push opened-child (cdr cache))
         (add-to-list 'treemacs--open-dirs-cache `(,parent ,opened-child))))))
 
+(defsubst treemacs--replace-hash-keys (table predicate make-new-key)
+  "Selectively replace keys in a given hash TABLE.
+Use PREDICATE to determine which keys to replace - it's a function that takes
+the key as its argument and returns a bool.
+Use MAKE-NEW-KEY to create a new key from the old - it's a function that takes
+the keys its argument and returns the new key."
+  (let ((keys-to-replace))
+    (maphash
+     (lambda (k _) (when (funcall predicate k) (push k keys-to-replace)))
+     table)
+    (--each keys-to-replace
+      (let ((value (gethash it table)))
+        (remhash it table)
+        (puthash (funcall make-new-key it) value table)))))
+
+(defsubst treemacs--replace-recentf-entry (old-file new-file)
+  "Replace OLD-FILE with NEW-FILE in the recent file list."
+  ;; code taken from spacemacs - is-bound check due to being introduced after emacs24?
+  ;; better safe than sorry so let's keep it
+  (with-no-warnings
+    (when (fboundp 'recentf-add-file)
+      (recentf-add-file new-file)
+      (recentf-remove-if-non-kept old-file))))
+
 (defsubst treemacs--is-visible? ()
   "Inidicates whether the treemacs buffer is currently visible.
 Will return the treemacs window if true."
@@ -336,6 +360,52 @@ and special names like this."
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
+
+(defun treemacs--update-caches-after-rename (old-path new-path)
+  "Update dirs and tags cache after OLD-PATH was renamed to NEW-PATH."
+  ;; dirs cache
+  (setq treemacs--open-dirs-cache
+        (--map
+         (--map (s-replace old-path new-path it) it)
+         treemacs--open-dirs-cache))
+  ;; top level of tags cache
+  (treemacs--replace-hash-keys
+   (with-no-warnings treemacs--tags-cache)
+   (lambda (k) (treemacs--is-path-in-dir? k old-path))
+   (lambda (k) (s-replace old-path new-path k)))
+  ;; second level of tags cache as well, since the filename is the key for top level tags
+  (maphash
+   (lambda (_ v)
+     (treemacs--replace-hash-keys
+      v
+      (lambda (k) (and (= 1 (length k)) (treemacs--is-path-in-dir? (car k) old-path)))
+      (lambda (k) (list (s-replace old-path new-path (car k))))))
+   (with-no-warnings treemacs--tags-cache)))
+
+(defun treemacs--reload-buffers-after-rename (old-path new-path)
+  "Reload buffers and windows after OLD-PATH was renamed to NEW-PATH."
+  ;; first buffers shown in windows
+  (dolist (frame (frame-list))
+    (dolist (window (window-list frame))
+      (let* ((win-buff  (window-buffer window))
+             (buff-file (buffer-file-name win-buff)))
+        (when buff-file
+          (setq buff-file (f-long buff-file))
+          (when (treemacs--is-path-in-dir? buff-file old-path)
+            (with-selected-window window
+              (kill-buffer win-buff)
+              (let ((new-file (s-replace old-path new-path buff-file)))
+                (find-file-existing new-file)
+                (treemacs--replace-recentf-entry buff-file new-file))))))))
+  ;; then the rest
+  (--each (buffer-list)
+    (-when-let (buff-file (buffer-file-name it))
+      (setq buff-file (f-long buff-file))
+      (when (treemacs--is-path-in-dir? buff-file old-path)
+        (let ((new-file (s-replace old-path new-path buff-file)))
+          (kill-buffer it)
+          (find-file-noselect new-file)
+          (treemacs--replace-recentf-entry buff-file new-file))))))
 
 (defun treemacs--maybe-filter-dotfiles (dirs)
   "Remove from DIRS directories that shouldn't be reopened.
@@ -532,8 +602,8 @@ Use `next-window' if WINDOW is nil."
   "Remove PATH-OR-BTN from the open dirs cache.
 Also remove any dirs below if PURGE is given.
 
-PATH-OR-BTN is a button only when instead of simply grabbing a path's parent may
-lead to incorrect results since the button may belong to a collapsed directory.
+PATH-OR-BTN is a button only when simply grabbing a path's parent may lead to
+incorrect results since the button may belong to a collapsed directory.
 In this case the parent must be determined by first checking the button's
 parent-path property."
   (let* ((is-path? (stringp path-or-btn))

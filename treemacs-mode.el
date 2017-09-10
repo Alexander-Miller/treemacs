@@ -40,6 +40,7 @@
       (define-key map (kbd "d")    #'treemacs-delete)
       (define-key map (kbd "cf")   #'treemacs-create-file)
       (define-key map (kbd "cd")   #'treemacs-create-dir)
+      (define-key map (kbd "R")    #'treemacs-rename)
       (define-key map (kbd "h")    #'treemacs-uproot)
       (define-key map (kbd "u")    #'treemacs-goto-parent-node)
       (define-key map (kbd "q")    #'treemacs-toggle)

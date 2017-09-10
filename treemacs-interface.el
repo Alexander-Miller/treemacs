@@ -267,6 +267,42 @@ A delete action must always be confirmed. Directories are deleted recursively."
     (treemacs--without-messages (treemacs-refresh))
     (treemacs--do-follow created-path)))
 
+(defun treemacs-rename ()
+  "Rename the currently selected node.
+Buffers visiting the renamed file or visiting a file inside a renamed directory
+and windows showing them will be reloaded. The list of recent files will
+likewise be updated."
+  (interactive)
+  (treemacs--log
+   (catch 'exit
+     (let* ((btn (treemacs--current-button))
+            (old-path (button-get btn 'abs-path))
+            (new-path)
+            (new-name)
+            (dir))
+       (unless old-path
+         (throw 'exit "Found nothing to rename here."))
+       (unless (file-exists-p old-path)
+         (throw 'exit "The file to be renamed does not exist."))
+       (setq new-name (read-string "New name: ")
+             dir      (f-dirname old-path)
+             new-path (f-join dir new-name))
+       (when (get-buffer new-name)
+         (throw 'exit (format "A buffer named %s already exists."
+                              (propertize new-name 'face font-lock-string-face))))
+       (when (file-exists-p new-name)
+         (throw 'exit (format "A file named %s already exists."
+                              (propertize new-name 'face font-lock-string-face))))
+       (rename-file old-path new-path)
+       (treemacs--replace-recentf-entry old-path new-path)
+       (treemacs--update-caches-after-rename old-path new-path)
+       (treemacs--reload-buffers-after-rename old-path new-path)
+       (treemacs-refresh)
+       (treemacs--goto-button-at new-path)
+       (throw 'exit (format "Renamed %s to %s."
+                            (propertize (f-filename old-path) 'face font-lock-string-face)
+                            (propertize new-name 'face font-lock-string-face)))))))
+
 (defun treemacs-create-dir (dir dirname)
   "In directory DIR create directory called DIRNAME."
   (interactive "DCreate in: \nMDirname: ")
