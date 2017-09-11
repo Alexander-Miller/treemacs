@@ -170,8 +170,8 @@ You can find an exhaustive overview of all functions, their keybinds and functio
 
       (use-package treemacs-projectile
         :config
-        (setq treemacs-header-function #'treemacs-create-header-projectile)
-        (:bind :map spacemacs-default-map
+        (setq treemacs-header-function #'treemacs-projectile-create-header)
+        :bind (:map spacemacs-default-map
                ("pT" . treemacs-projectile)
                ("pt" . treemacs-projectile-toggle)))
 
