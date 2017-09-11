@@ -100,17 +100,17 @@ argument."
   "Highlight current icon, unhighlight `treemacs--last-highlight'."
   (when (eq major-mode 'treemacs-mode)
     (condition-case e
-        (let* ((btn (treemacs--current-button))
-               (pos (- (button-start btn) 2))
-               (img-selected (get-text-property pos 'img-selected)))
-          (treemacs--with-writable-buffer
-           (when treemacs--last-highlight
-             (let* ((last-pos (- (button-start treemacs--last-highlight) 2))
-                    (img-unselected (get-text-property last-pos 'img-unselected)))
-               (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
-           (when img-selected
-             (put-text-property pos (1+ pos) 'display img-selected)
-             (setq treemacs--last-highlight btn))))
+        (-when-let (btn (treemacs--current-button))
+          (let* ((pos (- (button-start btn) 2))
+                 (img-selected (get-text-property pos 'img-selected)))
+            (treemacs--with-writable-buffer
+             (when treemacs--last-highlight
+               (let* ((last-pos (- (button-start treemacs--last-highlight) 2))
+                      (img-unselected (get-text-property last-pos 'img-unselected)))
+                 (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
+             (when img-selected
+               (put-text-property pos (1+ pos) 'display img-selected)
+               (setq treemacs--last-highlight btn)))))
       (error
        (treemacs--log "Error on highlight, this shouldn't happen: %s" e)))))
 
