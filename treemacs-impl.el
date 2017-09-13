@@ -503,6 +503,7 @@ Optionally make the git request RECURSIVE."
   (treemacs--cancel-missed-refresh)
   (treemacs--clear-tags-cache)
   (treemacs--tear-down-icon-highlight)
+  (remove-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)
   (setq treemacs--open-dirs-cache nil
         treemacs--ready nil))
 
@@ -657,6 +658,13 @@ Callers must make sure to save match data"
           (beginning-of-line 2))))
     (unless ret (goto-char start))
     ret))
+
+(defun treemacs--reset-width-hook ()
+  "Resets treemacs' width after a change in the window layout.
+Injected into `window-configuration-change-hook'."
+  (-when-let (w (treemacs--is-visible?))
+    (with-selected-window w
+      (treemacs--set-width treemacs-width))))
 
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."

@@ -23,6 +23,7 @@
 (require 's)
 (require 'treemacs-customization)
 (require 'treemacs-impl)
+(require 'treemacs-visuals)
 (require 'treemacs-persist)
 
 ;; no warning - we cannot require treemacs.el where all the autoloaded functions
@@ -84,8 +85,7 @@
 (define-derived-mode treemacs-mode special-mode "Treemacs"
   "A major mode for displaying the file system in a tree layout."
 
-  (setq window-size-fixed   'width
-        buffer-read-only    t
+  (setq buffer-read-only    t
         truncate-lines      t
         indent-tabs-mode    nil
         cursor-type         nil
@@ -101,6 +101,7 @@
     (treemacs-restore))
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
+  (add-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)
 
   (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))
