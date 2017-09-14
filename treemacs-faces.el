@@ -75,6 +75,17 @@
   "Face for tags."
   :group 'treemacs-faces)
 
+(defface treemacs-help-title-face
+  `((t :inherit ,(if (bound-and-true-p font-lock-builtin-face) 'spacemacs-transient-state-title-face 'font-lock-constant-face)))
+  "Face for tags."
+  :group 'treemacs-faces)
+
+(defface treemacs-help-column-face
+  '((t :inherit font-lock-keyword-face :underline t))
+  "Face for tags."
+  :group 'treemacs-faces)
+
+;; 'face 'spacemacs-transient-state-title-face)
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here

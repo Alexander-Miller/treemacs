@@ -21,10 +21,149 @@
 ;;; Code:
 
 (require 's)
+(require 'treemacs-interface)
 (require 'treemacs-customization)
+(require 'treemacs-faces)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
 (require 'treemacs-persist)
+(require 'hydra)
+
+(declare-function treemacs-refresh "treemacs")
+(declare-function treemacs--helpful-hydra/body "treemacs-mode")
+
+(defun treemacs--find-keybind (func)
+  "Find the keybind for FUNC in treemacs.
+Return of cons of the key formatted for inclusion in the hydra string, including
+a minimum width for alignment, and the key itself for the hydra heads.
+Prefer evil keybinds, otherwise pick the first result."
+  (-when-let (keys (where-is-internal func))
+    (let ((key
+           (key-description
+            (-if-let (evil-keys (--first (eq 'treemacs-state (aref it 0)) keys))
+                (--map (aref evil-keys it) (number-sequence 1 (- (length evil-keys) 1)))
+              (--map (aref (car keys) it) (number-sequence 0 (- (length (car keys)) 1)))))))
+      (when (string= "<return>" key)
+        (setq key "RET"))
+      (cons (s-pad-right 8 " " (format "_%s_:" key)) key))))
+
+(defun treemacs-helpful-hydra ()
+  "Summon the helpful hydra to show you the treemacs keymap."
+  (interactive)
+  (let* ((title              (propertize "Treemacs Helpful Hydra" 'face 'treemacs-help-title-face))
+         (column-nav         (propertize "Navigation" 'face 'treemacs-help-column-face))
+         (column-nodes       (propertize "Opening Nodes" 'face 'treemacs-help-column-face))
+         (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))
+         (column-toggles     (propertize "Toggles " 'face 'treemacs-help-column-face))
+         (column-misc        (propertize "Misc." 'face 'treemacs-help-column-face))
+         (key-next-line      (treemacs--find-keybind #'treemacs-next-line))
+         (key-prev-line      (treemacs--find-keybind #'treemacs-previous-line))
+         (key-next-neighbour (treemacs--find-keybind #'treemacs-next-neighbour))
+         (key-prev-neighbour (treemacs--find-keybind #'treemacs-previous-neighbour))
+         (key-goto-parent    (treemacs--find-keybind #'treemacs-goto-parent-node))
+         (key-root-up        (treemacs--find-keybind #'treemacs-uproot))
+         (key-root-down      (treemacs--find-keybind #'treemacs-change-root))
+         (key-open/close     (treemacs--find-keybind #'treemacs-push-button))
+         (key-dwim           (treemacs--find-keybind #'treemacs-visit-node-default-action))
+         (key-open           (treemacs--find-keybind #'treemacs-visit-node-no-split))
+         (key-open-horiz     (treemacs--find-keybind #'treemacs-visit-node-horizontal-split))
+         (key-open-vert      (treemacs--find-keybind #'treemacs-visit-node-vertical-split))
+         (key-open-ace       (treemacs--find-keybind #'treemacs-visit-node-ace))
+         (key-open-ace-horiz (treemacs--find-keybind #'treemacs-visit-node-ace-horizontal-split))
+         (key-open-ace-vert  (treemacs--find-keybind #'treemacs-visit-node-ace-vertical-split))
+         (key-open-xdg       (treemacs--find-keybind #'treemacs-xdg-open))
+         (key-create-file    (treemacs--find-keybind #'treemacs-create-file))
+         (key-create-dir     (treemacs--find-keybind #'treemacs-create-dir))
+         (key-rename         (treemacs--find-keybind #'treemacs-rename))
+         (key-follow-mode    (treemacs--find-keybind #'treemacs-follow-mode))
+         (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
+         (key-show-dotfiles  (treemacs--find-keybind #'treemacs-toggle-show-dotfiles))
+         (key-toggle-width   (treemacs--find-keybind #'treemacs-toggle-fixed-width))
+         (key-refresh        (treemacs--find-keybind #'treemacs-refresh))
+         (key-set-width      (treemacs--find-keybind #'treemacs-reset-width))
+         (key-copy-path      (treemacs--find-keybind #'treemacs-yank-path-at-point))
+         (key-copy-root      (treemacs--find-keybind #'treemacs-yank-root))
+         (hydra-str
+          (format
+           "
+%s
+%s            │ %s              │ %s    │ %s              │ %s
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+%s next Line      │ %s open & close        │ %s create file │ %s follow mode    │ %s refresh
+%s prev line      │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
+%s next neighbour │ %s open no split       │ %s rename      │ %s show dotfiles  │ %s copy path
+%s prev neighbout │ %s open horizontal     │                    │ %s resizability   │ %s copy root
+%s go to parent   │ %s open vertical       │                    │                       │
+%s move root up   │ %s open ace            │                    │                       │
+%s move root into │ %s open ace horizontal │                    │                       │
+                      │ %s open ace vertical   │                    │                       │
+                      │ %s open externally     │                    │                       │
+"
+           title
+           column-nav
+           column-nodes
+           column-files
+           column-toggles
+           column-misc
+           (car key-next-line)
+           (car key-open/close)
+           (car key-create-file)
+           (car key-follow-mode)
+           (car key-refresh)
+           (car key-prev-line)
+           (car key-dwim)
+           (car key-create-dir)
+           (car key-fwatch-mode)
+           (car key-set-width)
+           (car key-next-neighbour)
+           (car key-open)
+           (car key-rename)
+           (car key-show-dotfiles)
+           (car key-copy-path)
+           (car key-prev-neighbour)
+           (car key-open-horiz)
+           (car key-toggle-width)
+           (car key-copy-root)
+           (car key-goto-parent)
+           (car key-open-vert)
+           (car key-root-up)
+           (car key-open-ace)
+           (car key-root-down)
+           (car key-open-ace-horiz)
+           (car key-open-ace-vert)
+           (car key-open-xdg))))
+    (eval
+     `(defhydra treemacs--helpful-hydra (:color amaranth :hint nil :columns 5)
+        ,hydra-str
+        (,(cdr key-next-line)      #'treemacs-next-line)
+        (,(cdr key-prev-line)      #'treemacs-previous-line)
+        (,(cdr key-next-neighbour) #'treemacs-next-neighbour)
+        (,(cdr key-prev-neighbour) #'treemacs-previous-neighbour)
+        (,(cdr key-goto-parent)    #'treemacs-goto-parent-node)
+        (,(cdr key-root-up)        #'treemacs-uproot)
+        (,(cdr key-root-down)      #'treemacs-change-root)
+        (,(cdr key-open/close)     #'treemacs-push-button)
+        (,(cdr key-dwim)           #'treemacs-visit-node-default-action)
+        (,(cdr key-open)           #'treemacs-visit-node-no-split)
+        (,(cdr key-open-horiz)     #'treemacs-visit-node-horizontal-split)
+        (,(cdr key-open-vert)      #'treemacs-visit-node-vertical-split)
+        (,(cdr key-open-ace)       #'treemacs-visit-node-ace)
+        (,(cdr key-open-ace-horiz) #'treemacs-visit-node-ace-horizontal-split)
+        (,(cdr key-open-ace-vert)  #'treemacs-visit-node-ace-vertical-split)
+        (,(cdr key-open-xdg)       #'treemacs-xdg-open)
+        (,(cdr key-create-file)    #'treemacs-create-file)
+        (,(cdr key-create-dir)     #'treemacs-create-dir)
+        (,(cdr key-rename)         #'treemacs-rename)
+        (,(cdr key-follow-mode)    #'treemacs-follow-mode)
+        (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
+        (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
+        (,(cdr key-refresh)        #'treemacs-refresh)
+        (,(cdr key-set-width)      #'treemacs-reset-width)
+        (,(cdr key-copy-path)      #'treemacs-yank-path-at-point)
+        (,(cdr key-copy-root)      #'treemacs-yank-root)
+        (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
+        ("H" nil "Finish"))))
+  (treemacs--helpful-hydra/body))
 
 ;; no warning - we cannot require treemacs.el where all the autoloaded functions
 ;; are defined or we get a recursive require, so it's either this or an equally
@@ -32,6 +171,7 @@
 (with-no-warnings
   (defvar treemacs-mode-map
     (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "H")    #'treemacs-helpful-hydra)
       (define-key map [mouse-1]    #'treemacs-click-mouse1)
       (define-key map [tab]        #'treemacs-push-button)
       (define-key map [?\t]        #'treemacs-push-button)
@@ -60,6 +200,7 @@
       (define-key map (kbd "th")   #'treemacs-toggle-show-dotfiles)
       (define-key map (kbd "tw")   #'treemacs-toggle-fixed-width)
       (define-key map (kbd "tf")   #'treemacs-follow-mode)
+      (define-key map (kbd "ta")   #'treemacs-filewatch-mode)
       (define-key map (kbd "w")    #'treemacs-reset-width)
       (define-key map (kbd "yy")   #'treemacs-yank-path-at-point)
       (define-key map (kbd "yr")   #'treemacs-yank-root)

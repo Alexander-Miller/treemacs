@@ -49,7 +49,7 @@ Specifically a quick feature overview looks as follows:
  * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
    another matter). When run in a terminal a very simple fallback is used.
  * Session persistence with ~desktop-save-mode~
- * *(Early Beta)* Treemacs is able to display files' tags. All file types that emacs can generate a (semantic) imenu
+ * Treemacs is able to display files' tags. All file types that emacs can generate a (semantic) imenu
    index for are supported.
  * Ease of use - treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
    defaults. Installation aside there are two obligatory pieces of setup: 1) Choosing convenient keybindings to run
@@ -58,6 +58,8 @@ Specifically a quick feature overview looks as follows:
 
 * Quick Start
 If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
+ * First of all: press H to summon the helpful hydra:
+   file:hydra.png
  * If you use evil don't forget to also install ~treemacs-evil~
  * If you use projectile you can install ~treemacs-projectile~ to allow treemacs to interact with projects.
  * Treemacs doesn' bind any global keys, you need to use whatever fits you best. A full install setup for
@@ -293,6 +295,7 @@ By default Treemacs's keymap looks as follows:
 
 | Key     | Action                                   | Description                                                                                                                                                               |
 |---------+------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| H       | treemacs-helpful-hydra                   | Summon the helpful hydra to show you the treemacs keymap.                                                                                                                 |
 | j/n     | treemacs-next-line                       | Goto next/prev line.                                                                                                                                                      |
 | h       | treemacs-uproot                          | Switch treemacs' root directory to current root's parent, if possible.                                                                                                    |
 | l       | treemacs-change-root                     | Use currently selected directory as new root. Do nothing for files.                                                                                                       |
@@ -307,7 +310,7 @@ By default Treemacs's keymap looks as follows:
 | d       | treemacs-delete                          | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                                                      |
 | cf      | treemacs-create-file                     | Create a file.                                                                                                                                                            |
 | cd      | treemacs-create-dir                      | Create a directory.                                                                                                                                                       |
-| R       | treemacs-rename                          | Rename the currently selected node. Reload buffers visiting renamed files or files in renamed direcotries.                                         |
+| R       | treemacs-rename                          | Rename the currently selected node. Reload buffers visiting renamed files or files in renamed direcotries.                                                                |
 | u       | treemacs-goto-parent-node                | Select parent of selected node, if possible.                                                                                                                              |
 | q       | treemacs-toggle                          | Hide/show an existing treemacs buffer. Create one if it does not exist.                                                                                                   |
 | Q       | treemacs-kill-buffer                     | Kill the treemacs buffer.                                                                                                                                                 |
@@ -333,6 +336,7 @@ If you've need to delve into treemacs' code base check out [[https://github.com/
  * cl-lib
  * ace-window
  * pfuture
+ * hydra
  * (optionally) evil
  * (optionally) projectile
  * (optionally) winum
