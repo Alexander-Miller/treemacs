@@ -59,7 +59,7 @@ Specifically a quick feature overview looks as follows:
 * Quick Start
 If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
  * First of all: press H to summon the helpful hydra:
-   file:hydra.png
+   [[file:hydra.png]]
  * If you use evil don't forget to also install ~treemacs-evil~
  * If you use projectile you can install ~treemacs-projectile~ to allow treemacs to interact with projects.
  * Treemacs doesn' bind any global keys, you need to use whatever fits you best. A full install setup for
