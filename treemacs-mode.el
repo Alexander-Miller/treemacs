@@ -43,8 +43,12 @@ Prefer evil keybinds, otherwise pick the first result."
             (-if-let (evil-keys (--first (eq 'treemacs-state (aref it 0)) keys))
                 (--map (aref evil-keys it) (number-sequence 1 (- (length evil-keys) 1)))
               (--map (aref (car keys) it) (number-sequence 0 (- (length (car keys)) 1)))))))
-      (when (string= "<return>" key)
-        (setq key "RET"))
+      (setq key
+            (pcase key
+              ("<return>" "RET")
+              ("<left>"   "LEFT")
+              ("<right>"  "RIGHT")
+              (_ key)))
       (cons (s-pad-right 8 " " (format "_%s_:" key)) key))))
 
 (defun treemacs-helpful-hydra ()
