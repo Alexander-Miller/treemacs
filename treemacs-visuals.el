@@ -48,11 +48,11 @@ after a theme change.")
   "The last button treemacs has highlighted.")
 
 (defvar treemacs--selected-icon-background
-  (face-attribute 'hl-line :background)
+  (face-attribute 'hl-line :background nil t)
   "Background for selected icons.")
 
 (defvar treemacs--not-selected-icon-background
-  (face-attribute 'default :background)
+  (face-attribute 'default :background nil t)
   "Background for non-selected icons.")
 
 (defsubst treemacs--set-img-property (image property value)
@@ -82,11 +82,8 @@ after a theme change.")
 Fetch the current theme's background & hl-line colors and inject them into
 `treemacs--icons'. Also called as advice after `load-theme', hence the ignored
 argument."
-  (setq treemacs--not-selected-icon-background (face-attribute 'default :background)
-        treemacs--selected-icon-background     (face-attribute 'hl-line :background))
-  ;; adwaita workaround
-  (when (equal treemacs--selected-icon-background 'unspecified)
-    (setq treemacs--selected-icon-background (face-attribute 'highlight :background)))
+  (setq treemacs--not-selected-icon-background (face-attribute 'default :background nil t)
+        treemacs--selected-icon-background     (face-attribute 'hl-line :background nil t))
   (--each treemacs--icons
     (progn
       (treemacs--set-img-property
