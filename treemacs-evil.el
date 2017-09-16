@@ -46,7 +46,7 @@
 (define-key evil-treemacs-state-map (kbd "tf")  #'treemacs-follow-mode)
 (define-key evil-treemacs-state-map (kbd "ta")  #'treemacs-filewatch-mode)
 (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
-(define-key evil-treemacs-state-map (kbd "H")   #'treemacs-helpful-hydra)
+(define-key evil-treemacs-state-map (kbd "?")   #'treemacs-helpful-hydra)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yr") #'treemacs-yank-root)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yy") #'treemacs-yank-path-at-point)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "gr")  #'treemacs-refresh)

@@ -166,7 +166,7 @@ Prefer evil keybinds, otherwise pick the first result."
         (,(cdr key-copy-path)      #'treemacs-yank-path-at-point)
         (,(cdr key-copy-root)      #'treemacs-yank-root)
         (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
-        ("H" nil "Finish"))))
+        ("?" nil "Exit"))))
   (treemacs--helpful-hydra/body))
 
 ;; no warning - we cannot require treemacs.el where all the autoloaded functions
@@ -175,7 +175,7 @@ Prefer evil keybinds, otherwise pick the first result."
 (with-no-warnings
   (defvar treemacs-mode-map
     (let ((map (make-sparse-keymap)))
-      (define-key map (kbd "H")    #'treemacs-helpful-hydra)
+      (define-key map (kbd "?")    #'treemacs-helpful-hydra)
       (define-key map [mouse-1]    #'treemacs-click-mouse1)
       (define-key map [tab]        #'treemacs-push-button)
       (define-key map [?\t]        #'treemacs-push-button)

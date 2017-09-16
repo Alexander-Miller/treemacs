@@ -58,7 +58,7 @@ Specifically a quick feature overview looks as follows:
 
 * Quick Start
 If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
- * First of all: press H to summon the helpful hydra:
+ * First of all: press ~?~ to summon the helpful hydra:
    [[file:hydra.png]]
  * If you use evil don't forget to also install ~treemacs-evil~
  * If you use projectile you can install ~treemacs-projectile~ to allow treemacs to interact with projects.
@@ -294,7 +294,7 @@ By default Treemacs's keymap looks as follows:
 
 | Key     | Action                                   | Description                                                                                                                                                               |
 |---------+------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| H       | treemacs-helpful-hydra                   | Summon the helpful hydra to show you the treemacs keymap.                                                                                                                 |
+| ?       | treemacs-helpful-hydra                   | Summon the helpful hydra to show you the treemacs keymap.                                                                                                                 |
 | j/n     | treemacs-next-line                       | Goto next/prev line.                                                                                                                                                      |
 | h       | treemacs-uproot                          | Switch treemacs' root directory to current root's parent, if possible.                                                                                                    |
 | l       | treemacs-change-root                     | Use currently selected directory as new root. Do nothing for files.                                                                                                       |
