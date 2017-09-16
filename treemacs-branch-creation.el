@@ -181,7 +181,9 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
 Go to each dir button, expand its label with the collpased dirs, set its new
 path and give it a special parent-path property so opening it will add the
 correct cache entries."
-  (let ((search-start (button-start (treemacs--goto-button-at root))))
+  (let ((search-start (if (string= root (treemacs--current-root))
+                          0
+                        (button-start (treemacs--goto-button-at root)))))
     (--each dirs
       ;; no warning since filewatch mode is known to be defined
       (when (with-no-warnings treemacs-filewatch-mode)
