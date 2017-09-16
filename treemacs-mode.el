@@ -96,7 +96,7 @@ Prefer evil keybinds, otherwise pick the first result."
 %s next Line      │ %s open & close        │ %s create file │ %s follow mode    │ %s refresh
 %s prev line      │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
 %s next neighbour │ %s open no split       │ %s rename      │ %s show dotfiles  │ %s copy path
-%s prev neighbout │ %s open horizontal     │                    │ %s resizability   │ %s copy root
+%s prev neighbour │ %s open horizontal     │                    │ %s resizability   │ %s copy root
 %s go to parent   │ %s open vertical       │                    │                       │
 %s move root up   │ %s open ace            │                    │                       │
 %s move root into │ %s open ace horizontal │                    │                       │
@@ -137,7 +137,7 @@ Prefer evil keybinds, otherwise pick the first result."
            (car key-open-ace-vert)
            (car key-open-xdg))))
     (eval
-     `(defhydra treemacs--helpful-hydra (:color amaranth :hint nil :columns 5)
+     `(defhydra treemacs--helpful-hydra (:exit t :hint nil :columns 5)
         ,hydra-str
         (,(cdr key-next-line)      #'treemacs-next-line)
         (,(cdr key-prev-line)      #'treemacs-previous-line)
