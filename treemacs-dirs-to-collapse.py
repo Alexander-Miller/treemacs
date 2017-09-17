@@ -13,6 +13,7 @@ out   = sys.stdout
 if LIMIT <= 0:
     exit(0)
 
+out.write("(")
 for current_dir in dirs:
     content   = dir_content(current_dir)
     collapsed = current_dir
@@ -32,4 +33,5 @@ for current_dir in dirs:
     if depth > 0:
         final_dir      = steps[-1]
         display_suffix = final_dir[len(current_dir):]
-        out.write("\n"  + current_dir + "//" + display_suffix + "//" + "//".join(steps))
+        out.write("(" + '"' + current_dir + '" ' + '"' + display_suffix + '" ' + '"' + '" "'.join(steps) + '")')
+out.write(")")

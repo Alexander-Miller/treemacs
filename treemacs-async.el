@@ -30,11 +30,12 @@
 
 (defsubst treemacs--collapsed-dirs-process (path)
   "Start a new process to determine dirs to collpase under PATH.
-Output format is a list of newline delimited lines. Each line is a list of
-absolute paths delimited by '//'. The first path is the one being collapsed, the
-second path is the string that needs to be appended to the collapsed path in the
-treemacs view. The remaining paths are all the directories being collapsed, to
-be put under filewatch, if `treemacs-filewatch-mode' is on."
+Output format is an elisp list of string lists that's read directly.
+Every string list consists of the following elements:
+ * The path that is being collapsed
+ * The string to be appened to the collapsed path in the treemacs view
+ * The single directories being collapsed, to be put under filewatch
+   if `treemacs-filewatch-mode' is on."
   (when (> treemacs-collapse-dirs 0)
     (pfuture-new "python" treemacs--dirs-to-collpase.py path (number-to-string treemacs-collapse-dirs))))
 
@@ -42,12 +43,10 @@ be put under filewatch, if `treemacs-filewatch-mode' is on."
   "Parse the output of collpsed dirs FUTURE.
 Splits the output on newlines, splits every line on // and swallows the first
 newline."
-  (when future
-    (-when-let (out (pfuture-await-to-finish future))
-      (->> out
-           (s-split "\n")
-           (cdr)
-           (--map (s-split "//" it))))))
+  (-some->
+   future
+   (pfuture-await-to-finish)
+   (read)))
 
 (provide 'treemacs-async)
 
