@@ -276,8 +276,6 @@
     (with-mock
       (stub s-starts-with? => t)
       (stub assoc => '(t . t))
-      ;; (mock (get-buffer-window treemacs--buffer-name) => t)
-      ;; (stub -contains? => t)
       (should (eq 'visible (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::existing-buffer ()
@@ -915,7 +913,7 @@
               (progn
                 (switch-to-buffer test-buffer)
                 (delete-other-windows)
-                (-when-let (b (get-buffer treemacs--buffer-name)) (kill-buffer b))
+                (-when-let (b (treemacs--get-framelocal-buffer)) (kill-buffer b))
                 (call-interactively 'treemacs)
 
                 (let ((b (treemacs--get-framelocal-buffer)))

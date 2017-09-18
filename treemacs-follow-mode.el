@@ -74,7 +74,7 @@ not visible."
                 (current-file    (buffer-file-name current-buffer)))
            (when (and treemacs-window
                       current-file
-                      (not (s-equals? treemacs--buffer-name (buffer-name current-buffer)))
+                      (not (s-starts-with? treemacs--buffer-name-prefix (buffer-name current-buffer)))
                       (f-exists? current-file))
              (with-current-buffer (window-buffer treemacs-window)
                (let ((root (treemacs--current-root))

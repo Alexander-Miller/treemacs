@@ -466,7 +466,7 @@ generated."
   (let ((w (selected-window)))
     (--each (window-list (selected-frame))
       (unless (or (eq it w)
-                  (-> it (window-buffer) (buffer-name) (string-equal treemacs--buffer-name)))
+                  (->> it (window-buffer) (buffer-name) (s-starts-with? treemacs--buffer-name-prefix)))
         (delete-window it)))))
 
 (defun treemacs-select-window ()

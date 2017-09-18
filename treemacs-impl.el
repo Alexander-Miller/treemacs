@@ -89,9 +89,6 @@
 (defvar treemacs--open-dirs-cache '()
   "Cache to keep track of opened subfolders.")
 
-(defconst treemacs--buffer-name "*Treemacs*"
-  "Name of the treemacs buffer.")
-
 (defconst treemacs--buffer-name-prefix "*Treemacs-")
 
 (defconst treemacs-dir
