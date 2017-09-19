@@ -913,10 +913,10 @@
               (progn
                 (switch-to-buffer test-buffer)
                 (delete-other-windows)
-                (-when-let (b (treemacs--get-framelocal-buffer)) (kill-buffer b))
+                (-when-let (b (treemacs--buffer-exists?)) (kill-buffer b))
                 (call-interactively 'treemacs)
 
-                (let ((b (treemacs--get-framelocal-buffer)))
+                (let ((b (treemacs--buffer-exists?)))
                   (should b)
                   (switch-to-buffer b))
 

@@ -59,7 +59,7 @@
 (defun treemacs-persist ()
   "Save current state, allowing it to be restored with `treemacs-restore'."
   (interactive)
-  (-if-let (buf (treemacs--get-framelocal-buffer))
+  (-if-let (buf (treemacs--buffer-exists?))
       (with-current-buffer buf
         (save-excursion
           (let ((root      (treemacs--current-root))
