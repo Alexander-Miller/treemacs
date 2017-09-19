@@ -45,7 +45,7 @@
 Used by `treemacs--setup-icon-highlight' to realign icons' highlight colors
 after a theme change.")
 
-(defvar treemacs--last-highlight nil
+(defvar-local treemacs--last-highlight nil
   "The last button treemacs has highlighted.")
 
 (defvar treemacs--not-selected-icon-background

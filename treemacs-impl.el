@@ -86,9 +86,6 @@
 (defvar treemacs--buffer-access nil
   "Alist mapping treemacs buffers to frames.")
 
-(defvar treemacs--open-dirs-cache '()
-  "Cache to keep track of opened subfolders.")
-
 (defconst treemacs--buffer-name-prefix "*Treemacs-")
 
 (defconst treemacs-dir
@@ -97,7 +94,10 @@
                       default-directory))
   "The directory treemacs.el is stored in.")
 
-(defvar treemacs--in-gui 'unset
+(defvar-local treemacs--open-dirs-cache '()
+  "Cache to keep track of opened subfolders.")
+
+(defvar-local treemacs--in-gui 'unset
   "Indicates whether Emacs is running in a gui or a terminal.")
 
 (defvar treemacs--ready nil

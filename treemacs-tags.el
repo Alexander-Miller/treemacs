@@ -52,7 +52,7 @@
         treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-png
         treemacs-icon-tag-node-open   treemacs-icon-tag-node-open-png))
 
-(defvar treemacs--tags-cache (make-hash-table :test #'equal :size 100)
+(defvar-local treemacs--tags-cache (make-hash-table :test #'equal :size 100)
   "Cache storing all opened tags in treemacs view.
 The cache has 2 levels. The 1st is this has table, its keys are the absolute
 paths of files whose tags are open, its values are the 2nd level, another hash
