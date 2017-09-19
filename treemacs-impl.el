@@ -280,8 +280,8 @@ Will return the treemacs window if true."
 (defsubst treemacs--buffer-exists? ()
   "Indicates whether this frame's treemacs buffer exists.
 Returns the buffer if it does exist."
-  (cdr
-   (assoc (selected-frame) treemacs--buffer-access)))
+  (let ((b (cdr (assoc (selected-frame) treemacs--buffer-access))))
+    (when (buffer-live-p b) b)))
 
 (defsubst treemacs--select-visible ()
   "Switch to treemacs buffer, given that it is currently visible."
