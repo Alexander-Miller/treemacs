@@ -383,6 +383,10 @@ and special names like this."
           (substring filename (1+ (match-beginning 0)))
         filename))))
 
+(defsubst treemacs--clear-dirs-cache ()
+  "Reset the cache of open dirs."
+  (setq treemacs--open-dirs-cache nil))
+
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
@@ -539,17 +543,20 @@ Optionally make the git request RECURSIVE."
   (insert (propertize (funcall treemacs-header-function root)
                       'face 'treemacs-header-face)))
 
-(defun treemacs--buffer-teardown ()
-  "Cleanup to be run when the treemacs buffer gets killed."
-  (treemacs--stop-watching-all)
-  (treemacs--cancel-refresh-timer)
-  (treemacs--cancel-missed-refresh)
-  (treemacs--clear-tags-cache)
-  (treemacs--tear-down-icon-highlight)
-  (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
+(defun treemacs--on-buffer-kill ()
+  "Cleanup to run when a treemacs buffer is killed."
   (treemacs--remove-framelocal-buffer)
-  (setq treemacs--open-dirs-cache nil
-        treemacs--ready nil))
+  (unless treemacs--buffer-access
+    (remove-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)))
+
+(defun treemacs--buffer-teardown ()
+  "Cleanup to be run when an existing treemacs buffer is re-initialized."
+  ;; (treemacs--stop-watching-all);?
+  ;; (treemacs--cancel-refresh-timer);?
+  ;; (treemacs--cancel-missed-refresh);?
+  ;; (setq treemacs--ready nil);?
+  (treemacs--remove-framelocal-buffer)
+  (treemacs--tear-down-icon-highlight))
 
 (defun treemacs--push-button (btn &optional recursive)
   "Execute the appropriate action given the state of the pushed BTN.
@@ -799,8 +806,14 @@ Valid states are 'visible, 'exists and 'none."
   "Remove FRAME's local treemacs buffer.
 FRAME is given when this is called via `delete-frame-functions' \(during
 treemacs buffer teardown\) otherwise the currently selected frame is used."
+  (when frame
+    (-when-let (b (cdr (assoc frame treemacs--buffer-access)))
+      ;; Only do the killing here when frame is non-nil, since a frame is being deleted then.
+      ;; If frame is non nil we're running from in the kill buffer hook - killing the buffer again
+      ;; will then trigger the kill buffer hook again etc ad stack overlofw
+      (kill-buffer b)))
   (setq treemacs--buffer-access
-        (assq-delete-all (or frame (selected-frame)) treemacs--buffer-access))
+        (assq-delete-all frame treemacs--buffer-access))
   (unless treemacs--buffer-access
     (setq delete-frame-functions
           (delete #'treemacs--remove-framelocal-buffer delete-frame-functions))))

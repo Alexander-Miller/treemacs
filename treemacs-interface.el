@@ -247,7 +247,7 @@ Treemacs knows how to open files on linux, windows and macos."
   "Kill the treemacs buffer."
   (interactive)
   (when (eq 'treemacs-mode major-mode)
-    (treemacs--buffer-teardown)
+    ;; teardown logic handled in kill hook
     (if (one-window-p)
         (kill-this-buffer)
       (kill-buffer-and-window))))
