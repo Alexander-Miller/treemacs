@@ -651,7 +651,9 @@ Callers must make sure to save match data"
                 (search-forward filename nil t))
       (beginning-of-line)
       (let ((btn (next-button (point) t)))
-        (if (s-equals? abs-path (button-get btn 'abs-path))
+        (if (or (s-equals? abs-path (button-get btn 'abs-path))
+                (-when-let (parent-path (button-get btn 'parent-path))
+                  (treemacs--is-path-in-dir? abs-path parent-path)))
             (progn (treemacs--evade-image)
                    (setq keep-looking nil
                          ret btn))
