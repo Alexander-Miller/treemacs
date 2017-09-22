@@ -623,20 +623,6 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
      (treemacs--clear-from-cache btn recursive))))
 
-(defun treemacs--open-file (&optional window split-func)
-  "Visit file of the current node.  Split WINDOW using SPLIT-FUNC.
-Do nothing if current node is a directory.
-Do not split window if SPLIT-FUNC is nil.
-Use `next-window' if WINDOW is nil."
-  (let* ((path     (treemacs--prop-at-point 'abs-path))
-         (is-file? (f-file? path)))
-    (when is-file?
-      (select-window (or window (next-window)))
-      (when split-func
-        (call-interactively split-func)
-        (call-interactively 'other-window))
-      (find-file path))))
-
 (defun treemacs--reopen-at (path)
   "Reopen dirs below PATH."
   (treemacs--without-messages
