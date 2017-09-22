@@ -134,7 +134,7 @@ called from another buffer than the one the button resides in and
     ,@body))
 
 (defmacro treemacs--log (msg &rest args)
-  "Write a log statement given formart string MSG and ARGS."
+  "Write a log statement given format string MSG and ARGS."
   `(unless treemacs--no-messages
      (message
       "%s %s"
@@ -159,31 +159,31 @@ matching the buttons state."
       (push 'file-node-closed valid-states))
     (when tag-action
       (push 'tag-node valid-states))
-    `(treemacs--without-following
-      (let* ((btn (treemacs--current-button))
-             (state (button-get btn 'state))
-             (current-window (selected-window)))
-        (if (not (memq state ',valid-states))
-            (treemacs--log "%s" ,no-match-explanation)
-          (progn
-            (select-window (or ,window (next-window (selected-window) nil nil)))
-            ,@(if split-function
-                  `((funcall ,split-function)
-                    (other-window 1)))
-            (pcase state
-              ,@(when dir-action
-                  `(((or 'dir-node-open 'dir-node-closed)
-                     ,dir-action)))
-              ,@(when file-action
-                  `(((or 'file-node-open 'file-node-closed)
-                     ,file-action)))
-              ,@(when tag-action
-                  `(('tag-node
-                     ,tag-action)))
-              (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
-                        state ',valid-states)))
-            (when ,save-window
-              (select-window current-window))))))))
+    `(-when-let (btn (treemacs--current-button))
+       (treemacs--without-following
+        (let* ((state (button-get btn 'state))
+               (current-window (selected-window)))
+          (if (not (memq state ',valid-states))
+              (treemacs--log "%s" ,no-match-explanation)
+            (progn
+              (select-window (or ,window (next-window (selected-window) nil nil)))
+              ,@(if split-function
+                    `((funcall ,split-function)
+                      (other-window 1)))
+              (pcase state
+                ,@(when dir-action
+                    `(((or 'dir-node-open 'dir-node-closed)
+                       ,dir-action)))
+                ,@(when file-action
+                    `(((or 'file-node-open 'file-node-closed)
+                       ,file-action)))
+                ,@(when tag-action
+                    `(('tag-node
+                       ,tag-action)))
+                (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
+                          state ',valid-states)))
+              (when ,save-window
+                (select-window current-window)))))))))
 
 (defmacro treemacs--with-writable-buffer (&rest body)
   "Temporarily turn off read-ony mode to execute BODY."
@@ -205,8 +205,14 @@ matching the buttons state."
 ;;;;;;;;;;;;;;;;;;;
 
 (defsubst treemacs--current-button ()
-  "Get the button in the current line."
-  (next-button (point-at-bol) t))
+  "Get the button in the current line.
+Returns nil when point is on the header."
+  (if (get-text-property (point-at-bol) 'button)
+      (button-at (point-at-bol))
+    (let ((p (next-single-property-change (point-at-bol) 'button nil (point-at-eol))))
+      (when (and (not (= p (point)))
+                 (get-char-property p 'button))
+          (copy-marker p t)))))
 
 (defsubst treemacs--get-label-of (btn)
   "Return the text label of BTN."
@@ -311,10 +317,10 @@ Returns the buffer if it does exist."
               status)))))))
 
 (defsubst treemacs--prop-at-point (prop)
-  "Grab property PROP of the button at point."
-  (save-excursion
-    (beginning-of-line)
-    (button-get (next-button (point) t) prop)))
+  "Grab property PROP of the button at point.
+Returns nil when point is on the header."
+  (-when-let (b (treemacs--current-button))
+    (button-get b prop)))
 
 (defsubst treemacs--is-path-in-dir? (path dir)
   "Is PATH in directory DIR?"
@@ -495,10 +501,8 @@ Optionally make the git request RECURSIVE."
 (defun treemacs--insert-header (root)
   "Insert the header line for the given ROOT."
   (setq default-directory (f-full root))
-  (insert-button (propertize (funcall treemacs-header-function root)
-                             'face 'treemacs-header-face)
-                 'face 'treemacs-header-face
-                 'abs-path root))
+  (insert (propertize (funcall treemacs-header-function root)
+                      'face 'treemacs-header-face)))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when the treemacs buffer gets killed."
@@ -577,7 +581,6 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
      (treemacs--stop-watching path)
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
      (treemacs--clear-from-cache btn recursive))))
-
 
 (defun treemacs--open-file (&optional window split-func)
   "Visit file of the current node.  Split WINDOW using SPLIT-FUNC.
@@ -719,12 +722,6 @@ Valid states are 'visible, 'exists and 'none."
    ((treemacs--is-visible?)    'visible)
    ((treemacs--buffer-exists?) 'exists)
    (t 'none)))
-
-(defun treemacs--current-root-btn ()
-  "Return the current root button."
-  (save-excursion
-    (goto-char (point-min))
-    (next-button (point) t)))
 
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."

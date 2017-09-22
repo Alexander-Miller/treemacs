@@ -63,7 +63,8 @@ For tags go to the tag definition via `treemacs-visit-node-no-split'.
 With a prefix ARG expanding and closing of nodes is recursive."
   (interactive "P")
   (save-excursion
-    (treemacs--push-button (treemacs--current-button) arg))
+    (-when-let (b (treemacs--current-button))
+      (treemacs--push-button b arg)))
   (treemacs--evade-image))
 
 (defun treemacs-click-mouse1 (event)
@@ -384,9 +385,7 @@ given and the current buffer is not editing a file."
 (defun treemacs-yank-path-at-point ()
   "Copy the absolute path of the node at point."
   (interactive)
-  (let ((yank (-> (treemacs--prop-at-point 'abs-path)
-                  (f-full)
-                  (kill-new))))
+  (-when-let (yank (-some-> (treemacs--prop-at-point 'abs-path) (f-full) (kill-new)))
     (treemacs--log "Yanked path: %s" (propertize yank 'face 'font-lock-string-face))))
 
 (defun treemacs-yank-root ()

@@ -86,8 +86,7 @@ If a prefix argument ARG is given manually select the root directory."
                 (curr-file    (treemacs--nearest-path curr-btn))
                 (curr-tagpath (treemacs--tags-path-of curr-btn))
                 (win-start    (window-start (get-buffer-window)))
-                (root-btn     (treemacs--current-root-btn))
-                (root         (button-get root-btn 'abs-path)))
+                (root         (treemacs--current-root)))
            (treemacs--build-tree root)
            ;; move point to the same file it was with before the refresh if the file
            ;; still exists and is visible, stay in the same line otherwise
