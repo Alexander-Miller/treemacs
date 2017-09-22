@@ -808,6 +808,7 @@ through the buffer list and kill buffer if PATH is a prefix."
   (defun treemacs--window-number-zero ()
     (when (and (eq (selected-window) (frame-first-window))
                (s-equals? (buffer-name) treemacs--buffer-name)) 10))
+
   (when (boundp 'winum-assign-func)
     (setq winum-assign-func #'treemacs--window-number-zero)))
 
