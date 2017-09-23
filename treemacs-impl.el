@@ -670,7 +670,10 @@ Callers must make sure to save match data"
     (with-selected-window w
       ;; Reset the treemacs window width to its default - required after window deletions
       (when treemacs--width-is-locked
-        (treemacs--set-width treemacs-width)))))
+        (treemacs--set-width treemacs-width))
+      ;; Prevent treemacs from being used as other-window
+      (when treemacs-is-never-other-window
+        (set-window-parameter w 'no-other-window t)))))
 
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."

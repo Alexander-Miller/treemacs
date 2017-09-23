@@ -228,6 +228,13 @@ This applies to refreshing both manual as well as automatic (due to e.g.
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-is-never-other-window nil
+  "When non-nil treemacs will never be used as other-window.
+This can prevent other packages from opening other buffers in the treemacs
+window. It also means treemacs is never selected by calls to `other-window'."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here
