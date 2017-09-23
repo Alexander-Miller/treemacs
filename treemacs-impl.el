@@ -107,6 +107,9 @@ functions.")
   "When set to t `treemacs--log' will produce no output.
 Not used directly, but as part of `treemacs--without-messages'.")
 
+(defvar-local treemacs--width-is-locked t
+  "Keeps track of whether the width of the treemacs window is locked.")
+
 ;;;;;;;;;;;;
 ;; Macros ;;
 ;;;;;;;;;;;;
@@ -503,7 +506,7 @@ Optionally make the git request RECURSIVE."
   (treemacs--cancel-missed-refresh)
   (treemacs--clear-tags-cache)
   (treemacs--tear-down-icon-highlight)
-  (remove-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)
+  (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
   (setq treemacs--open-dirs-cache nil
         treemacs--ready nil))
 
@@ -661,12 +664,13 @@ Callers must make sure to save match data"
     (unless ret (goto-char start))
     ret))
 
-(defun treemacs--reset-width-hook ()
-  "Resets treemacs' width after a change in the window layout.
-Injected into `window-configuration-change-hook'."
+(defun treemacs--on-window-config-change ()
+  "Collects all tasks that need to run on a window config change."
   (-when-let (w (treemacs--is-visible?))
     (with-selected-window w
-      (treemacs--set-width treemacs-width))))
+      ;; Reset the treemacs window width to its default - required after window deletions
+      (when treemacs--width-is-locked
+        (treemacs--set-width treemacs-width)))))
 
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."

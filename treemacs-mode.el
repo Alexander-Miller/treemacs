@@ -246,7 +246,7 @@ Prefer evil keybinds, otherwise pick the first result."
     (treemacs-restore))
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
-  (add-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)
+  (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
 
   (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))

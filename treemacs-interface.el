@@ -324,12 +324,10 @@ likewise be updated."
   "Toggle whether the treemacs buffer should have a fixed width.
 See also `treemacs-width.'"
   (interactive)
-  (let ((is-fixed? (memq #'treemacs--reset-width-hook (default-value 'window-configuration-change-hook))))
-    (if is-fixed?
-        (remove-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)
-      (add-hook 'window-configuration-change-hook #'treemacs--reset-width-hook))
-    (treemacs--log "Window width has been %s."
-                   (if is-fixed? "unlocked" "locked"))))
+  (setq treemacs--width-is-locked (not treemacs--width-is-locked))
+  (treemacs--log "Window width has been %s."
+                 (propertize (if treemacs--width-is-locked "locked" "unlocked")
+                             'face 'font-lock-string-face)))
 
 (defun treemacs-reset-width (&optional arg)
   "Reset the width of the treemacs buffer to `treemacs-buffer-width'.
