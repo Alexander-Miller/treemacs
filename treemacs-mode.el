@@ -245,6 +245,11 @@ Prefer evil keybinds, otherwise pick the first result."
   (when (s-blank? (buffer-string))
     (treemacs-restore))
 
+  ;; needs to run manually the first time treemacs is loaded, since the hook is only added *after*
+  ;; the window config was changed to show treemacs
+  (unless (member #'treemacs--on-window-config-change (default-value 'window-configuration-change-hook))
+    (treemacs--on-window-config-change))
+
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
   (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
 
