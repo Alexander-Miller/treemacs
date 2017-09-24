@@ -151,8 +151,8 @@ for ~treemacs-header-function~.
 * Installation
 
 Treemacs is available from MELPA. If you just want to quickly start using it you grab use the following ~use-package~
-example, and customize it as needed (remove ~treemacs-evil~ if you don't use it, use another map for keybinds if you
-don't use spacemacs etc).
+example, and customize it as needed (remove ~treemacs-evil~ if you don't use it, customize the keybinds as needed, the
+example code uses keys derived from spacemacs).
 
 Either way keep in mind that treemacs has /no default keybinds/ for its globally callable initialization functions.
 Each user is supposed to select keybinds for functions like ~treemacs~, ~treemacs-toggle~ and their projectile
@@ -187,21 +187,19 @@ You can find an exhaustive overview of all functions, their keybinds and functio
     :bind
     (:map global-map
           ([f8]        . treemacs-toggle)
-          ("<C-M-tab>" . treemacs-toggle)
           ("M-0"       . treemacs-select-window)
           ("C-c 1"     . treemacs-delete-other-windows)
-          :map spacemacs-default-map
-          ("ft"    . treemacs-toggle)
-          ("fT"    . treemacs)
-          ("f C-t" . treemacs-find-file)))
+          ("M-m ft"    . treemacs-toggle)
+          ("M-m fT"    . treemacs)
+          ("M-m f C-t" . treemacs-find-file)))
   (use-package treemacs-projectile
     :defer t
     :ensure t
     :config
     (setq treemacs-header-function #'treemacs-projectile-create-header)
-    :bind (:map spacemacs-default-map
-                ("fP" . treemacs-projectile)
-                ("fp" . treemacs-projectile-toggle)))
+    :bind (:map global-map
+                ("M-m fP" . treemacs-projectile)
+                ("M-m fp" . treemacs-projectile-toggle)))
 #+END_SRC
 
 * Configuration
