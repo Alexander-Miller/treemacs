@@ -195,11 +195,13 @@ You can find an exhaustive overview of all functions, their keybinds and functio
           ("fT"    . treemacs)
           ("f C-t" . treemacs-find-file)))
   (use-package treemacs-projectile
+    :defer t
+    :ensure t
     :config
     (setq treemacs-header-function #'treemacs-projectile-create-header)
     :bind (:map spacemacs-default-map
-                ("pT" . treemacs-projectile)
-                ("pt" . treemacs-projectile-toggle)))
+                ("fP" . treemacs-projectile)
+                ("fp" . treemacs-projectile-toggle)))
 #+END_SRC
 
 * Configuration
