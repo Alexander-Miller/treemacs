@@ -259,10 +259,11 @@ Will return the treemacs window if true."
   (get-buffer-window treemacs--buffer-name))
 
 (defsubst treemacs--buffer-exists? ()
-  "Indicates whether the treemacs buffer exists even if it is not visible."
-  (-contains?
-   (-map #'buffer-name (buffer-list))
-   treemacs--buffer-name))
+  "Indicates whether the treemacs buffer exists even if it is not visible.
+Returns the buffer if it does exist."
+  (--first
+   (string= treemacs--buffer-name (buffer-name it))
+   (buffer-list)))
 
 (defsubst treemacs--select-visible ()
   "Switch to treemacs buffer, given that it is currently visible."

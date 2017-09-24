@@ -281,13 +281,13 @@
   (ert-deftest current-visibility::existing-buffer ()
     (with-mock
       (stub get-buffer-window => nil)
-      (stub -contains? => t)
+      (stub buffer-list => (list (get-buffer-create treemacs--buffer-name)))
       (should (eq 'exists (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::no-buffer ()
     (with-mock
       (mock (get-buffer-window treemacs--buffer-name) => nil)
-      (stub -contains? => nil)
+      (stub buffer-list => (list))
       (should (eq 'none (treemacs--current-visibility))))))
 
 ;; `treemacs--unquote'
