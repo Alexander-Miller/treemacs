@@ -330,7 +330,7 @@ See also `treemacs-width.'"
                              'face 'font-lock-string-face)))
 
 (defun treemacs-reset-width (&optional arg)
-  "Reset the width of the treemacs buffer to `treemacs-buffer-width'.
+  "Reset the width of the treemacs window to `treemacs-buffer-width'.
 If a prefix argument ARG is provided read a new value for
 `treemacs-buffer-width' first."
   (interactive "P")

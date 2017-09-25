@@ -42,7 +42,7 @@
   :group 'treemacs-configuration)
 
 (defcustom treemacs-width 35
-  "Width of the treemacs buffer."
+  "Width of the treemacs window."
   :type 'integer
   :group 'treemacs-configuration)
 
