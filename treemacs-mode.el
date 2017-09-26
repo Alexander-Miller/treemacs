@@ -161,6 +161,7 @@ Prefer evil keybinds, otherwise pick the first result."
       (define-key map [tab]        #'treemacs-push-button)
       (define-key map [?\t]        #'treemacs-push-button)
       (define-key map [return]     #'treemacs-visit-node-default-action)
+      (define-key map (kbd "RET")  #'treemacs-visit-node-default-action)
       (define-key map (kbd "l")    #'treemacs-change-root)
       (define-key map (kbd "r")    #'treemacs-refresh)
       (define-key map (kbd "d")    #'treemacs-delete)
