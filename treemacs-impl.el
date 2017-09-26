@@ -294,14 +294,14 @@ Returns the buffer if it does exist."
   "Parse the git status derived from the output of GIT-FUTURE."
   (when git-future
     (pfuture-await-to-finish git-future)
-    (when (equal 0 (process-exit-status (pfuture-process git-future)))
+    (when (= 0 (process-exit-status git-future))
       (let ((git-output (pfuture-result git-future)))
         (unless (s-blank? git-output)
           ;; need the actual git root since git status outputs paths relative to it
           ;; and the output must be valid also for files in dirs being reopened
           (let* ((git-root (vc-call-backend
                             'Git 'root
-                            (process-get (pfuture-process git-future) 'default-directory))))
+                            (process-get git-future 'default-directory))))
             (let ((status
                    (->> (substring git-output 0 -1)
                         (s-split "\n")
@@ -440,7 +440,7 @@ Optionally make the git request RECURSIVE."
   (when treemacs-git-integration
     (let* ((default-directory (f-canonical path))
            (future (pfuture-new "git" "status" "--porcelain" "--ignored" (if recursive "-uall" "."))))
-      (process-put (pfuture-process future) 'default-directory default-directory)
+      (process-put future 'default-directory default-directory)
       future)))
 
 (defun treemacs--init (root)
