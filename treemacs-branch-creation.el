@@ -26,6 +26,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
 (require 'treemacs-async)
+(require 'treemacs-customization)
 
 (declare-function treemacs--start-watching "treemacs-filewatch-mode")
 
@@ -256,25 +257,32 @@ to PARENT."
   "Check if the window system has changed since the last call.
 Make the necessary render function changes changes if so and explicitly
 return t."
-  (let ((current-ui (window-system)))
-    (unless (eq current-ui treemacs--in-gui)
-      (setq treemacs--in-gui current-ui)
-      (with-no-warnings
-        (if current-ui
+  (unless treemacs-no-images
+    (let ((current-ui (window-system)))
+      (unless (eq current-ui treemacs--in-gui)
+        (setq treemacs--in-gui current-ui)
+        (with-no-warnings
+          (if current-ui
+              (progn
+                (when treemacs-icons-stash
+                  (setq treemacs-icons-hash treemacs-icons-stash))
+                (setq treemacs-icons-stash nil
+                      treemacs-icon-open treemacs-icon-open-png
+                      treemacs-icon-closed treemacs-icon-closed-png
+                      treemacs-icon-fallback treemacs-icon-text
+                      treemacs-icon-tag-leaf treemacs-icon-tag-leaf-png
+                      treemacs-icon-tag-node-open treemacs-icon-tag-node-open-png
+                      treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-png))
             (progn
-              (when treemacs-icons-stash
-                (setq treemacs-icons-hash treemacs-icons-stash))
-              (setq treemacs-icons-stash nil
-                    treemacs-icon-open treemacs-icon-open-png
-                    treemacs-icon-closed treemacs-icon-closed-png
-                    treemacs-icon-fallback treemacs-icon-text))
-          (progn
-            (setq treemacs-icons-stash treemacs-icons-hash
-                  treemacs-icons-hash (make-hash-table :test #'equal)
-                  treemacs-icon-open treemacs-icon-open-text
-                  treemacs-icon-closed treemacs-icon-closed-text
-                  treemacs-icon-fallback ""))))
-      t)))
+              (setq treemacs-icons-stash treemacs-icons-hash
+                    treemacs-icons-hash (make-hash-table :test #'equal)
+                    treemacs-icon-open treemacs-icon-open-text
+                    treemacs-icon-closed treemacs-icon-closed-text
+                    treemacs-icon-fallback ""
+                    treemacs-icon-tag-leaf treemacs-icon-tag-leaf-text
+                    treemacs-icon-tag-node-open treemacs-icon-tag-node-open-text
+                    treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-text))))
+        t))))
 
 (provide 'treemacs-branch-creation)
 

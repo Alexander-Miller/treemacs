@@ -20,6 +20,17 @@
 
 ;;; Code:
 
+;; defined here since, with the exception of the main file that cannot be required
+;; elsewhere, this is the first unit to be loaded
+(defconst treemacs-no-images
+  (condition-case e
+      (progn (create-image "" 'xpm) nil)
+    (error e))
+  "This variable is a non-nil error value when Emacs is unable to create images.
+In this scenario (usually caused by running Emacs without a graphical
+environment) treemacs will not create any of its icons and will be forced to
+perpetually use its simple string icon fallack.")
+
 (defgroup treemacs nil
   "A major mode for displaying the file system in a tree layout."
   :group 'files
@@ -229,7 +240,7 @@ This applies to refreshing both manual as well as automatic (due to e.g.
   :group 'treemacs-configuration)
 
 (defcustom treemacs-is-never-other-window nil
-  "When non-nil treemacs will never be used as other-window.
+  "When non-nil treemacs will never be used as `other-window'.
 This can prevent other packages from opening other buffers in the treemacs
 window. It also means treemacs is never selected by calls to `other-window'."
   :type 'boolean

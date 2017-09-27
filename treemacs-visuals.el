@@ -21,6 +21,7 @@
 ;;; Code:
 
 (require 'treemacs-impl)
+(require 'treemacs-customization)
 (require 'image)
 (require 'hl-line)
 
@@ -130,37 +131,41 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 (defun treemacs--create-icons ()
   "Create icons and put them in the icons hash."
 
-  (setq treemacs-icons-hash (make-hash-table :test #'equal))
-
-  (treemacs--setup-icon treemacs-icon-closed-png "dir_closed.png")
-  (treemacs--setup-icon treemacs-icon-open-png   "dir_open.png")
-  (treemacs--setup-icon treemacs-icon-text       "txt.png")
-
-  (treemacs--setup-icon treemacs-icon-shell      "shell.png"      "sh" "zsh" "fish")
-  (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"        "pdf")
-  (treemacs--setup-icon treemacs-icon-c          "c.png"          "c" "h")
-  (treemacs--setup-icon treemacs-icon-cpp        "cpp.png"        "cpp" "cxx" "hpp" "tpp" "cc" "hh")
-  (treemacs--setup-icon treemacs-icon-haskell    "haskell.png"    "hs")
-  (treemacs--setup-icon treemacs-icon-python     "python.png"     "py" "pyc")
-  (treemacs--setup-icon treemacs-icon-markdown   "markdown.png"   "md")
-  (treemacs--setup-icon treemacs-icon-rust       "rust.png"       "rs" "toml")
-  (treemacs--setup-icon treemacs-icon-image      "image.png"      "jpg" "jpeg" "bmp" "svg" "png" "xpm")
-  (treemacs--setup-icon treemacs-icon-emacs      "emacs.png"      "el" "elc" "org")
-  (treemacs--setup-icon treemacs-icon-clojure    "clojure.png"    "clj" "cljs" "cljc")
-  (treemacs--setup-icon treemacs-icon-typescript "typescript.png" "ts")
-  (treemacs--setup-icon treemacs-icon-css        "css.png"        "css")
-  (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "conf" "config" "ini" "xdefaults" "xresources")
-  (treemacs--setup-icon treemacs-icon-html       "html.png"       "html" "htm")
-  (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
-  (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
-  (treemacs--setup-icon treemacs-icon-js         "js.png"         "js" "jsx")
-  (treemacs--setup-icon treemacs-icon-json       "json.png"       "json")
-
   (defconst treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
   (defconst treemacs-icon-open-text   (propertize "- " 'face 'treemacs-term-node-face))
-  (with-no-warnings
-    (defvar treemacs-icon-closed treemacs-icon-closed-png)
-    (defvar treemacs-icon-open treemacs-icon-open-png)))
+
+  (defvar treemacs-icon-closed)
+  (defvar treemacs-icon-open)
+
+  (if treemacs-no-images
+      (setq treemacs-icon-closed treemacs-icon-closed-text
+            treemacs-icon-open   treemacs-icon-open-text)
+
+    (setq treemacs-icons-hash (make-hash-table :test #'equal))
+
+    (treemacs--setup-icon treemacs-icon-closed-png "dir_closed.png")
+    (treemacs--setup-icon treemacs-icon-open-png   "dir_open.png")
+    (treemacs--setup-icon treemacs-icon-text       "txt.png")
+
+    (treemacs--setup-icon treemacs-icon-shell      "shell.png"      "sh" "zsh" "fish")
+    (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"        "pdf")
+    (treemacs--setup-icon treemacs-icon-c          "c.png"          "c" "h")
+    (treemacs--setup-icon treemacs-icon-cpp        "cpp.png"        "cpp" "cxx" "hpp" "tpp" "cc" "hh")
+    (treemacs--setup-icon treemacs-icon-haskell    "haskell.png"    "hs")
+    (treemacs--setup-icon treemacs-icon-python     "python.png"     "py" "pyc")
+    (treemacs--setup-icon treemacs-icon-markdown   "markdown.png"   "md")
+    (treemacs--setup-icon treemacs-icon-rust       "rust.png"       "rs" "toml")
+    (treemacs--setup-icon treemacs-icon-image      "image.png"      "jpg" "jpeg" "bmp" "svg" "png" "xpm")
+    (treemacs--setup-icon treemacs-icon-emacs      "emacs.png"      "el" "elc" "org")
+    (treemacs--setup-icon treemacs-icon-clojure    "clojure.png"    "clj" "cljs" "cljc")
+    (treemacs--setup-icon treemacs-icon-typescript "typescript.png" "ts")
+    (treemacs--setup-icon treemacs-icon-css        "css.png"        "css")
+    (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "conf" "config" "ini" "xdefaults" "xresources")
+    (treemacs--setup-icon treemacs-icon-html       "html.png"       "html" "htm")
+    (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
+    (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
+    (treemacs--setup-icon treemacs-icon-js         "js.png"         "js" "jsx")
+    (treemacs--setup-icon treemacs-icon-json       "json.png"       "json")))
 
 (defun treemacs-define-custom-icon (icon &rest file-extensions)
   "Define a custom ICON to use for FILE-EXTENSIONS.
