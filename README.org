@@ -282,15 +282,17 @@ These functions are not bound to any keys by default. It's left up to users to f
 Additionally ~treemacs-refresh~, ~treemacs-select-window~ and ~treemacs-find-file~ may also be called from outside
 the treemacs window and might therefore need their own global binding.
 
-| Action                        | Description                                                                                                                                                                                          |
-|-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| treemacs                      | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.      |
-| treemacs-projectile           | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                           |
-| treemacs-toggle               | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.            |
-| treemacs-toggle-projectile    | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-projectile. |
-| treemacs-find-file            | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed.                                                                                                  |
-| treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs-toggle~ if it is not.                                                                                                                    |
-| treemacs-delete-other-windows | Same as ~delete-other-windows~, but will not delete the treemacs window.                                                                                                                             |
+| Action                           | Description                                                                                                                                                                                          |
+|----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs                         | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.      |
+| treemacs-projectile              | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                           |
+| treemacs-toggle                  | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.            |
+| treemacs-toggle-projectile       | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-projectile. |
+| treemacs-find-file               | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed.                                                                                                  |
+| treemacs-select-window           | Select the treemacs window if it is visible. Call ~treemacs-toggle~ if it is not.                                                                                                                    |
+| treemacs-delete-other-windows    | Same as ~delete-other-windows~, but will not delete the treemacs window.                                                                                                                             |
+| treemacs-push-button-select-sort | Same as ~treemacs-push-button~, but the sorting function is chosen manually. The sort setting is active for only a single push, its effect will be undone on the next refresh.                       |
+
 ** Default keymap
 By default Treemacs's keymap looks as follows:
 

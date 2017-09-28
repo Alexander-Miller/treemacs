@@ -413,6 +413,17 @@ Call `treemacs-toggle' if it is not."
       (select-window w t)
     (treemacs-toggle)))
 
+(defun treemacs-push-button-select-sort (&optional arg)
+  "Same as `treemacs-push-button', but the sorting function is chosen manually.
+The sort setting is active for only a single push, its effect will be undone on
+the next refresh.
+Prefix argument ARG has the same effect as in `treemacs-push-button' - causing
+the open/close process to work recursively."
+  (interactive)
+  (let* ((sort-options '(alphabetic-desc alphabetic-asc size-asc size-desc mod-time-asc mod-time-desc))
+         (treemacs-sorting (intern (completing-read "Sorting: " sort-options))))
+    (treemacs-push-button arg)))
+
 (provide 'treemacs-interface)
 
 ;;; treemacs-interface.el ends here
