@@ -37,7 +37,7 @@
 Return of cons of the key formatted for inclusion in the hydra string, including
 a minimum width for alignment, and the key itself for the hydra heads.
 Prefer evil keybinds, otherwise pick the first result."
-  (-when-let (keys (where-is-internal func))
+  (-if-let (keys (where-is-internal func))
     (let ((key
            (key-description
             (-if-let (evil-keys (--first (eq 'treemacs-state (aref it 0)) keys))
@@ -45,16 +45,19 @@ Prefer evil keybinds, otherwise pick the first result."
               (--map (aref (car keys) it) (number-sequence 0 (- (length (car keys)) 1)))))))
       (setq key
             (pcase key
-              ("<return>" "RET")
-              ("<left>"   "LEFT")
-              ("<right>"  "RIGHT")
-              ("<up>"     "UP")
-              ("<down>"   "DOWN")
+              ("<return>"  "RET")
+              ("<left>"    "LEFT")
+              ("<right>"   "RIGHT")
+              ("<up>"      "UP")
+              ("<down>"    "DOWN")
               (_ key)))
-      (cons (s-pad-right 8 " " (format "_%s_:" key)) key))))
+      (cons (s-pad-right 8 " " (format "_%s_:" key)) key))
+    (cons (s-pad-right 8 " " (format "_%s_:" " ")) " ")))
 
 (defun treemacs-helpful-hydra ()
-  "Summon the helpful hydra to show you the treemacs keymap."
+  "Summon the helpful hydra to show you the treemacs keymap.
+If the hydra, for whatever reason, is unable the find the key a command is bound
+to it will instead show a blank."
   (interactive)
   (-if-let (b (treemacs--buffer-exists?))
       (with-current-buffer b
@@ -80,7 +83,7 @@ Prefer evil keybinds, otherwise pick the first result."
              (key-open-ace       (treemacs--find-keybind #'treemacs-visit-node-ace))
              (key-open-ace-horiz (treemacs--find-keybind #'treemacs-visit-node-ace-horizontal-split))
              (key-open-ace-vert  (treemacs--find-keybind #'treemacs-visit-node-ace-vertical-split))
-             (key-open-xdg       (treemacs--find-keybind #'treemacs-xdg-open))
+             (key-open-ext       (treemacs--find-keybind #'treemacs-visit-node-in-external-application))
              (key-create-file    (treemacs--find-keybind #'treemacs-create-file))
              (key-create-dir     (treemacs--find-keybind #'treemacs-create-dir))
              (key-rename         (treemacs--find-keybind #'treemacs-rename))
@@ -115,7 +118,7 @@ Prefer evil keybinds, otherwise pick the first result."
                (car key-next-neighbour) (car key-open)       (car key-rename)       (car key-show-dotfiles) (car key-copy-path)
                (car key-prev-neighbour) (car key-open-horiz) (car key-toggle-width) (car key-copy-root)     (car key-goto-parent)
                (car key-open-vert)      (car key-root-up)    (car key-open-ace)     (car key-root-down)     (car key-open-ace-horiz)
-               (car key-open-ace-vert)  (car key-open-xdg))))
+               (car key-open-ace-vert)  (car key-open-ext))))
           (eval
            `(defhydra treemacs--helpful-hydra (:exit t :hint nil :columns 5)
               ,hydra-str
@@ -134,7 +137,7 @@ Prefer evil keybinds, otherwise pick the first result."
               (,(cdr key-open-ace)       #'treemacs-visit-node-ace)
               (,(cdr key-open-ace-horiz) #'treemacs-visit-node-ace-horizontal-split)
               (,(cdr key-open-ace-vert)  #'treemacs-visit-node-ace-vertical-split)
-              (,(cdr key-open-xdg)       #'treemacs-xdg-open)
+              (,(cdr key-open-ext)       #'treemacs-visit-node-in-external-application)
               (,(cdr key-create-file)    #'treemacs-create-file)
               (,(cdr key-create-dir)     #'treemacs-create-dir)
               (,(cdr key-rename)         #'treemacs-rename)
@@ -178,7 +181,7 @@ Prefer evil keybinds, otherwise pick the first result."
       (define-key map (kbd "oaa")  #'treemacs-visit-node-ace)
       (define-key map (kbd "oah")  #'treemacs-visit-node-ace-horizontal-split)
       (define-key map (kbd "oav")  #'treemacs-visit-node-ace-vertical-split)
-      (define-key map (kbd "ox")   #'treemacs-xdg-open)
+      (define-key map (kbd "ox")   #'treemacs-visit-node-in-external-application)
       (define-key map (kbd "n")    #'treemacs-next-line)
       (define-key map (kbd "p")    #'treemacs-previous-line)
       (define-key map (kbd "M-n")  #'treemacs-next-neighbour)
