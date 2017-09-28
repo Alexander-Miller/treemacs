@@ -224,6 +224,26 @@ and then inserts the new touple."
   (-when-let (path (treemacs--prop-at-point 'abs-path))
     (when (f-exists? path)
       (call-process-shell-command (format "xdg-open \"%s\" &" path)))))
+(make-obsolete 'treemacs-xdg-open #'treemacs-visit-node-in-external-application "Treemacs v1.11.2")
+
+(defun treemacs-visit-node-in-external-application ()
+  "Open current file according to its mime type in an external application.
+Treemacs knows how to open files on linux, windows and macos."
+  (interactive)
+  ;; code adapted from ranger.el
+  (-if-let (path (treemacs--prop-at-point 'abs-path))
+      (pcase system-type
+       ('windows-nt
+        (declare-function w32-shell-execute "w32fns.c")
+        (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" path t t)))
+       ('darwin
+        (shell-command (format "open \"%s\"" path)))
+       ('gnu/linux
+        (let ((process-connection-type nil))
+          (start-process "" nil "xdg-open" path)))
+       (_ (treemacs--log "Don't know how to open files on %s."
+                         (propertize (symbol-name system-type) 'face 'font-lock-string-face))))
+    (treemacs--log "Nothing to open here.")))
 
 (defun treemacs-kill-buffer ()
   "Kill the treemacs buffer."
