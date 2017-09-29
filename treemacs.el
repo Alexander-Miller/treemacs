@@ -27,6 +27,7 @@
 (require 'dash)
 (require 's)
 (require 'f)
+(require 'bookmark)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-visuals)
@@ -72,6 +73,39 @@ If a prefix argument ARG is given manually select the root directory."
                    (arg (read-directory-name "Treemacs root: "))
                    (default-directory default-directory)
                    (t (getenv "HOME")))))
+
+;;;###autoload
+(defun treemacs-bookmark (&optional arg)
+  "Find a bookmark in treemacs.
+Only bookmarks marking either a file or a directory are offered for selection.
+Treemacs will try to find and focus the given bookmark's location. If it cannot
+do that it will instead rebuild its view with the bookmark's location as
+its root.
+
+With a prefix argument ARG treemacs will also open the bookmarked location."
+  (interactive "P")
+  (-if-let (bookmarks
+            (cl-loop
+             for b in bookmark-alist
+             for name = (car b)
+             for location = (bookmark-location b)
+             when (or (f-file? location) (f-directory? location))
+             collect (propertize name 'location location)))
+      (let* ((bookmark (completing-read "Bookmark: " bookmarks))
+             (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
+             (dir (if (f-directory? location) location (f-dirname location))))
+        (if (treemacs--buffer-exists?)
+            (progn
+              (if (treemacs--is-visible?)
+                  (treemacs--select-visible)
+                (treemacs-toggle))
+              (treemacs-select-window)
+              (if (treemacs--is-path-in-dir? location (treemacs--current-root))
+                (treemacs--init dir)))
+          (treemacs--init dir))
+        (treemacs--goto-button-at location)
+        (when arg
+          (treemacs-visit-node-default-action)))))
 
 ;;;###autoload
 (defun treemacs-refresh ()
