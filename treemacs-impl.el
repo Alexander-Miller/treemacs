@@ -730,7 +730,7 @@ Valid states are 'visible, 'exists and 'none."
   (treemacs--forget-last-highlight)
   (-> (selected-window)
       (frame-root-window)
-      (split-window nil 'left)
+      (split-window nil treemacs-position)
       (select-window))
   (switch-to-buffer (get-buffer-create treemacs--buffer-name))
   (set-window-dedicated-p (selected-window) t)
