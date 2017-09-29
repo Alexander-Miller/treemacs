@@ -246,6 +246,16 @@ window. It also means treemacs is never selected by calls to `other-window'."
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-position 'left
+  "Position of treemacs buffer.
+
+Valid values are
+ * left,
+ * right."
+  :type '(choice (const left)
+                 (const right))
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here
