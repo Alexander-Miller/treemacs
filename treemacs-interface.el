@@ -123,7 +123,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive)
   (let ((btn (treemacs--current-button)))
     (pcase (button-get btn 'state)
-      ((or 'dir-node-open 'dir-node-closed)
+      ((or `dir-node-open `dir-node-closed)
        (treemacs--build-tree (button-get btn 'abs-path)))
       (_
        (treemacs--log "Button in current line is not a directory.")))))
@@ -206,7 +206,7 @@ Stay in current window with a prefix argument ARG."
 Pass on prefix ARG to the action."
   (interactive "P")
   (-when-let (state (treemacs--prop-at-point 'state))
-    (funcall (alist-get state treemacs-default-actions) arg)))
+    (funcall (treemacs-alist-get state treemacs-default-actions) arg)))
 
 (defun treemacs-define-default-action (state action)
   "Define the behaviour of `treemacs-visit-default-action'.
@@ -233,12 +233,12 @@ Treemacs knows how to open files on linux, windows and macos."
   ;; code adapted from ranger.el
   (-if-let (path (treemacs--prop-at-point 'abs-path))
       (pcase system-type
-       ('windows-nt
+       (`windows-nt
         (declare-function w32-shell-execute "w32fns.c")
         (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" path t t)))
-       ('darwin
+       (`darwin
         (shell-command (format "open \"%s\"" path)))
-       ('gnu/linux
+       (`gnu/linux
         (let ((process-connection-type nil))
           (start-process "" nil "xdg-open" path)))
        (_ (treemacs--log "Don't know how to open files on %s."

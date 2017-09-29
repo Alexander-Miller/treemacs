@@ -172,13 +172,13 @@ matching the buttons state."
                       (other-window 1)))
               (pcase state
                 ,@(when dir-action
-                    `(((or 'dir-node-open 'dir-node-closed)
+                    `(((or `dir-node-open `dir-node-closed)
                        ,dir-action)))
                 ,@(when file-action
-                    `(((or 'file-node-open 'file-node-closed)
+                    `(((or `file-node-open `file-node-closed)
                        ,file-action)))
                 ,@(when tag-action
-                    `(('tag-node
+                    `((`tag-node
                        ,tag-action)))
                 (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
                           state ',valid-states)))
@@ -371,6 +371,21 @@ and special names like this."
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
 
+(defun treemacs-alist-get (key alist &optional default remove testfn)
+  "Same as the builtin `alist-get', but copied here to be available on emacs24.
+Return the value associated with KEY in ALIST.
+If KEY is not found in ALIST, return DEFAULT.
+Use TESTFN to lookup in the alist if non-nil.  Otherwise, use `assq'.
+
+This is a generalized variable suitable for use with `setf'.
+When using it to set a value, optional argument REMOVE non-nil
+means to remove KEY from ALIST if the new value is `eql' to DEFAULT."
+  (ignore remove) ;;Silence byte-compiler.
+  (let ((x (if (not testfn)
+               (assq key alist)
+             (assoc key alist testfn))))
+    (if x (cdr x) default)))
+
 (defun treemacs--update-caches-after-rename (old-path new-path)
   "Update dirs and tags cache after OLD-PATH was renamed to NEW-PATH."
   ;; dirs cache
@@ -519,13 +534,13 @@ Optionally make the git request RECURSIVE."
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
   (pcase (button-get btn 'state)
-    ('dir-node-open    (treemacs--close-node btn recursive))
-    ('dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
-    ('file-node-open   (treemacs--close-tags-for-file btn recursive))
-    ('file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
-    ('tag-node-open    (treemacs--close-tag-node btn recursive))
-    ('tag-node-closed  (treemacs--open-tag-node btn :recursive recursive))
-    ('tag-node         (treemacs--execute-button-action
+    (`dir-node-open    (treemacs--close-node btn recursive))
+    (`dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
+    (`file-node-open   (treemacs--close-tags-for-file btn recursive))
+    (`file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
+    (`tag-node-open    (treemacs--close-tag-node btn recursive))
+    (`tag-node-closed  (treemacs--open-tag-node btn :recursive recursive))
+    (`tag-node         (treemacs--execute-button-action
                         :tag-action (treemacs--goto-tag btn)
                         :no-match-explanation "This button should be a tag"))
     (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
@@ -537,11 +552,11 @@ Optionally do so in a RECURSIVE fashion."
       ;; so we'll just throw the path out of the cache and assume that all is well
       (treemacs--clear-from-cache btn)
     (pcase (button-get btn 'state)
-      ('dir-node-closed  (treemacs--open-dir-node btn :no-add t))
-      ('file-node-closed (treemacs--open-tags-for-file btn :no-add t))
-      ('tag-node-closed  (treemacs--open-tag-node btn :no-add t))
-      (_                 (error "[Treemacs] Cannot reopen button at path %s with state %s"
-                                (button-get btn 'abs-path) (button-get btn 'state))))))
+      (`dir-node-closed  (treemacs--open-dir-node btn :no-add t))
+      (`file-node-closed (treemacs--open-tags-for-file btn :no-add t))
+      (`tag-node-closed  (treemacs--open-tag-node btn :no-add t))
+      (other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
+                                (button-get btn 'abs-path) other)))))
 
 (cl-defun treemacs--open-dir-node (btn &key no-add git-future recursive)
   "Open the node given by BTN.

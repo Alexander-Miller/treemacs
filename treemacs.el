@@ -5,7 +5,7 @@
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0") (pfuture "1.2") (hydra "0.13.2"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
-;; Version: 1.11.2
+;; Version: 1.11.3
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@
 (require 'treemacs-tags)
 (require 'treemacs-async)
 
-(defconst treemacs-version "1.11.2")
+(defconst treemacs-version "1.11.3")
 
 ;;;###autoload
 (defun treemacs-toggle ()
@@ -125,7 +125,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
            ;; move point to the same file it was with before the refresh if the file
            ;; still exists and is visible, stay in the same line otherwise
            (pcase curr-state
-             ((or 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
+             ((or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
               (if (and (f-exists? curr-file)
                        (or treemacs-show-hidden-files
                            (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
@@ -133,7 +133,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
                 ;; not pretty, but there can still be some off by one jitter when
                 ;; using forwald-line
                 (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
-             ((or 'tag-node-open 'tag-node-closed 'tag-node)
+             ((or `tag-node-open `tag-node-closed `tag-node)
               (treemacs--goto-tag-button-at curr-tagpath curr-file win-start))
              (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
            (treemacs--evade-image)
