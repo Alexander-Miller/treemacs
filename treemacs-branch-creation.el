@@ -254,35 +254,13 @@ to PARENT."
     ,post-close-action))
 
 (defun treemacs--check-window-system ()
-  "Check if the window system has changed since the last call.
-Make the necessary render function changes changes if so and explicitly
-return t."
-  (unless treemacs-no-images
-    (let ((current-ui (window-system)))
-      (unless (eq current-ui treemacs--in-gui)
-        (setq treemacs--in-gui current-ui)
-        (with-no-warnings
-          (if current-ui
-              (progn
-                (when treemacs-icons-stash
-                  (setq treemacs-icons-hash treemacs-icons-stash))
-                (setq treemacs-icons-stash nil
-                      treemacs-icon-open treemacs-icon-open-png
-                      treemacs-icon-closed treemacs-icon-closed-png
-                      treemacs-icon-fallback treemacs-icon-text
-                      treemacs-icon-tag-leaf treemacs-icon-tag-leaf-png
-                      treemacs-icon-tag-node-open treemacs-icon-tag-node-open-png
-                      treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-png))
-            (progn
-              (setq treemacs-icons-stash treemacs-icons-hash
-                    treemacs-icons-hash (make-hash-table :test #'equal)
-                    treemacs-icon-open treemacs-icon-open-text
-                    treemacs-icon-closed treemacs-icon-closed-text
-                    treemacs-icon-fallback ""
-                    treemacs-icon-tag-leaf treemacs-icon-tag-leaf-text
-                    treemacs-icon-tag-node-open treemacs-icon-tag-node-open-text
-                    treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-text))))
-        t))))
+  "Check if this treemacs instance runs in a GUI or TUI.
+If it's running in a TUI use terminal switch to simple text icons."
+  (unless (or treemacs-no-images (window-system))
+    (setq-local treemacs-icon-open treemacs-icon-open-text)
+    (setq-local treemacs-icon-closed treemacs-icon-closed-text)
+    (setq-local treemacs-icon-fallback "")
+    (setq-local treemacs-icons-hash (make-hash-table :test #'eq))))
 
 (provide 'treemacs-branch-creation)
 
