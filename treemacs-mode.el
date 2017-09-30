@@ -241,8 +241,9 @@ to it will instead show a blank."
   (unless (member #'treemacs--on-window-config-change (default-value 'window-configuration-change-hook))
     (treemacs--on-window-config-change))
 
-  (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
   (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
+  (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
+  ;; (add-hook 'after-make-frame-functions #'treemacs--remove-treemacs-window-in-new-frames)
   (add-to-list 'delete-frame-functions #'treemacs--remove-framelocal-buffer)
 
   (treemacs--setup-icon-highlight)

@@ -228,11 +228,6 @@ Returns nil when point is on the header."
   (interactive)
   (buffer-substring-no-properties (button-start btn) (button-end btn)))
 
-(defsubst treemacs--refresh-on-ui-change ()
-  "Refresh the treemacs buffer when the window system has changed."
-  (when (treemacs--check-window-system)
-    (treemacs-refresh)))
-
 (defsubst treemacs--add-to-cache (btn)
   "Add a cache entry for BTN's path under its parent.
 The parent may be stored in BTN's parent-path property if BTN is a collapsed
@@ -495,13 +490,16 @@ Optionally make the git request RECURSIVE."
     (if (treemacs--is-visible?)
         (treemacs--select-visible)
       (treemacs--setup-buffer))
-    ;; f-long to expand ~ and remove final slash
-    ;; needed for root dirs given by projectile if it's used
-    (treemacs--build-tree (f-long root))
     ;; do mode activation last - if the treemacs buffer is empty when the major
     ;; mode is activated (this may happen when treemacs is restored from other
     ;; than desktop save mode) treemacs will attempt to restore the previous session
-    (treemacs-mode)
+    ;; TODO figure out mode activation order w.r.t persistence & buffer locals
+    (unless (eq major-mode 'treemacs-mode)
+      (treemacs-mode))
+    ;; f-long to expand ~ and remove final slash
+    ;; needed for root dirs given by projectile if it's used
+    (treemacs--build-tree (f-long root))
+    (treemacs--check-window-system)
     (setq treemacs--ready t)
     ;; no warnings since follow mode is known to be defined
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
@@ -510,10 +508,8 @@ Optionally make the git request RECURSIVE."
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
-  (treemacs--check-window-system)
   (treemacs--forget-last-highlight)
   (treemacs--stop-watching-all)
-  (treemacs--forget-last-highlight)
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
@@ -547,7 +543,8 @@ Optionally make the git request RECURSIVE."
   "Cleanup to run when a treemacs buffer is killed."
   (treemacs--remove-framelocal-buffer)
   (unless treemacs--buffer-access
-    (remove-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)))
+    ;; TODO make local maybe
+    (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when an existing treemacs buffer is re-initialized."

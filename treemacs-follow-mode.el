@@ -65,7 +65,6 @@ The followed file MUST be under root or the search will break."
 Expand directories if needed. Do nothing if current file does not exist in the
 file system or is not below current treemacs root or if the treemacs buffer is
 not visible."
-       (interactive)
        ;; Treemacs selecting files with `ace-window' results in a large amount of
        ;; window selections, so we should be breaking out as soon as possbile
        (when treemacs--ready
