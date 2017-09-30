@@ -55,18 +55,17 @@ If a treemacs buffer exists, but is not visible bring it to the foreground
 and select it.
 If no treemacs buffer exists call `treemacs'."
   (interactive)
-  (cond
-   ((treemacs--is-visible?)
-    (treemacs--select-visible)
-    (treemacs--refresh-on-ui-change)
-    (if (one-window-p)
-        (switch-to-buffer (other-buffer))
-      (bury-buffer)))
-   ((treemacs--buffer-exists?)
-    (treemacs--select-not-visible)
-    (treemacs--refresh-on-ui-change))
-   (t
-    (treemacs))))
+  (pcase (treemacs--current-visibility)
+    ('visible
+     (treemacs--select-visible)
+     (if (one-window-p)
+         (switch-to-buffer (other-buffer))
+       (bury-buffer)))
+    ('exists
+     (treemacs--select-not-visible))
+    ('none
+     (treemacs))
+    (_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility)))))
 
 ;;;###autoload
 (defun treemacs (&optional arg)
