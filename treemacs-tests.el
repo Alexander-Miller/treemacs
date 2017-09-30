@@ -465,32 +465,6 @@
                              '(("ROOT" . "~/A")
                                ("POINT-AT" . "~/A/p")))))))))
 
-;; `treemacs--check-window-system'
-(progn
-  (ert-deftest check-window-system::returns-nil-when-no-change-from-x ()
-    (with-mock
-     (stub window-system => 'x)
-     (let ((treemacs--in-gui 'x))
-       (should-not (treemacs--check-window-system)))))
-
-  (ert-deftest check-window-system::returns-nil-when-no-change-from-term ()
-    (with-mock
-      (stub window-system => nil)
-      (let ((treemacs--in-gui))
-        (should-not (treemacs--check-window-system)))))
-
-  (ert-deftest check-window-system::returns-t-when-no-change-from-x-to-term ()
-    (with-mock
-      (stub window-system => 'x)
-      (let ((treemacs--in-gui))
-        (should (treemacs--check-window-system)))))
-
-  (ert-deftest check-window-system::returns-t-when-no-change-from-term-to-x ()
-    (with-mock
-      (stub window-system => nil)
-      (let ((treemacs--in-gui 'x))
-        (should (treemacs--check-window-system))))))
-
 ;; `treemacs--is-event-relevant?'
 (progn
   (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
