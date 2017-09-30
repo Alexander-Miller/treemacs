@@ -147,16 +147,22 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 
   (defvar treemacs-icon-closed)
   (defvar treemacs-icon-open)
+  (defvar treemacs-icon-fallback)
 
   (if treemacs-no-images
-      (setq treemacs-icon-closed treemacs-icon-closed-text
-            treemacs-icon-open   treemacs-icon-open-text)
+      (setq treemacs-icon-closed   treemacs-icon-closed-text
+            treemacs-icon-open     treemacs-icon-open-text
+            treemacs-icon-fallback "")
 
     (setq treemacs-icons-hash (make-hash-table :test #'equal))
 
     (treemacs--setup-icon treemacs-icon-closed-png "dir_closed.png")
     (treemacs--setup-icon treemacs-icon-open-png   "dir_open.png")
     (treemacs--setup-icon treemacs-icon-text       "txt.png")
+
+    (setq treemacs-icon-closed   treemacs-icon-closed-png
+          treemacs-icon-open     treemacs-icon-open-png
+          treemacs-icon-fallback treemacs-icon-text)
 
     (treemacs--setup-icon treemacs-icon-shell      "shell.png"      "sh" "zsh" "fish")
     (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"        "pdf")
