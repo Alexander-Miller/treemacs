@@ -829,14 +829,14 @@ through the buffer list and kill buffer if PATH is a prefix."
 (with-eval-after-load 'winum
 
   ;; somestimes the compiler asks for the strangest things
-  (declare-function treemacs--window-number-zero "treemacs-impl")
+  (declare-function treemacs--window-number-ten "treemacs-impl")
 
-  (defun treemacs--window-number-zero ()
+  (defun treemacs--window-number-ten ()
     (when (and (eq (selected-window) (frame-first-window))
                (treemacs--is-treemacs-window-selected?)) 10))
 
   (when (boundp 'winum-assign-func)
-    (setq winum-assign-func #'treemacs--window-number-zero)))
+    (setq winum-assign-func #'treemacs--window-number-ten)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Popwin Compatibility ;;
