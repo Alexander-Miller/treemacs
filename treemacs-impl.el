@@ -382,6 +382,11 @@ and special names like this."
   "Reset the cache of open dirs."
   (setq treemacs--open-dirs-cache nil))
 
+(defsubst treemacs--is-treemacs-window? (window)
+  "Return t when WINDOW is showing a treemacs buffer."
+  (declare (side-effect-free t))
+  (->> window window-buffer buffer-name (s-starts-with? treemacs--buffer-name-prefix)))
+
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;

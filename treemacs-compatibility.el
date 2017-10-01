@@ -72,6 +72,16 @@
   (when (boundp 'indent-guide-inhibit-modes)
     (push 'treemacs-mode indent-guide-inhibit-modes)))
 
+(with-eval-after-load 'persp-mode
+  (defun treemacs--remove-treemacs-window-in-new-frames (persp-activated-for)
+    (when (or t(eq persp-activated-for 'frame))
+      (-when-let (w (--first (treemacs--is-treemacs-window? it)
+                             (window-list)))
+        (unless (assoc (selected-frame) treemacs--buffer-access)
+          (delete-window w)))))
+
+  (add-to-list 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames))
+
 (provide 'treemacs-compatibility)
 
 ;;; treemacs-compatibility.el ends here
