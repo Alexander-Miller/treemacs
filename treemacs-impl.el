@@ -371,6 +371,10 @@ and special names like this."
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
 
+(defun treemacs--is-treemacs-window-selected? ()
+  "Return t when the treemacs window is selected."
+  (string= treemacs--buffer-name (buffer-name)))
+
 (defun treemacs-alist-get (key alist &optional default remove testfn)
   "Same as the builtin `alist-get', but copied here to be available on emacs24.
 Return the value associated with KEY in ALIST.
@@ -829,7 +833,7 @@ through the buffer list and kill buffer if PATH is a prefix."
 
   (defun treemacs--window-number-zero ()
     (when (and (eq (selected-window) (frame-first-window))
-               (s-equals? (buffer-name) treemacs--buffer-name)) 10))
+               (treemacs--is-treemacs-window-selected?)) 10))
 
   (when (boundp 'winum-assign-func)
     (setq winum-assign-func #'treemacs--window-number-zero)))
