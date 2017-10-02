@@ -25,6 +25,12 @@
 (require 'f)
 (require 'treemacs-impl)
 
+(defvar treemacs--ready-to-follow nil
+  "Signals to `treemacs-follow-mode' if a follow action may be run.
+Must be set to nil when no following should be triggered, e.g. when the
+treemacs buffer is being rebuilt or during treemacs' own window selection
+functions.")
+
 (defsubst treemacs--follow-each-dir (dir-parts root)
   "Follow (goto and open) every single dir in DIR-PARTS, starting at ROOT."
   (save-match-data
@@ -65,22 +71,23 @@ The followed file MUST be under root or the search will break."
 Expand directories if needed. Do nothing if current file does not exist in the
 file system or is not below current treemacs root or if the treemacs buffer is
 not visible."
-       ;; Treemacs selecting files with `ace-window' results in a large amount of
-       ;; window selections, so we should be breaking out as soon as possbile
-       (when treemacs--ready
-         (let* ((treemacs-window (treemacs--is-visible?))
-                (current-buffer  (current-buffer))
-                (current-file    (buffer-file-name current-buffer)))
-           (when (and treemacs-window
-                      current-file
-                      (not (s-starts-with? treemacs--buffer-name-prefix (buffer-name current-buffer)))
-                      (f-exists? current-file))
-             (with-current-buffer (window-buffer treemacs-window)
-               (let ((root (treemacs--current-root))
-                     (selected-file (treemacs--nearest-path (treemacs--current-button))))
-                 (when (and (not (equal selected-file current-file))
-                            (treemacs--is-path-in-dir? current-file root))
-                   (treemacs--do-follow current-file root))))))))
+  ;; Treemacs selecting files with `ace-window' results in a large amount of
+  ;; window selections, so we should be breaking out as soon as possbile
+  (when treemacs--ready-to-follow
+    (treemacs--without-following
+     (let* ((treemacs-window (treemacs--is-visible?))
+            (current-buffer  (current-buffer))
+            (current-file    (buffer-file-name current-buffer)))
+       (when (and treemacs-window
+                  current-file
+                  (not (s-starts-with? treemacs--buffer-name-prefix (buffer-name current-buffer)))
+                  (f-exists? current-file))
+         (with-current-buffer (window-buffer treemacs-window)
+           (let ((root (treemacs--current-root))
+                 (selected-file (treemacs--nearest-path (treemacs--current-button))))
+             (when (and (not (equal selected-file current-file))
+                        (treemacs--is-path-in-dir? current-file root))
+               (treemacs--do-follow current-file root)))))))))
 
 ;; this is only to stop the compiler from complaining about unknown functions
 (with-eval-after-load 'which-key
@@ -88,12 +95,12 @@ not visible."
   (declare-function which-key--hide-popup "which-key"))
 
 (defmacro treemacs--without-following (&rest body)
-  "Execute BODY with `treemacs--ready' set to nil."
-  `(let ((o treemacs--ready))
-     (setq treemacs--ready nil)
+  "Execute BODY with `treemacs--ready-to-follow' set to nil."
+  `(let ((o treemacs--ready-to-follow))
+     (setq treemacs--ready-to-follow nil)
      (unwind-protect
          (progn ,@body)
-       (setq treemacs--ready o))))
+       (setq treemacs--ready-to-follow o))))
 
 (defun treemacs--select-window-advice (&rest _)
   "Advice function for `treemacs-follow-mode'.
@@ -116,6 +123,9 @@ Do so by running it and its ARGS through `treemacs--without-following'."
       (advice-add #'which-key--show-popup :around #'treemacs--follow-compatibility-advice))
     (when (fboundp 'which-key--hide-popup)
       (advice-add #'which-key--hide-popup :around #'treemacs--follow-compatibility-advice)))
+  ;; winum compatibility
+  (when (fboundp 'winum--update)
+    (advice-add #'winum--update :around #'treemacs--follow-compatibility-advice))
   (treemacs--follow))
 
 (defsubst treemacs--tear-down-follow-mode ()
@@ -126,7 +136,10 @@ Do so by running it and its ARGS through `treemacs--without-following'."
     (when (advice-member-p #'treemacs--follow-compatibility-advice #'which-key--show-popup)
       (advice-remove #'which-key--show-popup #'treemacs--follow-compatibility-advice))
     (when (advice-member-p #'treemacs--follow-compatibility-advice #'which-key--hide-popup)
-      (advice-remove #'which-key--hide-popup #'treemacs--follow-compatibility-advice))))
+      (advice-remove #'which-key--hide-popup #'treemacs--follow-compatibility-advice)))
+  ;; winum compatibility
+  (when (advice-member-p #'treemacs--follow-compatibility-advice #'winum--update)
+    (advice-remove #'winum--update #'treemacs--follow-compatibility-advice)))
 
 (define-minor-mode treemacs-follow-mode
   "Toggle `treemacs-follow-mode'.

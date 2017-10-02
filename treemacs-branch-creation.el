@@ -30,14 +30,6 @@
 
 (declare-function treemacs--start-watching "treemacs-filewatch-mode")
 
-(defvar treemacs-icon-fallback nil
-  "The fallback icon for files.
-Is set to either the generic text png icon when in a GUI, or blank spaces when
-in a terminal.")
-
-(defvar treemacs-icons-stash nil
-  "`treemacs-icons-hash' is stored here while treemacs is run in a terminal.")
-
 (defsubst treemacs--button-put (button prop val)
   "Set BUTTON's PROP property to VAL and return BUTTON."
   (put-text-property
