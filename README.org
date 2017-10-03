@@ -45,7 +45,7 @@ Specifically a quick feature overview looks as follows:
  * [[https://github.com/deb0ch/emacs-winum][Winum]] integration - treemacs will always be assigned window number 10, never interfering with the numbering
    layout of your other windows.
  * Projectile integration via the ~treemacs-projectile~ package to quickly open treemacs at any known project's root directory.
- * (Limimted) mouse interface - you can close/expand folders and open files by left-clicking on icons.
+ * Simple mouse interface - you can close/expand folders and open files by left-clicking.
  * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
    another matter). When run in a terminal a very simple fallback is used.
  * Session persistence with ~desktop-save-mode~
@@ -310,7 +310,7 @@ By default Treemacs's keymap looks as follows:
 | ta      | treemacs-filewatch-mode                     | Toggle treemacs-filewatch-mode (see above).                                                                                                                               |
 | w       | treemacs-reset-width                        | Reset the width of the treemacs window to ~treemacs-width~. If a prefix argument is provided read a new value for treemacs-width first.                                   |
 | TAB     | treemacs-push-button                        | Push the button in the current line. For directories, files and tag sections expand/close the button. For tags go to the tag definition via treemacs-visit-node-no-split. |
-| mouse1  | treemacs-click-mouse1                       | Do the same as treemacs-push-button when mouse1 clicking on an icon. Clicking anywhere other than an icon does nothing.                                                   |
+| mouse1  | treemacs-click-mouse1                       | Do the same as treemacs-push-button when mouse1-clicking on an line.                                                                                                      |
 | g/r/gr  | treemacs-refresh                            | Refresh and rebuild the treemacs buffer.                                                                                                                                  |
 | d       | treemacs-delete                             | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                                                      |
 | cf      | treemacs-create-file                        | Create a file.                                                                                                                                                            |
