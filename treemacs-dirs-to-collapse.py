@@ -1,14 +1,21 @@
 from os import listdir
 from os.path import abspath, join, isdir, isfile
 import sys
+import os
 
 def dir_content(path):
-    return [join(path, item) for item in listdir(path)]
+    ret = []
+    for item in listdir(path):
+        full_path = join(path, item)
+        if os.access(full_path, os.R_OK) and (SHOW_ALL or item[0] != '.'):
+            ret.append(full_path)
+    return ret
 
-ROOT  = sys.argv[1]
-LIMIT = int(sys.argv[2])
-dirs  = [d for d in dir_content(ROOT) if isdir(d)]
-out   = sys.stdout
+ROOT     = sys.argv[1]
+LIMIT    = int(sys.argv[2])
+SHOW_ALL = sys.argv[3] == 't'
+dirs     = [d for d in dir_content(ROOT) if isdir(d)]
+out      = sys.stdout
 
 if LIMIT <= 0:
     exit(0)
