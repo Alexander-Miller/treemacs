@@ -48,13 +48,22 @@ after a theme change.")
 (defvar treemacs--last-highlight nil
   "The last button treemacs has highlighted.")
 
-(defvar treemacs--selected-icon-background
-  (face-attribute 'hl-line :background nil t)
-  "Background for selected icons.")
-
 (defvar treemacs--not-selected-icon-background
-  (face-attribute 'default :background nil t)
+  (let ((bg (face-attribute 'default :background nil t)))
+    (if (eq 'unspecified bg)
+        (prog1 "#2d2d31"
+          (message "[Treemacs] Warning: coudn't find default background color, falling back on #2d2d31."))
+      bg))
   "Background for non-selected icons.")
+
+(defvar treemacs--selected-icon-background
+  (let ((bg (face-attribute 'hl-line :background nil t)))
+    (if (eq 'unspecified bg)
+        (prog1 treemacs--not-selected-icon-background
+          (message "[Treemacs] Warning: couldn't find hl-line-mode's background color, falling back on %s."
+                   treemacs--not-selected-icon-background))
+      bg))
+  "Background for selected icons.")
 
 (defsubst treemacs--set-img-property (image property value)
   "Set IMAGE's PROPERTY to VALUE."
