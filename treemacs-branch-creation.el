@@ -64,13 +64,13 @@ is a marker pointing to POS."
 
 (defsubst treemacs--sort-size-asc (f1 f2)
   "Sort F1 and F2 by size asc."
-  (>= (file-attribute-size (file-attributes f1))
-      (file-attribute-size (file-attributes f2))))
+  (>= (nth 7 (file-attributes f1))
+      (nth 7 (file-attributes f2))))
 
 (defsubst treemacs--sort-size-desc (f1 f2)
   "Sort F1 and F2 by size desc."
-  (< (file-attribute-size (file-attributes f1))
-     (file-attribute-size (file-attributes f2))))
+  (< (nth 7 (file-attributes f1))
+     (nth 7 (file-attributes f2))))
 
 (defsubst treemacs--sort-mod-time-asc (f1 f2)
   "Sort F1 and F2 by modification time asc."

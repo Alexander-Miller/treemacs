@@ -375,21 +375,6 @@ and special names like this."
   "Return t when the treemacs window is selected."
   (string= treemacs--buffer-name (buffer-name)))
 
-(defun treemacs-alist-get (key alist &optional default remove testfn)
-  "Same as the builtin `alist-get', but copied here to be available on emacs24.
-Return the value associated with KEY in ALIST.
-If KEY is not found in ALIST, return DEFAULT.
-Use TESTFN to lookup in the alist if non-nil.  Otherwise, use `assq'.
-
-This is a generalized variable suitable for use with `setf'.
-When using it to set a value, optional argument REMOVE non-nil
-means to remove KEY from ALIST if the new value is `eql' to DEFAULT."
-  (ignore remove) ;;Silence byte-compiler.
-  (let ((x (if (not testfn)
-               (assq key alist)
-             (assoc key alist testfn))))
-    (if x (cdr x) default)))
-
 (defun treemacs--update-caches-after-rename (old-path new-path)
   "Update dirs and tags cache after OLD-PATH was renamed to NEW-PATH."
   ;; dirs cache
