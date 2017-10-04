@@ -529,9 +529,7 @@ Optionally do so in a RECURSIVE fashion."
     (`file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
     (`tag-node-open    (treemacs--close-tag-node btn recursive))
     (`tag-node-closed  (treemacs--open-tag-node btn :recursive recursive))
-    (`tag-node         (treemacs--execute-button-action
-                        :tag-action (treemacs--goto-tag btn)
-                        :no-match-explanation "This button should be a tag"))
+    (`tag-node         (progn (other-window 1) (treemacs--goto-tag btn)))
     (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
 
 (defun treemacs--reopen-node (btn)
