@@ -1,5 +1,7 @@
 #+STARTUP: noinlineimages
 
+[[https://melpa.org/#/treemacs][file:https://melpa.org/packages/treemacs-badge.svg]] [[https://stable.melpa.org/#/treemacs][file:https://stable.melpa.org/packages/treemacs-badge.svg]]
+
 * Treemacs - a tree layout file explorer for Emacs
 
 [[file:screenshot.png]]
