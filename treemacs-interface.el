@@ -43,16 +43,18 @@
     tag-node)
   "List of all valid values for treemacs buttons' 'state' property.")
 
-(defun treemacs-next-line ()
-  "Goto next line."
-  (interactive)
-  (forward-line 1)
+(defun treemacs-next-line (&optional count)
+  "Goto next line.
+A COUNT argument, moves COUNT lines down."
+  (interactive "p")
+  (forward-line count)
   (treemacs--evade-image))
 
-(defun treemacs-previous-line ()
-  "Goto previous line."
-  (interactive)
-  (forward-line -1)
+(defun treemacs-previous-line (&optional count)
+  "Goto previous line.
+A COUNT argument, moves COUNT lines up."
+  (interactive "p")
+  (forward-line (- count))
   (treemacs--evade-image))
 
 (defun treemacs-push-button (&optional arg)
