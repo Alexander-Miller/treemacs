@@ -361,7 +361,7 @@ If a prefix argument ARG is provided read a new value for
     (treemacs--set-width treemacs-width)))
 
 (cl-defun treemacs-find-file (&optional (path (buffer-file-name (current-buffer))))
-  "Find and move point to PATH (or the current file) in the treemacs buffer.
+  "Find and focus PATH (or the current file) in the treemacs view.
 Most likley to be useful when `treemacs-follow-mode' is not active.
 
 Expand folders if needed. If PATH is not under the current root ask to change

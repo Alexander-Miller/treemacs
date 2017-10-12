@@ -130,7 +130,11 @@ Do so by running it and its ARGS through `treemacs--without-following'."
       (advice-remove #'which-key--hide-popup #'treemacs--follow-compatibility-advice))))
 
 (define-minor-mode treemacs-follow-mode
-  "Minor mode to run `treemacs--follow' on every window selection."
+  "Toggle `treemacs-follow-mode'.
+When enabled treemacs will keep track of and focus the currently selected
+buffer's file. This only applies if the file is within the treemacs root
+directory.
+This functionality can also be manually invoked with `treemacs-find-file'."
   :init-value nil
   :global     t
   :lighter    nil

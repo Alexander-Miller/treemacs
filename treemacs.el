@@ -39,6 +39,7 @@
 (require 'treemacs-interface)
 (require 'treemacs-persist)
 (require 'treemacs-tags)
+(require 'treemacs-tag-follow-mode)
 (require 'treemacs-async)
 (require 'treemacs-compatibility)
 

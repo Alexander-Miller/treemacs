@@ -256,6 +256,11 @@ Valid values are
                  (const right))
   :group 'treemacs-configuration)
 
+(defcustom treemacs-tag-follow-delay 1.5
+  "Delay in seconds of inactivity for `treemacs-tag-follow-mode' to trigger."
+  :type 'number
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

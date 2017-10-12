@@ -210,7 +210,7 @@ during a reopen process. Recursively open all tag below BTN when RECURSIVE is t.
                 (treemacs--open-tag-node it :recursive t)))))
       (treemacs--log "No imenu index found for %s" (propertize path 'face 'font-lock-string-face)))))
 
-(defun treemacs--close-tags-for-file (btn recursive)
+(defun treemacs--close-tags-for-file (btn &optional recursive)
   "Close node given by BTN.
 Remove all open tag entries under BTN when RECURSIVE."
   (treemacs--button-close
@@ -374,12 +374,19 @@ exist."
 Start the search at START."
   (let ((tag (car tag-path))
         (path (cdr tag-path)))
-    (-when-let (btn (treemacs--goto-button-at file start))
+    (-when-let (btn (treemacs--goto-button-at file (or start (point-min))))
+      (when (eq 'file-node-closed (button-get btn 'state))
+        (goto-char (button-start btn))
+        (treemacs--open-tags-for-file btn))
       (dolist (tag-path-item path)
         (-if-let (tag-path-btn (--first
                                 (string= (treemacs--get-label-of it) tag-path-item)
                                 (treemacs--get-children-of btn)))
-            (setq btn tag-path-btn)
+            (progn
+              (setq btn tag-path-btn)
+              (when (eq 'tag-node-closed (button-get btn 'state))
+                (goto-char (button-start btn))
+                (treemacs--open-tag-node btn)))
           (error "[Treemacs] Couldn't go to tag button %s in path %s" tag-path-item tag-path)))
       (let ((pos (button-start (--first (string= (treemacs--get-label-of it) tag)
                                         (treemacs--get-children-of btn)))))
