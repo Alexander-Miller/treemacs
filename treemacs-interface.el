@@ -399,6 +399,44 @@ given and the current buffer is not editing a file."
                        (hl-line-mode -1)
                        (hl-line-mode t)))))))))))))
 
+(defun treemacs-find-tag ()
+  "Find and move point to the tag at point in the treemacs view.
+Most likley to be useful when `treemacs-tag-follow-mode' is not active.
+
+Expand folders and tags if needed. If the current file is not under the current
+root ask to change the root. If no treemacs buffer exists create it. Do nothing
+if the current buffer is not visiting a file or an imenu index cannot be
+generated."
+  (interactive)
+  (let (msg)
+    (cl-block 'body
+      (let* ((buffer (current-buffer))
+             (buffer-file (when buffer (buffer-file-name buffer)))
+             (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
+             (treemacs-window))
+        (unless buffer-file
+          (setq msg "Nothing to find - current buffer is not visiting a file.")
+          (cl-return-from 'body))
+        (unless index
+          (setq msg "Nothing to find - current buffer has no tags."))
+        (save-selected-window
+          (pcase (treemacs--current-visibility)
+            (`none
+             (treemacs-toggle))
+            (visibility
+             (if (eq 'exists visibility)
+                 (treemacs--select-not-visible)
+               (treemacs--select-visible))
+             (unless (treemacs--is-path-in-dir? buffer-file (treemacs--current-root))
+               (if (y-or-n-p "Change the root to find current tag?")
+                   (treemacs--init (f-dirname buffer-file))
+                 (setq msg "Root not changed, tag not followed.")
+                 (cl-return-from 'body)))))
+          (setq treemacs-window (selected-window)))
+        (treemacs--do-follow-tag index treemacs-window buffer-file)))
+    (when msg
+      (treemacs--log msg))))
+
 (defun treemacs-yank-path-at-point ()
   "Copy the absolute path of the node at point."
   (interactive)
