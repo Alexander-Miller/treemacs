@@ -203,8 +203,10 @@ BUFFER-FILE: Path"
     (when (and treemacs-window
                buffer-file
                (when root (treemacs--is-path-in-dir? buffer-file root)))
-      (-when-let (index (treemacs--flatten&sort-imenu-index))
-        (treemacs--do-follow-tag index treemacs-window buffer-file)))))
+      (condition-case e
+          (-when-let (index (treemacs--flatten&sort-imenu-index))
+            (treemacs--do-follow-tag index treemacs-window buffer-file))
+        (error (treemacs--log "Encountered error while following tag at point: %s" e))))))
 
 (defsubst treemacs--setup-tag-follow-mode ()
   "Setup tag follow mode."
