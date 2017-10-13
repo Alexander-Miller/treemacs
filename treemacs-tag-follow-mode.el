@@ -156,12 +156,18 @@ END: Integer"
 FLAT-INDEX: Sorted list of tag paths
 TREEMACS-WINDOW: Window
 BUFFER-FILE: Path"
-  (let* ((tag-path (treemacs--find-index-pos (point) flat-index))
+  ;; inhibit-quit = nil prevents emacs from complaining about block calls to accept process output
+  ;; with quit inhibited. apparently this happens when process output is read from a timer-run funcction,
+  ;; in other words: when tag follow mode is working as intended
+  (let* ((inhibit-quit nil)
+         (tag-path (treemacs--find-index-pos (point) flat-index))
          (file-states '(file-node-open file-node-closed))
-         (btn))
+         (btn)
+         (root))
     (when tag-path
       (with-selected-window treemacs-window
-        (setq btn (treemacs--current-button))
+        (setq btn (treemacs--current-button)
+              root (treemacs--current-root))
         ;; current button might not be there when point is on the header
         (if btn
             (progn
@@ -171,9 +177,11 @@ BUFFER-FILE: Path"
                   (setq btn (button-get btn 'parent))))
               ;; when that doesnt work move manually to the correct file
               (unless (string-equal buffer-file (button-get btn 'abs-path))
-                (setq btn (treemacs--goto-button-at buffer-file))))
+                (treemacs--do-follow buffer-file)
+                (setq btn (treemacs--current-button))))
           ;; also move manually when point is on the header
-          (setq btn (treemacs--goto-button-at buffer-file)))
+          (treemacs--do-follow buffer-file)
+          (setq btn (treemacs--current-button)))
         (goto-char (button-start btn))
         (unless (eq 'file-node-closed (button-get btn 'state))
           (treemacs--close-tags-for-file btn))
