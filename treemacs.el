@@ -27,6 +27,7 @@
 (require 'dash)
 (require 's)
 (require 'f)
+(require 'cl-lib)
 (require 'bookmark)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
