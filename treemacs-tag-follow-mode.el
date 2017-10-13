@@ -38,23 +38,31 @@ Active while tag follow mode is enabled and nil/canceled otherwise.")
 The tags are sorted into the order in which they appear, reguardless of section
 or nesting depth."
   (let* ((imenu-auto-rescan t)
-         (flat-index (-> (buffer-file-name)
-                         (treemacs--get-imenu-index)
-                         (treemacs--flatten-imenu-index)))
-         (semantic? (overlayp (-> flat-index (car) (car) (cdr))))
-         (sorted-index (sort
-                        flat-index
-                        (if semantic?
-                            #'treemacs--compare-tag-paths-semantic
-                          #'treemacs--compare-tag-paths))))
-    ;; go ahead and just transform semantic overlays into markers so we dont
-    ;; have trouble with comparisons when searching a position
-    (when semantic?
-      (dolist (tag-path sorted-index)
+         (org? (eq major-mode 'org-mode))
+         (index (-> (buffer-file-name) (treemacs--get-imenu-index)))
+         (flat-index (if org?
+                         (treemacs--flatten-org-mode-imenu-index index)
+                       (treemacs--flatten-imenu-index index)))
+         (first (caar flat-index))
+         ;; in org mode buffers the first item may not be a cons since its position
+         ;; is still stored as a text property
+         (semantic? (and (consp first) (overlayp (cdr first)))))
+    (cond
+     (semantic?
+      ;; go ahead and just transform semantic overlays into markers so we dont
+      ;; have trouble with comparisons when searching a position
+      (dolist (tag-path flat-index)
         (let ((leaf (car tag-path))
               (marker (make-marker)))
           (setcdr leaf (move-marker marker (overlay-start (cdr leaf)))))))
-    sorted-index))
+      ;; same goes for an org index, since headlines with children store their
+      ;; positions as text properties
+      (org?
+       (dolist (tag-path flat-index)
+         (let ((leaf (car tag-path)))
+           (when (stringp leaf)
+             (setcar tag-path (cons leaf (get-text-property 0 'org-imenu-marker leaf))))))))
+    (sort flat-index #'treemacs--compare-tag-paths)))
 
 (defun treemacs--flatten-imenu-index (index &optional path)
   "Flatten a nested imenu INDEX to a flat list of tag paths.
@@ -72,6 +80,24 @@ PATH: String List"
        (setq result (cons (cons it (nreverse (copy-sequence path))) result))))
     result))
 
+(defun treemacs--flatten-org-mode-imenu-index (index &optional path)
+  "Specialization of `treemacs--flatten-imenu-index' for org mode.
+An index produced in an org-mode buffer is special in that tag sections act not
+just as a means of grouping tags (being bags of functions, classes etc). Each
+tag section is instead also a headline which can be moved to. The flattening
+algorithm must therefore be slightly adjusted.
+
+INDEX: Org Imenu Tag Index
+PATH: String List"
+  (declare (pure t) (side-effect-free t))
+  (let (result)
+    (--each index
+      (let ((is-subalist? (imenu--subalist-p it)))
+        (setq result (cons (cons (if is-subalist? (car it) it) (nreverse (copy-sequence path))) result))
+        (when is-subalist?
+          (setq result (append result (treemacs--flatten-org-mode-imenu-index (cdr it) (cons (car it) path)))))))
+    result))
+
 (defun treemacs--compare-tag-paths (p1 p2)
   "Compare two tag paths P1 & P2 by the position of the tags they lead to.
 Used to sort tag paths according to the order their tags appear in.
@@ -79,20 +105,8 @@ Used to sort tag paths according to the order their tags appear in.
 P1: Tag-Path
 P2: Tag-Path"
   (declare (pure t) (side-effect-free t))
-  (< (-> p1 (car) (cdr) (marker-position))
-     (-> p2 (car) (cdr) (marker-position))))
-
-(defun treemacs--compare-tag-paths-semantic (p1 p2)
-  "Compare two tag paths P1 & P2 by the position of the tags they lead to.
-Used to sort tag paths according to the order their tags appear in for buffers
-where imenu content is generated with `semantic-mode`, which uses overlays
-instead of markers to store tag positions.
-
-P1: Tag-Path
-P2: Tag-Path"
-  (declare (pure t) (side-effect-free t))
-  (< (-> p1 (car) (cdr) (overlay-start))
-     (-> p2 (car) (cdr) (overlay-start))))
+  (< (-> p1 (cdar) (marker-position))
+     (-> p2 (cdar) (marker-position))))
 
 (defun treemacs--find-index-pos (point list)
   "Find the tag at POINT within a flat tag-path LIST.
@@ -101,7 +115,7 @@ that the next tag is after POINT and thus too far). Accounts for POINT being
 located either before the first or after the last tag.
 
 POINT: Int
-LIST: (Sorted) Tag Path List"
+LIST: Sorted Tag Path List"
   (declare (pure t) (side-effect-free t))
   (when list
     (let ((first (car list))
