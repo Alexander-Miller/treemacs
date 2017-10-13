@@ -160,7 +160,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"        "pdf")
     (treemacs--setup-icon treemacs-icon-c          "c.png"          "c" "h")
     (treemacs--setup-icon treemacs-icon-cpp        "cpp.png"        "cpp" "cxx" "hpp" "tpp" "cc" "hh")
-    (treemacs--setup-icon treemacs-icon-haskell    "haskell.png"    "hs")
+    (treemacs--setup-icon treemacs-icon-haskell    "haskell.png"    "hs" "lhs" "cabal")
     (treemacs--setup-icon treemacs-icon-python     "python.png"     "py" "pyc")
     (treemacs--setup-icon treemacs-icon-markdown   "markdown.png"   "md")
     (treemacs--setup-icon treemacs-icon-rust       "rust.png"       "rs" "toml")
