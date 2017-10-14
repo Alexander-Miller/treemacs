@@ -208,8 +208,8 @@ Pass on prefix ARG to the action."
 Determines that a button with state STATE should lead to the execution of
 ACTION.
 
-First deleted the previous entry with key STATE from `treemacs-default-actions'
-and then inserts the new touple."
+First deletes the previous entry with key STATE from `treemacs-default-actions'
+and then inserts the new tuple."
   (assq-delete-all state treemacs-default-actions)
   (push (cons state action) treemacs-default-actions))
 

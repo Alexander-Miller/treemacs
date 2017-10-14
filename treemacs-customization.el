@@ -78,7 +78,7 @@ for that state. The list of all possible button states is defined in
 functions as well as `treemacs-push-button' for simple open/close actions.
 
 To keep the alist clean changes should not be made directly, but with
-`treemacs-define-default-action',for example like this:
+`treemacs-define-default-action', for example like this:
 \(treemacs-define-default-action 'file-node-closed #'treemacs-visit-node-ace\)"
   :type 'alist
   :group 'treemacs-configuration)
