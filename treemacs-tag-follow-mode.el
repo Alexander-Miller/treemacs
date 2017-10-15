@@ -216,7 +216,8 @@ BUFFER-FILE: Path"
 
 (defsubst treemacs--tear-down-tag-follow-mode ()
   "Tear down tag follow mode."
-  (cancel-timer treemacs--tag-follow-timer))
+  (when treemacs--tag-follow-timer
+    (cancel-timer treemacs--tag-follow-timer)))
 
 (define-minor-mode treemacs-tag-follow-mode
   "Toggle `treemacs-tag-follow-mode'.
