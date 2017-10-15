@@ -82,10 +82,10 @@ PATH: String List"
 
 (defun treemacs--flatten-org-mode-imenu-index (index &optional path)
   "Specialization of `treemacs--flatten-imenu-index' for org mode.
-An index produced in an org-mode buffer is special in that tag sections act not
-just as a means of grouping tags (being bags of functions, classes etc). Each
-tag section is instead also a headline which can be moved to. The flattening
-algorithm must therefore be slightly adjusted.
+An index produced in an `org-mode' buffer is special in that tag sections act
+not just as a means of grouping tags (being bags of functions, classes etc).
+Each tag section is instead also a headline which can be moved to. The
+flattening algorithm must therefore be slightly adjusted.
 
 INDEX: Org Imenu Tag Index
 PATH: String List"
@@ -162,12 +162,10 @@ BUFFER-FILE: Path"
   (let* ((inhibit-quit nil)
          (tag-path (treemacs--find-index-pos (point) flat-index))
          (file-states '(file-node-open file-node-closed))
-         (btn)
-         (root))
+         (btn))
     (when tag-path
       (with-selected-window treemacs-window
-        (setq btn (treemacs--current-button)
-              root (treemacs--current-root))
+        (setq btn (treemacs--current-button))
         ;; current button might not be there when point is on the header
         (if btn
             (progn

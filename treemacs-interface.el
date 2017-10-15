@@ -27,6 +27,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-follow-mode)
+(require 'treemacs-tag-follow-mode)
 (require 'treemacs-customization)
 
 (treemacs--import-functions-from "treemacs"
@@ -429,7 +430,7 @@ generated."
                      (treemacs--select-not-visible)
                    (treemacs--select-visible))
                  (unless (treemacs--is-path-in-dir? buffer-file (treemacs--current-root))
-                   (if (y-or-n-p "Change the root to find current tag?")
+                   (if (y-or-n-p "Change the root to find current tag? ")
                        (treemacs--init (f-dirname buffer-file))
                      (setq msg "Root not changed, tag not followed.")
                      (cl-return-from 'body)))))
