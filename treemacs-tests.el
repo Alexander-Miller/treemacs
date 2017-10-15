@@ -791,6 +791,115 @@
                      '(("/old/name/A/B" "/old/name/A/B/C") ("/X" "/X/Y"))))
       (should-not (gethash (list "/old/name/A") (gethash "/X" treemacs--tags-cache))))))
 
+;; `treemacs--flatten-imenu-index'
+(progn
+  (ert-deftest flatten-imenu::does-nothing-on-nil-input ()
+    (should-not (treemacs--flatten-imenu-index nil)))
+
+  (ert-deftest flatten-imenu::does-nothing-on-empty-input ()
+    (should-not (treemacs--flatten-imenu-index (list))))
+
+  (ert-deftest flatten-imenu::correctly-parses-single-item ()
+    (should (equal '(("Functions")) (treemacs--flatten-imenu-index '("Functions")))))
+
+  (ert-deftest flatten-imenu::correctly-parses-full-list ()
+    (let* ((input '(("Functions" ("f1") ("f2"))
+                    ("Types"     (("t1") ("t2")))
+                    ("Classes"   (("c1" ("Members" ("m1") ("m2")))))))
+      (should (equal '((("f2") "Functions")
+                       (("f1") "Functions")
+                       (("t1") "Types")
+                       (("t2") "Types")
+                       (("m1") "Members" "Classes")
+                       (("m2") "Members" "Classes"))
+                     (with-no-warnings (treemacs--flatten-imenu-index input))))))))
+
+;; `treemacs--flatten-org-mode-imenu-index'
+(progn
+  (ert-deftest flatten-org-imenu::does-nothing-on-nil-input ()
+    (should-not (treemacs--flatten-org-mode-imenu-index nil)))
+
+  (ert-deftest flatten-org-imenu::does-nothing-on-empty-input ()
+    (should-not (treemacs--flatten-org-mode-imenu-index (list))))
+
+  (ert-deftest flatten-org-imenu::correctly-parses-single-item ()
+    (should (equal '(("Functions")) (treemacs--flatten-org-mode-imenu-index '("Functions")))))
+
+  (ert-deftest flatten-org-imenu::correctly-parses-full-list ()
+    (let* ((input '(("Functions" ("f1") ("f2"))
+                    ("Types"     (("t1") ("t2")))
+                    ("Classes"   (("c1" ("Members" ("m1") ("m2")))))))
+           (should (equal '(("Functions")
+                            (("f2") "Functions")
+                            (("f1") "Functions")
+                            ("Types")
+                            (("t1") "Types")
+                            (("t2") "Types")
+                            ("c1" "Classes")
+                            ("Members" "Classes" "c1")
+                            (("m1") "Members" "Classes")
+                            (("m2") "Members" "Classes"))
+                          (with-no-warnings (treemacs--flatten-imenu-index input))))))))
+
+;; `treemacs--find-index-pos'
+(progn
+  (ert-deftest find-index::error-in-nil-point ()
+    (should-error (treemacs--find-index-pos nil '((("A" . (make-marker)))))))
+
+  (ert-deftest find-index::nil-on-empty-list ()
+    (should-not (treemacs--find-index-pos 1 nil)))
+
+  (ert-deftest find-index::find-index-before-first-marker ()
+    (let ((input `((("A" . ,(move-marker (make-marker) 10)))
+                   (("B" . ,(move-marker (make-marker) 20)))
+                   (("C" . ,(move-marker (make-marker) 30))))))
+      (should (equal (car input) (treemacs--find-index-pos 1 input)))))
+
+  (ert-deftest find-index::find-index-after-last-marker ()
+    (let ((input `((("A" . ,(move-marker (make-marker) 10)))
+                   (("B" . ,(move-marker (make-marker) 20)))
+                   (("C" . ,(move-marker (make-marker) 30))))))
+      (should (equal (nth 2 input) (treemacs--find-index-pos 100 input)))))
+
+  (ert-deftest find-index::find-index-with-binary-search ()
+    (with-temp-buffer
+      ;; make those markers viable
+      (dotimes (_ 10) (insert "            \n"))
+      (let ((input `((("A" . ,(move-marker (make-marker) 10)))
+                     (("B" . ,(move-marker (make-marker) 20)))
+                     (("C" . ,(move-marker (make-marker) 30)))
+                     (("D" . ,(move-marker (make-marker) 40)))
+                     (("E" . ,(move-marker (make-marker) 50)))
+                     (("F" . ,(move-marker (make-marker) 60)))
+                     (("G" . ,(move-marker (make-marker) 70)))
+                     (("H" . ,(move-marker (make-marker) 80)))
+                     (("I" . ,(move-marker (make-marker) 90))))))
+        (should (equal (nth 6 input) (treemacs--find-index-pos 72 input)))))))
+
+;; `treemacs--flatten&sort-imenu-index'
+(progn
+  (ert-deftest flatten&sort::correctly-transform-org-mode-index ()
+    (let ((org-imenu-depth 10)
+          (temp-file (make-temp-file "Treemacs Test")))
+      (unwind-protect
+          (progn
+            (find-file-noselect temp-file)
+            (with-current-buffer (get-file-buffer temp-file)
+              (insert "* H1\n")
+              (insert "** H1.2\n")
+              (insert "*** H1.2.3\n")
+              (insert "* H2\n")
+              (org-mode)
+              (save-buffer)
+              (should (equal (treemacs--flatten&sort-imenu-index)
+                             `((("H1" . ,(move-marker (make-marker) 1)))
+                               (("H1.2" . ,(move-marker (make-marker) 6)) "H1")
+                               (("H1.2.3" . ,(move-marker (make-marker) 14)) "H1" "H1.2")
+                               (("H2" . ,(move-marker (make-marker) 25))))))))
+        (progn
+          (kill-buffer (get-file-buffer temp-file))
+          (delete-file temp-file))))))
+
 ;;; Thorough Sys Test
 (ert-deftest treemacs::sys-test ()
   (save-window-excursion
