@@ -342,7 +342,7 @@ By default Treemacs's keymap looks as follows:
 If you've need to delve into treemacs' code base check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
 
 * Dependencies
- * emacs >= 25.1
+ * emacs >= 24.4
  * f.el
  * s.el
  * dash
