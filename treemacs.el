@@ -40,6 +40,7 @@
 (require 'treemacs-persist)
 (require 'treemacs-tags)
 (require 'treemacs-async)
+(require 'treemacs-compatibility)
 
 (defconst treemacs-version "1.11.7")
 

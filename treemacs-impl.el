@@ -808,60 +808,6 @@ through the buffer list and kill buffer if PATH is a prefix."
                                (f-filename path)))
              (-each dired-buffers-for-path #'kill-buffer))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Winum Compatibility ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(with-eval-after-load 'winum
-
-  ;; somestimes the compiler asks for the strangest things
-  (declare-function treemacs--window-number-ten "treemacs-impl")
-
-  (defun treemacs--window-number-ten ()
-    (when (and (eq (selected-window) (frame-first-window))
-               (treemacs--is-treemacs-window-selected?)) 10))
-
-  (when (boundp 'winum-assign-func)
-    (setq winum-assign-func #'treemacs--window-number-ten)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Popwin Compatibility ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(with-eval-after-load 'popwin
-
-  (defadvice popwin:create-popup-window
-      (around treemacs--popwin-popup-buffer activate)
-    (let ((v? (treemacs--is-visible?))
-          (tb (get-buffer treemacs--buffer-name)))
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed nil)))
-      ad-do-it
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed 'width)))))
-
-  (defadvice popwin:close-popup-window
-      (around treemacs--popwin-close-buffer activate)
-    (let ((v? (treemacs--is-visible?))
-          (tb (get-buffer treemacs--buffer-name)))
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed nil)))
-      ad-do-it
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed 'width))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Golden Ratio Compatibility ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(with-eval-after-load 'golden-ratio
-  (when (bound-and-true-p golden-ratio-exclude-modes)
-    (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode)))
-
 (provide 'treemacs-impl)
 
 ;;; treemacs-impl.el ends here
