@@ -12,6 +12,7 @@
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
   - [[#treemacs-follow-mode][Treemacs-follow-mode]]
+  - [[#treemacs-tag-follow-mode][Treemacs-tag-follow-mode]]
   - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
   - [[#session-persistence][Session Persistence]]
   - [[#terminal-compatibility][Terminal Compatibility]]
@@ -41,7 +42,8 @@ Specifically a quick feature overview looks as follows:
  * Easy navigation - quickly change the root directory or use shortcuts to jump to parent or neighbouring nodes.
  * Versatile file access - decide exactly how and where a file will be opened, including using ~ace-window~ to choose
    a window or launching an external application.
- * Optionally always follow along and keep in focus the currently selected file ~treemacs-follow-mode~
+ * Optionally always follow along and keep in focus the currently selected file or even the tag at point using
+   ~treemacs-follow-mode~ and ~treemacs-tag-follow-mode~ respectively.
  * Optional git integration - treemacs will use different faces for files based on their git status.
    The git process runs asynchronously and so won't cause any perceptible delay.
  * [[https://github.com/deb0ch/emacs-winum][Winum]] integration - treemacs will always be assigned window number 10, never interfering with the numbering
@@ -83,7 +85,16 @@ multiple times in a row when emacs is working. This means two things:
 2) There may be times when something slips through (~which-key~ for exmaple would cause such a problem if treemacs
 wasn't made compatible with it by default). If you do see ~treemacs-follow~ behaving in a way it shouldn't open up
 an issue. The fix shouldn't be more than a single bit of advice away.
+** Treemacs-tag-follow-mode
+~treemacs-tag-follow-mode~ is a minor mode which extends and effectively replaces ~treemacs-follow-mode~. When activated
+it follows not just the current file, but also the current tag. This works alongside treemacs' with imenu, so all file
+types providing an imenu implementation are compatible.
 
+This mode runs on an idle timer - the exact duration of inactivity (in seconds) is determined by ~treemacs-tag-follow-delay~.
+
+Note that in order to move to a tag in treemacs the treemacs buffer's window needs to be temporarily selected, which will
+reset ~blink-cursor-mode~'s timer if it is enabled. This will result in the cursor blinking seemingly pausing for a
+short time and giving the appereance of the tag follow action lasting much longer than it really does.
 ** Treemacs-filewatch-mode
 
 ~treemacs-filewatch-mode~ is a minor mode which enables treemacs to watch the files it is displaying for changes
@@ -191,13 +202,14 @@ You can find an exhaustive overview of all functions, their keybinds and functio
       (treemacs-filewatch-mode t))
     :bind
     (:map global-map
-          ([f8]        . treemacs-toggle)
-          ("M-0"       . treemacs-select-window)
-          ("C-c 1"     . treemacs-delete-other-windows)
-          ("M-m ft"    . treemacs-toggle)
-          ("M-m fT"    . treemacs)
-          ("M-m fB"    . treemacs-bookmark)
-          ("M-m f C-t" . treemacs-find-file)))
+          ([f8]         . treemacs-toggle)
+          ("M-0"        . treemacs-select-window)
+          ("C-c 1"      . treemacs-delete-other-windows)
+          ("M-m ft"     . treemacs-toggle)
+          ("M-m fT"     . treemacs)
+          ("M-m fB"     . treemacs-bookmark)
+          ("M-m f C-t"  . treemacs-find-file)
+          ("M-m f M-t") . treemacs-find-tag))
   (use-package treemacs-projectile
     :defer t
     :ensure t
@@ -231,6 +243,7 @@ Treemacs offers the following configuration options:
 | treemacs-silent-refresh             | nil                                                                             | When non-nil a completed refresh will not be announced with a message. This applies both to manuall refreshing as well as automatic (due to e.g. ~treemacs-filewatch-mode~).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | treemacs-is-never-other-window      | nil                                                                             | When non-nil treemacs will never be used as other-window. This can prevent other packages from opening other buffers in the treemacs window. It also means treemacs is never selected by calls to ~other-window~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | treemacs-position                   | left                                                                            | Position of treemacs buffer. Valid values are ~left~, ~right~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| treemacs-tag-follow-delay           | 1.5                                                                             | Delay in seconds of inactivity for ~treemacs-tag-follow-mode~ to trigger.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ** Faces
 
@@ -296,6 +309,7 @@ the treemacs window and might therefore need their own global binding.
 | treemacs-toggle                  | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.            |
 | treemacs-toggle-projectile       | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-projectile. |
 | treemacs-find-file               | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed.                                                                                                  |
+| treemacs-find-tag                | Find and move point to the tag at point in the treemacs view. Expand folders if or as to change root if needed. Create treemacs buffer if none exists.                                               |
 | treemacs-select-window           | Select the treemacs window if it is visible. Call ~treemacs-toggle~ if it is not.                                                                                                                    |
 | treemacs-delete-other-windows    | Same as ~delete-other-windows~, but will not delete the treemacs window.                                                                                                                             |
 | treemacs-push-button-select-sort | Same as ~treemacs-push-button~, but the sorting function is chosen manually. The sort setting is active for only a single push, its effect will be undone on the next refresh.                       |
