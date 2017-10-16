@@ -211,8 +211,7 @@ Returns nil when point is on the header."
   (if (get-text-property (point-at-bol) 'button)
       (button-at (point-at-bol))
     (let ((p (next-single-property-change (point-at-bol) 'button nil (point-at-eol))))
-      (when (and (not (= p (point)))
-                 (get-char-property p 'button))
+      (when (and (get-char-property p 'button))
           (copy-marker p t)))))
 
 (defsubst treemacs--get-label-of (btn)
