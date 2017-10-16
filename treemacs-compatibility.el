@@ -65,6 +65,10 @@
   (when (bound-and-true-p golden-ratio-exclude-modes)
     (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode)))
 
+(with-eval-after-load 'indent-guide
+  (when (boundp 'indent-guide-inhibit-modes)
+    (push 'treemacs-mode indent-guide-inhibit-modes)))
+
 (provide 'treemacs-compatibility)
 
 ;;; treemacs-compatibility.el ends here
