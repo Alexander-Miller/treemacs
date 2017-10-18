@@ -69,6 +69,7 @@
 
 (treemacs--import-functions-from "treemacs-follow-mode"
   treemacs--follow
+  treemacs--do-follow
   treemacs--without-following)
 
 (treemacs--import-functions-from "treemacs-visuals"
@@ -646,6 +647,39 @@ Must be called from treemacs buffer."
       (setq btn (button-get btn 'parent)
             path (button-get btn 'abs-path)))
     path))
+
+(defun treemacs--create-file/dir (prompt creation-func)
+  "Concrete implementation of file & dir creation.
+Use PROMPT to ask for a location and CREATION-FUNC to create a new dir/file.
+PROMPT: String
+CREATION-FUNC: `f-touch' | `f-mkdir'"
+  (interactive)
+  (let ((btn (treemacs--current-button))
+        (curr-path)
+        (location)
+        (name))
+    (cl-block body
+      (if (null btn)
+          (f-slash (treemacs--current-root))
+        (let ((path (treemacs--nearest-path btn)))
+          (setq curr-path (f-slash (if (f-dir? path)
+                                       path
+                                     (f-dirname path))))))
+      (setq location (read-directory-name "Create in: " curr-path))
+      (when (not (f-directory? location))
+        (cl-return-from body
+          (treemacs--log "%s is not a directory."
+                         (propertize location 'face 'font-lock-string-face))))
+      (setq name (read-string prompt))
+      (let ((new-file (f-join location name)))
+        (when (f-exists? new-file)
+          (cl-return-from body
+            (treemacs--log "%s already exists."
+                           (propertize  'face 'font-lock-string-face))))
+        (funcall creation-func new-file)
+        (treemacs--without-messages (treemacs-refresh))
+        (treemacs--do-follow (f-long new-file))
+        (recenter)))))
 
 (cl-defun treemacs--goto-button-at (abs-path &optional (start-from (point-min)))
   "Move point to button identified by ABS-PATH, starting search at START.

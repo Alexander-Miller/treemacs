@@ -275,13 +275,14 @@ A delete action must always be confirmed. Directories are deleted recursively."
             (treemacs--without-messages (treemacs-refresh))))))
   (treemacs--evade-image))
 
-(defun treemacs-create-file (dir filename)
-  "In directory DIR create file called FILENAME."
-  (interactive "DDirectory: \nMFilename: ")
-  (let ((created-path (f-join dir filename)))
-    (f-touch created-path)
-    (treemacs--without-messages (treemacs-refresh))
-    (treemacs--do-follow created-path)))
+(defun treemacs-create-file ()
+  "Create a new file.
+Enter first the directory to create the new file in, then the new file's name.
+The preselection for what directory to create in is based on the \"nearest\"
+path to point - the containing directory for tags and files or the directory
+itself, using the root directory when point is on the header line."
+  (interactive)
+  (treemacs--create-file/dir "File name: " #'f-touch))
 
 (defun treemacs-rename ()
   "Rename the currently selected node.
@@ -319,13 +320,14 @@ likewise be updated."
                             (propertize (f-filename old-path) 'face font-lock-string-face)
                             (propertize new-name 'face font-lock-string-face)))))))
 
-(defun treemacs-create-dir (dir dirname)
-  "In directory DIR create directory called DIRNAME."
-  (interactive "DCreate in: \nMDirname: ")
-  (let ((created-path (f-join dir dirname)))
-    (f-mkdir created-path)
-    (treemacs--without-messages (treemacs-refresh))
-    (treemacs--do-follow created-path)))
+(defun treemacs-create-dir ()
+  "Create a new directory.
+Enter first the directory to create the new dir in, then the new dir's name.
+The preselection for what directory to create in is based on the \"nearest\"
+path to point - the containing directory for tags and files or the directory
+itself, using the root directory when point is on the header line."
+  (interactive)
+  (treemacs--create-file/dir "Directory name: " #'f-mkdir))
 
 (defun treemacs-toggle-show-dotfiles ()
   "Toggle the hiding and displaying of dotfiles."
