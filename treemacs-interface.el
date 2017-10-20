@@ -481,6 +481,82 @@ the open/close process to work recursively."
   (let* ((sort-options '(alphabetic-desc alphabetic-asc size-asc size-desc mod-time-asc mod-time-desc))
          (treemacs-sorting (intern (completing-read "Sorting: " sort-options))))
     (treemacs-push-button arg)))
+(make-obsolete 'treemacs-push-button-select-sort
+               #'treemacs-resort
+               "Treemacs v1.12")
+
+(defun treemacs-resort (&optional arg)
+  "Select a new permanent value for `treemacs-sorting' and refresh.
+With a single prefix ARG use the new sort value to *temporarily* resort the
+\(closest\) directory at point.
+With a double prefix ARG use the new sort value to *temporarily* resort the
+entire treemacs view.
+Temporary sorting will only stick around until the next refresh, either manual
+or automatic via `treemacs-filewatch-mode'."
+  (interactive "P")
+  (let* ((sort-names '(("Sort Alphabetically Ascending" . alphabetic-asc)
+                       ("Sort Alphabetically Descending" . alphabetic-desc)
+                       ("Sort by Size Ascending" . size-asc)
+                       ("Sort by Size Descending" . size-desc)
+                       ("Sort by Modification Date Ascending" . mod-time-asc)
+                       ("Sort by Modification Date Descending" . mod-time-desc)))
+         (selected-value (completing-read (format "Sort Method (current is %s)" treemacs-sorting)
+                                          (-map #'car sort-names)))
+         (selected-pair (--first (s-equals? (car it) selected-value) sort-names))
+         (selected-name (car selected-pair))
+         (new-value (cdr selected-pair)))
+    (pcase arg
+      ;; Resort current dir only
+      (`(4)
+       (let ((treemacs-sorting new-value))
+         (-if-let (btn (treemacs--current-button))
+             (pcase (button-get btn 'state)
+               (`dir-node-closed
+                (treemacs--open-dir-node btn)
+                (treemacs--log "Resorted %s with sort method '%s'."
+                               (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
+                               (propertize selected-name 'face 'font-lock-type-face)))
+               (`dir-node-open
+                (treemacs--close-node btn nil)
+                (goto-char (button-start btn))
+                (treemacs--open-dir-node btn)
+                (treemacs--log "Resorted %s with sort method '%s'."
+                               (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
+                               (propertize selected-name 'face 'font-lock-type-face)))
+               ((or `file-node-open `file-node-closed `tag-node-open `tag-node-closed `tag-node)
+                (let* ((parent (button-get btn 'parent)))
+                  (while (and parent
+                              (not (-some-> parent (button-get 'abs-path) (f-directory?))))
+                    (setq parent (button-get parent 'parent)))
+                  (if parent
+                      (let ((line (line-number-at-pos))
+                            (window-point (window-point)))
+                        (goto-char (button-start parent))
+                        (treemacs--close-node parent nil)
+                        (goto-char (button-start btn))
+                        (treemacs--open-dir-node parent)
+                        (with-no-warnings (goto-line line))
+                        (set-window-point (selected-window) window-point)
+                        (treemacs--log "Resorted %s with sort method '%s'."
+                                       (propertize (treemacs--get-label-of parent) 'face 'font-lock-string-face)
+                                       (propertize selected-name 'face 'font-lock-type-face)))
+                    ;; a top level file's containing dir is root
+                    (treemacs--without-messages (treemacs-refresh))
+                    (treemacs--log "Resorted root directory with sort method '%s'."
+                                   (propertize selected-name 'face 'font-lock-type-face)))))))))
+      ;; Temporarily resort everything
+      (`(16)
+       (let ((treemacs-sorting new-value))
+         (treemacs--without-messages (treemacs-refresh))
+         (treemacs--log "Temporarily resorted everything with sort method '%s.'"
+                        (propertize selected-name 'face 'font-lock-type-face))))
+      ;; Set new permanent value
+      (_
+       (setq treemacs-sorting new-value)
+       (treemacs--without-messages (treemacs-refresh))
+       (treemacs--log "Sorting method changed to '%s'."
+                      (propertize selected-name 'face 'font-lock-type-face))))
+    (treemacs--evade-image)))
 
 (provide 'treemacs-interface)
 

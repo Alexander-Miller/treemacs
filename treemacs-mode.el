@@ -81,8 +81,8 @@ to it will instead show a blank."
              (key-open-horiz     (treemacs--find-keybind #'treemacs-visit-node-horizontal-split))
              (key-open-vert      (treemacs--find-keybind #'treemacs-visit-node-vertical-split))
              (key-open-ace       (treemacs--find-keybind #'treemacs-visit-node-ace))
-             (key-open-ace-horiz (treemacs--find-keybind #'treemacs-visit-node-ace-horizontal-split))
-             (key-open-ace-vert  (treemacs--find-keybind #'treemacs-visit-node-ace-vertical-split))
+             (key-open-ace-h     (treemacs--find-keybind #'treemacs-visit-node-ace-horizontal-split))
+             (key-open-ace-v     (treemacs--find-keybind #'treemacs-visit-node-ace-vertical-split))
              (key-open-ext       (treemacs--find-keybind #'treemacs-visit-node-in-external-application))
              (key-create-file    (treemacs--find-keybind #'treemacs-create-file))
              (key-create-dir     (treemacs--find-keybind #'treemacs-create-dir))
@@ -95,6 +95,7 @@ to it will instead show a blank."
              (key-set-width      (treemacs--find-keybind #'treemacs-reset-width))
              (key-copy-path      (treemacs--find-keybind #'treemacs-yank-path-at-point))
              (key-copy-root      (treemacs--find-keybind #'treemacs-yank-root))
+             (key-resort         (treemacs--find-keybind #'treemacs-resort))
              (hydra-str
               (format
                "
@@ -105,20 +106,23 @@ to it will instead show a blank."
 %s prev line      │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
 %s next neighbour │ %s open no split       │ %s rename      │ %s show dotfiles  │ %s copy path
 %s prev neighbour │ %s open horizontal     │                    │ %s resizability   │ %s copy root
-%s go to parent   │ %s open vertical       │                    │                       │
+%s go to parent   │ %s open vertical       │                    │                       │ %s re-sort
 %s move root up   │ %s open ace            │                    │                       │
 %s move root into │ %s open ace horizontal │                    │                       │
                       │ %s open ace vertical   │                    │                       │
                       │ %s open externally     │                    │                       │
 "
                title
-               column-nav               column-nodes         column-files           column-toggles          column-misc
-               (car key-next-line)      (car key-open/close) (car key-create-file)  (car key-follow-mode)   (car key-refresh)
-               (car key-prev-line)      (car key-dwim)       (car key-create-dir)   (car key-fwatch-mode)   (car key-set-width)
-               (car key-next-neighbour) (car key-open)       (car key-rename)       (car key-show-dotfiles) (car key-copy-path)
-               (car key-prev-neighbour) (car key-open-horiz) (car key-toggle-width) (car key-copy-root)     (car key-goto-parent)
-               (car key-open-vert)      (car key-root-up)    (car key-open-ace)     (car key-root-down)     (car key-open-ace-horiz)
-               (car key-open-ace-vert)  (car key-open-ext))))
+               column-nav               column-nodes          column-files          column-toggles          column-misc
+               (car key-next-line)      (car key-open/close)  (car key-create-file) (car key-follow-mode)   (car key-refresh)
+               (car key-prev-line)      (car key-dwim)        (car key-create-dir)  (car key-fwatch-mode)   (car key-set-width)
+               (car key-next-neighbour) (car key-open)        (car key-rename)      (car key-show-dotfiles) (car key-copy-path)
+               (car key-prev-neighbour) (car key-open-horiz)                        (car key-toggle-width)  (car key-copy-root)
+               (car key-goto-parent)    (car key-open-vert)                                                 (car key-resort)
+               (car key-root-up)        (car key-open-ace)
+               (car key-root-down)      (car key-open-ace-h)
+                                        (car key-open-ace-v)
+                                        (car key-open-ext))))
           (eval
            `(defhydra treemacs--helpful-hydra (:exit t :hint nil :columns 5)
               ,hydra-str
@@ -135,8 +139,8 @@ to it will instead show a blank."
               (,(cdr key-open-horiz)     #'treemacs-visit-node-horizontal-split)
               (,(cdr key-open-vert)      #'treemacs-visit-node-vertical-split)
               (,(cdr key-open-ace)       #'treemacs-visit-node-ace)
-              (,(cdr key-open-ace-horiz) #'treemacs-visit-node-ace-horizontal-split)
-              (,(cdr key-open-ace-vert)  #'treemacs-visit-node-ace-vertical-split)
+              (,(cdr key-open-ace-h)     #'treemacs-visit-node-ace-horizontal-split)
+              (,(cdr key-open-ace-v)     #'treemacs-visit-node-ace-vertical-split)
               (,(cdr key-open-ext)       #'treemacs-visit-node-in-external-application)
               (,(cdr key-create-file)    #'treemacs-create-file)
               (,(cdr key-create-dir)     #'treemacs-create-dir)
@@ -149,6 +153,7 @@ to it will instead show a blank."
               (,(cdr key-copy-path)      #'treemacs-yank-path-at-point)
               (,(cdr key-copy-root)      #'treemacs-yank-root)
               (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
+              (,(cdr key-resort)         #'treemacs-resort)
               ("?" nil "Exit"))))
         (treemacs--helpful-hydra/body))
     (treemacs--log "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
@@ -194,6 +199,7 @@ to it will instead show a blank."
       (define-key map (kbd "yy")   #'treemacs-yank-path-at-point)
       (define-key map (kbd "yr")   #'treemacs-yank-root)
       (define-key map (kbd "g")    #'treemacs-refresh)
+      (define-key map (kbd "s")    #'treemacs-resort)
       map)
     "Keymap for `treemacs-mode'."))
 
