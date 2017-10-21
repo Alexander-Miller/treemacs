@@ -16,7 +16,16 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; TODO
+;; Minor mode to follow the tag at point in the treemacs view on an idle timer
+;; Finding the current tag is a fairly involved process:
+;; * Grab current buffer's imenu output
+;; * Flatten the list to create full tag paths
+;; * Sort according to tag position
+;; * Beware of edge cases: org-mode headlines are containers, but also hold a position, hidden as a text property and
+;;   semantic-mode parsed buffers use overlays instead of markers
+;; * Find the last tag whose position begins before point
+;; * Jump to that tag  path
+;; * No jump when there's no buffer file, or no imenu, or buffer file is not seen in treemacs etc.
 
 ;;; Code:
 
