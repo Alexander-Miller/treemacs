@@ -2,12 +2,11 @@
 
 [[https://melpa.org/#/treemacs][file:https://melpa.org/packages/treemacs-badge.svg]] [[https://stable.melpa.org/#/treemacs][file:https://stable.melpa.org/packages/treemacs-badge.svg]] [[http://spacemacs.org][file:https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg]]
 
-* Treemacs - a tree layout file explorer for Emacs
+* Treemacs - a tree layout file explorer for Emacs                                   :noexport:
 
 [[file:screenshot.png]]
 
 * Content                                                                            :TOC:noexport:
-- [[#treemacs---a-tree-layout-file-explorer-for-emacs][Treemacs - a tree layout file explorer for Emacs]]
 - [[#quick-feature-overview][Quick Feature Overview]]
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
@@ -351,6 +350,7 @@ By default Treemacs's keymap looks as follows:
 | ox      | treemacs-visit-node-in-external-application | Open current file according to its mime type in an external application. Linux, Windows and Mac are supported.                                                            |
 | yy      | treemacs-yank-path-at-point                 | Copy the absolute path of the node at point.                                                                                                                              |
 | yr      | treemacs-yank-root                          | Copy the absolute path of the current treemacs root.                                                                                                                      |
+| s       | treemacs-resort                             | Set a new value for ~treemacs-sorting~. With a single or double prefix arg temporarily resort the current directory/the entire buffer                                     |
 * Working With The Code Base
 
 If you've need to delve into treemacs' code base check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
