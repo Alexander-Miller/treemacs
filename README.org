@@ -29,6 +29,7 @@
 - [[#keymap][Keymap]]
   - [[#unbound-functions][Unbound functions]]
   - [[#default-keymap][Default keymap]]
+- [[#compatibility][Compatibility]]
 - [[#working-with-the-code-base][Working With The Code Base]]
 - [[#dependencies][Dependencies]]
 
@@ -351,6 +352,21 @@ By default Treemacs's keymap looks as follows:
 | yy      | treemacs-yank-path-at-point                 | Copy the absolute path of the node at point.                                                                                                                              |
 | yr      | treemacs-yank-root                          | Copy the absolute path of the current treemacs root.                                                                                                                      |
 | s       | treemacs-resort                             | Set a new value for ~treemacs-sorting~. With a single or double prefix arg temporarily resort the current directory/the entire buffer                                     |
+
+* Compatibility
+The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting
+to changes in the window configuraion. The packages most likely to cause trouble for treemacs are therefore those that
+interfere with Emacs' buffer spawning and window splitting behaviour. Treemacs is included in spacemacs and I am a spacemacs
+user, therefore treemacs guarantees first-class support & compatibility for window-managing packages used in spacemacs, namely
+[[https://github.com/Bad-ptr/persp-mode.el][persp]], [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/m2ym/popwin-el][popwin]] and [[https://github.com/bmag/emacs-purpose][window-purpos]], as well as [[https://github.com/wasamasa/shackle][shackle]]. For everything else there may be issues and, depending on the
+complexity of the problem, I may decide it is not worth fixing.
+
+Aside from this there are the following known incompatibilities:
+ * Any package invoking ~font-lock-ensure~ in the treemacs buffer. This will reset the faces of treemacs' buttons (once)
+   and is a known [[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=28599][emacs bug]].
+ * The only known example of this is an older version of swiper.
+ * Rainbow mode activated in treemacs will likewise cause this behaviour. Make sure not to include rainbow-mode as part
+   of ~special-mode-hook~, since this is the mode ~treemacs-mode~ is derived from.
 * Working With The Code Base
 
 If you've need to delve into treemacs' code base check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
