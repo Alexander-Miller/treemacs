@@ -485,44 +485,44 @@ the open/close process to work recursively."
                #'treemacs-resort
                "Treemacs v1.12")
 
-(defun treemacs-resort (&optional arg)
-  "Select a new permanent value for `treemacs-sorting' and refresh.
-With a single prefix ARG use the new sort value to *temporarily* resort the
-\(closest\) directory at point.
-With a double prefix ARG use the new sort value to *temporarily* resort the
-entire treemacs view.
-Temporary sorting will only stick around until the next refresh, either manual
-or automatic via `treemacs-filewatch-mode'."
-  (interactive "P")
-  (let* ((sort-names '(("Sort Alphabetically Ascending" . alphabetic-asc)
-                       ("Sort Alphabetically Descending" . alphabetic-desc)
-                       ("Sort by Size Ascending" . size-asc)
-                       ("Sort by Size Descending" . size-desc)
-                       ("Sort by Modification Date Ascending" . mod-time-asc)
-                       ("Sort by Modification Date Descending" . mod-time-desc)))
-         (selected-value (completing-read (format "Sort Method (current is %s)" treemacs-sorting)
-                                          (-map #'car sort-names)))
-         (selected-pair (--first (s-equals? (car it) selected-value) sort-names))
-         (selected-name (car selected-pair))
-         (new-value (cdr selected-pair)))
-    (pcase arg
-      ;; Resort current dir only
-      (`(4)
-       (let ((treemacs-sorting new-value))
-         (-if-let (btn (treemacs--current-button))
+(defun treemacs-temp-resort-root (&optional sort-method)
+  "Temporarily resort the the entire treemacs buffer.
+SORT-METHOD is a cons of a string describing the method and the actual sort
+value, as returned by `treemacs--sort-value-selection'. SORT-METHOD will be
+provided when this function is called from `treemacs-resort' and will be
+interactively read otherwise. This way this function can bound directly, without
+the need to call `treemacs-resort' with a prefix arg."
+  (interactive)
+  (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
+          (treemacs-sorting sort-method))
+    (treemacs--without-messages (treemacs-refresh))
+    (treemacs--log "Temporarily resorted everything with sort method '%s.'"
+                   (propertize sort-name 'face 'font-lock-type-face))))
+
+(defun treemacs-temp-resort-current-dir (&optional sort-method)
+  "Temporarily resort the current directory.
+SORT-METHOD is a cons of a string describing the method and the actual sort
+value, as returned by `treemacs--sort-value-selection'. SORT-METHOD will be
+provided when this function is called from `treemacs-resort' and will be
+interactively read otherwise. This way this function can bound directly, without
+the need to call `treemacs-resort' with a prefix arg."
+  (interactive)
+  (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
+          (treemacs-sorting sort-method))
+    (-if-let (btn (treemacs--current-button))
              (pcase (button-get btn 'state)
                (`dir-node-closed
                 (treemacs--open-dir-node btn)
                 (treemacs--log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
-                               (propertize selected-name 'face 'font-lock-type-face)))
+                               (propertize sort-name 'face 'font-lock-type-face)))
                (`dir-node-open
                 (treemacs--close-node btn nil)
                 (goto-char (button-start btn))
                 (treemacs--open-dir-node btn)
                 (treemacs--log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
-                               (propertize selected-name 'face 'font-lock-type-face)))
+                               (propertize sort-name 'face 'font-lock-type-face)))
                ((or `file-node-open `file-node-closed `tag-node-open `tag-node-closed `tag-node)
                 (let* ((parent (button-get btn 'parent)))
                   (while (and parent
@@ -535,28 +535,44 @@ or automatic via `treemacs-filewatch-mode'."
                         (treemacs--close-node parent nil)
                         (goto-char (button-start btn))
                         (treemacs--open-dir-node parent)
-                        (with-no-warnings (goto-line line))
                         (set-window-point (selected-window) window-point)
+                        (with-no-warnings (goto-line line))
                         (treemacs--log "Resorted %s with sort method '%s'."
                                        (propertize (treemacs--get-label-of parent) 'face 'font-lock-string-face)
-                                       (propertize selected-name 'face 'font-lock-type-face)))
+                                       (propertize sort-name 'face 'font-lock-type-face)))
                     ;; a top level file's containing dir is root
                     (treemacs--without-messages (treemacs-refresh))
                     (treemacs--log "Resorted root directory with sort method '%s'."
-                                   (propertize selected-name 'face 'font-lock-type-face)))))))))
-      ;; Temporarily resort everything
-      (`(16)
-       (let ((treemacs-sorting new-value))
-         (treemacs--without-messages (treemacs-refresh))
-         (treemacs--log "Temporarily resorted everything with sort method '%s.'"
-                        (propertize selected-name 'face 'font-lock-type-face))))
-      ;; Set new permanent value
-      (_
-       (setq treemacs-sorting new-value)
+                                   (propertize sort-name 'face 'font-lock-type-face)))))))))
+
+(defun treemacs-resort (&optional arg)
+  "Select a new permanent value for `treemacs-sorting' and refresh.
+With a single prefix ARG use the new sort value to *temporarily* resort the
+\(closest\) directory at point.
+With a double prefix ARG use the new sort value to *temporarily* resort the
+entire treemacs view.
+
+Temporary sorting will only stick around until the next refresh, either manual
+or automatic via `treemacs-filewatch-mode'.
+
+Instead of calling this with a prefix arg you can also direcrly call
+`treemacs-temp-resort-current-dir' and `treemacs-temp-resort-root'."
+  (interactive "P")
+  (pcase arg
+    ;; Resort current dir only
+    (`(4)
+     (treemacs-temp-resort-current-dir))
+    ;; Temporarily resort everything
+    (`(16)
+     (treemacs-temp-resort-root))
+    ;; Set new permanent value
+    (_
+     (-let (((sort-name . sort-value) (treemacs--sort-value-selection)))
+       (setq treemacs-sorting sort-value)
        (treemacs--without-messages (treemacs-refresh))
        (treemacs--log "Sorting method changed to '%s'."
-                      (propertize selected-name 'face 'font-lock-type-face))))
-    (treemacs--evade-image)))
+                      (propertize sort-name 'face 'font-lock-type-face)))))
+  (treemacs--evade-image))
 
 (provide 'treemacs-interface)
 

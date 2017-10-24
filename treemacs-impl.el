@@ -811,6 +811,20 @@ It needs to be moved aside in a way that works for all indent depths and
   (when (get-text-property (point) 'display)
     (forward-char 1)))
 
+(defun treemacs--sort-value-selection ()
+  "Interactive selection for a new `treemacs-sorting' value.
+Retursns a cons cell of a descriptive string name and the sorting symbol."
+  (declare (side-effect-free t))
+  (let* ((sort-names '(("Sort Alphabetically Ascending" . alphabetic-asc)
+                       ("Sort Alphabetically Descending" . alphabetic-desc)
+                       ("Sort by Size Ascending" . size-asc)
+                       ("Sort by Size Descending" . size-desc)
+                       ("Sort by Modification Date Ascending" . mod-time-asc)
+                       ("Sort by Modification Date Descending" . mod-time-desc)))
+         (selected-value (completing-read (format "Sort Method (current is %s)" treemacs-sorting)
+                                          (-map #'car sort-names))))
+    (--first (s-equals? (car it) selected-value) sort-names)))
+
 (defun treemacs--kill-buffers-after-deletion (path is-file)
   "Clean up after a deleted file or directory.
 Just kill the buffer visiting PATH if IS-FILE. Otherwise, go
@@ -834,9 +848,9 @@ through the buffer list and kill buffer if PATH is a prefix."
     ;; Kill all dired buffers in one step
     (when (bound-and-true-p dired-buffers)
       (-when-let (dired-buffers-for-path
-                 (->> dired-buffers
-                      (--filter (treemacs--is-path-in-dir? (car it) path))
-                      (-map #'cdr)))
+                  (->> dired-buffers
+                       (--filter (treemacs--is-path-in-dir? (car it) path))
+                       (-map #'cdr)))
         (and (y-or-n-p (format "Kill Dired buffers of %s, too? "
                                (f-filename path)))
              (-each dired-buffers-for-path #'kill-buffer))))))

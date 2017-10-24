@@ -351,7 +351,7 @@ By default Treemacs's keymap looks as follows:
 | ox      | treemacs-visit-node-in-external-application | Open current file according to its mime type in an external application. Linux, Windows and Mac are supported.                                                            |
 | yy      | treemacs-yank-path-at-point                 | Copy the absolute path of the node at point.                                                                                                                              |
 | yr      | treemacs-yank-root                          | Copy the absolute path of the current treemacs root.                                                                                                                      |
-| s       | treemacs-resort                             | Set a new value for ~treemacs-sorting~. With a single or double prefix arg temporarily resort the current directory/the entire buffer                                     |
+| s       | treemacs-resort                             | Set a new value for ~treemacs-sorting~. With a single or double prefix arg temporarily resort the current directory/the entire buffer.                                    |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting
