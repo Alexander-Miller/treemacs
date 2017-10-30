@@ -486,12 +486,12 @@ the open/close process to work recursively."
                "Treemacs v1.12")
 
 (defun treemacs-temp-resort-root (&optional sort-method)
-  "Temporarily resort the the entire treemacs buffer.
+  "Temporarily resort the entire treemacs buffer.
 SORT-METHOD is a cons of a string describing the method and the actual sort
 value, as returned by `treemacs--sort-value-selection'. SORT-METHOD will be
 provided when this function is called from `treemacs-resort' and will be
-interactively read otherwise. This way this function can bound directly, without
-the need to call `treemacs-resort' with a prefix arg."
+interactively read otherwise. This way this function can be bound directly,
+without the need to call `treemacs-resort' with a prefix arg."
   (interactive)
   (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
           (treemacs-sorting sort-method))
@@ -504,8 +504,8 @@ the need to call `treemacs-resort' with a prefix arg."
 SORT-METHOD is a cons of a string describing the method and the actual sort
 value, as returned by `treemacs--sort-value-selection'. SORT-METHOD will be
 provided when this function is called from `treemacs-resort' and will be
-interactively read otherwise. This way this function can bound directly, without
-the need to call `treemacs-resort' with a prefix arg."
+interactively read otherwise. This way this function can be bound directly,
+without the need to call `treemacs-resort' with a prefix arg."
   (interactive)
   (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
           (treemacs-sorting sort-method))
