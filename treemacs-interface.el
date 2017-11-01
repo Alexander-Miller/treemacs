@@ -270,10 +270,14 @@ A delete action must always be confirmed. Directories are deleted recursively."
                 (when (y-or-n-p (format "Recursively delete %s ? " file-name))
                   (f-delete path t)
                   (treemacs--kill-buffers-after-deletion path nil)
-                  t)))
+                  t))
+               (t (progn
+                    (treemacs--log "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
+                    nil)))
             (treemacs--clear-from-cache btn t)
             (treemacs--remove-all-tags-under-path-from-cache path)
-            (treemacs--without-messages (treemacs-refresh))))))
+            (treemacs--without-messages (treemacs-refresh)))))
+    (treemacs--log "Nothing to delete here."))
   (treemacs--evade-image))
 
 (defun treemacs-create-file ()
