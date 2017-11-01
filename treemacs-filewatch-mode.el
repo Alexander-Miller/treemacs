@@ -161,7 +161,11 @@ ALL: Bool"
   "Process the file events that have been collected.
 Stop watching deleted dirs and refresh all the buffers that need updating."
   (setq treemacs--refresh-timer nil)
-  (let (paths)
+  ;; inhibit-quit = nil prevents emacs from complaining about block calls to accept process output
+  ;; with quit inhibited. apparently this happens when process output is read from a timer-run funcction,
+  ;; in other words: when tag follow mode is working as intended
+  (let ((inhibit-quit nil)
+        (paths))
     (while treemacs--collected-file-events
       (let* ((event   (pop treemacs--collected-file-events))
              (action  (cl-second event))
