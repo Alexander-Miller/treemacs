@@ -32,8 +32,11 @@
     (when (and (eq (selected-window) (frame-first-window))
                (treemacs--is-treemacs-window-selected?)) 10))
 
+  ;; only works in old versions of winum, should be deleted soon
   (when (boundp 'winum-assign-func)
-    (setq winum-assign-func #'treemacs--window-number-ten)))
+    (setq winum-assign-func #'treemacs--window-number-ten))
+  (when (boundp 'winum-assign-functions)
+    (push #'treemacs--window-number-ten winum-assign-functions)))
 
 (with-eval-after-load 'popwin
 
