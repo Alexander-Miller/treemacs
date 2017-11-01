@@ -235,7 +235,15 @@ only work when python installed. The script should work both on python2 and 3."
 (defcustom treemacs-silent-refresh nil
   "When non-nil a completed refresh will not be announced with a message.
 This applies to refreshing both manual as well as automatic (due to e.g.
-`treemacs-filewatch-mode')."
+`treemacs-filewatch-mode').
+To only disable messages from refreshes induced by filewatch mode use
+`treemacs-silent-filewatch'."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-silent-filewatch nil
+  "When non-nil a refresh due to filewatch mode will cause no log message.
+To disable all refresh messages use `treemacs-silent-refresh'."
   :type 'boolean
   :group 'treemacs-configuration)
 

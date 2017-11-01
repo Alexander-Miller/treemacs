@@ -178,8 +178,9 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
           (dolist (b (car watch-info))
             (unless (memq b buffers-to-refresh)
               (push b buffers-to-refresh)))))
-      (--each buffers-to-refresh
-        (treemacs--do-refresh it)))))
+      (let ((treemacs-silent-refresh (or treemacs-silent-refresh treemacs-silent-filewatch)))
+        (--each buffers-to-refresh
+          (treemacs--do-refresh it))))))
 
 (defun treemacs--stop-watch-all-in-scope ()
   "Called when a treemacs buffer is torn down/killed.
