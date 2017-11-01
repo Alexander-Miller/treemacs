@@ -115,40 +115,8 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
 (defun treemacs-refresh ()
   "Refresh and rebuild treemacs buffer."
   (interactive)
-  (-if-let (treemacs-buffer (treemacs--buffer-exists?))
-      (treemacs--without-following
-       (with-selected-window (get-buffer-window treemacs-buffer)
-         (let* ((curr-line    (line-number-at-pos))
-                (curr-btn     (treemacs--current-button))
-                (curr-state   (when curr-btn (button-get curr-btn 'state)))
-                (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
-                (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
-                (win-start    (window-start (get-buffer-window)))
-                (root         (treemacs--current-root)))
-           (treemacs--build-tree root)
-           ;; move point to the same file it was with before the refresh if the file
-           ;; still exists and is visible, stay in the same line otherwise
-           (pcase curr-state
-             ((or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
-              (if (and (f-exists? curr-file)
-                       (or treemacs-show-hidden-files
-                           (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
-                  (treemacs--goto-button-at curr-file)
-                ;; not pretty, but there can still be some off by one jitter when
-                ;; using forwald-line
-                (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
-             ((or `tag-node-open `tag-node-closed `tag-node)
-              (treemacs--goto-tag-button-at curr-tagpath curr-file win-start))
-             ((pred null)
-              (with-no-warnings (goto-line 1)))
-             (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
-           (treemacs--evade-image)
-           (set-window-start (get-buffer-window) win-start)
-           ;; needs to be turned on again when refresh is called from outside the
-           ;; treemacs window, otherwise it looks like the selection disappears
-           (hl-line-mode t)
-           (unless treemacs-silent-refresh
-             (treemacs--log "Refresh complete.")))))
+  (-if-let (b (treemacs--buffer-exists?))
+      (treemacs--do-refresh b)
     (treemacs--log "There is nothing to refresh.")))
 
 (provide 'treemacs)

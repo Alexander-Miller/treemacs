@@ -62,10 +62,8 @@
 (treemacs--import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
   treemacs--stop-watching
-  treemacs--stop-watching-all
-  treemacs--cancel-refresh-timer
-  treemacs--cancel-missed-refresh
-  treemacs--refresh-catch-up)
+  treemacs--stop-watching-all-in-scope
+  treemacs--cancel-refresh-timer)
 
 (treemacs--import-functions-from "treemacs-follow-mode"
   treemacs--follow
@@ -282,8 +280,7 @@ Returns the buffer if it does exist."
 
 (defsubst treemacs--select-not-visible ()
   "Switch to treemacs buffer, given that it not visible."
-  (treemacs--setup-buffer)
-  (treemacs--refresh-catch-up))
+  (treemacs--setup-buffer))
 
 (defsubst treemacs--unqote (str)
   "Unquote STR if it is wrapped in quotes."
@@ -508,7 +505,7 @@ Optionally make the git request RECURSIVE."
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
   (treemacs--forget-last-highlight)
-  (treemacs--stop-watching-all)
+  (treemacs--stop-watch-all-in-scope)
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
@@ -541,16 +538,15 @@ Optionally make the git request RECURSIVE."
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
   (treemacs--remove-framelocal-buffer)
+  (treemacs--stop-watch-all-in-scope)
   (unless treemacs--buffer-access
     ;; TODO make local maybe
     (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when an existing treemacs buffer is re-initialized."
-  ;; (treemacs--stop-watching-all);?
-  ;; (treemacs--cancel-refresh-timer);?
-  ;; (treemacs--cancel-missed-refresh);?
-  (treemacs--remove-framelocal-buffer)
+  (treemacs--stop-watch-all-in-scope)
+  (treemacs--cancel-refresh-timer)
   (treemacs--tear-down-icon-highlight))
 
 (defun treemacs--push-button (btn &optional recursive)
@@ -904,6 +900,44 @@ through the buffer list and kill buffer if PATH is a prefix."
         (and (y-or-n-p (format "Kill Dired buffers of %s, too? "
                                (f-filename path)))
              (-each dired-buffers-for-path #'kill-buffer))))))
+
+(defun treemacs--do-refresh (buffer)
+  "Executes the refresh process for BUFFER.
+Specifically extracted with the buffer to refresh being supplied so that
+filewatch mode can refresh multiple buffers at once."
+  (treemacs--without-following
+   (with-current-buffer buffer
+     (let* ((curr-line    (line-number-at-pos))
+            (curr-btn     (treemacs--current-button))
+            (curr-state   (when curr-btn (button-get curr-btn 'state)))
+            (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
+            (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
+            (win-start    (window-start (get-buffer-window)))
+            (root         (treemacs--current-root)))
+       (treemacs--build-tree root)
+       ;; move point to the same file it was with before the refresh if the file
+       ;; still exists and is visible, stay in the same line otherwise
+       (pcase curr-state
+         ((or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
+          (if (and (f-exists? curr-file)
+                   (or treemacs-show-hidden-files
+                       (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
+              (treemacs--goto-button-at curr-file)
+            ;; not pretty, but there can still be some off by one jitter when
+            ;; using forwald-line
+            (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
+         ((or `tag-node-open `tag-node-closed `tag-node)
+          (treemacs--goto-tag-button-at curr-tagpath curr-file win-start))
+         ((pred null)
+          (with-no-warnings (goto-line 1)))
+         (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
+       (treemacs--evade-image)
+       (set-window-start (get-buffer-window) win-start)
+       ;; needs to be turned on again when refresh is called from outside the
+       ;; treemacs window, otherwise it looks like the selection disappears
+       (hl-line-mode t)
+       (unless treemacs-silent-refresh
+         (treemacs--log "Refresh complete."))))))
 
 (provide 'treemacs-impl)
 
