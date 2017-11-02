@@ -176,6 +176,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
     (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
     (treemacs--setup-icon treemacs-icon-js         "js.png"         "js" "jsx")
+    (treemacs--setup-icon treemacs-icon-hy         "hy.png"         "hy")
     (treemacs--setup-icon treemacs-icon-json       "json.png"       "json")))
 
 (defun treemacs-define-custom-icon (icon &rest file-extensions)
