@@ -77,7 +77,6 @@ Also add PATH to `treemacs--collapsed-filewatch-hash' when COLLAPSE is non-nil.
 
 PATH: Filepath
 COLLAPSE: Bool"
-  (cl-assert (eq major-mode 'treemacs-mode) nil "This must be called inside the treemacs buffer");;TODO
   ;; no warning since the mode is defined in the same file
   (when (with-no-warnings treemacs-filewatch-mode)
     (-if-let (watch-info (gethash path treemacs--filewatch-hash))
@@ -134,7 +133,6 @@ filewatch hashes.
 
 PATH: Filepath
 ALL: Bool"
-  (cl-assert (or all (eq major-mode 'treemacs-mode)) nil "This must be called inside the treemacs buffer");;TODO
   (let (to-remove)
     (maphash
      (lambda (watched-path watch-info)
