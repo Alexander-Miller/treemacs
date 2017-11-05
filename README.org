@@ -82,7 +82,7 @@ multiple times in a row when emacs is working. This means two things:
 
 1) ~treemacs-follow~ tries to be very specific about when it is run at all.
 
-2) There may be times when something slips through (~which-key~ for exmaple would cause such a problem if treemacs
+2) There may be times when something slips through (~which-key~ for example would cause such a problem if treemacs
 wasn't made compatible with it by default). If you do see ~treemacs-follow~ behaving in a way it shouldn't open up
 an issue. The fix shouldn't be more than a single bit of advice away.
 ** Treemacs-tag-follow-mode
@@ -270,7 +270,7 @@ treemacs due to iconic fonts not being monospaced) treemacs offers the option to
 using the ~treemacs-define-custom-icon~ function.
 
 It takes as its arguments an icon (a string) and a list of file extension to use the icon for. Already present
-icons for these extensions will be overwritten. The extensions are not case-sensitive and will be dowcased.
+icons for these extensions will be overwritten. The extensions are not case-sensitive and will be downcased.
 
 Note that treemacs has a very loose definition of what constitutes a file extension - it's either everything
 past the last period, or just the file's full name if there is no period. This makes it possible to match file
