@@ -62,7 +62,7 @@
 (treemacs--import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
   treemacs--stop-watching
-  treemacs--stop-watching-all-in-scope
+  treemacs--stop-watch-all-in-scope
   treemacs--cancel-refresh-timer)
 
 (treemacs--import-functions-from "treemacs-follow-mode"
@@ -83,6 +83,16 @@
 
 (defvar treemacs--buffer-access nil
   "Alist mapping treemacs buffers to frames.")
+
+(defvar treemacs--scope-id 0
+  "Used as a frame parameter to identify a frame over multiple sessions.
+Used to restore the frame -> buffer mapping in `treemacs--buffer-access' with
+desktop save mode.")
+
+(defvar treemacs--taken-scopes nil
+  "List of already taken scope ids that can no longer be used.
+Especially important after a session restore, since the list of used ids may no
+longer be contigious.")
 
 (defconst treemacs--buffer-name-prefix "*Treemacs-")
 
@@ -378,6 +388,23 @@ and special names like this."
   (declare (side-effect-free t))
   (->> window window-buffer buffer-name (s-starts-with? treemacs--buffer-name-prefix)))
 
+(defsubst treemacs--get-framelocal-buffer ()
+  "Get this frame's local buffer, creating it if necessary.
+Will also perform cleanup if the buffer is dead."
+  (let* ((frame (selected-frame))
+         (buf   (assoc frame treemacs--buffer-access)))
+    (when (or (null buf)
+              (not (buffer-live-p buf)))
+      (setq treemacs--buffer-access
+            (assq-delete-all frame treemacs--buffer-access))
+      (setq buf (get-buffer-create (format "%s%s*" treemacs--buffer-name-prefix frame)))
+      (push (cons frame buf) treemacs--buffer-access)
+      (unless (frame-parameter frame 'treemacs-id)
+        (while (memq (setq treemacs--scope-id (1+ treemacs--scope-id)) treemacs--taken-scopes))
+        (push treemacs--scope-id treemacs--taken-scopes)
+        (set-frame-parameter frame 'treemacs-id (number-to-string treemacs--scope-id))))
+    buf))
+
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
@@ -489,7 +516,6 @@ Optionally make the git request RECURSIVE."
     ;; do mode activation last - if the treemacs buffer is empty when the major
     ;; mode is activated (this may happen when treemacs is restored from other
     ;; than desktop save mode) treemacs will attempt to restore the previous session
-    ;; TODO figure out mode activation order w.r.t persistence & buffer locals
     (unless (eq major-mode 'treemacs-mode)
       (treemacs-mode))
     ;; f-long to expand ~ and remove final slash
@@ -497,7 +523,7 @@ Optionally make the git request RECURSIVE."
     (treemacs--build-tree (f-long root))
     (treemacs--check-window-system)
     ;; no warnings since follow mode is known to be defined
-    (setq treemacs--ready-to-follow t)
+    (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
         (treemacs--follow)))))
@@ -787,26 +813,13 @@ treemacs buffer teardown\) otherwise the currently selected frame is used."
     (-when-let (b (cdr (assoc frame treemacs--buffer-access)))
       ;; Only do the killing here when frame is non-nil, since a frame is being deleted then.
       ;; If frame is non nil we're running from in the kill buffer hook - killing the buffer again
-      ;; will then trigger the kill buffer hook again etc ad stack overlofw
+      ;; will then trigger the kill buffer hook again etc ad stack overflow
       (kill-buffer b)))
   (setq treemacs--buffer-access
-        (assq-delete-all frame treemacs--buffer-access))
+        (assq-delete-all (or frame (selected-frame)) treemacs--buffer-access))
   (unless treemacs--buffer-access
     (setq delete-frame-functions
           (delete #'treemacs--remove-framelocal-buffer delete-frame-functions))))
-
-(defsubst treemacs--get-framelocal-buffer ()
-  "Get this frame's local buffer, creating it if necessary.
-Will also perforrm cleanup if the buffer is dead."
-  (let* ((frame (selected-frame))
-         (buf   (assoc frame treemacs--buffer-access)))
-    (when (or (null buf)
-              (not (buffer-live-p buf)))
-      (setq treemacs--buffer-access
-            (assq-delete-all frame treemacs--buffer-access))
-      (setq buf (get-buffer-create (format "%s%s*" treemacs--buffer-name-prefix frame)))
-      (push (cons frame buf) treemacs--buffer-access))
-    buf))
 
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
@@ -902,7 +915,7 @@ through the buffer list and kill buffer if PATH is a prefix."
              (-each dired-buffers-for-path #'kill-buffer))))))
 
 (defun treemacs--do-refresh (buffer)
-  "Executes the refresh process for BUFFER.
+  "Execute the refresh process for BUFFER.
 Specifically extracted with the buffer to refresh being supplied so that
 filewatch mode can refresh multiple buffers at once."
   (treemacs--without-following

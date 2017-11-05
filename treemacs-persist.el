@@ -16,87 +16,80 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; General persistence and desktop-save-mode-integration.
+;;; General persistence and desktop-save-mode integration.
 
 ;;; Code:
 
+(require 'hl-line)
 (require 'dash)
 (require 'f)
 (require 's)
 (require 'treemacs-customization)
 (require 'treemacs-impl)
+(require 'treemacs-follow-mode)
+
+(declare-function treemacs-mode "treemacs-mode")
 
 (defconst treemacs--persist-file (f-join user-emacs-directory ".cache" "treemacs-persist")
   "File treemacs uses to persist its current state.")
 
+(defconst treemacs--desktop-helper-name "*Desktop Treemacs Helper*")
+
 ;;;###autoload
-(defun treemacs-restore ()
-  "Restore the treemacs state saved by `treeemacs-persist'."
-  (interactive)
-  (-if-let (stored-data (treemacs--read-persist-data))
-      (let ((root      (cdr (assoc "ROOT"      stored-data)))
-            (open-dirs (cdr (assoc "OPEN-DIRS" stored-data)))
-            (point-at  (cdr (assoc "POINT-AT"  stored-data))))
-        (unless (f-dir? root)      (error "[Treemacs] %s is not a directory, so it cannot be restored" root))
-        (unless (f-readable? root) (error "[Treemacs] %s is not readable, so it cannot be restored" root))
-        (treemacs--init root)
-        ;; Don't always start searching from the very top
-        (let ((start 0)
-              (btn   nil))
-          (--each
-              (--filter (f-readable? it) (s-split "|" open-dirs t))
-            (setq btn (treemacs--goto-button-at it start))
-            (treemacs--push-button btn)
-            (setq start (button-end btn))))
-        (when (f-exists? point-at)
-          (treemacs--goto-button-at point-at))
-        (recenter)
-        ;; selected line is not visible otherwise
-        (hl-line-mode -1)
-        (hl-line-mode t))))
+(defun treemacs--restore ()
+  "Restore the entire treemacs state saved by `treeemacs--persist'."
+  ;; condition is true when we're running in eager restoration and the frameset is not yet restored
+  ;; in this case this will be run again in `desktop-after-read-hook'
+  (unless (--all? (null (frame-parameter it 'treemacs-id)) (frame-list))
+    ;; Abusing a timer like this (hopefully) guarantees that the restore runs after everything else and
+    ;; the restored treemacs buffers remain visible
+    (run-with-timer
+     1 nil
+     (lambda ()
+       (dolist (frame (frame-list))
+         (-when-let (scope-id (frame-parameter frame 'treemacs-id))
+           (push (string-to-number scope-id) treemacs--taken-scopes)))
+       (-when-let (persist-data (read (f-read treemacs--persist-file 'utf-8)))
+         (dolist (buffer-data persist-data)
+           ;; inhibit quit to quiet the error messages that crop up since this is in a timer
+           (let ((inhibit-quit nil)
+                 (scope-id (cdr (assoc "scope-id" buffer-data)))
+                 (root     (cdr (assoc "root" buffer-data)))
+                 (point    (cdr (assoc "point" buffer-data))))
+             (-when-let (frame (--first (string= scope-id (frame-parameter it 'treemacs-id)) (frame-list)))
+               (unless (-> frame (assq treemacs--buffer-access) (cdr) (buffer-live-p))
+                 (save-selected-window
+                   (with-selected-frame frame
+                     (push (cons frame (current-buffer)) treemacs--buffer-access)
+                     (treemacs--init root)
+                     (bury-buffer (current-buffer))
+                     (when (and (not (string= point "<root>"))
+                                (f-exists? point))
+                       (treemacs--do-follow point))
+                     (hl-line-highlight))))))))
+       (-when-let (b (get-buffer treemacs--desktop-helper-name))
+         (kill-buffer b))))))
 
-(defun treemacs-persist ()
-  "Save current state, allowing it to be restored with `treemacs-restore'."
-  (interactive)
-  (-if-let (buf (treemacs--buffer-exists?))
-      (with-current-buffer buf
-        (save-excursion
-          (let ((root      (treemacs--current-root))
-                (open-dirs (treemacs--get-open-dirs))
-                (point-at  (treemacs--prop-at-point 'abs-path))
-                (text      ""))
-            (treemacs--check-persist-file)
-            (setq text (s-concat text (format "ROOT : %s" root)))
-            (setq text (s-concat text "\n" (format "OPEN-DIRS : %s" (s-join "|" open-dirs))))
-            (setq text (s-concat text "\n" (format "POINT-AT : %s" point-at)))
-            (f-write text 'utf-8 treemacs--persist-file))))))
-
-(defun treemacs--check-persist-file ()
-  "Make sure treemacs' persist file exists and is set up correctly.
-Create files/directories if necessary."
-  (let ((cache-dir (f-join user-emacs-directory ".cache")))
-    (if (f-exists? cache-dir)
-        (progn
-          (unless (f-dir? cache-dir)
-            (error " user-emacs-directory/.cache is not a directory "))
-          (unless (f-readable? cache-dir)
-            (error " user-emacs-directory/.cache is not readable "))
-          (unless (f-exists? treemacs--persist-file)
-            (f-touch treemacs--persist-file)))
-      (progn
-        (f-mkdir cache-dir)
-        (f-touch treemacs--persist-file)))))
-
-(defun treemacs--read-persist-data ()
-  "Read the data stored in `treemacs--persist-file'."
-    (when (f-file? treemacs--persist-file)
-      (let ((ret   (list))
-            (lines (s-lines (f-read treemacs--persist-file))))
-        (while lines
-          (let ((split (s-split " : " (pop lines))))
-            (when (= 2 (length split))
-              (push `(,(cl-first split) . ,(cl-second split)) ret))))
-        ret)))
+(defun treemacs--persist ()
+  "Save current state, allowing it to be restored with `treemacs--restore'."
+  (let ((persist-dir (f-dirname treemacs--persist-file)))
+    (unless (f-exists? persist-dir)
+      (f-mkdir persist-dir)))
+  (let (state)
+    (dolist (access-pair treemacs--buffer-access)
+      (-let [(frame . buffer) access-pair]
+        (when (buffer-live-p buffer)
+          (with-current-buffer buffer
+            (push `(,(cons "scope-id" (frame-parameter frame 'treemacs-id))
+                    ,(cons "root" (treemacs--current-root))
+                    ,(cons "point" (-if-let (b (treemacs--current-button)) (treemacs--nearest-path b) "<root>")))
+                  state)))))
+    (f-write (pp-to-string state) 'utf-8 treemacs--persist-file)
+    (with-current-buffer (get-buffer-create treemacs--desktop-helper-name)
+      (treemacs-mode)
+      (read-only-mode -1)
+      (insert "This buffer only exists so that desktop mode will load treemacs.\n")
+      (insert "It will be deleted by `treemacs--restore'."))))
 
 (defun treemacs--maybe-persist ()
   "Hook function to save treemacs state when conditions for it are met.
@@ -107,7 +100,7 @@ desktop save mode is on."
              (or desktop-save-mode
                  (and (bound-and-true-p persp-auto-save-opt)
                       (not (eq 0 persp-auto-save-opt)))))
-    (treemacs-persist)))
+    (treemacs--persist)))
 
 (defun treemacs--get-open-dirs ()
   "Collect the paths of all currently expanded folders."
@@ -125,35 +118,63 @@ desktop save mode is on."
 
 (with-eval-after-load "desktop"
 
-  (defun treemacs--desktop-handler (&rest _)
-    "Treemacs mode handler for desktop save mode."
-    ;; args are irrelevant since treemacs has but one way to be restored
-    (treemacs-restore))
+  ;; Desktop mode cannot take the usual approach with treemacs since when buffers
+  ;; are restored before frame parameters. Using just a hook won't work either since
+  ;; buffers can be restored lazily.
+  ;; The solution is then to bypass the usual process: treemacs buffers are not
+  ;; saved at all, just a single treemacs-mode buffer called `treemacs--desktop-helper-name',
+  ;; which only exists so desktop mode will load treemacs.
+  ;; If desktop mode tries to restore that buffer during the eager phase `treemacs--restore'
+  ;; is a noop, and will run again, properly, as part of `desktop-after-read-hook', when
+  ;; frame parameters have been restored.
+  ;; If this buffer is restored lazily instead frame params will have been restored,
+  ;; so `treemacs--restore' will work immediately.
 
-  (add-hook 'desktop-save-hook #'treemacs--maybe-persist)
+  (defun treemacs--desktop-handler (&rest _)
+    "Fake-ish treemacs mode handler for desktop save mode.
+Works if run during the lazy restoration phase, otherwise
+`desktop-after-read-hook' will take care of treemacs
+Will always return the scratch buffer to make `desktop-mode` think all is well."
+    (treemacs--restore)
+    (get-buffer-create "*scratch*"))
+
+  (defun treemacs--desktop-persist-advice (&rest _)
+    "Persists treemacs alongside `desktop-save'."
+    (treemacs--persist))
+
+  (advice-add 'desktop-save :before (with-no-warnings #'treemacs--desktop-persist-advice))
+  (add-hook 'desktop-after-read-hook #'treemacs--restore)
+
+  (when (boundp 'desktop-buffers-not-to-save)
+    (unless (s-contains? treemacs--buffer-name-prefix desktop-buffers-not-to-save)
+      (if desktop-buffers-not-to-save
+          (setq desktop-buffers-not-to-save
+                (concat "\\(" desktop-buffers-not-to-save "\\|" (rx bol (eval treemacs--buffer-name-prefix) (0+ any)) "\\)"))
+        (setq desktop-buffers-not-to-save (rx bol (eval treemacs--buffer-name-prefix) (0+ any))))))
 
   (add-to-list 'desktop-buffer-mode-handlers
                '(treemacs-mode . treemacs--desktop-handler)))
 
-(with-eval-after-load "persp-mode"
+;; TODO
+;; (with-eval-after-load "persp-mode"
 
-  (defun treemacs--persp-save (b)
-    (with-current-buffer b
-      (when (eq major-mode 'treemacs-mode)
-        (treemacs-persist)
-        '(def-treemacs))))
+;;   (defun treemacs--persp-save (b)
+;;     (with-current-buffer b
+;;       (when (eq major-mode 'treemacs-mode)
+;;         (treemacs--persist)
+;;         '(def-treemacs))))
 
-  (defun treemacs--persp-load (save-list)
-    (when (eq (car save-list) 'def-treemacs)
-      (treemacs-restore)
-      t))
+;;   (defun treemacs--persp-load (save-list)
+;;     (when (eq (car save-list) 'def-treemacs)
+;;       ;; (treemacs--restore)
+;;       t))
 
-  (if (and (boundp 'persp-save-buffer-functions)
-           (boundp 'persp-load-buffer-functions))
-      (progn
-        (add-to-list 'persp-save-buffer-functions (with-no-warnings #'treemacs--persp-save))
-        (add-to-list 'persp-load-buffer-functions (with-no-warnings #'treemacs--persp-load)))
-    (treemacs--log "Persp's save and load buffer function vars don't seem to be defined. Failed to set persist hooks.")))
+;;   (if (and (boundp 'persp-save-buffer-functions)
+;;            (boundp 'persp-load-buffer-functions))
+;;       (progn
+;;         (add-to-list 'persp-save-buffer-functions (with-no-warnings #'treemacs--persp-save))
+;;         (add-to-list 'persp-load-buffer-functions (with-no-warnings #'treemacs--persp-load)))
+;;     (treemacs--log "Persp's save and load buffer function vars don't seem to be defined. Failed to set persist hooks.")))
 
 (provide 'treemacs-persist)
 

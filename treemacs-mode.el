@@ -218,6 +218,7 @@ to it will instead show a blank."
         (setq mode-line-format '("%e" (:eval (spaceline-ml-treemacs)))))
     (setq mode-line-format '(" Treemacs "))))
 
+;;;###autoload
 (define-derived-mode treemacs-mode special-mode "Treemacs"
   "A major mode for displaying the file system in a tree layout."
 
@@ -231,10 +232,6 @@ to it will instead show a blank."
   (electric-indent-local-mode -1)
   (visual-line-mode -1)
   (hl-line-mode t)
-  ;; treemacs buffer is only completely empty when it has been revived
-  ;; by something like persp.el
-  (when (s-blank? (buffer-string))
-    (treemacs-restore))
 
   ;; needs to run manually the first time treemacs is loaded, since the hook is only added *after*
   ;; the window config was changed to show treemacs
