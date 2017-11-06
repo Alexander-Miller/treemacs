@@ -157,6 +157,7 @@ Stay in current window with a prefix argument ARG."
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
+   :ensure-window-split t
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 (defun treemacs-visit-node-ace (&optional arg)
@@ -169,6 +170,7 @@ Stay in current window with a prefix argument ARG."
    :dir-action (dired (treemacs--safe-button-get btn 'abs-path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
+   :ensure-window-split t
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 (defun treemacs-visit-node-ace-horizontal-split (&optional arg)
