@@ -155,27 +155,6 @@ Will always return the scratch buffer to make `desktop-mode` think all is well."
   (add-to-list 'desktop-buffer-mode-handlers
                '(treemacs-mode . treemacs--desktop-handler)))
 
-;; TODO
-;; (with-eval-after-load "persp-mode"
-
-;;   (defun treemacs--persp-save (b)
-;;     (with-current-buffer b
-;;       (when (eq major-mode 'treemacs-mode)
-;;         (treemacs--persist)
-;;         '(def-treemacs))))
-
-;;   (defun treemacs--persp-load (save-list)
-;;     (when (eq (car save-list) 'def-treemacs)
-;;       ;; (treemacs--restore)
-;;       t))
-
-;;   (if (and (boundp 'persp-save-buffer-functions)
-;;            (boundp 'persp-load-buffer-functions))
-;;       (progn
-;;         (add-to-list 'persp-save-buffer-functions (with-no-warnings #'treemacs--persp-save))
-;;         (add-to-list 'persp-load-buffer-functions (with-no-warnings #'treemacs--persp-load)))
-;;     (treemacs--log "Persp's save and load buffer function vars don't seem to be defined. Failed to set persist hooks.")))
-
 (provide 'treemacs-persist)
 
 ;;; treemacs-persist.el ends here
