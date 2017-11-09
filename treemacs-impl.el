@@ -518,6 +518,8 @@ Optionally make the git request RECURSIVE."
     ;; than desktop save mode) treemacs will attempt to restore the previous session
     (unless (eq major-mode 'treemacs-mode)
       (treemacs-mode))
+    ;; create buffer-local hashes that need to be initialized
+    (setq treemacs--tags-cache (make-hash-table :test #'equal :size 100))
     ;; f-long to expand ~ and remove final slash
     ;; needed for root dirs given by projectile if it's used
     (treemacs--build-tree (f-long root))
