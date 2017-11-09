@@ -31,6 +31,14 @@ Must be set to nil when no following should be triggered, e.g. when the
 treemacs buffer is being rebuilt or during treemacs' own window selection
 functions.")
 
+(defmacro treemacs--without-following (&rest body)
+  "Execute BODY with `treemacs--ready-to-follow' set to nil."
+  `(let ((o treemacs--ready-to-follow))
+     (setq treemacs--ready-to-follow nil)
+     (unwind-protect
+         (progn ,@body)
+       (setq treemacs--ready-to-follow o))))
+
 (defsubst treemacs--follow-each-dir (dir-parts root)
   "Follow (goto and open) every single dir in DIR-PARTS, starting at ROOT."
   (save-match-data
@@ -93,14 +101,6 @@ not visible."
 (with-eval-after-load 'which-key
   (declare-function which-key--show-popup "which-key")
   (declare-function which-key--hide-popup "which-key"))
-
-(defmacro treemacs--without-following (&rest body)
-  "Execute BODY with `treemacs--ready-to-follow' set to nil."
-  `(let ((o treemacs--ready-to-follow))
-     (setq treemacs--ready-to-follow nil)
-     (unwind-protect
-         (progn ,@body)
-       (setq treemacs--ready-to-follow o))))
 
 (defun treemacs--select-window-advice (&rest _)
   "Advice function for `treemacs-follow-mode'.
