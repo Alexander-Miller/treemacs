@@ -138,7 +138,8 @@ Do so by running it and its ARGS through `treemacs--without-following'."
     (when (advice-member-p #'treemacs--follow-compatibility-advice #'which-key--hide-popup)
       (advice-remove #'which-key--hide-popup #'treemacs--follow-compatibility-advice)))
   ;; winum compatibility
-  (when (advice-member-p #'treemacs--follow-compatibility-advice #'winum--update)
+  (when (and (fboundp 'winum--update)
+             (advice-member-p #'treemacs--follow-compatibility-advice #'winum--update))
     (advice-remove #'winum--update #'treemacs--follow-compatibility-advice)))
 
 (define-minor-mode treemacs-follow-mode
