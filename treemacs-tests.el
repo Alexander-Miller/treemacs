@@ -281,7 +281,7 @@
   (ert-deftest current-visibility::existing-buffer ()
     (with-mock
       (stub s-starts-with? => nil)
-      (stub assoc => '(t . t))
+      (stub assoc => `(t . ,(current-buffer)))
       (should (eq 'exists (treemacs--current-visibility)))))
 
   (ert-deftest current-visibility::no-buffer ()
@@ -874,6 +874,102 @@
           (kill-buffer (get-file-buffer temp-file))
           (delete-file temp-file))))))
 
+;; `treemacs--start-watching'
+(progn
+  (ert-deftest start-watching::start-watching-unwatched-file ()
+    (with-mock
+     (stub file-notify-add-watch => 123456)
+     (let ((path "/A")
+           (treemacs-filewatch-mode t)
+           (treemacs--filewatch-hash (make-hash-table :test #'equal))
+           (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+       (treemacs--start-watching path t)
+       (should (equal (gethash path treemacs--filewatch-hash)
+                      (cons (list (current-buffer)) 123456)))
+       (should (gethash path treemacs--collapsed-filewatch-hash)))))
+
+  (ert-deftest start-watching::start-watching-watched-file ()
+    (with-mock
+      (stub file-notify-add-watch => 123456)
+      (let ((path "/A")
+            (treemacs-filewatch-mode t)
+            (treemacs--filewatch-hash (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+        (puthash path (cons '(x y) 123456) treemacs--filewatch-hash)
+        (treemacs--start-watching path t)
+        (should (equal (gethash path treemacs--filewatch-hash)
+                       (cons (list (current-buffer) 'x 'y) 123456)))
+        (should (gethash path treemacs--collapsed-filewatch-hash)))))
+
+  (ert-deftest start-watching::add-watching-buffer-only-once ()
+    (with-mock
+      (stub file-notify-add-watch => 123456)
+      (let ((path "/A")
+            (treemacs-filewatch-mode t)
+            (treemacs--filewatch-hash (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+        (puthash path (cons '(x y) 123456) treemacs--filewatch-hash)
+        (treemacs--start-watching path t)
+        (treemacs--start-watching path t)
+        (should (equal (gethash path treemacs--filewatch-hash)
+                       (cons (list (current-buffer) 'x 'y) 123456)))
+        (should (gethash path treemacs--collapsed-filewatch-hash))))))
+
+;; `treemacs--stop-watching'
+(progn
+
+  (ert-deftest stop-watching::do-nothing-when-path-is-not-watched ()
+    (let ((treemacs--filewatch-hash (make-hash-table :test #'equal))
+          (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+      (treemacs--stop-watching "/A")))
+
+  (ert-deftest stop-watching::stop-watch-of-the-only-watching-buffer ()
+    (with-mock
+      (stub file-notify-rm-watch => t)
+      (let ((path "/A")
+            (treemacs--filewatch-hash (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+        (puthash path (cons (list (current-buffer)) 123456) treemacs--filewatch-hash)
+        (puthash path t treemacs--collapsed-filewatch-hash)
+        (treemacs--stop-watching path)
+        (should-not (gethash path treemacs--filewatch-hash))
+        (should-not (gethash path treemacs--collapsed-filewatch-hash)))))
+
+  (ert-deftest stop-watching::stop-watch-of-one-of-several-buffers ()
+    (let ((path "/A")
+          (treemacs--filewatch-hash (make-hash-table :test #'equal))
+          (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+      (puthash path (cons (list 'x 'y (current-buffer)) 123456) treemacs--filewatch-hash)
+      (puthash path t treemacs--collapsed-filewatch-hash)
+      (treemacs--stop-watching path)
+      (should (equal (gethash path treemacs--filewatch-hash)
+                     (cons '(x y) 123456)))
+      (should (gethash path treemacs--collapsed-filewatch-hash))))
+
+  (ert-deftest stop-watching::stop-watch-of-path-under-stopped-path ()
+    (with-mock
+      (stub file-notify-rm-watch => t)
+      (let ((path "/A/B")
+            (treemacs--filewatch-hash (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+        (puthash path (cons (list (current-buffer)) 123456) treemacs--filewatch-hash)
+        (puthash path t treemacs--collapsed-filewatch-hash)
+        (treemacs--stop-watching "/A")
+        (should-not (gethash path treemacs--filewatch-hash))
+        (should-not (gethash path treemacs--collapsed-filewatch-hash)))))
+
+  (ert-deftest stop-watching::stop-watch-of-all-buffers ()
+    (with-mock
+      (stub file-notify-rm-watch => t)
+      (let ((path "/A")
+            (treemacs--filewatch-hash (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+        (puthash path (cons '(x y z) 123456) treemacs--filewatch-hash)
+        (puthash path t treemacs--collapsed-filewatch-hash)
+        (treemacs--stop-watching path t)
+        (should-not (gethash path treemacs--filewatch-hash))
+        (should-not (gethash path treemacs--collapsed-filewatch-hash))))))
+
 ;;; Thorough Sys Test
 (ert-deftest treemacs::sys-test ()
   (save-window-excursion
@@ -890,9 +986,7 @@
                 (-when-let (b (treemacs--buffer-exists?)) (kill-buffer b))
                 (call-interactively 'treemacs)
 
-                (let ((b (treemacs--buffer-exists?)))
-                  (should b)
-                  (switch-to-buffer b))
+                (should (treemacs--buffer-exists?))
 
                 (treemacs--goto-button-at (f-join default-directory "test/testfolder1/testfolder2"))
                 (should (equal "test/testfolder1/testfolder2"

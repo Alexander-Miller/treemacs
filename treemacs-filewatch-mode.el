@@ -79,6 +79,8 @@ PATH: Filepath
 COLLAPSE: Bool"
   ;; no warning since the mode is defined in the same file
   (when (with-no-warnings treemacs-filewatch-mode)
+    (when collapse
+      (puthash path t treemacs--collapsed-filewatch-hash))
     (-if-let (watch-info (gethash path treemacs--filewatch-hash))
         ;; only add current buffer to watch list if path is watched already
         (unless (--any? (eq it (current-buffer)) (car watch-info))
@@ -87,9 +89,7 @@ COLLAPSE: Bool"
       (puthash path
                (cons (list (current-buffer))
                      (file-notify-add-watch path '(change) #'treemacs--filewatch-callback))
-               treemacs--filewatch-hash)
-      (when collapse
-        (puthash path t treemacs--collapsed-filewatch-hash)))))
+               treemacs--filewatch-hash))))
 
 (defsubst treemacs--is-event-relevant? (event)
   "Decide if EVENT is relevant to treemacs or should be ignored.
@@ -128,8 +128,8 @@ instead of waiting for file processing."
 This also means stopping the watch over all dirs below path.
 Must be called inside the treemacs buffer since it will remove `current-buffer'
 from PATH's watch list. Does not apply if this is called in reaction to a file
-being deleted. In this case ALL is t and PATH  will all be removed from the
-filewatch hashes.
+being deleted. In this case ALL is t and all buffers watching PATH will be removed
+from the filewatch hashes.
 
 PATH: Filepath
 ALL: Bool"
