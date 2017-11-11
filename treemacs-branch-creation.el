@@ -72,14 +72,14 @@ is a marker pointing to POS."
 (defsubst treemacs--get-dir-content (dir)
   "Get the content of DIR, separated into sublists of first dirs, then files."
   (let* ((sort-func
-          (pcase treemacs-sorting
-            (`alphabetic-asc  #'treemacs--sort-alphabetic-asc)
-            (`alphabetic-desc #'treemacs--sort-alphabetic-desc)
-            (`size-asc        #'treemacs--sort-size-asc)
-            (`size-desc       #'treemacs--sort-size-desc)
-            (`mod-time-asc    #'treemacs--sort-mod-time-asc)
-            (`mod-time-desc   #'treemacs--sort-mod-time-desc)
-            (_                (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting))))
+          (-pcase treemacs-sorting
+            [`alphabetic-asc  #'treemacs--sort-alphabetic-asc]
+            [`alphabetic-desc #'treemacs--sort-alphabetic-desc]
+            [`size-asc        #'treemacs--sort-size-asc]
+            [`size-desc       #'treemacs--sort-size-desc]
+            [`mod-time-asc    #'treemacs--sort-mod-time-asc]
+            [`mod-time-desc   #'treemacs--sort-mod-time-desc]
+            [_                (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting)]))
          (entries (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown)))
          (dirs-files (-separate #'file-directory-p entries)))
     (list (sort (cl-first dirs-files) sort-func)

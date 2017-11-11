@@ -33,6 +33,41 @@
 (require 'pfuture)
 (require 'treemacs-customization)
 
+(defmacro -if-let- (var-val then &rest else)
+  "Same as `-if-let', but expects VAR-VAL to be a vector.
+Delegates VAR-VAL, THEN and ELSE to `-if-let'."
+  (declare (debug ((sexp form) form body))
+           (indent 2))
+  (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
+    `(-if-let ,var-val-lst ,then ,@else)))
+
+(defmacro -when-let- (var-val &rest body)
+  "Same as `-when-let', but expects VAR-VAL to be a vector.
+Delegates VAR-VAL and BODY to `-when-let'."
+  (declare (debug ((sexp form) body))
+           (indent 1))
+  (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
+    `(-when-let ,var-val-lst ,@body)))
+
+(defmacro -let- (vars &rest body)
+  "Same as `let', but VARS is an array.
+Otherwise just delegates VARS and BODY to `let'."
+  (declare (indent 1))
+  (-let [varlist (cl-map 'list #'identity vars)]
+    `(let ,varlist ,@body)))
+
+(defmacro -pcase (exp &rest cases)
+  "Same as `pcase', except that the match arms are vectors.
+Otherwise just delegates EXP and CASES to `pcase'."
+  (declare (indent 1))
+  (let (cases-list)
+    (--each cases
+      (let (c)
+        (dotimes (x (length it))
+          (push (aref it x) c))
+        (push  (nreverse c) cases-list)))
+    `(pcase ,exp ,@(nreverse cases-list))))
+
 (defmacro treemacs--import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS."
   (declare (indent 1))
@@ -359,13 +394,13 @@ FILE here is a list consisting of an absolute path and file attributes."
   "Return the appropriate face for PATH GIT-INFO."
   ;; for the sake of simplicity we only look at the state in the working tree
   ;; see OUTPUT section `git help status'
-  (pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
-    ("M" 'treemacs-git-modified-face)
-    ("U" 'treemacs-git-conflict-face)
-    ("?" 'treemacs-git-untracked-face)
-    ("!" 'treemacs-git-ignored-face)
-    ("A" 'treemacs-git-added-face)
-    (_   'treemacs-git-unmodified-face)))
+  (-pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
+    ["M" 'treemacs-git-modified-face]
+    ["U" 'treemacs-git-conflict-face]
+    ["?" 'treemacs-git-untracked-face]
+    ["!" 'treemacs-git-ignored-face]
+    ["A" 'treemacs-git-added-face]
+    [_   'treemacs-git-unmodified-face]))
 
 (defsubst treemacs--file-extension (file)
   "Same as `file-name-extension', but also works with leading periods.
@@ -373,7 +408,8 @@ FILE here is a list consisting of an absolute path and file attributes."
 This is something a of workaround to easily allow assigning icons to a FILE with
 a name like '.gitignore' without always having to check for both file extensions
 and special names like this."
-  (let ((filename (f-filename file)))
+  (declare (pure t) (side-effect-free t))
+  (-let [filename (f-filename file)]
     (save-match-data
       (if (string-match "\\.[^.]*\\'" filename)
           (substring filename (1+ (match-beginning 0)))
@@ -521,7 +557,7 @@ Optionally make the git request RECURSIVE."
 
 (defun treemacs--init (root)
   "Initialize and build treemacs buffer for ROOT."
-  (let ((origin-buffer (current-buffer)))
+  (-let [origin-buffer (current-buffer)]
     (if (treemacs--is-visible?)
         (treemacs--select-visible)
       (treemacs--setup-buffer))

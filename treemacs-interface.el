@@ -112,11 +112,11 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   "Use currently selected directory as new root. Do nothing for files."
   (interactive)
   (let ((btn (treemacs--current-button)))
-    (pcase (button-get btn 'state)
-      ((or `dir-node-open `dir-node-closed)
-       (treemacs--build-tree (button-get btn 'abs-path)))
-      (_
-       (treemacs--log "Button in current line is not a directory.")))))
+    (-pcase (button-get btn 'state)
+      [(or `dir-node-open `dir-node-closed)
+       (treemacs--build-tree (button-get btn 'abs-path))]
+      [_
+       (treemacs--log "Button in current line is not a directory.")])))
 
 (defun treemacs-visit-node-vertical-split (&optional arg)
   "Open current file or tag by vertically splitting `next-window'.
@@ -223,18 +223,18 @@ and then inserts the new tuple."
 Treemacs knows how to open files on linux, windows and macos."
   (interactive)
   ;; code adapted from ranger.el
-  (-if-let (path (treemacs--prop-at-point 'abs-path))
-      (pcase system-type
-       (`windows-nt
+  (-if-let- [path (treemacs--prop-at-point 'abs-path)]
+      (-pcase system-type
+       [`windows-nt
         (declare-function w32-shell-execute "w32fns.c")
-        (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" path t t)))
-       (`darwin
-        (shell-command (format "open \"%s\"" path)))
-       (`gnu/linux
+        (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" path t t))]
+       [`darwin
+        (shell-command (format "open \"%s\"" path))]
+       [`gnu/linux
         (let ((process-connection-type nil))
-          (start-process "" nil "xdg-open" path)))
-       (_ (treemacs--log "Don't know how to open files on %s."
-                         (propertize (symbol-name system-type) 'face 'font-lock-string-face))))
+          (start-process "" nil "xdg-open" path))]
+       [_ (treemacs--log "Don't know how to open files on %s."
+                         (propertize (symbol-name system-type) 'face 'font-lock-string-face))])
     (treemacs--log "Nothing to open here.")))
 
 (defun treemacs-kill-buffer ()
@@ -422,10 +422,10 @@ generated."
             (unless index
               (setq msg "Nothing to find - current buffer has no tags."))
             (save-selected-window
-              (pcase (treemacs--current-visibility)
-                (`none
-                 (treemacs-toggle))
-                (visibility
+              (-pcase (treemacs--current-visibility)
+                [`none
+                 (treemacs-toggle)]
+                [visibility
                  (if (eq 'exists visibility)
                      (treemacs--select-not-visible)
                    (treemacs--select-visible))
@@ -433,7 +433,7 @@ generated."
                    (if (y-or-n-p "Change the root to find current tag? ")
                        (treemacs--init (f-dirname buffer-file))
                      (setq msg "Root not changed, tag not followed.")
-                     (cl-return-from 'body)))))
+                     (cl-return-from 'body)))])
               (setq treemacs-window (selected-window)))
             (treemacs--do-follow-tag index treemacs-window buffer-file))
         (error (setq msg (format "Encountered error while following tag at point: %s" e)))))
@@ -510,20 +510,20 @@ without the need to call `treemacs-resort' with a prefix arg."
   (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
           (treemacs-sorting sort-method))
     (-if-let (btn (treemacs--current-button))
-             (pcase (button-get btn 'state)
-               (`dir-node-closed
+             (-pcase (button-get btn 'state)
+               [`dir-node-closed
                 (treemacs--open-dir-node btn)
                 (treemacs--log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
-                               (propertize sort-name 'face 'font-lock-type-face)))
-               (`dir-node-open
+                               (propertize sort-name 'face 'font-lock-type-face))]
+               [`dir-node-open
                 (treemacs--close-node btn nil)
                 (goto-char (button-start btn))
                 (treemacs--open-dir-node btn)
                 (treemacs--log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
-                               (propertize sort-name 'face 'font-lock-type-face)))
-               ((or `file-node-open `file-node-closed `tag-node-open `tag-node-closed `tag-node)
+                               (propertize sort-name 'face 'font-lock-type-face))]
+               [(or `file-node-open `file-node-closed `tag-node-open `tag-node-closed `tag-node)
                 (let* ((parent (button-get btn 'parent)))
                   (while (and parent
                               (not (-some-> parent (button-get 'abs-path) (f-directory?))))
@@ -543,7 +543,7 @@ without the need to call `treemacs-resort' with a prefix arg."
                     ;; a top level file's containing dir is root
                     (treemacs--without-messages (treemacs-refresh))
                     (treemacs--log "Resorted root directory with sort method '%s'."
-                                   (propertize sort-name 'face 'font-lock-type-face)))))))))
+                                   (propertize sort-name 'face 'font-lock-type-face))))]))))
 
 (defun treemacs-resort (&optional arg)
   "Select a new permanent value for `treemacs-sorting' and refresh.
@@ -558,20 +558,20 @@ or automatic via `treemacs-filewatch-mode'.
 Instead of calling this with a prefix arg you can also direcrly call
 `treemacs-temp-resort-current-dir' and `treemacs-temp-resort-root'."
   (interactive "P")
-  (pcase arg
+  (-pcase arg
     ;; Resort current dir only
-    (`(4)
-     (treemacs-temp-resort-current-dir))
+    [`(4)
+     (treemacs-temp-resort-current-dir)]
     ;; Temporarily resort everything
-    (`(16)
-     (treemacs-temp-resort-root))
+    [`(16)
+     (treemacs-temp-resort-root)]
     ;; Set new permanent value
-    (_
+    [_
      (-let (((sort-name . sort-value) (treemacs--sort-value-selection)))
        (setq treemacs-sorting sort-value)
        (treemacs--without-messages (treemacs-refresh))
        (treemacs--log "Sorting method changed to '%s'."
-                      (propertize sort-name 'face 'font-lock-type-face)))))
+                      (propertize sort-name 'face 'font-lock-type-face)))])
   (treemacs--evade-image))
 
 (provide 'treemacs-interface)

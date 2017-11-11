@@ -115,13 +115,13 @@ If you just want to check `major-mode', use `derived-mode-p'."
 As of now this only decides which (if any) section name the top level leaves
 should be placed under."
   (declare (pure t) (side-effect-free t))
-  (pcase index-mode
-    ((or `markdown-mode `org-mode)
-     index)
-    ((guard (treemacs--provided-mode-derived-p index-mode `conf-mode))
-     (treemacs--partition-imenu-index index "Sections"))
-    (_
-     (treemacs--partition-imenu-index index "Functions"))))
+  (-pcase index-mode
+    [(or `markdown-mode `org-mode)
+     index]
+    [(guard (treemacs--provided-mode-derived-p index-mode `conf-mode))
+     (treemacs--partition-imenu-index index "Sections")]
+    [_
+     (treemacs--partition-imenu-index index "Functions")]))
 
 (defun treemacs--get-imenu-index (file)
   "Fetch imenu index of FILE."
@@ -186,8 +186,8 @@ should be placed under."
   "Open tag items for file BTN.
 Do not add the file to the open file cache when NOADD is given. NOADD is given
 during a reopen process. Recursively open all tag below BTN when RECURSIVE is t."
-  (let ((path (button-get btn 'abs-path)))
-    (-if-let (index (treemacs--get-imenu-index path))
+  (-let [path (button-get btn 'abs-path)]
+    (-if-let- [index (treemacs--get-imenu-index path)]
         (progn
           (treemacs--button-open
            :button btn
@@ -315,13 +315,13 @@ The position can be stored in M in 2 ways:
 Either way the return value is a 2 element list consisting of the buffer and the
 position of the tag. They might also be nil if the pointed-to buffer does not
 exist."
-  (pcase (type-of m)
-    (`marker
-     (list (marker-buffer m) (marker-position m)))
-    (`overlay
-     (list (overlay-buffer m) (overlay-start m)))
-    (`integer
-     (list nil m))))
+  (-pcase (type-of m)
+    [`marker
+     (list (marker-buffer m) (marker-position m))]
+    [`overlay
+     (list (overlay-buffer m) (overlay-start m))]
+    [`integer
+     (list nil m)]))
 
 (defsubst treemacs--call-imenu-and-goto-tag (file tag-path)
   "Call the imenu index of FILE to go to position of TAG-PATH."
@@ -358,21 +358,21 @@ exist."
         (progn
           (switch-to-buffer tag-buf nil t)
           (goto-char tag-pos))
-      (pcase treemacs-goto-tag-strategy
-        (`refetch-index
+      (-pcase treemacs-goto-tag-strategy
+        [`refetch-index
          (let (file tag-path)
            (with-current-buffer (marker-buffer btn)
              (setq file (treemacs--nearest-path btn)
                    tag-path (treemacs--tags-path-of btn)))
-           (treemacs--call-imenu-and-goto-tag file tag-path)))
-        (`call-xref
+           (treemacs--call-imenu-and-goto-tag file tag-path))]
+        [`call-xref
          (xref-find-definitions
           (treemacs--with-button-buffer btn
-            (treemacs--get-label-of btn))))
-        (`issue-warning
+            (treemacs--get-label-of btn)))]
+        [`issue-warning
          (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-                        (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
-        (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy))))))
+                        (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
+        [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
 
 (defun treemacs--goto-tag-button-at (tag-path file &optional start)
   "Goto tag given by TAG-PATH for button of FILE.
