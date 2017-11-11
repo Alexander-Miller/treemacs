@@ -10,9 +10,10 @@
 - [[#quick-feature-overview][Quick Feature Overview]]
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
-  - [[#treemacs-follow-mode][Treemacs-follow-mode]]
-  - [[#treemacs-tag-follow-mode][Treemacs-tag-follow-mode]]
-  - [[#treemacs-filewatch-mode][Treemacs-filewatch-mode]]
+  - [[#frame-locality][Frame Locality]]
+  - [[#follow-mode][Follow-mode]]
+  - [[#tag-follow-mode][Tag-follow-mode]]
+  - [[#filewatch-mode][Filewatch-mode]]
   - [[#session-persistence][Session Persistence]]
   - [[#terminal-compatibility][Terminal Compatibility]]
   - [[#tag-view][Tag View]]
@@ -42,6 +43,7 @@ Specifically a quick feature overview looks as follows:
  * Easy navigation - quickly change the root directory or use shortcuts to jump to parent or neighbouring nodes.
  * Versatile file access - decide exactly how and where a file will be opened, including using ~ace-window~ to choose
    a window or launching an external application.
+ * Treemacs respects frames - every frame will receive its own treemacs buffer that will live and die with that frame.
  * Optionally always follow along and keep in focus the currently selected file or even the tag at point using
    ~treemacs-follow-mode~ and ~treemacs-tag-follow-mode~ respectively.
  * Optional git integration - treemacs will use different faces for files based on their git status.
@@ -74,7 +76,16 @@ If you don't care about reading the full readme here's a list of some bare bones
  * There's half a dozen different ways to open nodes, all bound under o as prefix. Pick your favourite.
  * RET runs a default action, configurable to your tastes under ~treemacs-default-actions~
 * Detailed Feature List
-** Treemacs-follow-mode
+** Frame Locality
+Treemacs buffers have a limited scope they are visible in: the frames they are created in. A treemacs buffer, once created,
+lives alongside and inside its frame, and is also destroyed with that frame. Calling a function like ~treemacs-toggle~ while
+inside a new frame will create a new buffer for it, reguardless how many other treemacs buffers already exist.
+
+This allows to use treemacs to work on multiple projects inside the same emacs session.
+
+A treemacs buffer that does not belong to a frame may still be made visible by manually selecting in in the buffer list. This
+would break various assumptions in treemacs' code base and effectively falls under undefined behaviour - a bad idea all around.
+** Follow-mode
 
 ~treemacs-follow-mode~ is a minor mode which allows the treemacs view to always move its focus to the
 currently selected file. This is achieved by advising ~select-window~, which is a ubiquitous function, often called
@@ -85,7 +96,7 @@ multiple times in a row when emacs is working. This means two things:
 2) There may be times when something slips through (~which-key~ for example would cause such a problem if treemacs
 wasn't made compatible with it by default). If you do see ~treemacs-follow~ behaving in a way it shouldn't open up
 an issue. The fix shouldn't be more than a single bit of advice away.
-** Treemacs-tag-follow-mode
+** Tag-follow-mode
 ~treemacs-tag-follow-mode~ is a minor mode which extends and effectively replaces ~treemacs-follow-mode~. When activated
 it follows not just the current file, but also the current tag. This works alongside treemacs' with imenu, so all file
 types providing an imenu implementation are compatible.
@@ -94,8 +105,8 @@ This mode runs on an idle timer - the exact duration of inactivity (in seconds) 
 
 Note that in order to move to a tag in treemacs the treemacs buffer's window needs to be temporarily selected, which will
 reset ~blink-cursor-mode~'s timer if it is enabled. This will result in the cursor blinking seemingly pausing for a
-short time and giving the appearance of the tag follow action lasting much longer than it really does.
-** Treemacs-filewatch-mode
+short time and giving the appereance of the tag follow action lasting much longer than it really does.
+** Filewatch-mode
 
 ~treemacs-filewatch-mode~ is a minor mode which enables treemacs to watch the files it is displaying for changes
 and automatically refresh itself by means of ~treemacs-refresh~ when it detects a change that it decides is relevant.
@@ -121,21 +132,14 @@ you still need to do a manual refresh to see your files' face go from 'changed' 
 
 ** Session Persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
-~desktop-save-mode~ and the ~persp-mode's~ layout saving. This integration should work out of the box and
-require zero setup and configuration (aside from the option to turn it off with ~treemacs-never-persist~).
+~desktop-save-mode~. This integration shoud work out of the box and require zero setup and configuration
+(aside from the option to turn it off with ~treemacs-never-persist~).
 
 The persisted state is saved under ~user-emacs-directory/.cache/treemacs-persist~. The exact file location
 is saved in the variable ~treemacs--persist-file~.
 
-Persistence by means of frameworks other than ~desktop-save-mode~ is likewise possible, but does require
-some additional work. To save treemacs' current state ~treemacs-persist~ must be called. By default this would
-happen in ~desktop-save-hook~, in its absence it must be invoked elsewhere. If all else fails ~emacs-kill-hook~
-is a good candidate to run persistence.
-
-State restoration should again work automatically. When the treemacs major mode is toggled in a completely empty
-buffer (this should normally never happen, as even an empty directory still contains a header) ~treemacs-restore~
-will be called and the previously saved state (if available) will be restored. If this does not work it is of course
-still possible to invoke ~treemacs-restore~ manually when the right conditions are met.
+Persistence by means other than ~desktop-save-mode~ (like ~persp-mode~) is not supported since treemacs' frame-bound
+nature makes integration very difficult if not outright impossible.
 ** Terminal Compatibility
 When run in a terminal treemacs will fall back to a much simpler rendering system, foregoing its usual png icons and using
 simple ~+~ and ~-~ characters instead. Changes to the current rendering system are detected automatically - within some
@@ -363,6 +367,7 @@ user, therefore treemacs guarantees first-class support & compatibility for wind
 complexity of the problem, I may decide it is not worth fixing.
 
 Aside from this there are the following known incompatibilities:
+
  * Any package invoking ~font-lock-ensure~ in the treemacs buffer. This will reset the faces of treemacs' buttons (once)
    and is a known [[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=28599][emacs bug]].
  * The only known example of this is an older version of swiper.
