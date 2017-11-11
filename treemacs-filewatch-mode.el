@@ -128,8 +128,8 @@ instead of waiting for file processing."
 This also means stopping the watch over all dirs below path.
 Must be called inside the treemacs buffer since it will remove `current-buffer'
 from PATH's watch list. Does not apply if this is called in reaction to a file
-being deleted. In this case ALL is t and all buffers watching PATH will be removed
-from the filewatch hashes.
+being deleted. In this case ALL is t and all buffers watching PATH will be
+removed from the filewatch hashes.
 
 PATH: Filepath
 ALL: Bool"

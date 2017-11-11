@@ -160,9 +160,10 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (treemacs--setup-icon treemacs-icon-open-png   "dir_open.png")
     (treemacs--setup-icon treemacs-icon-text       "txt.png")
 
-    (setq treemacs-icon-closed   treemacs-icon-closed-png
-          treemacs-icon-open     treemacs-icon-open-png
-          treemacs-icon-fallback treemacs-icon-text)
+    (with-no-warnings
+      (setq treemacs-icon-closed   treemacs-icon-closed-png
+            treemacs-icon-open     treemacs-icon-open-png
+            treemacs-icon-fallback treemacs-icon-text))
 
     (treemacs--setup-icon treemacs-icon-shell      "shell.png"      "sh" "zsh" "fish")
     (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"        "pdf")
