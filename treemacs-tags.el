@@ -61,7 +61,8 @@ of tag paths of its open direct children.")
 
 (defsubst treemacs--clear-tags-cache ()
   "Clear out `treemacs--tags-cache'."
-  (clrhash treemacs--tags-cache))
+  (when (hash-table-p treemacs--tags-cache)
+    (clrhash treemacs--tags-cache)))
 
 (defsubst treemacs--tags-path-of (btn)
   "Return the path of tag labels leading to BTN.
@@ -223,17 +224,19 @@ Remove all open tag entries under BTN when RECURSIVE."
        (treemacs--remove-all-tags-under-path-from-cache path)))))
 
 (defun treemacs--insert-tag-node (node prefix parent depth)
-  "Insert tags NODE.
+  "Return the text to insert for a tag NODE.
 Use PREFIX for indentation.
 Set PARENT and DEPTH button properties."
-  (end-of-line)
-  (insert prefix)
-  (treemacs--insert-button (car node)
-                           'face 'treemacs-tags-face
-                           'state 'tag-node-closed
-                           'parent parent
-                           'depth depth
-                           'index (cdr node)))
+  (list
+   prefix
+   (propertize (car node)
+               'button '(t)
+               'category 'default-button
+               'state 'tag-node-closed
+               'parent parent
+               'depth depth
+               'index (cdr node)
+               'face 'treemacs-tags-face)))
 
 (cl-defun treemacs--open-tag-node (btn &key no-add recursive)
   "Open tags node items for BTN.
@@ -263,17 +266,19 @@ Open all tag section under BTN when call is RECURSIVE."
       (treemacs--reopen-tags-under btn))))
 
 (defun treemacs--insert-tag-leaf (item prefix parent depth)
-  "Insert tag node ITEM.
+  "Return the text to insert for a tag leaf ITEM.
 Use PREFIX for indentation.
 Set PARENT and DEPTH button properties."
-  (end-of-line)
-  (insert prefix)
-  (treemacs--insert-button (car item)
-                           'face 'treemacs-tags-face
-                           'state 'tag-node
-                           'parent parent
-                           'depth depth
-                           'marker (cdr item)))
+  (list
+   prefix
+   (propertize (car item)
+               'button '(t)
+               'category 'default-button
+               'state 'tag-node
+               'parent parent
+               'depth depth
+               'marker (cdr item)
+               'face 'treemacs-tags-face)))
 
 (defun treemacs--close-tag-node-recursive (btn)
   "Recursively close tag section BTN.

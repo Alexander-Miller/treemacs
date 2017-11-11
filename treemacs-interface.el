@@ -99,20 +99,14 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 (defun treemacs-next-neighbour ()
   "Select next node at the same depth as currently selected node, if possible."
   (interactive)
-  (beginning-of-line)
-  (-some-> (next-button (point))
-           (button-get 'next-node)
-           (button-start)
-           (goto-char)))
+  (-when-let- [next (treemacs--next-neighbour (treemacs--current-button))]
+    (goto-char next)))
 
 (defun treemacs-previous-neighbour ()
   "Select previous node at the same depth as currently selected node, if possible."
   (interactive)
-  (beginning-of-line)
-  (-some-> (next-button (point))
-           (button-get 'prev-node)
-           (button-start)
-           (goto-char)))
+  (-when-let- [prev (treemacs--prev-neighbour (treemacs--current-button))]
+    (goto-char prev)))
 
 (defun treemacs-change-root ()
   "Use currently selected directory as new root. Do nothing for files."

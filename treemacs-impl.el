@@ -405,6 +405,34 @@ Will also perform cleanup if the buffer is dead."
         (set-frame-parameter frame 'treemacs-id (number-to-string treemacs--scope-id))))
     buf))
 
+(defsubst treemacs--next-neighbour (btn)
+  "Get the next same-level node of BTN, if any."
+  (declare (side-effect-free t))
+  (-let- [(depth (button-get btn 'depth))
+          (next (next-button (button-end btn)))]
+    (while (and next (/= depth (button-get next 'depth)))
+      (setq next (next-button (button-end next))))
+    next))
+
+(defsubst treemacs--prev-neighbour (btn)
+  "Get the previous same-level node of BTN, if any."
+  (declare (side-effect-free t))
+  (-let- [(depth (button-get btn 'depth))
+          (prev (previous-button (button-start btn)))]
+    (while (and prev (/= depth (button-get prev 'depth)))
+      (setq prev (previous-button (button-start prev))))
+    prev))
+
+(defsubst treemacs--next-non-child-node (btn)
+  "Return the next node after BTN that is not a child of BTB."
+  (declare (side-effect-free t))
+  (when btn
+    (-let- [(depth (button-get btn 'depth))
+            (next (next-button (button-end btn) t))]
+      (while (and next (< depth (button-get next 'depth)))
+        (setq next (next-button (button-end next) t)))
+      next)))
+
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
@@ -412,21 +440,6 @@ Will also perform cleanup if the buffer is dead."
 (defun treemacs--is-treemacs-window-selected? ()
   "Return t when the treemacs window is selected."
   (s-starts-with? treemacs--buffer-name-prefix (buffer-name)))
-
-(defun treemacs-alist-get (key alist &optional default remove testfn)
-  "Same as the builtin `alist-get', but copied here to be available on emacs24.
-Return the value associated with KEY in ALIST.
-If KEY is not found in ALIST, return DEFAULT.
-Use TESTFN to lookup in the alist if non-nil.  Otherwise, use `assq'.
-
-This is a generalized variable suitable for use with `setf'.
-When using it to set a value, optional argument REMOVE non-nil
-means to remove KEY from ALIST if the new value is `eql' to DEFAULT."
-  (ignore remove) ;;Silence byte-compiler.
-  (let ((x (if (not testfn)
-               (assq key alist)
-             (assoc key alist testfn))))
-    (if x (cdr x) default)))
 
 (defun treemacs--update-caches-after-rename (old-path new-path)
   "Update dirs and tags cache after OLD-PATH was renamed to NEW-PATH."
@@ -493,7 +506,7 @@ buffer."
         (btn (next-button (button-end parent-btn) t)))
     (when (equal (1+ (button-get parent-btn 'depth)) (button-get btn 'depth))
       (setq ret (cons btn ret))
-      (while (setq btn (button-get btn 'next-node))
+      (while (setq btn (treemacs--next-neighbour btn))
         (push btn ret)))
     (nreverse ret)))
 
@@ -509,17 +522,17 @@ Optionally make the git request RECURSIVE."
 (defun treemacs--init (root)
   "Initialize and build treemacs buffer for ROOT."
   (let ((origin-buffer (current-buffer)))
-    (treemacs--buffer-teardown)
     (if (treemacs--is-visible?)
         (treemacs--select-visible)
       (treemacs--setup-buffer))
+    (treemacs--buffer-teardown)
     ;; do mode activation last - if the treemacs buffer is empty when the major
     ;; mode is activated (this may happen when treemacs is restored from other
     ;; than desktop save mode) treemacs will attempt to restore the previous session
     (unless (eq major-mode 'treemacs-mode)
       (treemacs-mode))
     ;; create buffer-local hashes that need to be initialized
-    (setq treemacs--tags-cache (make-hash-table :test #'equal :size 100))
+    (with-no-warnings (setq treemacs--tags-cache (make-hash-table :test #'equal :size 100)))
     ;; f-long to expand ~ and remove final slash
     ;; needed for root dirs given by projectile if it's used
     (treemacs--build-tree (f-long root))
@@ -836,13 +849,6 @@ treemacs buffer teardown\) otherwise the currently selected frame is used."
   (set-window-dedicated-p (selected-window) t)
   (let ((window-size-fixed))
     (treemacs--set-width treemacs-width)))
-
-(defun treemacs--next-non-child-node (btn)
-  "Return the next node after BTN that is not a child of BTB."
-  (when btn
-    (-if-let (next (button-get btn 'next-node))
-        next
-      (treemacs--next-non-child-node (button-get btn 'parent)))))
 
 (defun str-assq-delete-all (key alist)
   "Same as `assq-delete-all', but use `string=' instead of `eq'.

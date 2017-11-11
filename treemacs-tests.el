@@ -687,14 +687,15 @@
       (let ((b (insert-text-button "b")))
         (should-not (treemacs--next-non-child-node b)))))
 
-  (ert-deftest next-non-child::directly-retuns-next-btn-property ()
+  (ert-deftest next-non-child::directly-retuns-next-button ()
     (with-temp-buffer
       (let ((b1 (insert-text-button "b1"))
             (b2 (insert-text-button "b2")))
-        (button-put b1 'next-node b2)
-        (should (equal b2 (treemacs--next-non-child-node b1))))))
+        (button-put b1 'depth 1)
+        (button-put b2 'depth 1)
+        (should (equal b2 (marker-position (treemacs--next-non-child-node b1)))))))
 
-  (ert-deftest next-non-child::searches-through-parent-hierarchy ()
+  (ert-deftest next-non-child::searches-through-higher-depth-buttons ()
     (with-temp-buffer
       (let ((b1 (insert-text-button "b1"))
             (b2 (insert-text-button "b2"))
@@ -702,12 +703,29 @@
             (b4 (insert-text-button "b4"))
             (b5 (insert-text-button "b5"))
             (b6 (insert-text-button "b6")))
-        (button-put b1 'parent b2)
-        (button-put b2 'parent b3)
-        (button-put b3 'parent b4)
-        (button-put b4 'parent b5)
-        (button-put b5 'next-node b6)
-        (should (equal b6 (treemacs--next-non-child-node b1)))))))
+        (button-put b1 'depth 1)
+        (button-put b2 'depth 2)
+        (button-put b3 'depth 3)
+        (button-put b4 'depth 4)
+        (button-put b5 'depth 5)
+        (button-put b6 'depth 1)
+        (should (equal b6 (marker-position (treemacs--next-non-child-node b1)))))))
+
+  (ert-deftest next-non-child::returns-nil-when-there-is-no-next-non-child ()
+    (with-temp-buffer
+      (-let- [(b1 (insert-text-button "b1"))
+              (b2 (insert-text-button "b2"))
+              (b3 (insert-text-button "b3"))
+              (b4 (insert-text-button "b4"))
+              (b5 (insert-text-button "b5"))
+              (b6 (insert-text-button "b6"))]
+        (button-put b1 'depth 1)
+        (button-put b2 'depth 2)
+        (button-put b3 'depth 3)
+        (button-put b4 'depth 4)
+        (button-put b5 'depth 5)
+        (button-put b6 'depth 6)
+        (should-not (treemacs--next-non-child-node b1))))))
 
 ;; `treemacs--update-caches-after-rename'
 (progn
