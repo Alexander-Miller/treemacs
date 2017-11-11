@@ -79,15 +79,16 @@ after a theme change.")
 (defun treemacs--setup-icon-highlight ()
   "Make sure treemacs icons background aligns with hi-line's."
   (advice-add #'hl-line-highlight :after #'treemacs--update-icon-selection)
-  (advice-add #'enable-theme        :after #'treemacs--setup-icon-background-colors)
-  (advice-add #'disable-theme        :after #'treemacs--setup-icon-background-colors))
+  (advice-add #'enable-theme      :after #'treemacs--setup-icon-background-colors)
+  (advice-add #'disable-theme     :after #'treemacs--setup-icon-background-colors))
 
 (defun treemacs--tear-down-icon-highlight ()
   "Tear down highlighting advice when no treemacs buffer exists anymore."
-  (advice-remove #'hl-line-highlight #'treemacs--update-icon-selection)
-  (advice-remove #'enable-theme        #'treemacs--setup-icon-background-colors)
-  (advice-remove #'disable-theme        #'treemacs--setup-icon-background-colors)
-  (treemacs--forget-last-highlight))
+  (treemacs--forget-last-highlight)
+  (unless treemacs--buffer-access
+    (advice-remove #'hl-line-highlight #'treemacs--update-icon-selection)
+    (advice-remove #'enable-theme      #'treemacs--setup-icon-background-colors)
+    (advice-remove #'disable-theme     #'treemacs--setup-icon-background-colors)))
 
 (defun treemacs--setup-icon-background-colors (&rest _)
   "Align icon backgrounds with current theme.

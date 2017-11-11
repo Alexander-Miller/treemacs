@@ -580,15 +580,18 @@ Optionally make the git request RECURSIVE."
   "Cleanup to run when a treemacs buffer is killed."
   (treemacs--remove-framelocal-buffer)
   (treemacs--stop-watch-all-in-scope)
+  (treemacs--tear-down-icon-highlight)
   (unless treemacs--buffer-access
     ;; TODO make local maybe
     (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)))
 
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when an existing treemacs buffer is re-initialized."
+  (setq treemacs--open-dirs-cache nil)
+  (treemacs--clear-tags-cache)
   (treemacs--stop-watch-all-in-scope)
   (treemacs--cancel-refresh-timer)
-  (treemacs--tear-down-icon-highlight))
+  (treemacs--forget-last-highlight))
 
 (defun treemacs--push-button (btn &optional recursive)
   "Execute the appropriate action given the state of the pushed BTN.
