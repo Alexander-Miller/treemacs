@@ -174,13 +174,15 @@ should be placed under."
 (defun treemacs--remove-all-tags-under-path-from-cache (path)
   "Remove all tag cache entries under PATH after it was deleted."
   ;; Don't think it's a good idea to modify the hash table while iterating it
-  (let ((keys-to-remove (list)))
-    (maphash
-     (lambda (key _)
-       (when (treemacs--is-path-in-dir? key path)
-         (push key keys-to-remove)))
-     treemacs--tags-cache)
-    (--each keys-to-remove (remhash it treemacs--tags-cache))))
+  (-when-let- [buffer (treemacs--buffer-exists?)]
+    (with-current-buffer buffer
+        (let ((keys-to-remove (list)))
+          (maphash
+           (lambda (key _)
+             (when (treemacs--is-path-in-dir? key path)
+               (push key keys-to-remove)))
+           treemacs--tags-cache)
+          (--each keys-to-remove (remhash it treemacs--tags-cache))))))
 
 (cl-defun treemacs--open-tags-for-file (btn &key no-add recursive)
   "Open tag items for file BTN.
