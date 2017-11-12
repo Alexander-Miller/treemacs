@@ -205,7 +205,7 @@ Will stop file watch on every path watched by this buffer."
 
 (defun treemacs--stop-watching-all ()
   "Cancel any and all running file watch processes.
-Called when file watch mode is disabled."
+Called when filewatch mode is disabled."
   (maphash
    (lambda (_ watch-info)
      (file-notify-rm-watch (cdr watch-info)))

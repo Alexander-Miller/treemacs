@@ -614,8 +614,10 @@ Optionally make the git request RECURSIVE."
 
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
-  (treemacs--remove-framelocal-buffer)
+  ;; stop watch must come first since we need a reference to the killed buffer
+  ;; to remove it from the filewatch list
   (treemacs--stop-watch-all-in-scope)
+  (treemacs--remove-framelocal-buffer)
   (treemacs--tear-down-icon-highlight)
   (unless treemacs--buffer-access
     ;; TODO make local maybe
