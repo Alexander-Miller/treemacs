@@ -22,6 +22,8 @@
 
 ;;; Commentary:
 
+;;; A powerful and flexible file tree project explorer.
+
 ;;; Code:
 
 (require 'dash)
