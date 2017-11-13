@@ -28,6 +28,34 @@
 
 (defvar treemacs--dirs-to-collpase.py (f-join treemacs-dir "treemacs-dirs-to-collapse.py"))
 
+(defsubst treemacs--git-status-process (path &optional recursive)
+  "Create a new process future to get the git status under PATH.
+Optionally make the git request RECURSIVE."
+  (let* ((default-directory (f-canonical path))
+         (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-z" (if recursive "-uall" "."))))
+    (process-put future 'default-directory default-directory)
+    future))
+
+(defsubst treemacs--parse-git-status (git-future)
+  "Parse the git status derived from the output of GIT-FUTURE."
+  (when git-future
+    (pfuture-await-to-finish git-future)
+    (when (= 0 (process-exit-status git-future))
+      (let ((git-output (pfuture-result git-future)))
+        (unless (s-blank? git-output)
+          ;; need the actual git root since git status outputs paths relative to it
+          ;; and the output must be valid also for files in dirs being reopened
+          (let* ((git-root (vc-call-backend
+                            'Git 'root
+                            (process-get git-future 'default-directory))))
+            (let ((status
+                   (->> (substring git-output 0 -1)
+                        (s-split "\0")
+                        (--map (s-split-up-to " " (s-trim it) 1)))))
+              (--each status
+                (setcdr it (f-join git-root (s-trim-left (cadr it)))))
+              status)))))))
+
 (defsubst treemacs--collapsed-dirs-process (path)
   "Start a new process to determine dirs to collpase under PATH.
 Output format is an elisp list of string lists that's read directly.

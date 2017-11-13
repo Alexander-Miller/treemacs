@@ -280,26 +280,6 @@ Returns the buffer if it does exist."
       (delete-char 2)
       (insert new-sym))))
 
-(defsubst treemacs--parse-git-status (git-future)
-  "Parse the git status derived from the output of GIT-FUTURE."
-  (when git-future
-    (pfuture-await-to-finish git-future)
-    (when (= 0 (process-exit-status git-future))
-      (let ((git-output (pfuture-result git-future)))
-        (unless (s-blank? git-output)
-          ;; need the actual git root since git status outputs paths relative to it
-          ;; and the output must be valid also for files in dirs being reopened
-          (let* ((git-root (vc-call-backend
-                            'Git 'root
-                            (process-get git-future 'default-directory))))
-            (let ((status
-                   (->> (substring git-output 0 -1)
-                        (s-split "\n")
-                        (--map (s-split-up-to " " (s-trim it) 1)))))
-              (--each status
-                (setcdr it (->> (cl-second it) (s-trim-left) (treemacs--unqote) (f-join git-root))))
-              status)))))))
-
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point.
 Returns nil when point is on the header."
@@ -483,15 +463,6 @@ buffer."
       (while (setq btn (treemacs--next-neighbour btn))
         (push btn ret)))
     (nreverse ret)))
-
-(defun treemacs--git-status-process (path &optional recursive)
-  "Create a new process future to get the git status under PATH.
-Optionally make the git request RECURSIVE."
-  (when treemacs-git-integration
-    (let* ((default-directory (f-canonical path))
-           (future (pfuture-new "git" "status" "--porcelain" "--ignored" (if recursive "-uall" "."))))
-      (process-put future 'default-directory default-directory)
-      future)))
 
 (defun treemacs--init (root)
   "Initialize and build treemacs buffer for ROOT."

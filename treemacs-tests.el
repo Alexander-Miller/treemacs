@@ -290,31 +290,6 @@
       (stub assoc => '(nil . nil))
       (should (eq 'none (treemacs--current-visibility))))))
 
-;; `treemacs--unquote'
-(progn
-  (ert-deftest unquote::does-not-fail-on-nil-string ()
-    (should (null (treemacs--unqote nil))))
-
-  (ert-deftest unquote::does-not-fail-on-empty-string ()
-    (let ((input ""))
-      (should (eq input (treemacs--unqote input)))))
-
-  (ert-deftest unquote::returns-input-unchanged-when-unquoted ()
-    (let ((input "input"))
-      (should (eq input (treemacs--unqote input)))))
-
-  (ert-deftest unquote::returns-input-unchanged-when-input-ends-with-quote ()
-    (let ((input "input\""))
-      (should (eq input (treemacs--unqote input)))))
-
-  (ert-deftest unquote::unquotes-when-input-is-quoted ()
-    (let ((input "\"input\""))
-      (should (equal "input" (treemacs--unqote input)))))
-
-  (ert-deftest unquote::unquotes-when-input-starts-with-quote ()
-    (let ((input "\"input"))
-      (should (equal "input" (treemacs--unqote input))))))
-
 ;; `treemacs--reject-ignored-files'
 (progn
   (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
