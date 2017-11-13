@@ -66,7 +66,7 @@ If you don't care about reading the full readme here's a list of some bare bones
    [[file:hydra.png]]
  * If you use evil don't forget to also install ~treemacs-evil~
  * If you use projectile you can install ~treemacs-projectile~ to allow treemacs to interact with projects.
- * Treemacs doesn' bind any global keys, you need to use whatever fits you best. A full install setup for
+ * Treemacs doesn't bind any global keys, you need to use whatever fits you best. A full install setup for
    spacemacs can be found [[#installation][below]]. Otherwise just bind ~treemacs~ and ~treemacs-toggle~.
  * For navigation use n/p (j/k when evil), M-n/M-p to move to same-height neighbour u to go to parent, h to
    move up a dir, l to move root to selected dir
@@ -94,7 +94,7 @@ This mode runs on an idle timer - the exact duration of inactivity (in seconds) 
 
 Note that in order to move to a tag in treemacs the treemacs buffer's window needs to be temporarily selected, which will
 reset ~blink-cursor-mode~'s timer if it is enabled. This will result in the cursor blinking seemingly pausing for a
-short time and giving the appereance of the tag follow action lasting much longer than it really does.
+short time and giving the appearance of the tag follow action lasting much longer than it really does.
 ** Treemacs-filewatch-mode
 
 ~treemacs-filewatch-mode~ is a minor mode which enables treemacs to watch the files it is displaying for changes
@@ -116,12 +116,12 @@ Turning off this mode is, on the other hand, instantaneous - it will immediately
 processes and outstanding refresh actions.
 
 _Known limitations_:
-Staging and comitting changes does not produce any file change events of its own, if you use ~treemacs-git-integration~
+Staging and committing changes does not produce any file change events of its own, if you use ~treemacs-git-integration~
 you still need to do a manual refresh to see your files' face go from 'changed' and 'untracked' to 'unchanged' after a commit.
 
 ** Session Persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
-~desktop-save-mode~ and the ~persp-mode's~ layout saving. This integration shoud work out of the box and
+~desktop-save-mode~ and the ~persp-mode's~ layout saving. This integration should work out of the box and
 require zero setup and configuration (aside from the option to turn it off with ~treemacs-never-persist~).
 
 The persisted state is saved under ~user-emacs-directory/.cache/treemacs-persist~. The exact file location
@@ -148,15 +148,15 @@ using emacs' builtin imenu functionality, so all file types that emacs can gener
 Imenu cachses its result, so to avoid stale tag lists setting ~imenu-auto-rescan~ to t is recommended. Tags generated
 with the help of ~semantic-mode~ are likewise supported.
 
-Tag view support is in an early beta release stage, and so (other than the increased likelyhood of bugs), it's currently
+Tag view support is in an early beta release stage, and so (other than the increased likelihood of bugs), it's currently
 missing certain features:
 
- * It won't look right in the terminal, there arent't any terminal icons for tags yet.
+ * It won't look right in the terminal, there aren't any terminal icons for tags yet.
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 *** treemacs-evil
 Must be installed and loaded if you use evil. The keybindings and the cursor will not be setup
-propertĺy otherwise. It'll also enable navigation  navigation with j/k instead of n/p.
+properly otherwise. It'll also enable navigation  navigation with j/k instead of n/p.
 *** treemacs-projectile
 Introduces projectile-centric counterparts for treemacs-launching commands, namely ~treemacs-projectile~
 and ~treemacs-projectile-toggle~. Also adds ~treemacs-create-header-projectile~ to be used as a value
@@ -164,7 +164,7 @@ for ~treemacs-header-function~.
 * Installation
 
 Treemacs is included in spacemacs. If you are using the development version of spacemacs you can simply add treemacs
-to ~dotspacemacs-configuration-layers~ to replace the default neotre. Check ~SPC h SPC treemacs~ for details.
+to ~dotspacemacs-configuration-layers~ to replace the default neotree. Check ~SPC h SPC treemacs~ for details.
 
 Treemacs is also available from MELPA. If you just want to quickly start using it grab the ~use-package~ example
 below, and customize it as needed (remove ~treemacs-evil~ if you don't use it, customize the keybinds as needed, the
@@ -237,10 +237,10 @@ Treemacs offers the following configuration options:
 | treemacs-sorting                    | alphabetic-asc                                                                  | Indicates how treemacs will sort its files and directories. Files will still always be shown after directories. Valid values are ~alphabetic-asc~, ~alphabetic-desc~, ~size-asc~, ~size-desc~, ~mod-time-asc~, ~mod-time-desc~.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | treemacs-ignored-file-predicates    | (treemacs--std-ignore-file-predicate)                                           | List of predicates to test for files ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles) whose presence is controlled by ~treemacs-show-hidden-files~). Each predicate is a function that takes the filename as its only argument and returns t if the file should be ignored and nil otherwise. A file whose name returns t for *any* function in this list counts as ignored. By default this list contains ~treemacs--std-ignore-file-predicate~ which filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and therefore should not be directly overwritten, but added to and removed from instead.               |
 | treemacs-file-event-delay           | 5000                                                                            | How long (in milliseconds) to collect file events before refreshing. When treemacs receives a file change notification it doesn't immediately refresh and instead waits ~treemacs--file-event-delay~ milliseconds to collect further file change events. This is done so as to avoid refreshing multiple times in a short time. See also ~treemacs-filewatch-mode~.                                                                                                                                                                                                                                                                                                                    |
-| treemacs-goto-tag-strategy          | refetch-index                                                                   | Inidicates how to move to a tag when its buffer is dead. The tags in the treemacs view store their position as markers pointing to a buffer. If that buffer is killed, or has never really been open, as treemacs kills buffer after fetching their tags if they did no exist before, the stored positions become stale, and treemacs needs to use a different method to move to that tag. This variale sets that method. Its possible values are: ~refetch-index~: Call up the file's imenu index again and use its information to jump. ~call-xref~: Call ~xref-find-definitions~ to find the tag. ~issue-warning~: Just issue a warning that the tag's position pointer is invalid. |
+| treemacs-goto-tag-strategy          | refetch-index                                                                   | Indicates how to move to a tag when its buffer is dead. The tags in the treemacs view store their position as markers pointing to a buffer. If that buffer is killed, or has never really been open, as treemacs kills buffer after fetching their tags if they did no exist before, the stored positions become stale, and treemacs needs to use a different method to move to that tag. This variable sets that method. Its possible values are: ~refetch-index~: Call up the file's imenu index again and use its information to jump. ~call-xref~: Call ~xref-find-definitions~ to find the tag. ~issue-warning~: Just issue a warning that the tag's position pointer is invalid. |
 | treemacs-default-actions            | Open/close dirs & tag sections, ~treemacs-visit-node-no-split~ for files & tags | Defines the behaviour of ~treemacs-visit-node-default-action~. Each alist element maps from a button state to the function that should be used for that state. The list of all possible button states is defined in ~treemacs-valid-button-states~. Possible values are all treemacs-visit-node-* functions as well as ~treemacs-push-button~ for simple open/close actions. To keep the alist clean changes should not be made directly, but with ~treemacs-define-default-action~.                                                                                                                                                                                                   |
-| treemacs-collapse-dirs              | 0                                                                               | When > 0 treemacs will collapse directories into one when possible. A directory is collapsible when its content consists of nothing but another directory. The value determines how many directories can be collapsed at once, both as a performance cap and to prevent a too long directory names in the treemacs view. To minimize this option's impact on display performace the search for directories to collapse is done asynchronously in a python script and will thus only work when python installed. The script should work both on python2 and 3.                                                                                                                          |
-| treemacs-silent-refresh             | nil                                                                             | When non-nil a completed refresh will not be announced with a message. This applies both to manuall refreshing as well as automatic (due to e.g. ~treemacs-filewatch-mode~).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| treemacs-collapse-dirs              | 0                                                                               | When > 0 treemacs will collapse directories into one when possible. A directory is collapsible when its content consists of nothing but another directory. The value determines how many directories can be collapsed at once, both as a performance cap and to prevent a too long directory names in the treemacs view. To minimize this option's impact on display performance the search for directories to collapse is done asynchronously in a python script and will thus only work when python installed. The script should work both on python2 and 3.                                                                                                                         |
+| treemacs-silent-refresh             | nil                                                                             | When non-nil a completed refresh will not be announced with a message. This applies both to manual refreshing as well as automatic (due to e.g. ~treemacs-filewatch-mode~).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | treemacs-is-never-other-window      | nil                                                                             | When non-nil treemacs will never be used as other-window. This can prevent other packages from opening other buffers in the treemacs window. It also means treemacs is never selected by calls to ~other-window~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | treemacs-position                   | left                                                                            | Position of treemacs buffer. Valid values are ~left~, ~right~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-tag-follow-delay           | 1.5                                                                             | Delay in seconds of inactivity for ~treemacs-tag-follow-mode~ to trigger.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -337,7 +337,7 @@ By default Treemacs's keymap looks as follows:
 | d       | treemacs-delete                             | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                                                      |
 | cf      | treemacs-create-file                        | Create a file.                                                                                                                                                            |
 | cd      | treemacs-create-dir                         | Create a directory.                                                                                                                                                       |
-| R       | treemacs-rename                             | Rename the currently selected node. Reload buffers visiting renamed files or files in renamed direcotries.                                                                |
+| R       | treemacs-rename                             | Rename the currently selected node. Reload buffers visiting renamed files or files in renamed directories.                                                                |
 | u       | treemacs-goto-parent-node                   | Select parent of selected node, if possible.                                                                                                                              |
 | q       | treemacs-toggle                             | Hide/show an existing treemacs window.                                                                                                                                    |
 | Q       | treemacs-kill-buffer                        | Kill the treemacs buffer.                                                                                                                                                 |
@@ -355,10 +355,10 @@ By default Treemacs's keymap looks as follows:
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting
-to changes in the window configuraion. The packages most likely to cause trouble for treemacs are therefore those that
+to changes in the window configuration. The packages most likely to cause trouble for treemacs are therefore those that
 interfere with Emacs' buffer spawning and window splitting behaviour. Treemacs is included in spacemacs and I am a spacemacs
 user, therefore treemacs guarantees first-class support & compatibility for window-managing packages used in spacemacs, namely
-[[https://github.com/Bad-ptr/persp-mode.el][persp]], [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/m2ym/popwin-el][popwin]] and [[https://github.com/bmag/emacs-purpose][window-purpos]], as well as [[https://github.com/wasamasa/shackle][shackle]]. For everything else there may be issues and, depending on the
+[[https://github.com/Bad-ptr/persp-mode.el][persp]], [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/m2ym/popwin-el][popwin]] and [[https://github.com/bmag/emacs-purpose][window-purpose]], as well as [[https://github.com/wasamasa/shackle][shackle]]. For everything else there may be issues and, depending on the
 complexity of the problem, I may decide it is not worth fixing.
 
 Aside from this there are the following known incompatibilities:
@@ -369,7 +369,7 @@ Aside from this there are the following known incompatibilities:
    of ~special-mode-hook~, since this is the mode ~treemacs-mode~ is derived from.
 * Working With The Code Base
 
-If you've need to delve into treemacs' code base check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
+If you want to delve into the treemacs' code base, check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
 
 * Dependencies
  * emacs >= 24.4
