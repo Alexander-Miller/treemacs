@@ -36,7 +36,7 @@
   (when (boundp 'winum-assign-func)
     (setq winum-assign-func #'treemacs--window-number-ten))
   (when (boundp 'winum-assign-functions)
-    (push #'treemacs--window-number-ten winum-assign-functions)))
+    (add-to-list 'winum-assign-functions #'treemacs--window-number-ten)))
 
 (with-eval-after-load 'popwin
 
