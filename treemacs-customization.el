@@ -118,7 +118,7 @@ and outputs the string header to be inserted in the treemacs buffer."
   :type 'plist
   :group 'treemacs-configuration)
 
-(defcustom treemacs-git-integration nil
+(defcustom treemacs-git-integration (when (executable-find "git") t)
   "When t use different faces for files' different git states."
   :type 'boolean
   :group 'treemacs-configuration)
