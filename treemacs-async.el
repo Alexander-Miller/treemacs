@@ -38,23 +38,23 @@ Optionally make the git request RECURSIVE."
 
 (defsubst treemacs--parse-git-status (git-future)
   "Parse the git status derived from the output of GIT-FUTURE."
-  (when git-future
-    (pfuture-await-to-finish git-future)
-    (when (= 0 (process-exit-status git-future))
-      (let ((git-output (pfuture-result git-future)))
-        (unless (s-blank? git-output)
-          ;; need the actual git root since git status outputs paths relative to it
-          ;; and the output must be valid also for files in dirs being reopened
-          (let* ((git-root (vc-call-backend
-                            'Git 'root
-                            (process-get git-future 'default-directory))))
-            (let ((status
-                   (->> (substring git-output 0 -1)
-                        (s-split "\0")
-                        (--map (s-split-up-to " " (s-trim it) 1)))))
+  (-let [git-info-hash (make-hash-table :test #'equal :size 300)]
+    (when git-future
+      (pfuture-await-to-finish git-future)
+      (when (= 0 (process-exit-status git-future))
+        (let ((git-output (pfuture-result git-future)))
+          (unless (s-blank? git-output)
+            ;; need the actual git root since git status outputs paths relative to it
+            ;; and the output must be valid also for files in dirs being reopened
+            (let* ((git-root (vc-call-backend 'Git 'root (process-get git-future 'default-directory)))
+                   (status (->> (substring git-output 0 -1)
+                                (s-split "\0")
+                                (--map (s-split-up-to " " (s-trim it) 1)))))
               (--each status
-                (setcdr it (f-join git-root (s-trim-left (cadr it)))))
-              status)))))))
+                (puthash (f-join git-root (s-trim-left (cadr it)))
+                         (aref (s-trim-left (car it)) 0)
+                         git-info-hash)))))))
+    git-info-hash))
 
 (defsubst treemacs--collapsed-dirs-process (path)
   "Start a new process to determine dirs to collpase under PATH.

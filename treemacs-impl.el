@@ -75,8 +75,11 @@
   treemacs--tags-path-of
   treemacs--goto-tag-button-at)
 
+(treemacs--import-functions-from "treemacs-async"
+  treemacs--git-status-process
+  treemacs--collapsed-dirs-process)
+
 (declare-function treemacs-mode "treemacs-mode")
-(declare-function treemacs--collapsed-dirs-process "treemacs-async")
 
 ;;;;;;;;;;;;;;;;;;
 ;; Private vars ;;
@@ -309,16 +312,17 @@ FILE here is a list consisting of an absolute path and file attributes."
          (--none? (funcall it filename file) treemacs-ignored-file-predicates))))
 
 (defsubst treemacs--get-face (path git-info)
-  "Return the appropriate face for PATH GIT-INFO."
+  "Return the appropriate face for PATH based on GIT-INFO."
   ;; for the sake of simplicity we only look at the state in the working tree
   ;; see OUTPUT section `git help status'
-  (-pcase (-some-> (rassoc path git-info) (car) (substring 0 1))
-    ["M" 'treemacs-git-modified-face]
-    ["U" 'treemacs-git-conflict-face]
-    ["?" 'treemacs-git-untracked-face]
-    ["!" 'treemacs-git-ignored-face]
-    ["A" 'treemacs-git-added-face]
-    [_   'treemacs-git-unmodified-face]))
+  (declare (pure t) (side-effect-free t))
+  (-pcase (gethash path git-info)
+    [?M 'treemacs-git-modified-face]
+    [?U 'treemacs-git-conflict-face]
+    [?? 'treemacs-git-untracked-face]
+    [?! 'treemacs-git-ignored-face]
+    [?A 'treemacs-git-added-face]
+    [_  'treemacs-git-unmodified-face]))
 
 (defsubst treemacs--file-extension (file)
   "Same as `file-name-extension', but also works with leading periods.
