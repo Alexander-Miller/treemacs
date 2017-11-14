@@ -25,6 +25,7 @@
 ;;;;;;;;;;;;;;;;;;
 
 (require 'cl-lib)
+(require 'hl-line)
 (require 'dash)
 (require 's)
 (require 'f)
@@ -995,9 +996,11 @@ filewatch mode can refresh multiple buffers at once."
          (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
        (treemacs--evade-image)
        (set-window-start (get-buffer-window) win-start)
-       ;; needs to be turned on again when refresh is called from outside the
-       ;; treemacs window, otherwise it looks like the selection disappears
-       (hl-line-mode t)
+       ;; this part seems to fix the issue of point being reset to the top
+       ;; when the buffe is refreshed without the window being selected
+       (-when-let- [w (get-buffer-window (buffer-name) t)]
+         (set-window-point w (point)))
+       (hl-line-highlight)
        (unless treemacs-silent-refresh
          (treemacs--log "Refresh complete."))))))
 
