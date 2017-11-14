@@ -110,6 +110,10 @@ Otherwise just delegates EXP and CASES to `pcase'."
   treemacs--tear-down-icon-highlight
   treemacs--forget-last-highlight)
 
+(treemacs--import-functions-from "treemacs-tags"
+  treemacs--tags-path-of
+  treemacs--goto-tag-button-at)
+
 (declare-function treemacs-mode "treemacs-mode")
 (declare-function treemacs--collapsed-dirs-process "treemacs-async")
 
