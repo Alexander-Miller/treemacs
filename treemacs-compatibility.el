@@ -42,8 +42,8 @@
 
   (defadvice popwin:create-popup-window
       (around treemacs--popwin-popup-buffer activate)
-    (let ((v? (treemacs--is-visible?))
-          (tb (get-buffer treemacs--buffer-name)))
+    (let* ((v? (treemacs--is-visible?))
+  	   (tb (and v? (treemacs--get-framelocal-buffer))))
       (when v?
         (with-current-buffer tb
           (setq window-size-fixed nil)))
@@ -54,8 +54,8 @@
 
   (defadvice popwin:close-popup-window
       (around treemacs--popwin-close-buffer activate)
-    (let ((v? (treemacs--is-visible?))
-          (tb (get-buffer treemacs--buffer-name)))
+    (let* ((v? (treemacs--is-visible?))
+	   (tb (and v? (treemacs--get-framelocal-buffer))))
       (when v?
         (with-current-buffer tb
           (setq window-size-fixed nil)))
