@@ -22,6 +22,7 @@
 ;;; Code:
 
 (require 'treemacs-impl)
+(require 'treemacs-macros)
 
 (with-eval-after-load 'winum
 

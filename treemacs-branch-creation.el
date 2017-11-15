@@ -25,6 +25,7 @@
 (require 'cl-lib)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
+(require 'treemacs-macros)
 (require 'treemacs-async)
 (require 'treemacs-customization)
 
@@ -223,6 +224,32 @@ to PARENT."
       (delete-region pos-start pos-end)
       (delete-trailing-whitespace))
     ,post-close-action))
+
+(cl-defun treemacs--open-dir-node (btn &key no-add git-future recursive)
+  "Open the node given by BTN.
+Do not reopen its previously open children when NO-ADD is given.
+Reuse given GIT-FUTURE when this call is RECURSIVE."
+  (if (not (f-readable? (button-get btn 'abs-path)))
+      (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
+    (let* ((abs-path (button-get btn 'abs-path))
+           (git-future (or git-future (treemacs--git-status-process abs-path recursive)))
+           (collapse-future (treemacs--collapsed-dirs-process abs-path)))
+      (treemacs--button-open
+       :button btn
+       :new-state 'dir-node-open
+       :new-icon (with-no-warnings treemacs-icon-open)
+       :open-action
+       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future collapse-future btn)
+       :post-open-action
+       (progn
+         (unless no-add (treemacs--add-to-cache btn))
+         (treemacs--start-watching abs-path)))
+      (when recursive
+        (--each (treemacs--get-children-of btn)
+          (when (eq 'dir-node-closed (button-get it 'state))
+            (goto-char (button-start it))
+            (treemacs--open-dir-node
+             it :git-future git-future :recursive t)))))))
 
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.

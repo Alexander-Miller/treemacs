@@ -34,6 +34,7 @@
 (require 'f)
 (require 'hl-line)
 (require 'treemacs-customization)
+(require 'treemacs-macros)
 (require 'treemacs-impl)
 (require 'treemacs-tags)
 (require 'treemacs-follow-mode)

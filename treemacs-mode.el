@@ -21,6 +21,7 @@
 ;;; Code:
 
 (require 's)
+(require 'treemacs-macros)
 (require 'treemacs-interface)
 (require 'treemacs-customization)
 (require 'treemacs-faces)

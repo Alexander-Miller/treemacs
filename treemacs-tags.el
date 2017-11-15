@@ -28,6 +28,7 @@
 (require 'cl-lib)
 (require 'f)
 (require 'treemacs-impl)
+(require 'treemacs-macros)
 (require 'treemacs-branch-creation)
 (require 'treemacs-customization)
 (require 'treemacs-faces)

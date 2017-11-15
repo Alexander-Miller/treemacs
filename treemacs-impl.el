@@ -33,47 +33,7 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
-
-(defmacro -if-let- (var-val then &rest else)
-  "Same as `-if-let', but expects VAR-VAL to be a vector.
-Delegates VAR-VAL, THEN and ELSE to `-if-let'."
-  (declare (debug ((sexp form) form body))
-           (indent 2))
-  (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
-    `(-if-let ,var-val-lst ,then ,@else)))
-
-(defmacro -when-let- (var-val &rest body)
-  "Same as `-when-let', but expects VAR-VAL to be a vector.
-Delegates VAR-VAL and BODY to `-when-let'."
-  (declare (debug ((sexp form) body))
-           (indent 1))
-  (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
-    `(-when-let ,var-val-lst ,@body)))
-
-(defmacro -let- (vars &rest body)
-  "Same as `let', but VARS is an array.
-Otherwise just delegates VARS and BODY to `let'."
-  (declare (indent 1))
-  (-let [varlist (cl-map 'list #'identity vars)]
-    `(let ,varlist ,@body)))
-
-(defmacro -pcase (exp &rest cases)
-  "Same as `pcase', except that the match arms are vectors.
-Otherwise just delegates EXP and CASES to `pcase'."
-  (declare (indent 1))
-  (let (cases-list)
-    (--each cases
-      (let (c)
-        (dotimes (x (length it))
-          (push (aref it x) c))
-        (push  (nreverse c) cases-list)))
-    `(pcase ,exp ,@(nreverse cases-list))))
-
-(defmacro treemacs--import-functions-from (file &rest functions)
-  "Import FILE's FUNCTIONS."
-  (declare (indent 1))
-  (let ((imports (--map (list 'declare-function it file) functions)))
-    `(progn ,@imports)))
+(require 'treemacs-macros)
 
 (treemacs--import-functions-from "treemacs-tags"
   treemacs--clear-tags-cache
@@ -93,6 +53,7 @@ Otherwise just delegates EXP and CASES to `pcase'."
   treemacs--button-open
   treemacs--button-close
   treemacs--check-window-system
+  treemacs--open-dir-node
   treemacs--create-branch)
 
 (treemacs--import-functions-from "treemacs-filewatch-mode"
@@ -159,33 +120,6 @@ Not used directly, but as part of `treemacs--without-messages'.")
 ;; Macros ;;
 ;;;;;;;;;;;;
 
-(defmacro treemacs--safe-button-get (button &rest properties)
-  "Safely extract BUTTON's PROPERTIES.
-
-Using `button-get' on a button located in a buffer that is not the current
-buffer does not work, so this function will run the property extaction from
-inside BUTTON's buffer."
-  `(with-current-buffer (marker-buffer ,button)
-     ,(if (= 1 (length properties))
-           `(button-get ,button ,(car properties))
-         `(--map (button-get ,button it) ,properties))))
-
-(defmacro treemacs--with-button-buffer (btn &rest body)
-  "Use BTN's buffer to execute BODY.
-Required for button interactions (like `button-get') that do not work when
-called from another buffer than the one the button resides in and
-`treemacs--safe-button-get' is not enough."
-  `(with-current-buffer (marker-buffer ,btn)
-    ,@body))
-
-(defmacro treemacs--log (msg &rest args)
-  "Write a log statement given format string MSG and ARGS."
-  `(unless treemacs--no-messages
-     (message
-      "%s %s"
-      (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
-      (format ,msg ,@args))))
-
 (cl-defmacro treemacs--execute-button-action
     (&key save-window ensure-window-split split-function window dir-action file-action tag-action no-match-explanation)
   "Infrastructure macro for setting up actions on different button states.
@@ -236,21 +170,6 @@ under or below it."
                           state ',valid-states)))
               (when ,save-window
                 (select-window current-window)))))))))
-
-(defmacro treemacs--with-writable-buffer (&rest body)
-  "Temporarily turn off read-ony mode to execute BODY."
-  `(progn
-     (read-only-mode -1)
-     (unwind-protect
-         (progn ,@body)
-       (read-only-mode t))))
-
-(defmacro treemacs--without-messages (&rest body)
-  "Temporarily turn off messages to execute BODY."
-  `(let ((treemacs--no-messages t))
-     (unwind-protect
-         ,@body
-       (setq treemacs--no-messages nil))))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
@@ -661,32 +580,6 @@ Optionally do so in a RECURSIVE fashion."
       (`tag-node-closed  (treemacs--open-tag-node btn :no-add t))
       (other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
                                 (button-get btn 'abs-path) other)))))
-
-(cl-defun treemacs--open-dir-node (btn &key no-add git-future recursive)
-  "Open the node given by BTN.
-Do not reopen its previously open children when NO-ADD is given.
-Reuse given GIT-FUTURE when this call is RECURSIVE."
-  (if (not (f-readable? (button-get btn 'abs-path)))
-      (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
-    (let* ((abs-path (button-get btn 'abs-path))
-           (git-future (or git-future (treemacs--git-status-process abs-path recursive)))
-           (collapse-future (treemacs--collapsed-dirs-process abs-path)))
-      (treemacs--button-open
-       :button btn
-       :new-state 'dir-node-open
-       :new-icon (with-no-warnings treemacs-icon-open)
-       :open-action
-       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future collapse-future btn)
-       :post-open-action
-       (progn
-         (unless no-add (treemacs--add-to-cache btn))
-         (treemacs--start-watching abs-path)))
-      (when recursive
-        (--each (treemacs--get-children-of btn)
-          (when (eq 'dir-node-closed (button-get it 'state))
-            (goto-char (button-start it))
-            (treemacs--open-dir-node
-             it :git-future git-future :recursive t)))))))
 
 (defun treemacs--close-node (btn recursive)
   "Close node given by BTN.

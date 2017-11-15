@@ -22,6 +22,7 @@
 
 (require 'treemacs-impl)
 (require 'treemacs-customization)
+(require 'treemacs-macros)
 (require 'image)
 (require 'hl-line)
 
