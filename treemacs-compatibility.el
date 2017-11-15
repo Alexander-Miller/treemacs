@@ -38,32 +38,6 @@
   (when (boundp 'winum-assign-functions)
     (add-to-list 'winum-assign-functions #'treemacs--window-number-ten)))
 
-(with-eval-after-load 'popwin
-
-  (defadvice popwin:create-popup-window
-      (around treemacs--popwin-popup-buffer activate)
-    (let ((v? (treemacs--is-visible?))
-          (tb (get-buffer treemacs--buffer-name)))
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed nil)))
-      ad-do-it
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed 'width)))))
-
-  (defadvice popwin:close-popup-window
-      (around treemacs--popwin-close-buffer activate)
-    (let ((v? (treemacs--is-visible?))
-          (tb (get-buffer treemacs--buffer-name)))
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed nil)))
-      ad-do-it
-      (when v?
-        (with-current-buffer tb
-          (setq window-size-fixed 'width))))))
-
 (with-eval-after-load 'golden-ratio
   (when (bound-and-true-p golden-ratio-exclude-modes)
     (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode)))
