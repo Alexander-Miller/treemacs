@@ -351,8 +351,8 @@ and special names like this."
 (defsubst treemacs--get-framelocal-buffer ()
   "Get this frame's local buffer, creating it if necessary.
 Will also perform cleanup if the buffer is dead."
-  (let* ((frame (selected-frame))
-         (buf   (assoc frame treemacs--buffer-access)))
+  (-let*- [(frame (selected-frame))
+           (buf   (assq frame treemacs--buffer-access))]
     (when (or (null buf)
               (not (buffer-live-p buf)))
       (setq treemacs--buffer-access
