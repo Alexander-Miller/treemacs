@@ -41,13 +41,13 @@
   ;; condition is true when we're running in eager restoration and the frameset is not yet restored
   ;; in this case this function will be run again, with restored frame parameters, in `desktop-after-read-hook'
   (unless (--all? (null (frame-parameter it 'treemacs-id)) (frame-list))
-    (-when-let- [b (get-buffer treemacs--desktop-helper-name)]
-      (kill-buffer b))
     ;; Abusing a timer like this (hopefully) guarantees that the restore runs after everything else and
     ;; the restored treemacs buffers remain visible
     (run-with-timer
      1 nil
      (lambda ()
+       (-when-let- [b (get-buffer treemacs--desktop-helper-name)]
+         (kill-buffer b))
        (dolist (frame (frame-list))
          (-when-let (scope-id (frame-parameter frame 'treemacs-id))
            (push (string-to-number scope-id) treemacs--taken-scopes)))
