@@ -269,6 +269,12 @@ Valid values are
   :type 'number
   :group 'treemacs-configuration)
 
+(defcustom treemacs-winum-number 10
+  "Window number treemacs will always assume when winum.el is used.
+Set to nil to disable the static number assignment."
+  :type 'number
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

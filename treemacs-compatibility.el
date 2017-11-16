@@ -21,6 +21,7 @@
 
 ;;; Code:
 
+(require 'treemacs-customization)
 (require 'treemacs-impl)
 (require 'treemacs-macros)
 
@@ -31,7 +32,10 @@
 
   (defun treemacs--window-number-ten ()
     (when (and (eq (selected-window) (frame-first-window))
-               (treemacs--is-treemacs-window-selected?)) 10))
+               (treemacs--is-treemacs-window-selected?)
+               (boundp 'winum-scope)
+               (eq winum-scope 'frame-local))
+      treemacs-winum-number))
 
   ;; only works in old versions of winum, should be deleted soon
   (when (boundp 'winum-assign-func)
