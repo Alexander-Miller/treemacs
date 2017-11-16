@@ -357,12 +357,12 @@ Will also perform cleanup if the buffer is dead."
               (not (buffer-live-p buf)))
       (setq treemacs--buffer-access
             (assq-delete-all frame treemacs--buffer-access))
-      (setq buf (get-buffer-create (format "%s%s*" treemacs--buffer-name-prefix frame)))
-      (push (cons frame buf) treemacs--buffer-access)
       (unless (frame-parameter frame 'treemacs-id)
         (while (memq (setq treemacs--scope-id (1+ treemacs--scope-id)) treemacs--taken-scopes))
         (push treemacs--scope-id treemacs--taken-scopes)
-        (set-frame-parameter frame 'treemacs-id (number-to-string treemacs--scope-id))))
+        (set-frame-parameter frame 'treemacs-id (number-to-string treemacs--scope-id)))
+      (setq buf (get-buffer-create (format "%sFramebuffer-%s*" treemacs--buffer-name-prefix (frame-parameter frame 'treemacs-id))))
+      (push (cons frame buf) treemacs--buffer-access))
     buf))
 
 (defsubst treemacs--next-neighbour (btn)
