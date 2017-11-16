@@ -39,8 +39,10 @@
 (defun treemacs--restore ()
   "Restore the entire treemacs state saved by `treeemacs--persist'."
   ;; condition is true when we're running in eager restoration and the frameset is not yet restored
-  ;; in this case this will be run again in `desktop-after-read-hook'
+  ;; in this case this function will be run again, with restored frame parameters, in `desktop-after-read-hook'
   (unless (--all? (null (frame-parameter it 'treemacs-id)) (frame-list))
+    (-when-let- [b (get-buffer treemacs--desktop-helper-name)]
+      (kill-buffer b))
     ;; Abusing a timer like this (hopefully) guarantees that the restore runs after everything else and
     ;; the restored treemacs buffers remain visible
     (run-with-timer
@@ -66,9 +68,7 @@
                      (when (and (not (string= point "<root>"))
                                 (f-exists? point))
                        (treemacs--do-follow point))
-                     (hl-line-highlight))))))))
-       (-when-let (b (get-buffer treemacs--desktop-helper-name))
-         (kill-buffer b))))))
+                     (hl-line-highlight))))))))))))
 
 (defun treemacs--persist ()
   "Save current state, allowing it to be restored with `treemacs--restore'."
