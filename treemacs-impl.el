@@ -95,7 +95,7 @@ desktop save mode.")
 Especially important after a session restore, since the list of used ids may no
 longer be contigious.")
 
-(defconst treemacs--buffer-name-prefix "*Treemacs-")
+(defconst treemacs--buffer-name-prefix " *Treemacs-")
 
 (defconst treemacs-dir
   (expand-file-name (if load-file-name
