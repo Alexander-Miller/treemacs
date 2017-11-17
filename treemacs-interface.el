@@ -111,14 +111,16 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (goto-char prev)))
 
 (defun treemacs-change-root ()
-  "Use currently selected directory as new root. Do nothing for files."
+  "Use currently selected directory as new root.
+Do nothing for other node types."
   (interactive)
-  (let ((btn (treemacs--current-button)))
+  (-if-let- [btn (treemacs--current-button)]
     (-pcase (button-get btn 'state)
       [(or `dir-node-open `dir-node-closed)
        (treemacs--build-tree (button-get btn 'abs-path))]
       [_
-       (treemacs--log "Button in current line is not a directory.")])))
+       (treemacs--log "Button in current line is not a directory.")])
+    (treemacs--log "There is no directory to move into here.")))
 
 (defun treemacs-visit-node-vertical-split (&optional arg)
   "Open current file or tag by vertically splitting `next-window'.
