@@ -84,12 +84,7 @@
                     ,(cons "root" (treemacs--current-root))
                     ,(cons "point" (-if-let (b (treemacs--current-button)) (treemacs--nearest-path b) "<root>")))
                   state)))))
-    (f-write (pp-to-string state) 'utf-8 treemacs--persist-file)
-    (with-current-buffer (get-buffer-create treemacs--desktop-helper-name)
-      (treemacs-mode)
-      (read-only-mode -1)
-      (insert "This buffer only exists so that desktop mode will load treemacs.\n")
-      (insert "It will be deleted by `treemacs--restore'."))))
+    (f-write (pp-to-string state) 'utf-8 treemacs--persist-file)))
 
 (defun treemacs--maybe-persist ()
   "Hook function to save treemacs state when conditions for it are met.
@@ -118,7 +113,7 @@ desktop save mode is on."
 
 (with-eval-after-load "desktop"
 
-  ;; Desktop mode cannot take the usual approach with treemacs since when buffers
+  ;; Desktop mode cannot take the usual approach with treemacs since buffers
   ;; are restored before frame parameters. Using just a hook won't work either since
   ;; buffers can be restored lazily.
   ;; The solution is then to bypass the usual process: treemacs buffers are not
@@ -130,27 +125,33 @@ desktop save mode is on."
   ;; If this buffer is restored lazily instead frame params will have been restored,
   ;; so `treemacs--restore' will work immediately.
 
+  (defun treemacs--create-persist-helper-buffer ()
+    "Create the desktop helper on shutdown for desktop mode to load treemacs."
+    (when (bound-and-true-p desktop-save-mode)
+      (with-current-buffer (get-buffer-create treemacs--desktop-helper-name)
+        (treemacs-mode)
+        (read-only-mode -1)
+        (insert "This buffer only exists so that desktop mode will load treemacs.\n")
+        (insert "It will be deleted by `treemacs--restore'."))))
+
   (defun treemacs--desktop-handler (&rest _)
     "Fake-ish treemacs mode handler for desktop save mode.
 Works if run during the lazy restoration phase, otherwise
 `desktop-after-read-hook' will take care of treemacs
 Will always return the scratch buffer to make `desktop-mode` think all is well."
     (treemacs--restore)
-    (get-buffer-create "*scratch*"))
+    (current-buffer))
 
   (defun treemacs--desktop-persist-advice (&rest _)
     "Persists treemacs alongside `desktop-save'."
     (treemacs--persist))
 
-  (advice-add 'desktop-save :before (with-no-warnings #'treemacs--desktop-persist-advice))
-  (add-hook 'desktop-after-read-hook #'treemacs--restore)
+  (declare-function treemacs--desktop-persist-advice "treemacs-persist.el")
+  (declare-function treemacs--create-persist-helper-buffer "treemacs-persist.el")
 
-  (when (boundp 'desktop-buffers-not-to-save)
-    (unless (s-contains? treemacs--buffer-name-prefix desktop-buffers-not-to-save)
-      (if desktop-buffers-not-to-save
-          (setq desktop-buffers-not-to-save
-                (concat "\\(" desktop-buffers-not-to-save "\\|" (rx bol (eval treemacs--buffer-name-prefix) (0+ any)) "\\)"))
-        (setq desktop-buffers-not-to-save (rx bol (eval treemacs--buffer-name-prefix) (0+ any))))))
+  (advice-add 'desktop-save :before #'treemacs--desktop-persist-advice)
+  (add-hook 'kill-emacs-hook #'treemacs--create-persist-helper-buffer)
+  (add-hook 'desktop-after-read-hook #'treemacs--restore)
 
   (add-to-list 'desktop-buffer-mode-handlers
                '(treemacs-mode . treemacs--desktop-handler)))
