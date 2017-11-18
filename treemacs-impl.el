@@ -116,9 +116,19 @@ Not used directly, but as part of `treemacs--without-messages'.")
 (defvar-local treemacs--width-is-locked t
   "Keeps track of whether the width of the treemacs window is locked.")
 
+(defvar treemacs--defaults-icons nil
+  "Stores the default values of the directory and tag icons. TODO")
+
 ;;;;;;;;;;;;
 ;; Macros ;;
 ;;;;;;;;;;;;
+
+(defmacro treemacs--defvar-with-default (var val)
+  "Define a VAR with value VAL.
+Remember the value in `treemacs--defaults-icons'."
+  `(progn
+     (defvar ,var ,val)
+     (push (cons ',var ,val) treemacs--defaults-icons)))
 
 (cl-defmacro treemacs--execute-button-action
     (&key save-window ensure-window-split split-function window dir-action file-action tag-action no-match-explanation)
@@ -493,10 +503,10 @@ Optionally make the git request RECURSIVE."
       (treemacs-mode))
     ;; create buffer-local hashes that need to be initialized
     (with-no-warnings (setq treemacs--tags-cache (make-hash-table :test #'equal :size 100)))
+    (treemacs--check-window-system)
     ;; f-long to expand ~ and remove final slash
     ;; needed for root dirs given by projectile if it's used
     (treemacs--build-tree (f-long root))
-    (treemacs--check-window-system)
     ;; no warnings since follow mode is known to be defined
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))

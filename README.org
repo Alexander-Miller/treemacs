@@ -25,8 +25,11 @@
   - [[#variables][Variables]]
   - [[#faces][Faces]]
   - [[#evil-compatibility][Evil compatibility]]
-  - [[#custom-icons][Custom Icons]]
   - [[#custom-header-function][Custom header function]]
+  - [[#custom-icons][Custom Icons]]
+    - [[#directory-icons][Directory Icons]]
+    - [[#tag-icons][Tag Icons]]
+    - [[#file-icons][File Icons]]
 - [[#keymap][Keymap]]
   - [[#unbound-functions][Unbound functions]]
   - [[#default-keymap][Default keymap]]
@@ -266,30 +269,6 @@ Treemacs defines and uses the following faces:
 To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions
 or offer any configuration options, making sure it is loaded is sufficient.
 
-** Custom Icons
-If you have an icon you'd like to make use of in treemacs my preferred solution is very much
-for you to open a pull request (adding a new icon is a one-liner in treemacs-visuals.el) or an issue
-to let me know about a good icon I can add.
-
-If that's not possible or if you'd like to use something like ~all-the-icons.el~ (which isn't used by default
-treemacs due to iconic fonts not being monospaced) treemacs offers the option to quickly define custom icons
-using the ~treemacs-define-custom-icon~ function.
-
-It takes as its arguments an icon (a string) and a list of file extension to use the icon for. Already present
-icons for these extensions will be overwritten. The extensions are not case-sensitive and will be downcased.
-
-Note that treemacs has a very loose definition of what constitutes a file extension - it's either everything
-past the last period, or just the file's full name if there is no period. This makes it possible to match file
-names like '.gitignore' and 'Makefile'.
-
-Example usage would look like this:
-
-#+BEGIN_SRC emacs-lisp
-  (with-eval-after-load "treemacs"
-    (defvar treemacs-custom-html-icon (all-the-icons-icon-for-file "file.html"))
-    (treemacs-define-custom-icon treemacs-custom-html-icon "html" "htm"))
-#+END_SRC
-
 ** Custom header function
 
 The function which creates the header in treemacs is easily replaced (see the entry for ~treemacs-header-function~ in the
@@ -300,6 +279,88 @@ formats the header as you wish and then tell treemacs to use it:
   (defun treemacs-header-with-brackets (current-root)
     (format "<%s>" (file-name-nondirectory current-root)))
   (setq treemacs-header-function #'treemacs-header-with-brackets)
+#+END_SRC
+
+** Custom Icons
+
+The icons treemacs uses can be roughly divided into 3 groups (with the first 2 behaving identically). Each group
+also makes further adjustments depending on whether treemacs is shown in a GUI or terminal frame.
+
+Changes to icons, as described below, will takes place when a treemacs buffer is reinitialized. This means you need to
+call a function like ~treemacs~ or ~treemacs-projectile~.
+
+The changes to icons can be reverted by calling ~treemacs-reset-icons~.
+
+*Important*: There is a restriction that all icons must must be exactly 2 characters long. That's including the space
+that will separate an icon from filename.
+
+*** Directory Icons
+
+These are the 2 icons used for expanded or closed directory nodes. They are stored in the variables ~treemacs-icop-open~
+and ~treemacs-icon-closed~. Depending on whether the treemacs instance runs in a gui or tui they'll assume different values
+stored in other variables:
+
+| Variable               | Value in GUI               | Value in TUI                |
+|------------------------+----------------------------+-----------------------------|
+| ~treemacs-icop-open~   | ~treemacs-icon-open-png~   | ~treemacs-icon-open-text~   |
+| ~treemacs-icon-closed~ | ~treemacs-icon-closed-png~ | ~treemacs-icon-closed-text~ |
+
+To change the display of directory nodes you need to overwrite the values of the png/text variables. For example the code
+to use unicode icons to display directories in gui mode could look like this:
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "treemacs"
+    (setq treemacs-icon-open-png   (propertize "⊖ " 'face 'treemacs-directory-face)
+          treemacs-icon-closed-png (propertize "⊕ " 'face 'treemacs-directory-face)))
+#+END_SRC
+
+*** Tag Icons
+
+Tag icons behave just like directory icons, except there's 3 of them: one for closed tag sections, one for open tag sections
+and one for the tags proper:
+
+| Variable                        | Value in GUI                        | Value in TUI                        |
+|---------------------------------+-------------------------------------+-------------------------------------|
+| ~treemacs-icop-tag-node-open~   | ~treemacs-icop-tag-node-open-png~   | ~treemacs-icop-tag-node-open-txt~   |
+| ~treemacs-icon-tag-node-closed~ | ~treemacs-icon-tag-node-closed-png~ | ~treemacs-icon-tag-node-closed-txt~ |
+| ~treemacs-icon-tag-leaf~        | ~treemacs-icon-tag-leaf-png~        | ~treemacs-icon-tag-leaf-txt~        |
+
+Same as above, to change the display of tag nodes you need to overwrite the values of the png/text variables. For example
+the code to use unicode icons to display tags in gui mode could look like this:
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "treemacs"
+    (setq treemacs-icon-tag-node-open-png   (propertize "− " 'face 'font-lock-keyword-face)
+          treemacs-icon-tag-node-closed-png (propertize "+ " 'face 'font-lock-keyword-face)
+          treemacs-icon-tag-leaf-png        (propertize "🞄 " 'face 'font-lock-keyword-face)))
+#+END_SRC
+
+*** File Icons
+
+First of all if you have an icon you'd like to make use of in treemacs my preferred solution is very much
+for you to open a pull request (adding a new icon is a one-liner in treemacs-visuals.el) or an issue
+to let me know about a good icon I can add.
+
+If that's not possible or if you'd like to use something like ~all-the-icons.el~ (which isn't used in treemacs
+by default due to iconic fonts not being monospaced and so would look bad) treemacs offers the option to use your own
+custom file icons.
+
+File icons are implemented differently than the other icon groups. They too exist as variables, usually named like
+~treemacs-icon-html~, but the selection process happens through a hashtable - ~treemacs-icons-hash~ - which maps file
+extensions to their icons. Note that treemacs has a very loose definition of what constitutes a file extension - it's
+either everything past the last period, or just the file's full name if there is no period. This makes it possible to
+match file names like '.gitignore' and 'Makefile'. Extensions are not case-sensitive and will be downcased.
+
+While it is possible to directly push a mapping to ~treemacs-icons-hash~ treemacs also offers the utility function
+~treemacs-define-custom-icon~. It takes as its arguments an icon (a string) and as ~&rest~ a list of file extension to
+use the icon for. Already present icons for the given extensions will be overwritten.
+
+Using it would look like this:
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "treemacs"
+    (defvar treemacs-custom-html-icon (all-the-icons-icon-for-file "name.html"))
+    (treemacs-define-custom-icon treemacs-custom-html-icon "html" "htm"))
 #+END_SRC
 
 * Keymap
