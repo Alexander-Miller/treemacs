@@ -137,8 +137,7 @@ desktop save mode is on."
   (defun treemacs--desktop-handler (&rest _)
     "Fake-ish treemacs mode handler for desktop save mode.
 Works if run during the lazy restoration phase, otherwise
-`desktop-after-read-hook' will take care of treemacs
-Will always return the scratch buffer to make `desktop-mode` think all is well."
+`desktop-after-read-hook' will take care of treemacs."
     (treemacs--restore)
     (current-buffer))
 
