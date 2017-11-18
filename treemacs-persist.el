@@ -40,7 +40,8 @@
   "Restore the entire treemacs state saved by `treeemacs--persist'."
   ;; condition is true when we're running in eager restoration and the frameset is not yet restored
   ;; in this case this function will be run again, with restored frame parameters, in `desktop-after-read-hook'
-  (unless (--all? (null (frame-parameter it 'treemacs-id)) (frame-list))
+  (unless (or treemacs-never-persist
+              (--all? (null (frame-parameter it 'treemacs-id)) (frame-list)))
     ;; Abusing a timer like this (hopefully) guarantees that the restore runs after everything else and
     ;; the restored treemacs buffers remain visible
     (run-with-timer
@@ -71,45 +72,25 @@
                      (hl-line-highlight))))))))))))
 
 (defun treemacs--persist ()
-  "Save current state, allowing it to be restored with `treemacs--restore'."
-  (let ((persist-dir (f-dirname treemacs--persist-file)))
-    (unless (f-exists? persist-dir)
-      (f-mkdir persist-dir)))
-  (let (state)
-    (dolist (access-pair treemacs--buffer-access)
-      (-let [(frame . buffer) access-pair]
-        (when (buffer-live-p buffer)
-          (with-current-buffer buffer
-            (push `(,(cons "scope-id" (frame-parameter frame 'treemacs-id))
-                    ,(cons "root" (treemacs--current-root))
-                    ,(cons "point" (-if-let (b (treemacs--current-button)) (treemacs--nearest-path b) "<root>")))
-                  state)))))
-    (f-write (pp-to-string state) 'utf-8 treemacs--persist-file)))
-
-(defun treemacs--maybe-persist ()
-  "Hook function to save treemacs state when conditions for it are met.
-Persistence takes place when the treemacs buffer is killed or when Emacs shuts
-down and `treemacs-never-persist' is not t and a state saving mode like
-desktop save mode is on."
-  (when (and (not treemacs-never-persist)
-             (or desktop-save-mode
-                 (and (bound-and-true-p persp-auto-save-opt)
-                      (not (eq 0 persp-auto-save-opt)))))
-    (treemacs--persist)))
-
-(defun treemacs--get-open-dirs ()
-  "Collect the paths of all currently expanded folders."
-  ;; not using open dirs cache on account of its arbitrary ordering
-  ;; dirs are collected - and reopened - from top to bottom
-  (save-excursion
-    (goto-char 0)
-    (let ((btn  (next-button (point)))
-          (dirs (list)))
-      (while btn
-        (when (eq 'dir-node-open (button-get btn 'state))
-          (push (button-get btn 'abs-path) dirs))
-        (setq btn (next-button (button-end btn))))
-      (nreverse dirs))))
+  "Save current state, allowing it to be restored with `treemacs--restore'.
+If `treemacs-never-persist' is non-nil it will instead delete any already
+persisted state so it will not be loaded on the next desktop read."
+  (if treemacs-never-persist
+      (when (f-exists? treemacs--persist-file)
+        (f-delete treemacs--persist-file))
+    (-let [persist-dir (f-dirname treemacs--persist-file)]
+      (unless (f-exists? persist-dir)
+        (f-mkdir persist-dir))
+      (let (state)
+        (dolist (access-pair treemacs--buffer-access)
+          (-let [(frame . buffer) access-pair]
+            (when (buffer-live-p buffer)
+              (with-current-buffer buffer
+                (push `(,(cons "scope-id" (frame-parameter frame 'treemacs-id))
+                        ,(cons "root" (treemacs--current-root))
+                        ,(cons "point" (-if-let (b (treemacs--current-button)) (treemacs--nearest-path b) "<root>")))
+                      state)))))
+        (f-write (pp-to-string state) 'utf-8 treemacs--persist-file)))))
 
 (with-eval-after-load "desktop"
 
@@ -127,7 +108,8 @@ desktop save mode is on."
 
   (defun treemacs--create-persist-helper-buffer ()
     "Create the desktop helper on shutdown for desktop mode to load treemacs."
-    (when (bound-and-true-p desktop-save-mode)
+    (when (and (not treemacs-never-persist)
+               (bound-and-true-p desktop-save-mode))
       (with-current-buffer (get-buffer-create treemacs--desktop-helper-name)
         (treemacs-mode)
         (read-only-mode -1)
