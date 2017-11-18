@@ -447,7 +447,7 @@ Aside from this there are the following known incompatibilities:
 * FAQ
  * Why am I seeing no file icons and only +/- for directories?
 
-   Treemacs will permanently fall back on its simple TUI icons if it detects that the emacs instance is run in cannot
+   Treemacs will permanently fall back on its simple TUI icons if it detects that the emacs instance it is run in cannot
    create images. You can test this by evaluating ~(create-image "" 'png)~. If this code returns an error like
    "Invalid image type ´png´" your emacs does not support images.
 
