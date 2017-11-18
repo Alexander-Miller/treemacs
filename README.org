@@ -35,6 +35,7 @@
   - [[#unbound-functions][Unbound functions]]
   - [[#default-keymap][Default keymap]]
 - [[#compatibility][Compatibility]]
+- [[#faq][FAQ]]
 - [[#working-with-the-code-base][Working With The Code Base]]
 - [[#dependencies][Dependencies]]
 
@@ -443,6 +444,21 @@ Aside from this there are the following known incompatibilities:
    of the same window numbering scheme, resulting in a conflict since by default all treemacs windows are assigned
    ~treemacs-winum-number~ as their window number. To prevent this treemacs will only be assigned a custom number when
    the value of ~winum-scope~ is ~frame-local~.
+* FAQ
+ * Why am I seeing no file icons and only +/- for directories?
+
+   Treemacs will permanently fall back on its simple TUI icons if it detects that the emacs instance is run in cannot
+   create images. You can test this by evaluating ~(create-image "" 'png)~. If this code returns an error like
+   "Invalid image type ´png´" your emacs does not support images.
+
+ * Why is treemacs warning me about not being able to find some background colors and falling back to something else?
+
+   Treemacs needs those colors to make sure that background colors of its icons correctly align with hl-line-mode. Png images'
+   backgrounds are not highlighted by hl-line-mode by default, treemacs manually corrects this. To that end it needs two colors:
+   the current theme's ~default~ background, and its ~hl-line~ background color. If treemacs cannot find hl-lines's background
+   color it falls back to the default background color. If it cannot even find the default background it will fall back to
+   #2d2d31. The warnings serve to inform you of that fallback.
+
 * Working With The Code Base
 
 If you want to delve into the treemacs' code base, check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
