@@ -125,7 +125,7 @@ to it will instead show a blank."
                                         (car key-open-ace-v)
                                         (car key-open-ext))))
           (eval
-           `(defhydra treemacs--helpful-hydra (:exit t :hint nil :columns 5)
+           `(defhydra treemacs--helpful-hydra (:exit nil :hint nil :columns 5)
               ,hydra-str
               (,(cdr key-next-line)      #'treemacs-next-line)
               (,(cdr key-prev-line)      #'treemacs-previous-line)
