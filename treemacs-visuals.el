@@ -154,7 +154,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (defvar treemacs-icon-open)
   (defvar treemacs-icon-fallback)
 
-  (if treemacs-no-images
+  (if treemacs--image-creation-impossible
       (setq treemacs-icon-closed   treemacs-icon-closed-text
             treemacs-icon-open     treemacs-icon-open-text
             treemacs-icon-fallback "")

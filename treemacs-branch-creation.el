@@ -254,7 +254,9 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.
 If it's running in a TUI use terminal switch to simple text icons."
-  (-let [no-images (or treemacs-no-images (not (window-system)))]
+  (-let [no-images (or treemacs--image-creation-impossible
+                       treemacs-no-png-images
+                       (not (window-system)))]
     (with-no-warnings
       (setq-local treemacs-icon-open            (if no-images treemacs-icon-open-text treemacs-icon-open-png))
       (setq-local treemacs-icon-closed          (if no-images treemacs-icon-closed-text treemacs-icon-closed-png))

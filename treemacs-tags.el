@@ -44,7 +44,7 @@
 (defvar treemacs-icon-tag-node-closed)
 (defvar treemacs-icon-tag-node-open)
 
-(if treemacs-no-images
+(if treemacs--image-creation-impossible
     (setq treemacs-icon-tag-leaf        treemacs-icon-tag-leaf-text
           treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-text
           treemacs-icon-tag-node-open   treemacs-icon-tag-node-open-text)

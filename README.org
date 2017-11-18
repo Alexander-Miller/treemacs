@@ -30,6 +30,7 @@
     - [[#directory-icons][Directory Icons]]
     - [[#tag-icons][Tag Icons]]
     - [[#file-icons][File Icons]]
+    - [[#gui-vs-tui][GUI vs TUI]]
 - [[#keymap][Keymap]]
   - [[#unbound-functions][Unbound functions]]
   - [[#default-keymap][Default keymap]]
@@ -253,6 +254,7 @@ Treemacs offers the following configuration options:
 | treemacs-position                   | left                                                                            | Position of treemacs buffer. Valid values are ~left~, ~right~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-tag-follow-delay           | 1.5                                                                             | Delay in seconds of inactivity for ~treemacs-tag-follow-mode~ to trigger.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | treemacs-winum-number               | 10                                                                              | Window number treemacs will always assume when winum.el is used. Set to nil to disable the static number assignment.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| treemacs-no-png-images              | nil                                                                             | When non-nil treemacs will use TUI string icons even when running in a GUI.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ** Faces
 
@@ -363,6 +365,8 @@ Using it would look like this:
     (treemacs-define-custom-icon treemacs-custom-html-icon "html" "htm"))
 #+END_SRC
 
+*** GUI vs TUI
+It is possible to force treemacs to use the simple TUI icons in GUI mode by setting ~treemacs-no-png-images~ to t.
 * Keymap
 ** Unbound functions
 These functions are not bound to any keys by default. It's left up to users to find the most convenient key binds.

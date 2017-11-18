@@ -22,7 +22,7 @@
 
 ;; defined here since, with the exception of the main file that cannot be required
 ;; elsewhere, this is the first unit to be loaded
-(defconst treemacs-no-images
+(defconst treemacs--image-creation-impossible
   (condition-case e
       (progn (create-image "" 'xpm) nil)
     (error e))
@@ -273,6 +273,11 @@ Valid values are
   "Window number treemacs will always assume when winum.el is used.
 Set to nil to disable the static number assignment."
   :type 'number
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-no-png-images nil
+  "When non-nil treemacs will use TUI string icons even when running in a GUI."
+  :type 'boolean
   :group 'treemacs-configuration)
 
 (provide 'treemacs-customization)
