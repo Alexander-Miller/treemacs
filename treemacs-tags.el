@@ -332,6 +332,54 @@ exist."
     [`integer
      (list nil m)]))
 
+(defsubst treemacs--imenu-tag-noselect (file tag-path)
+  "Return a list of the source buffer for FILE and the position of the tag from TAG-PATH."
+  (let ((tag (car tag-path))
+        (path (cdr tag-path)))
+    (condition-case e
+        (progn
+          (find-file-noselect file)
+          (let ((index (treemacs--get-imenu-index file)))
+            (dolist (path-item path)
+              (setq index (cdr (assoc path-item index))))
+            (-let [(buf pos) (treemacs--pos-from-marker
+                              (cdr (--first
+                                    (equal (car it) tag)
+                                    index)))]
+              ;; some imenu implementations, like markdown, will only provide
+              ;; a raw buffer position (an int) to move to
+	      (list (or buf (get-file-buffer file)) pos))))
+      (error
+       (treemacs--log "Something went wrong when finding tag '%s': %s"
+                      (propertize tag 'face 'treemacs-tags-face)
+                      e)))))
+
+(defun treemacs--tag-noselect (btn)
+  "Return list of tag source buffer and position for BTN for future display."
+  (require 'hmouse-tag) ;; from GNU Hyperbole, adds xref convenience functions used herein
+  (-let [(tag-buf tag-pos)
+         (treemacs--with-button-buffer btn
+				       (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
+    (if tag-buf
+	(list tag-buf tag-pos)
+      (-pcase treemacs-goto-tag-strategy
+        [`refetch-index
+         (let (file tag-path)
+           (with-current-buffer (marker-buffer btn)
+             (setq file (treemacs--nearest-path btn)
+                   tag-path (treemacs--tags-path-of btn)))
+           (treemacs--imenu-tag-noselect file tag-path))]
+        [`call-xref
+	 (let ((xref (xref-definition
+		      (treemacs--with-button-buffer btn
+						    (treemacs--get-label-of btn)))))
+	   (when xref
+	     (list (xref-item-buffer xref) (xref-item-position xref))))]
+        [`issue-warning
+         (treemacs--log "Tag '%s' is located in a buffer that does not exist."
+                        (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
+        [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
+
 (defsubst treemacs--call-imenu-and-goto-tag (file tag-path)
   "Call the imenu index of FILE to go to position of TAG-PATH."
   (let ((tag (car tag-path))

@@ -166,20 +166,21 @@ under or below it."
               ,@(if split-function
                     `((funcall ,split-function)
                       (other-window 1)))
-              (pcase state
-                ,@(when dir-action
-                    `(((or `dir-node-open `dir-node-closed)
-                       ,dir-action)))
-                ,@(when file-action
-                    `(((or `file-node-open `file-node-closed)
-                       ,file-action)))
-                ,@(when tag-action
-                    `((`tag-node
-                       ,tag-action)))
-                (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
-                          state ',valid-states)))
-              (when ,save-window
-                (select-window current-window)))))))))
+	      ;; Return the result of the action
+              (prog1 (pcase state
+                       ,@(when dir-action
+			   `(((or `dir-node-open `dir-node-closed)
+			      ,dir-action)))
+                       ,@(when file-action
+			   `(((or `file-node-open `file-node-closed)
+			      ,file-action)))
+                       ,@(when tag-action
+			   `((`tag-node
+			      ,tag-action)))
+                       (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
+				 state ',valid-states)))
+		(when ,save-window
+                  (select-window current-window))))))))))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
