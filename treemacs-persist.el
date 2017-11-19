@@ -63,7 +63,6 @@
                (unless (-> frame (assq treemacs--buffer-access) (cdr) (buffer-live-p))
                  (save-selected-window
                    (with-selected-frame frame
-                     (push (cons frame (current-buffer)) treemacs--buffer-access)
                      (treemacs--init root)
                      (bury-buffer (current-buffer))
                      (when (and (not (string= point "<root>"))
