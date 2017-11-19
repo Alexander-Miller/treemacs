@@ -68,7 +68,7 @@ For tags go to the tag definition via `treemacs-visit-node-no-split'.
 With a prefix ARG expanding and closing of nodes is recursive."
   (interactive "P")
   (save-excursion
-    (-when-let (b (treemacs--current-button))
+    (-when-let (b (treemacs-current-button))
       (treemacs--push-button b arg)))
   (treemacs--evade-image))
 
@@ -101,20 +101,20 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 (defun treemacs-next-neighbour ()
   "Select next node at the same depth as currently selected node, if possible."
   (interactive)
-  (-when-let- [next (treemacs--next-neighbour (treemacs--current-button))]
+  (-when-let- [next (treemacs--next-neighbour (treemacs-current-button))]
     (goto-char next)))
 
 (defun treemacs-previous-neighbour ()
   "Select previous node at the same depth as currently selected node, if possible."
   (interactive)
-  (-when-let- [prev (treemacs--prev-neighbour (treemacs--current-button))]
+  (-when-let- [prev (treemacs--prev-neighbour (treemacs-current-button))]
     (goto-char prev)))
 
 (defun treemacs-change-root ()
   "Use currently selected directory as new root.
 Do nothing for other node types."
   (interactive)
-  (-if-let- [btn (treemacs--current-button)]
+  (-if-let- [btn (treemacs-current-button)]
     (-pcase (button-get btn 'state)
       [(or `dir-node-open `dir-node-closed)
        (treemacs--build-tree (button-get btn 'abs-path))]
@@ -254,7 +254,7 @@ Treemacs knows how to open files on linux, windows and macos."
   "Delete node at point.
 A delete action must always be confirmed. Directories are deleted recursively."
   (interactive)
-  (-if-let (btn (treemacs--current-button))
+  (-if-let (btn (treemacs-current-button))
       (if (not (memq (button-get btn 'state) '(file-node-open file-node-closed dir-node-open dir-node-closed)))
           (treemacs--log "Only files and directories can be deleted.")
         (let* ((path      (button-get btn 'abs-path))
@@ -297,7 +297,7 @@ likewise be updated."
   (interactive)
   (treemacs--log
    (catch 'exit
-     (let* ((btn (treemacs--current-button))
+     (let* ((btn (treemacs-current-button))
             (old-path (button-get btn 'abs-path))
             (new-path)
             (new-name)
@@ -513,7 +513,7 @@ without the need to call `treemacs-resort' with a prefix arg."
   (interactive)
   (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
           (treemacs-sorting sort-method))
-    (-if-let (btn (treemacs--current-button))
+    (-if-let (btn (treemacs-current-button))
              (-pcase (button-get btn 'state)
                [`dir-node-closed
                 (treemacs--open-dir-node btn)

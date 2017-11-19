@@ -60,7 +60,7 @@ Prefer evil keybinds, otherwise pick the first result."
 If the hydra, for whatever reason, is unable the find the key a command is bound
 to it will instead show a blank."
   (interactive)
-  (-if-let (b (treemacs--buffer-exists?))
+  (-if-let (b (treemacs-buffer-exists?))
       (with-current-buffer b
         (let*
             ((title              (propertize "Treemacs Helpful Hydra" 'face 'treemacs-help-title-face))

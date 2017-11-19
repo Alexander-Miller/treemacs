@@ -87,7 +87,7 @@ persisted state so it will not be loaded on the next desktop read."
               (with-current-buffer buffer
                 (push `(,(cons "scope-id" (frame-parameter frame 'treemacs-id))
                         ,(cons "root" (treemacs--current-root))
-                        ,(cons "point" (-if-let (b (treemacs--current-button)) (treemacs--nearest-path b) "<root>")))
+                        ,(cons "point" (-if-let (b (treemacs-current-button)) (treemacs--nearest-path b) "<root>")))
                       state)))))
         (f-write (pp-to-string state) 'utf-8 treemacs--persist-file)))))
 

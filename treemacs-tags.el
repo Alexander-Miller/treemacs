@@ -181,7 +181,7 @@ should be placed under."
 (defun treemacs--remove-all-tags-under-path-from-cache (path)
   "Remove all tag cache entries under PATH after it was deleted."
   ;; Don't think it's a good idea to modify the hash table while iterating it
-  (-when-let- [buffer (treemacs--buffer-exists?)]
+  (-when-let- [buffer (treemacs-buffer-exists?)]
     (with-current-buffer buffer
         (let ((keys-to-remove (list)))
           (maphash
