@@ -741,9 +741,9 @@ Callers must make sure to save match data"
 These are the files which return nil for every function in
 `treemacs-ignored-file-predicates' and do not match `treemacs-dotfiles-regex'.
 The second test not apply if `treemacs-show-hidden-files' is t."
-       (if treemacs-show-hidden-files
-           (-filter #'treemacs--reject-ignored-files files)
-         (-filter #'treemacs--reject-ignored-and-dotfiles files)))
+  (if treemacs-show-hidden-files
+      (-filter #'treemacs--reject-ignored-files files)
+    (-filter #'treemacs--reject-ignored-and-dotfiles files)))
 
 (defun treemacs--std-ignore-file-predicate (file)
   "The default predicate to detect ignored files.

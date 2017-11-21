@@ -69,6 +69,7 @@ inside BUTTON's buffer."
 Required for button interactions (like `button-get') that do not work when
 called from another buffer than the one the button resides in and
 `treemacs--safe-button-get' is not enough."
+  (declare (indent 1))
   `(with-current-buffer (marker-buffer ,btn)
     ,@body))
 

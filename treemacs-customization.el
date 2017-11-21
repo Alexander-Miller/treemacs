@@ -84,7 +84,7 @@ To keep the alist clean changes should not be made directly, but with
   :group 'treemacs-configuration)
 
 (defcustom treemacs-follow-after-init nil
-  "When t always run `treemacs-follow' after building a treemacs-buffer.
+  "When t always find and focus the current file when treemacs is built.
 
 A treemacs buffer is built when after calling `treemacs-init' or
 `treemacs-projectle-init'. This will ignore `treemacs-follow-mode'."
