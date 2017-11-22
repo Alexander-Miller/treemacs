@@ -884,6 +884,9 @@ filewatch mode can refresh multiple buffers at once."
             (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
             (win-start    (window-start (get-buffer-window)))
             (root         (treemacs--current-root)))
+       (run-hook-with-args
+        'treemacs-pre-refresh-hook
+        root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
        (treemacs--build-tree root)
        ;; move point to the same file it was with before the refresh if the file
        ;; still exists and is visible, stay in the same line otherwise
@@ -907,6 +910,9 @@ filewatch mode can refresh multiple buffers at once."
        ;; when the buffe is refreshed without the window being selected
        (-when-let- [w (get-buffer-window (buffer-name) t)]
          (set-window-point w (point)))
+       (run-hook-with-args
+        'treemacs-post-refresh-hook
+        root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
        (hl-line-highlight)
        (unless treemacs-silent-refresh
          (treemacs--log "Refresh complete."))))))
