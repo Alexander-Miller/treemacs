@@ -41,6 +41,7 @@
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-mode)
 (require 'treemacs-interface)
+(require 'treemacs-mouse-interface)
 (require 'treemacs-persist)
 (require 'treemacs-tags)
 (require 'treemacs-tag-follow-mode)
