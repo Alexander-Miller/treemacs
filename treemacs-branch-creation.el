@@ -22,6 +22,7 @@
 
 ;;; Code:
 
+(require 's)
 (require 'cl-lib)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
@@ -146,7 +147,7 @@ EXTRA-VARS are additional var bindings inserted into the initial let block.
 NODE-ACTION is the button creating form inserted for every NODE.
 NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
   `(let* ((depth ,depth)
-          (prefix (concat "\n" (make-string (* depth treemacs-indentation) ?\ )))
+          (prefix (concat "\n" (s-repeat (* depth treemacs-indentation) treemacs-indentation-string)))
           (,node-name (cl-first ,nodes))
           (strings)
           ,@extra-vars)

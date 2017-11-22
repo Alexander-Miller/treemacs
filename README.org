@@ -31,6 +31,7 @@
     - [[#tag-icons][Tag Icons]]
     - [[#file-icons][File Icons]]
     - [[#gui-vs-tui][GUI vs TUI]]
+    - [[#indent-guide][Indent guide]]
 - [[#keymap][Keymap]]
   - [[#unbound-functions][Unbound functions]]
   - [[#default-keymap][Default keymap]]
@@ -236,6 +237,7 @@ Treemacs offers the following configuration options:
 | Variable                            | Default                                                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |-------------------------------------+---------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | treemacs-indentation                | 2                                                                               | The number of spaces each level is indented in the tree.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| treemacs-indentation-string         | " "                                                                             | The string that is used to create indentation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-width                      | 35                                                                              | Width of the treemacs window.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | treemacs-show-hidden-files          | t                                                                               | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | treemacs-header-function            | treemacs--create-header                                                         | The function which is used to create the header string for treemacs buffers. Default options are ~treemacs--create-header~ and ~treemacs--create-header-projectile~. Any function that takes the current root path and returns the header string may be used.                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -368,6 +370,16 @@ Using it would look like this:
 
 *** GUI vs TUI
 It is possible to force treemacs to use the simple TUI icons in GUI mode by setting ~treemacs-no-png-images~ to t.
+*** Indent guide
+Not really part of the icons, but a useful visual feature nonetheless:
+An indent guide like effect can be created by selecting appropriate values for ~treemacs-indentation~ and
+~treemacs-indentation-string~:
+
+#+BEGIN_SRC emacs-lisp
+  (setq treemacs-indentation-string (propertize " ⫶ " 'face 'font-lock-comment-face)
+        treemacs-indentation 1)
+#+END_SRC
+
 * Keymap
 ** Unbound functions
 These functions are not bound to any keys by default. It's left up to users to find the most convenient key binds.

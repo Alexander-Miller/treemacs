@@ -48,8 +48,16 @@ perpetually use its simple string icon fallack.")
   :prefix "treemacs-")
 
 (defcustom treemacs-indentation 2
-  "The number of spaces each level is indented in the tree."
+  "The number of spaces each level is indented in the file tree.
+Indentation is created by repeating `treemacs-indentation-string'."
   :type 'integer
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-indentation-string " "
+  "The string that is for indentation in the file tree.
+Indentation is created by repeating this string `treemacs-indentation' many
+times."
+  :type 'string
   :group 'treemacs-configuration)
 
 (defcustom treemacs-width 35
