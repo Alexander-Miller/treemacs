@@ -120,7 +120,10 @@ persisted state so it will not be loaded on the next desktop read."
 Works if run during the lazy restoration phase, otherwise
 `desktop-after-read-hook' will take care of treemacs."
     (treemacs--restore)
-    (current-buffer))
+    ;; we need to give desktop mode a live buffer and the helper will be killed once the real restore is
+    ;; run in a timer
+    ;; just returning scratch does not work as whatever desktop-mode does may leave it broken as in #101
+    (get-buffer-create treemacs--desktop-helper-name))
 
   (defun treemacs--desktop-persist-advice (&rest _)
     "Persists treemacs alongside `desktop-save'."
