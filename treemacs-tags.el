@@ -356,29 +356,37 @@ exist."
 
 (defun treemacs--tag-noselect (btn)
   "Return list of tag source buffer and position for BTN for future display."
-  (require 'hmouse-tag) ;; from GNU Hyperbole, adds xref convenience functions used herein
-  (-let [(tag-buf tag-pos)
-         (treemacs--with-button-buffer btn
-				       (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
-    (if tag-buf
-	(list tag-buf tag-pos)
-      (-pcase treemacs-goto-tag-strategy
-        [`refetch-index
-         (let (file tag-path)
-           (with-current-buffer (marker-buffer btn)
-             (setq file (treemacs--nearest-path btn)
-                   tag-path (treemacs--tags-path-of btn)))
-           (treemacs--imenu-tag-noselect file tag-path))]
-        [`call-xref
-	 (let ((xref (xref-definition
-		      (treemacs--with-button-buffer btn
-						    (treemacs--get-label-of btn)))))
-	   (when xref
-	     (list (xref-item-buffer xref) (xref-item-position xref))))]
-        [`issue-warning
-         (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-                        (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
-        [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
+  (cl-flet ((xref-definition (identifier)
+	     "Return the first definition of string IDENTIFIER."
+	     (car (xref-backend-definitions (xref-find-backend) identifier)))
+	    (xref-item-buffer (item)
+	      "Return the buffer in which xref ITEM is defined."
+	      (marker-buffer (save-excursion (xref-location-marker (xref-item-location item)))))
+	    (xref-item-position (item)
+	      "Return the buffer position where xref ITEM is defined."
+	      (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
+    (-let [(tag-buf tag-pos)
+           (treemacs--with-button-buffer btn
+					 (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
+      (if tag-buf
+	  (list tag-buf tag-pos)
+	(-pcase treemacs-goto-tag-strategy
+		[`refetch-index
+		 (let (file tag-path)
+		   (with-current-buffer (marker-buffer btn)
+		     (setq file (treemacs--nearest-path btn)
+			   tag-path (treemacs--tags-path-of btn)))
+		   (treemacs--imenu-tag-noselect file tag-path))]
+		[`call-xref
+		 (let ((xref (xref-definition
+			      (treemacs--with-button-buffer btn
+							    (treemacs--get-label-of btn)))))
+		   (when xref
+		     (list (xref-item-buffer xref) (xref-item-position xref))))]
+		[`issue-warning
+		 (treemacs--log "Tag '%s' is located in a buffer that does not exist."
+				(propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
+		[_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)])))))
 
 (defsubst treemacs--call-imenu-and-goto-tag (file tag-path)
   "Call the imenu index of FILE to go to position of TAG-PATH."
