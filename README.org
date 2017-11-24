@@ -356,6 +356,9 @@ extensions to their icons. Note that treemacs has a very loose definition of wha
 either everything past the last period, or just the file's full name if there is no period. This makes it possible to
 match file names like '.gitignore' and 'Makefile'. Extensions are not case-sensitive and will be downcased.
 
+There is also the special case of ~treemacs-icon-fallback~, which is used when a file extension has no specific icon
+assigned to it. It takes the value ~treemacs-icon-text~ in a GUI and ~treemacs-icon-fallback-text~ in a TUI.
+
 While it is possible to directly push a mapping to ~treemacs-icons-hash~ treemacs also offers the utility function
 ~treemacs-define-custom-icon~. It takes as its arguments an icon (a string) and as ~&rest~ a list of file extension to
 use the icon for. Already present icons for the given extensions will be overwritten.

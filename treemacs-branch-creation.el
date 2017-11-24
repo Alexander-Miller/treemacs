@@ -261,7 +261,7 @@ If it's running in a TUI use terminal switch to simple text icons."
     (with-no-warnings
       (setq-local treemacs-icon-open            (if no-images treemacs-icon-open-text treemacs-icon-open-png))
       (setq-local treemacs-icon-closed          (if no-images treemacs-icon-closed-text treemacs-icon-closed-png))
-      (setq-local treemacs-icon-fallback        (if no-images "" treemacs-icon-text))
+      (setq-local treemacs-icon-fallback        (if no-images treemacs-icon-fallback-text treemacs-icon-text))
       (setq-local treemacs-icons-hash           (if no-images (make-hash-table :test #'eq) (default-value 'treemacs-icons-hash)))
       (setq-local treemacs-icon-tag-node-open   (if no-images treemacs-icon-tag-node-open-text treemacs-icon-tag-node-open-png))
       (setq-local treemacs-icon-tag-node-closed (if no-images treemacs-icon-tag-node-closed-text treemacs-icon-tag-node-closed-png))

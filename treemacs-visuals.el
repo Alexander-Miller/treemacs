@@ -149,6 +149,8 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
    treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
   (treemacs--defvar-with-default
    treemacs-icon-open-text (propertize "- " 'face 'treemacs-term-node-face))
+  (treemacs--defvar-with-default
+   treemacs-icon-fallback-text (propertize "🗏 " 'face 'font-lock-keyword-face))
 
   (defvar treemacs-icon-closed)
   (defvar treemacs-icon-open)
@@ -157,7 +159,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (if treemacs--image-creation-impossible
       (setq treemacs-icon-closed   treemacs-icon-closed-text
             treemacs-icon-open     treemacs-icon-open-text
-            treemacs-icon-fallback "")
+            treemacs-icon-fallback treemacs-icon-fallback-text)
 
     (setq treemacs-icons-hash (make-hash-table :test #'equal))
 
@@ -216,6 +218,7 @@ inserted into `treemacs-icons-hash'."
   (interactive)
   (setq treemacs-icon-open-png             (cdr (assq 'treemacs-icon-open-png             treemacs--defaults-icons))
         treemacs-icon-open-text            (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
+        treemacs-icon-fallback             (cdr (assq 'treemacs-icon-fallback             treemacs--defaults-icons))
         treemacs-icon-closed-png           (cdr (assq 'treemacs-icon-closed-png           treemacs--defaults-icons))
         treemacs-icon-closed-text          (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
         treemacs-icon-tag-node-open-png    (cdr (assq 'treemacs-icon-tag-node-open-png    treemacs--defaults-icons))
