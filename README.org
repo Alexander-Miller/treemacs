@@ -219,7 +219,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
           ("M-m fT"     . treemacs)
           ("M-m fB"     . treemacs-bookmark)
           ("M-m f C-t"  . treemacs-find-file)
-          ("M-m f M-t") . treemacs-find-tag))
+          ("M-m f M-t"  . treemacs-find-tag)))
   (use-package treemacs-projectile
     :defer t
     :ensure t
