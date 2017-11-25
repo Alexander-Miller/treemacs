@@ -186,9 +186,9 @@ treemacs views containing hundreds or even thousands of nodes."
 Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles)
 whose presence is controlled by `treemacs-show-hidden-files').
 
-Each predicate is a function that takes the filename as its only argument and
-returns t if the file should be ignored and nil otherwise. A file whose name
-returns t for *any* function in this list counts as ignored.
+Each predicate is a function that takes 2 arguments: a files's name and its
+absolute path and returns t if the file should be ignored and nil otherwise. A
+file which returns t for *any* function in this list counts as ignored.
 
 By default this list contains `treemacs--std-ignore-file-predicate' which
 filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and

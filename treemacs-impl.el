@@ -315,14 +315,15 @@ Requires and assumes to be called inside the treemacs buffer."
 (defsubst treemacs--reject-ignored-files (file)
   "Return t if FILE is *not* an ignored file.
 FILE here is a list consisting of an absolute path and file attributes."
-  (--none? (funcall it (f-filename file)) treemacs-ignored-file-predicates))
+  (-let [filename (f-filename file)]
+    (--none? (funcall it filename file) treemacs-ignored-file-predicates)))
 
 (defsubst treemacs--reject-ignored-and-dotfiles (file)
   "Return t when FILE is neither ignored, nor a dotfile.
 FILE here is a list consisting of an absolute path and file attributes."
   (let ((filename (f-filename file)))
     (and (not (s-matches? treemacs-dotfiles-regex filename))
-         (--none? (funcall it (f-filename filename)) treemacs-ignored-file-predicates))))
+         (--none? (funcall it filename file) treemacs-ignored-file-predicates))))
 
 (defsubst treemacs--get-face (path git-info)
   "Return the appropriate face for PATH GIT-INFO."
@@ -745,7 +746,7 @@ The second test not apply if `treemacs-show-hidden-files' is t."
       (-filter #'treemacs--reject-ignored-files files)
     (-filter #'treemacs--reject-ignored-and-dotfiles files)))
 
-(defun treemacs--std-ignore-file-predicate (file)
+(defun treemacs--std-ignore-file-predicate (file _)
   "The default predicate to detect ignored files.
 Will return t when FILE
 1) starts with '.#' (lockfiles)
