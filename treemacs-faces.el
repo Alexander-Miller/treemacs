@@ -25,6 +25,13 @@
   "Face used by treemacs for directories."
   :group 'treemacs-faces)
 
+(defface treemacs-directory-collapsed-face
+  '((t :inherit treemacs-directory-face))
+  "Face used by treemacs for collapsed directories.
+This is the face used for the collapsed part of nodes, so
+if the node is 'foo/bar/baz', the face is used for 'foo/bar/'."
+  :group 'treemacs-faces)
+
 (defface treemacs-file-face
   '((t :inherit default))
   "Face used by treemacs for files."

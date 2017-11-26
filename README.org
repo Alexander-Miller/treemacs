@@ -262,13 +262,14 @@ Treemacs offers the following configuration options:
 ** Faces
 
 Treemacs defines and uses the following faces:
-| Face                    | Inherits from                                   | Description                                                                  |
-|-------------------------+-------------------------------------------------+------------------------------------------------------------------------------|
-| treemacs-directory-face | font-lock-function-name-face                    | Face used for directories.                                                   |
-| treemacs-file-face      | default                                         | Face used for files.                                                         |
-| treemacs-header-face    | font-lock-constant-face (underlined & size 1.4) | Face used for the treemacs header.                                           |
-| treemacs-term-node-face | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
-| treemacs-git-*-face     | various font lock faces                         | Faces used by treemacs for various git states.                               |
+| Face                              | Inherits from                                   | Description                                                                  |
+|-----------------------------------+-------------------------------------------------+------------------------------------------------------------------------------|
+| treemacs-directory-face           | font-lock-function-name-face                    | Face used for directories.                                                   |
+| treemacs-directory-collapsed-face | treemacs-directory-face                         | Face used for collapsed part of directories.                                 |
+| treemacs-file-face                | default                                         | Face used for files.                                                         |
+| treemacs-header-face              | font-lock-constant-face (underlined & size 1.4) | Face used for the treemacs header.                                           |
+| treemacs-term-node-face           | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
+| treemacs-git-*-face               | various font lock faces                         | Faces used by treemacs for various git states.                               |
 
 ** Evil compatibility
 To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions
