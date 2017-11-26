@@ -178,9 +178,14 @@ correct cache entries."
           (button-put b 'abs-path (nth (- (length it) 1) it))
           (button-put b 'parent-path root)
           (end-of-line)
-          (let ((beg (point)))
-            (insert (cadr it))
-            (add-text-properties beg (point) props)))))))
+          (let* ((beg (point))
+                 (dir (cadr it))
+                 (parent (file-name-directory dir)))
+            (insert dir)
+            (add-text-properties beg (point) props)
+            (add-text-properties
+             (button-start b) (+ beg (length parent))
+             '(face treemacs-directory-collapsed-face))))))))
 
 (defun treemacs--create-branch (root depth git-process collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
