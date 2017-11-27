@@ -151,7 +151,7 @@ under or below it."
       (push 'file-node-closed valid-states))
     (when tag-action
       (push 'tag-node valid-states))
-    `(-when-let (btn (treemacs--current-button))
+    `(-when-let (btn (treemacs-current-button))
        (treemacs--without-following
         (let* ((state (button-get btn 'state))
                (current-window (selected-window)))
@@ -186,7 +186,7 @@ under or below it."
 ;; Substitutions ;;
 ;;;;;;;;;;;;;;;;;;;
 
-(defsubst treemacs--current-button ()
+(defsubst treemacs-current-button ()
   "Get the button in the current line.
 Returns nil when point is on the header."
   (if (get-text-property (point-at-bol) 'button)
@@ -244,7 +244,7 @@ Will return the treemacs window if true."
                      (buffer-name)
                      (s-starts-with? treemacs--buffer-name-prefix)))))
 
-(defsubst treemacs--buffer-exists? ()
+(defsubst treemacs-buffer-exists?? ()
   "Indicates whether this frame's treemacs buffer exists.
 Returns the buffer if it does exist."
   (let ((b (cdr (assoc (selected-frame) treemacs--buffer-access))))
@@ -301,7 +301,7 @@ Returns the buffer if it does exist."
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point.
 Returns nil when point is on the header."
-  (-when-let (b (treemacs--current-button))
+  (-when-let (b (treemacs-current-button))
     (button-get b prop)))
 
 (defsubst treemacs--is-path-in-dir? (path dir)
@@ -354,7 +354,7 @@ and special names like this."
   "Reset the cache of open dirs."
   (setq treemacs--open-dirs-cache nil))
 
-(defsubst treemacs--is-treemacs-window? (window)
+(defsubst treemacs-is-treemacs-window?? (window)
   "Return t when WINDOW is showing a treemacs buffer."
   (declare (side-effect-free t))
   (->> window window-buffer buffer-name (s-starts-with? treemacs--buffer-name-prefix)))
@@ -408,7 +408,7 @@ Will also perform cleanup if the buffer is dead."
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
 
-(defun treemacs--is-treemacs-window-selected? ()
+(defun treemacs-is-treemacs-window-selected? ()
   "Return t when the treemacs window is selected."
   (s-starts-with? treemacs--buffer-name-prefix (buffer-name)))
 
@@ -660,7 +660,7 @@ Use PROMPT to ask for a location and CREATION-FUNC to create a new dir/file.
 PROMPT: String
 CREATION-FUNC: `f-touch' | `f-mkdir'"
   (interactive)
-  (let ((btn (treemacs--current-button))
+  (let ((btn (treemacs-current-button))
         (curr-path)
         (location)
         (name))
@@ -767,7 +767,7 @@ Will return t when FILE
 Valid states are 'visible, 'exists and 'none."
   (cond
    ((treemacs--is-visible?)    'visible)
-   ((treemacs--buffer-exists?) 'exists)
+   ((treemacs-buffer-exists??) 'exists)
    (t 'none)))
 
 (defun treemacs--remove-framelocal-buffer (&optional frame)
@@ -879,7 +879,7 @@ filewatch mode can refresh multiple buffers at once."
   (treemacs--without-following
    (with-current-buffer buffer
      (let* ((curr-line    (line-number-at-pos))
-            (curr-btn     (treemacs--current-button))
+            (curr-btn     (treemacs-current-button))
             (curr-state   (when curr-btn (button-get curr-btn 'state)))
             (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
             (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))

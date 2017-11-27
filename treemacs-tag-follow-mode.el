@@ -175,7 +175,7 @@ BUFFER-FILE: Path"
          (btn))
     (when tag-path
       (with-selected-window treemacs-window
-        (setq btn (treemacs--current-button))
+        (setq btn (treemacs-current-button))
         ;; current button might not be there when point is on the header
         (if btn
             (progn
@@ -186,10 +186,10 @@ BUFFER-FILE: Path"
               ;; when that doesnt work move manually to the correct file
               (unless (string-equal buffer-file (button-get btn 'abs-path))
                 (treemacs--do-follow buffer-file)
-                (setq btn (treemacs--current-button))))
+                (setq btn (treemacs-current-button))))
           ;; also move manually when point is on the header
           (treemacs--do-follow buffer-file)
-          (setq btn (treemacs--current-button)))
+          (setq btn (treemacs-current-button)))
         (goto-char (button-start btn))
         (unless (eq 'file-node-closed (button-get btn 'state))
           (treemacs--close-tags-for-file btn))

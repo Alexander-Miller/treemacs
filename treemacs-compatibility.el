@@ -32,7 +32,7 @@
 
   (defun treemacs--window-number-ten ()
     (when (and (eq (selected-window) (frame-first-window))
-               (treemacs--is-treemacs-window-selected?)
+               (treemacs-is-treemacs-window-selected?)
                (boundp 'winum-scope)
                (eq winum-scope 'frame-local))
       treemacs-winum-number))
@@ -54,7 +54,7 @@
 (with-eval-after-load 'persp-mode
   (defun treemacs--remove-treemacs-window-in-new-frames (persp-activated-for)
     (when (or t(eq persp-activated-for 'frame))
-      (-when-let (w (--first (treemacs--is-treemacs-window? it)
+      (-when-let (w (--first (treemacs-is-treemacs-window? it)
                              (window-list)))
         (unless (assoc (selected-frame) treemacs--buffer-access)
           (delete-window w)))))

@@ -85,7 +85,7 @@ not visible."
                   (f-exists? current-file))
          (with-current-buffer (window-buffer treemacs-window)
            (-let- [(root (treemacs--current-root))
-                   (selected-file (-if-let- [current-btn (treemacs--current-button)]
+                   (selected-file (-if-let- [current-btn (treemacs-current-button)]
                                       (treemacs--nearest-path current-btn)
                                     (treemacs--current-root)))]
              (when (and (not (equal selected-file current-file))

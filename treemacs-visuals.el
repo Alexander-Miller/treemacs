@@ -111,7 +111,7 @@ argument."
   "Highlight current icon, unhighlight `treemacs--last-highlight'."
   (when (eq major-mode 'treemacs-mode)
     (condition-case e
-        (-when-let (btn (treemacs--current-button))
+        (-when-let (btn (treemacs-current-button))
           (let* ((pos (- (button-start btn) 2))
                  (img-selected (get-text-property pos 'img-selected)))
             (treemacs--with-writable-buffer
