@@ -103,7 +103,7 @@ An event counts as relevant when
     (not (or (equal action 'stopped)
              (and (equal action 'changed)
                   (not treemacs-git-integration))
-             (--any? (funcall it (f-filename dir)) treemacs-ignored-file-predicates)))))
+             (--any? (funcall it (f-filename dir) dir) treemacs-ignored-file-predicates)))))
 
 (defun treemacs--filewatch-callback (event)
   "Add EVENT to the list of file change events.

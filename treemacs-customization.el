@@ -48,8 +48,16 @@ perpetually use its simple string icon fallack.")
   :prefix "treemacs-")
 
 (defcustom treemacs-indentation 2
-  "The number of spaces each level is indented in the tree."
+  "The number of spaces each level is indented in the file tree.
+Indentation is created by repeating `treemacs-indentation-string'."
   :type 'integer
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-indentation-string " "
+  "The string that is for indentation in the file tree.
+Indentation is created by repeating this string `treemacs-indentation' many
+times."
+  :type 'string
   :group 'treemacs-configuration)
 
 (defcustom treemacs-width 35
@@ -84,7 +92,7 @@ To keep the alist clean changes should not be made directly, but with
   :group 'treemacs-configuration)
 
 (defcustom treemacs-follow-after-init nil
-  "When t always run `treemacs-follow' after building a treemacs-buffer.
+  "When t always find and focus the current file when treemacs is built.
 
 A treemacs buffer is built when after calling `treemacs-init' or
 `treemacs-projectle-init'. This will ignore `treemacs-follow-mode'."
@@ -178,9 +186,9 @@ treemacs views containing hundreds or even thousands of nodes."
 Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles)
 whose presence is controlled by `treemacs-show-hidden-files').
 
-Each predicate is a function that takes the filename as its only argument and
-returns t if the file should be ignored and nil otherwise. A file whose name
-returns t for *any* function in this list counts as ignored.
+Each predicate is a function that takes 2 arguments: a files's name and its
+absolute path and returns t if the file should be ignored and nil otherwise. A
+file which returns t for *any* function in this list counts as ignored.
 
 By default this list contains `treemacs--std-ignore-file-predicate' which
 filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and
@@ -278,6 +286,46 @@ Set to nil to disable the static number assignment."
 (defcustom treemacs-no-png-images nil
   "When non-nil treemacs will use TUI string icons even when running in a GUI."
   :type 'boolean
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-pre-refresh-hook nil
+  "Hooks to run right before the refresh process kicks off.
+During the refresh process the entire treemacs buffer is torn down and repainted
+in full. This hook runs *before* that happens. It runs with treemacs as the
+`current-buffer' receives as its arguments all the information that treemacs
+collects for its refresh process:
+ * The current view's root directory.
+ * The current line number.
+ * The current button. Might be nil if point is on the header line.
+ * The current button's state. See also `treemacs-valid-button-states'. Is nil
+   if the current button is nil.
+ * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
+   point is on the header.
+ * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
+   nil if the current button is nil.
+ * The start position of the current window, as given by `window-start'."
+  :type 'hook
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-post-refresh-hook nil
+  "Hooks to run right before the refresh process is finished off.
+During the refresh process the entire treemacs buffer is torn down and repainted
+in full. This hook runs *after* that has happened. It runs with treemacs as the
+`current-buffer' receives as its arguments all the information that treemacs
+collects for its refresh process. Note that these values were collected at the
+start of the refresh, and may now be longer valid (for example the current
+button's position will be wrong, even if it wasn't deleted outright):
+ * The current view's root directory.
+ * The current line number.
+ * The current button. Might be nil if point was on the header line.
+ * The current button's state. See also `treemacs-valid-button-states'. Is nil
+   if the current button is nil.
+ * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
+   point was on the header.
+ * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
+   nil if the current button is nil.
+ * The start position of the current window, as given by `window-start'."
+  :type 'hook
   :group 'treemacs-configuration)
 
 (provide 'treemacs-customization)

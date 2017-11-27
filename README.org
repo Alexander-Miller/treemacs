@@ -31,6 +31,7 @@
     - [[#tag-icons][Tag Icons]]
     - [[#file-icons][File Icons]]
     - [[#gui-vs-tui][GUI vs TUI]]
+    - [[#indent-guide][Indent guide]]
 - [[#keymap][Keymap]]
   - [[#unbound-functions][Unbound functions]]
   - [[#default-keymap][Default keymap]]
@@ -154,7 +155,7 @@ limits. The check for the change happens with treemacs' functions which build or
 ** Tag View
 Treemacs is able to display not only the file system, but also tags found in individual files. The tags list is sourced
 using emacs' builtin imenu functionality, so all file types that emacs can generate an imenu index for are supported.
-Imenu cachses its result, so to avoid stale tag lists setting ~imenu-auto-rescan~ to t is recommended. Tags generated
+Imenu caches its result, so to avoid stale tag lists setting ~imenu-auto-rescan~ to t is recommended. Tags generated
 with the help of ~semantic-mode~ are likewise supported.
 
 Tag view support is in an early beta release stage, and so (other than the increased likelihood of bugs), it's currently
@@ -198,7 +199,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
             treemacs-width                      35
             treemacs-indentation                2
             treemacs-git-integration            t
-            treemacs-collapse-dirs              3
+            treemacs-collapse-dirs              (if (executable-find "python") 3 0)
             treemacs-silent-refresh             nil
             treemacs-change-root-without-asking nil
             treemacs-sorting                    'alphabetic-desc
@@ -218,7 +219,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
           ("M-m fT"     . treemacs)
           ("M-m fB"     . treemacs-bookmark)
           ("M-m f C-t"  . treemacs-find-file)
-          ("M-m f M-t") . treemacs-find-tag))
+          ("M-m f M-t"  . treemacs-find-tag)))
   (use-package treemacs-projectile
     :defer t
     :ensure t
@@ -236,6 +237,7 @@ Treemacs offers the following configuration options:
 | Variable                            | Default                                                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |-------------------------------------+---------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | treemacs-indentation                | 2                                                                               | The number of spaces each level is indented in the tree.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| treemacs-indentation-string         | " "                                                                             | The string that is used to create indentation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-width                      | 35                                                                              | Width of the treemacs window.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | treemacs-show-hidden-files          | t                                                                               | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | treemacs-header-function            | treemacs--create-header                                                         | The function which is used to create the header string for treemacs buffers. Default options are ~treemacs--create-header~ and ~treemacs--create-header-projectile~. Any function that takes the current root path and returns the header string may be used.                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -244,7 +246,7 @@ Treemacs offers the following configuration options:
 | treemacs-change-root-without-asking | nil                                                                             | When t don't ask to change the root when calling ~treemacs-find-file~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | treemacs-never-persist              | nil                                                                             | When t treemacs will never persist its state.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | treemacs-sorting                    | alphabetic-asc                                                                  | Indicates how treemacs will sort its files and directories. Files will still always be shown after directories. Valid values are ~alphabetic-asc~, ~alphabetic-desc~, ~size-asc~, ~size-desc~, ~mod-time-asc~, ~mod-time-desc~.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| treemacs-ignored-file-predicates    | (treemacs--std-ignore-file-predicate)                                           | List of predicates to test for files ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles) whose presence is controlled by ~treemacs-show-hidden-files~). Each predicate is a function that takes the filename as its only argument and returns t if the file should be ignored and nil otherwise. A file whose name returns t for *any* function in this list counts as ignored. By default this list contains ~treemacs--std-ignore-file-predicate~ which filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and therefore should not be directly overwritten, but added to and removed from instead.               |
+| treemacs-ignored-file-predicates    | (treemacs--std-ignore-file-predicate)                                           | List of predicates to test for files ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles) whose presence is controlled by ~treemacs-show-hidden-files~). Each predicate is a function that takes a file's name and absolute path as its arguments and returns t if the file should be ignored and nil otherwise. A file whose name returns t for *any* function in this list counts as ignored. By default this list contains ~treemacs--std-ignore-file-predicate~ which filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and therefore should not be directly overwritten, but added to and removed from instead. |
 | treemacs-file-event-delay           | 5000                                                                            | How long (in milliseconds) to collect file events before refreshing. When treemacs receives a file change notification it doesn't immediately refresh and instead waits ~treemacs--file-event-delay~ milliseconds to collect further file change events. This is done so as to avoid refreshing multiple times in a short time. See also ~treemacs-filewatch-mode~.                                                                                                                                                                                                                                                                                                                    |
 | treemacs-goto-tag-strategy          | refetch-index                                                                   | Indicates how to move to a tag when its buffer is dead. The tags in the treemacs view store their position as markers pointing to a buffer. If that buffer is killed, or has never really been open, as treemacs kills buffer after fetching their tags if they did no exist before, the stored positions become stale, and treemacs needs to use a different method to move to that tag. This variable sets that method. Its possible values are: ~refetch-index~: Call up the file's imenu index again and use its information to jump. ~call-xref~: Call ~xref-find-definitions~ to find the tag. ~issue-warning~: Just issue a warning that the tag's position pointer is invalid. |
 | treemacs-default-actions            | Open/close dirs & tag sections, ~treemacs-visit-node-no-split~ for files & tags | Defines the behaviour of ~treemacs-visit-node-default-action~. Each alist element maps from a button state to the function that should be used for that state. The list of all possible button states is defined in ~treemacs-valid-button-states~. Possible values are all treemacs-visit-node-* functions as well as ~treemacs-push-button~ for simple open/close actions. To keep the alist clean changes should not be made directly, but with ~treemacs-define-default-action~.                                                                                                                                                                                                   |
@@ -354,6 +356,9 @@ extensions to their icons. Note that treemacs has a very loose definition of wha
 either everything past the last period, or just the file's full name if there is no period. This makes it possible to
 match file names like '.gitignore' and 'Makefile'. Extensions are not case-sensitive and will be downcased.
 
+There is also the special case of ~treemacs-icon-fallback~, which is used when a file extension has no specific icon
+assigned to it. It takes the value ~treemacs-icon-text~ in a GUI and ~treemacs-icon-fallback-text~ in a TUI.
+
 While it is possible to directly push a mapping to ~treemacs-icons-hash~ treemacs also offers the utility function
 ~treemacs-define-custom-icon~. It takes as its arguments an icon (a string) and as ~&rest~ a list of file extension to
 use the icon for. Already present icons for the given extensions will be overwritten.
@@ -368,6 +373,16 @@ Using it would look like this:
 
 *** GUI vs TUI
 It is possible to force treemacs to use the simple TUI icons in GUI mode by setting ~treemacs-no-png-images~ to t.
+*** Indent guide
+Not really part of the icons, but a useful visual feature nonetheless:
+An indent guide like effect can be created by selecting appropriate values for ~treemacs-indentation~ and
+~treemacs-indentation-string~:
+
+#+BEGIN_SRC emacs-lisp
+  (setq treemacs-indentation-string (propertize " ⫶ " 'face 'font-lock-comment-face)
+        treemacs-indentation 1)
+#+END_SRC
+
 * Keymap
 ** Unbound functions
 These functions are not bound to any keys by default. It's left up to users to find the most convenient key binds.
