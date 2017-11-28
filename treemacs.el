@@ -100,7 +100,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
       (let* ((bookmark (completing-read "Bookmark: " bookmarks))
              (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
              (dir (if (f-directory? location) location (f-dirname location))))
-        (if (treemacs-buffer-exists??)
+        (if (treemacs-buffer-exists?)
             (progn
               (if (treemacs--is-visible?)
                   (treemacs--select-visible)
@@ -117,7 +117,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
 (defun treemacs-refresh ()
   "Refresh and rebuild treemacs buffer."
   (interactive)
-  (-if-let (b (treemacs-buffer-exists??))
+  (-if-let (b (treemacs-buffer-exists?))
       (treemacs--do-refresh b)
     (treemacs--log "There is nothing to refresh.")))
 

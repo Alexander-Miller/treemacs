@@ -244,7 +244,7 @@ Will return the treemacs window if true."
                      (buffer-name)
                      (s-starts-with? treemacs--buffer-name-prefix)))))
 
-(defsubst treemacs-buffer-exists?? ()
+(defsubst treemacs-buffer-exists? ()
   "Indicates whether this frame's treemacs buffer exists.
 Returns the buffer if it does exist."
   (let ((b (cdr (assoc (selected-frame) treemacs--buffer-access))))
@@ -355,7 +355,7 @@ and special names like this."
   "Reset the cache of open dirs."
   (setq treemacs--open-dirs-cache nil))
 
-(defsubst treemacs-is-treemacs-window?? (window)
+(defsubst treemacs-is-treemacs-window? (window)
   "Return t when WINDOW is showing a treemacs buffer."
   (declare (side-effect-free t))
   (->> window window-buffer buffer-name (s-starts-with? treemacs--buffer-name-prefix)))
@@ -768,7 +768,7 @@ Will return t when FILE
 Valid states are 'visible, 'exists and 'none."
   (cond
    ((treemacs--is-visible?)    'visible)
-   ((treemacs-buffer-exists??) 'exists)
+   ((treemacs-buffer-exists?) 'exists)
    (t 'none)))
 
 (defun treemacs--remove-framelocal-buffer (&optional frame)

@@ -187,7 +187,7 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
 (defun treemacs--stop-watch-all-in-scope ()
   "Called when a treemacs buffer is torn down/killed.
 Will stop file watch on every path watched by this buffer."
-  (let ((buffer (treemacs-buffer-exists??))
+  (let ((buffer (treemacs-buffer-exists?))
         (to-remove))
     (maphash
      (lambda (watched-path watch-info)

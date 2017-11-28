@@ -972,10 +972,10 @@
               (progn
                 (switch-to-buffer test-buffer)
                 (delete-other-windows)
-                (-when-let (b (treemacs-buffer-exists??)) (kill-buffer b))
+                (-when-let (b (treemacs-buffer-exists?)) (kill-buffer b))
                 (call-interactively 'treemacs)
 
-                (should (treemacs-buffer-exists??))
+                (should (treemacs-buffer-exists?))
 
                 (treemacs--goto-button-at (f-join default-directory "test/testfolder1/testfolder2"))
                 (should (equal "test/testfolder1/testfolder2"
