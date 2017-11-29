@@ -520,6 +520,7 @@ Optionally make the git request RECURSIVE."
   "Build the file tree starting at the given ROOT."
   (treemacs--forget-last-highlight)
   (treemacs--stop-watch-all-in-scope)
+  (treemacs--cancel-refresh-timer)
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
