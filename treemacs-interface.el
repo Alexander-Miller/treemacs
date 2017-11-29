@@ -122,21 +122,6 @@ Do nothing for other node types."
        (treemacs--log "Button in current line is not a directory.")])
     (treemacs--log "There is no directory to move into here.")))
 
-
-(defun treemacs-node-buffer-and-position (&optional arg)
-  "Return source buffer or list of buffer and position for the current node for future display.
-Stay in the selected window and ignore any prefix argument ARG."
-  (interactive "P")
-  (let ((treemacs--no-messages t))
-    (treemacs--execute-button-action
-     :file-action (find-file-noselect (treemacs--safe-button-get btn 'abs-path))
-     :dir-action (find-file-noselect (treemacs--safe-button-get btn 'abs-path))
-     :tag-action (treemacs--tag-noselect btn)
-     :window (selected-window)
-     :save-window t
-     :ensure-window-split nil
-     :no-match-explanation "")))
-
 (defun treemacs-visit-node-vertical-split (&optional arg)
   "Open current file or tag by vertically splitting `next-window'.
 Stay in current window with a prefix argument ARG."

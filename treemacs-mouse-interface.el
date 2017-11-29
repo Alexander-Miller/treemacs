@@ -17,16 +17,21 @@
 
 ;;; Commentary:
 ;;; Functions relating to using the mouse in treemacs.
-;;; Empty for now, will be filled in https://github.com/Alexander-Miller/treemacs/pull/107
 
 ;;; Code:
 
+(require 'xref)
+(require 'treemacs-macros)
+(require 'treemacs-impl)
+(require 'treemacs-tags)
+
 ;;;###autoload
-(defun treemacs-node-buffer-and-position (&optional arg)
-  "Return source buffer or list of buffer and position for the current node for future display.
-Stay in the selected window and ignore any prefix argument ARG."
+(defun treemacs-node-buffer-and-position (&optional _)
+  "Return source buffer or list of buffer and position for the current node.
+This information can be used for future display. Stay in the selected window and
+ignore any prefix argument."
   (interactive "P")
-  (let ((treemacs--no-messages t))
+  (treemacs--without-messages
     (treemacs--execute-button-action
      :file-action (find-file-noselect (treemacs--safe-button-get btn 'abs-path))
      :dir-action (find-file-noselect (treemacs--safe-button-get btn 'abs-path))
@@ -60,37 +65,40 @@ Stay in the selected window and ignore any prefix argument ARG."
 
 (defun treemacs--tag-noselect (btn)
   "Return list of tag source buffer and position for BTN for future display."
-  (cl-flet ((xref-definition (identifier)
-	     "Return the first definition of string IDENTIFIER."
-	     (car (xref-backend-definitions (xref-find-backend) identifier)))
-	    (xref-item-buffer (item)
-	      "Return the buffer in which xref ITEM is defined."
-	      (marker-buffer (save-excursion (xref-location-marker (xref-item-location item)))))
-	    (xref-item-position (item)
-	      "Return the buffer position where xref ITEM is defined."
-	      (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
+  (cl-flet ((xref-definition
+             (identifier)
+             "Return the first definition of string IDENTIFIER."
+             (car (xref-backend-definitions (xref-find-backend) identifier)))
+            (xref-item-buffer
+             (item)
+             "Return the buffer in which xref ITEM is defined."
+             (marker-buffer (save-excursion (xref-location-marker (xref-item-location item)))))
+            (xref-item-position
+             (item)
+             "Return the buffer position where xref ITEM is defined."
+             (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
     (-let [(tag-buf tag-pos)
            (treemacs--with-button-buffer btn
-					 (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
+             (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
       (if tag-buf
-	  (list tag-buf tag-pos)
-	(-pcase treemacs-goto-tag-strategy
-		[`refetch-index
-		 (let (file tag-path)
-		   (with-current-buffer (marker-buffer btn)
-		     (setq file (treemacs--nearest-path btn)
-			   tag-path (treemacs--tags-path-of btn)))
-		   (treemacs--imenu-tag-noselect file tag-path))]
-		[`call-xref
-		 (let ((xref (xref-definition
-			      (treemacs--with-button-buffer btn
-							    (treemacs--get-label-of btn)))))
-		   (when xref
-		     (list (xref-item-buffer xref) (xref-item-position xref))))]
-		[`issue-warning
-		 (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-				(propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
-		[_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)])))))
+          (list tag-buf tag-pos)
+        (-pcase treemacs-goto-tag-strategy
+          [`refetch-index
+           (let (file tag-path)
+             (with-current-buffer (marker-buffer btn)
+               (setq file (treemacs--nearest-path btn)
+                     tag-path (treemacs--tags-path-of btn)))
+             (treemacs--imenu-tag-noselect file tag-path))]
+          [`call-xref
+           (let ((xref (xref-definition
+                        (treemacs--with-button-buffer btn
+                          (treemacs--get-label-of btn)))))
+             (when xref
+               (list (xref-item-buffer xref) (xref-item-position xref))))]
+          [`issue-warning
+           (treemacs--log "Tag '%s' is located in a buffer that does not exist."
+                          (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
+          [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)])))))
 
 (provide 'treemacs-mouse-interface)
 
