@@ -502,6 +502,8 @@ Optionally make the git request RECURSIVE."
     ;; than desktop save mode) treemacs will attempt to restore the previous session
     (unless (eq major-mode 'treemacs-mode)
       (treemacs-mode))
+    ;; enable or disable linum-mode
+    (linum-mode (if treemacs-enable-linum-mode nil -1))
     ;; create buffer-local hashes that need to be initialized
     (with-no-warnings (setq treemacs--tags-cache (make-hash-table :test #'equal :size 100)))
     (treemacs--check-window-system)

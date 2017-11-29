@@ -328,6 +328,11 @@ button's position will be wrong, even if it wasn't deleted outright):
   :type 'hook
   :group 'treemacs-configuration)
 
+(defcustom treemacs-enable-linum-mode nil
+  "Enable `linum-mode' in the treemacs buffer if this is set to t, disable it otherwise."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here
