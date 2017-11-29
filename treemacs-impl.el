@@ -117,7 +117,9 @@ Not used directly, but as part of `treemacs--without-messages'.")
   "Keeps track of whether the width of the treemacs window is locked.")
 
 (defvar treemacs--defaults-icons nil
-  "Stores the default values of the directory and tag icons. TODO")
+  "Stores the default values of the directory and tag icons.
+Maps icons' names as symbols to their values, so that they can be queried
+via `assq'.")
 
 ;;;;;;;;;;;;
 ;; Macros ;;
