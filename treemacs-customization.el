@@ -197,6 +197,29 @@ instead."
   :type 'list
   :group 'treemacs-configuration)
 
+(defcustom treemacs-pre-file-insert-predicates nil
+  "List of predicates to test for files that should not be shown.
+The difference between this and `treemacs-ignored-file-predicates' is that the
+functions in this list will be called on files just before they would be
+rendered, when the files' git status information is now available. This for
+example allows to make files ignored by git invisible.
+As such the functions in this list are expected to have a different signture:
+They must take two arguments - a file's absolute path and a hashtable that maps
+file to their git status. The files' paths are the table's keys, its values are
+characters (and not strings) indicating the file's git condition. The chas map
+as follows:
+ * M - file is modified
+ * U - file is in conflict
+ * ? - file is untracked
+ * ! - file is ignored
+ * A - file is added to index
+ * other - file is unchanged
+Otherwise the behaviour is the same as `treemacs-ignored-file-predicates', in
+that any one function returning t for a file means that this file will not
+be rendered."
+  :type 'list
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-file-event-delay 5000
   "How long (in milliseconds) to collect file events before refreshing.
 When treemacs receives a file change notification it doesn't immediately refresh

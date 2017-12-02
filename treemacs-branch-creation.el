@@ -205,6 +205,10 @@ to PARENT."
        :node-name node
        :node-action (treemacs--insert-dir-node node dir-prefix parent depth))
       (setq git-info (treemacs--parse-git-status git-process))
+      (when treemacs-pre-file-insert-predicates
+        (setq files (-reject
+                     (lambda (file) (--any? (funcall it file git-info) treemacs-pre-file-insert-predicates))
+                     files)))
       (treemacs--create-buttons
        :nodes files
        :depth depth
