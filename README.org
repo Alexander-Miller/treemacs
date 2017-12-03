@@ -502,6 +502,11 @@ Aside from this there are the following known incompatibilities:
      (set-face-attribute 'hl-line nil :background "#333333")
    #+END_SRC
 
+   If you just want to disable the warnings you can do so by defining the varialbe ~treemacs-no-load-time-warnings~. Its exact
+   value is irrelevant, all that matters is that it exists at all. Since the warnings are issues when treemacs is first being
+   loaded the variable must be defined *before* treemacs is initialized. This is best achieved by adding the line
+   ~(defvar treemacs-no-load-time-warnings t)~ to treemacs use-package's ~:init~ block.
+
 * Working With The Code Base
 
 If you want to delve into the treemacs' code base, check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.

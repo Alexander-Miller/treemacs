@@ -53,7 +53,8 @@ after a theme change.")
   (let ((bg (face-attribute 'default :background nil t)))
     (if (eq 'unspecified bg)
         (prog1 "#2d2d31"
-          (message "[Treemacs] Warning: coudn't find default background color, falling back on #2d2d31."))
+          (unless (boundp 'treemacs-no-load-time-warnings)
+            (message "[Treemacs] Warning: coudn't find default background color, falling back on #2d2d31.")))
       bg))
   "Background for non-selected icons.")
 
@@ -61,8 +62,9 @@ after a theme change.")
   (let ((bg (face-attribute 'hl-line :background nil t)))
     (if (eq 'unspecified bg)
         (prog1 treemacs--not-selected-icon-background
-          (message "[Treemacs] Warning: couldn't find hl-line-mode's background color, falling back on %s."
-                   treemacs--not-selected-icon-background))
+          (unless (boundp 'treemacs-no-load-time-warnings)
+            (message "[Treemacs] Warning: couldn't find hl-line-mode's background color, falling back on %s."
+                     treemacs--not-selected-icon-background)))
       bg))
   "Background for selected icons.")
 
