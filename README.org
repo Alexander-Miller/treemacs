@@ -30,6 +30,7 @@
     - [[#directory-icons][Directory Icons]]
     - [[#tag-icons][Tag Icons]]
     - [[#file-icons][File Icons]]
+    - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
     - [[#gui-vs-tui][GUI vs TUI]]
     - [[#indent-guide][Indent guide]]
 - [[#keymap][Keymap]]
@@ -371,6 +372,25 @@ Using it would look like this:
   (with-eval-after-load "treemacs"
     (defvar treemacs-custom-html-icon (all-the-icons-icon-for-file "name.html"))
     (treemacs-define-custom-icon treemacs-custom-html-icon "html" "htm"))
+#+END_SRC
+
+*** Icons according to ~auto-mode-alist~
+
+For some file extensions, like ".cc" or ".hh", it is not immediately obvious which major mode will open these files, and
+thus which icon they should be assigned. Treemacs offers the option that automate this decision based on ~auto-mode-alist~.
+You can use the function ~treemacs-map-icons-with-auto-mode-alist~ to change the assigned icons for a list of file extensions
+based on the major mode the icons are mapped to in ~auto-mode-alist~.
+
+~treemacs-map-icons-with-auto-mode-alist~ takes 2 arguments: first a list of file extensions, then an alist that decides
+which icon should be used for which mapped major mode. For example the code to decide the icons for ".hh" and ".cc" files
+with ~auto-mode-alist~ would look like this:
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "treemacs"
+    (treemacs-map-icons-with-auto-mode-alist
+      '(".cc" ".hh")
+      '((c-mode . treemacs-icon-c)
+        (c++-mode . treemacs-icon-cpp))))
 #+END_SRC
 
 *** GUI vs TUI

@@ -232,6 +232,20 @@ inserted into `treemacs-icons-hash'."
   (treemacs--create-icons)
   (clear-image-cache))
 
+(defun treemacs-map-icons-with-auto-mode-alist (extensions mode-icon-alist)
+  "Remaps icons for EXTENSIONS according to `auto-mode-alist'.
+EXTENSIONS should be a list of file extensions such that they match the regex
+stored in `auto-mode-alist', for example '\(\".cc\"\).
+MODE-ICON-ALIST is an alist that maps which mode from `auto-mode-alist' should
+be assigned which treemacs icon, for exmaple
+'\(\(c-mode . treemacs-icon-c\)
+  \(c++-mode . treemacs-icon-cpp\)\)"
+  (dolist (extension extensions)
+    (-when-let* ((mode (cdr (--first (s-matches? (car it) extension) auto-mode-alist)))
+                 (icon (cdr (assq mode mode-icon-alist))))
+      (treemacs--log "Map %s to %s" extension (symbol-name icon))
+      (puthash (substring extension 1) (symbol-value icon) treemacs-icons-hash))))
+
 (provide 'treemacs-visuals)
 
 ;;; treemacs-visuals.el ends here
