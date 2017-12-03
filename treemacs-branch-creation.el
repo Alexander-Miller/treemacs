@@ -30,7 +30,11 @@
 (require 'treemacs-async)
 (require 'treemacs-customization)
 
-(declare-function treemacs--start-watching "treemacs-filewatch-mode")
+(treemacs--import-functions-from "treemacs-filewatch-mode"
+  treemacs--start-watching
+  treemacs--stop-watching)
+
+(declare-function treemacs--remove-all-tags-under-path-from-cache "treemacs-tags")
 
 (defsubst treemacs--button-at (pos)
   "Return the button at position POS in the current buffer, or nil.
@@ -260,6 +264,19 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
             (goto-char (button-start it))
             (treemacs--open-dir-node
              it :git-future git-future :recursive t)))))))
+
+(defun treemacs--close-dir-node (btn recursive)
+  "Close node given by BTN.
+Remove all open dir and tag entries under BTN when RECURSIVE."
+  (treemacs--button-close
+   :button btn
+   :new-state 'dir-node-closed
+   :new-icon (with-no-warnings treemacs-icon-closed)
+   :post-close-action
+   (let ((path (button-get btn 'abs-path)))
+     (treemacs--stop-watching path)
+     (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
+     (treemacs--clear-from-cache btn recursive))))
 
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.

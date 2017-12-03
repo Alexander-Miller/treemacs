@@ -41,39 +41,31 @@
   treemacs--close-tags-for-file
   treemacs--open-tag-node
   treemacs--close-tag-node
-  treemacs--close-tag-node
   treemacs--goto-tag
-  treemacs--remove-all-tags-under-path-from-cache)
+  treemacs--tags-path-of
+  treemacs--goto-tag-button-at)
 
 (treemacs--import-functions-from "treemacs"
-  treemacs-refresh
-  treemacs-visit-node-vertical-split)
+  treemacs-refresh)
 
 (treemacs--import-functions-from "treemacs-branch-creation"
-  treemacs--button-open
-  treemacs--button-close
   treemacs--check-window-system
   treemacs--open-dir-node
+  treemacs--close-dir-node
   treemacs--create-branch)
 
 (treemacs--import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
-  treemacs--stop-watching
   treemacs--stop-watch-all-in-scope
   treemacs--cancel-refresh-timer)
 
 (treemacs--import-functions-from "treemacs-follow-mode"
   treemacs--follow
-  treemacs--do-follow
-  treemacs--without-following)
+  treemacs--do-follow)
 
 (treemacs--import-functions-from "treemacs-visuals"
   treemacs--tear-down-icon-highlight
   treemacs--forget-last-highlight)
-
-(treemacs--import-functions-from "treemacs-tags"
-  treemacs--tags-path-of
-  treemacs--goto-tag-button-at)
 
 (treemacs--import-functions-from "treemacs-async"
   treemacs--git-status-process
@@ -123,69 +115,6 @@ Not used directly, but as part of `treemacs--without-messages'.")
   "Stores the default values of the directory and tag icons.
 Maps icons' names as symbols to their values, so that they can be queried
 via `assq'.")
-
-;;;;;;;;;;;;
-;; Macros ;;
-;;;;;;;;;;;;
-
-(defmacro treemacs--defvar-with-default (var val)
-  "Define a VAR with value VAL.
-Remember the value in `treemacs--defaults-icons'."
-  `(progn
-     (defvar ,var ,val)
-     (push (cons ',var ,val) treemacs--defaults-icons)))
-
-(cl-defmacro treemacs--execute-button-action
-    (&key save-window ensure-window-split split-function window dir-action file-action tag-action no-match-explanation)
-  "Infrastructure macro for setting up actions on different button states.
-Fetches the currently selected button and verifies it's in the correct state
-based on the given state actions.
-If it isn't it will log NO-MATCH-EXPLANATION, if it is it selects WINDOW (or
-`next-window' if none is given) and splits it with SPLIT-FUNCTION if given.
-DIR-ACTION, FILE-ACTION, and TAG-ACTION are inserted into a `pcase' statement
-matching the buttons state.
-If ENSURE-WINDOW-SPLIT is t treemacs will vertically split the window if
-treemacs is the only window to make sure a buffer is opened next to it, not
-under or below it."
-  (let ((valid-states (list)))
-    (when dir-action
-      (push 'dir-node-open valid-states)
-      (push 'dir-node-closed valid-states))
-    (when file-action
-      (push 'file-node-open valid-states)
-      (push 'file-node-closed valid-states))
-    (when tag-action
-      (push 'tag-node valid-states))
-    `(-when-let (btn (treemacs-current-button))
-       (treemacs--without-following
-        (let* ((state (button-get btn 'state))
-               (current-window (selected-window)))
-          (if (not (memq state ',valid-states))
-              (treemacs--log "%s" ,no-match-explanation)
-            (progn
-              ,@(if ensure-window-split
-                    `((when (one-window-p)
-                        (save-selected-window
-                          (split-window nil nil (if (eq 'left treemacs-position) 'right 'left))))))
-              (select-window (or ,window (next-window (selected-window) nil nil)))
-              ,@(if split-function
-                    `((funcall ,split-function)
-                      (other-window 1)))
-	      ;; Return the result of the action
-              (prog1 (pcase state
-                       ,@(when dir-action
-			   `(((or `dir-node-open `dir-node-closed)
-			      ,dir-action)))
-                       ,@(when file-action
-			   `(((or `file-node-open `file-node-closed)
-			      ,file-action)))
-                       ,@(when tag-action
-			   `((`tag-node
-			      ,tag-action)))
-                       (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
-				 state ',valid-states)))
-		(when ,save-window
-                  (select-window current-window))))))))))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
@@ -549,7 +478,7 @@ buffer."
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
   (pcase (button-get btn 'state)
-    (`dir-node-open    (treemacs--close-node btn recursive))
+    (`dir-node-open    (treemacs--close-dir-node btn recursive))
     (`dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
     (`file-node-open   (treemacs--close-tags-for-file btn recursive))
     (`file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
@@ -570,19 +499,6 @@ Optionally do so in a RECURSIVE fashion."
       (`tag-node-closed  (treemacs--open-tag-node btn :no-add t))
       (other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
                                 (button-get btn 'abs-path) other)))))
-
-(defun treemacs--close-node (btn recursive)
-  "Close node given by BTN.
-Remove all open dir and tag entries under BTN when RECURSIVE."
-  (treemacs--button-close
-   :button btn
-   :new-state 'dir-node-closed
-   :new-icon (with-no-warnings treemacs-icon-closed)
-   :post-close-action
-   (let ((path (button-get btn 'abs-path)))
-     (treemacs--stop-watching path)
-     (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
-     (treemacs--clear-from-cache btn recursive))))
 
 (defun treemacs--reopen-at (path)
   "Reopen dirs below PATH."
