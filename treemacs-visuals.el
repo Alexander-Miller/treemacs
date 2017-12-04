@@ -53,7 +53,8 @@ after a theme change.")
   (let ((bg (face-attribute 'default :background nil t)))
     (if (eq 'unspecified bg)
         (prog1 "#2d2d31"
-          (message "[Treemacs] Warning: coudn't find default background color, falling back on #2d2d31."))
+          (unless (boundp 'treemacs-no-load-time-warnings)
+            (message "[Treemacs] Warning: coudn't find default background color, falling back on #2d2d31.")))
       bg))
   "Background for non-selected icons.")
 
@@ -61,8 +62,9 @@ after a theme change.")
   (let ((bg (face-attribute 'hl-line :background nil t)))
     (if (eq 'unspecified bg)
         (prog1 treemacs--not-selected-icon-background
-          (message "[Treemacs] Warning: couldn't find hl-line-mode's background color, falling back on %s."
-                   treemacs--not-selected-icon-background))
+          (unless (boundp 'treemacs-no-load-time-warnings)
+            (message "[Treemacs] Warning: couldn't find hl-line-mode's background color, falling back on %s."
+                     treemacs--not-selected-icon-background)))
       bg))
   "Background for selected icons.")
 
@@ -183,13 +185,13 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (treemacs--setup-icon treemacs-icon-haskell    "haskell.png"    "hs" "lhs" "cabal")
     (treemacs--setup-icon treemacs-icon-python     "python.png"     "py" "pyc")
     (treemacs--setup-icon treemacs-icon-markdown   "markdown.png"   "md")
-    (treemacs--setup-icon treemacs-icon-rust       "rust.png"       "rs" "toml")
+    (treemacs--setup-icon treemacs-icon-rust       "rust.png"       "rs")
     (treemacs--setup-icon treemacs-icon-image      "image.png"      "jpg" "jpeg" "bmp" "svg" "png" "xpm")
     (treemacs--setup-icon treemacs-icon-emacs      "emacs.png"      "el" "elc" "org")
     (treemacs--setup-icon treemacs-icon-clojure    "clojure.png"    "clj" "cljs" "cljc")
     (treemacs--setup-icon treemacs-icon-typescript "typescript.png" "ts")
     (treemacs--setup-icon treemacs-icon-css        "css.png"        "css")
-    (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "properties" "conf" "config" "ini" "xdefaults" "xresources" "terminalrc")
+    (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "properties" "conf" "config" "ini" "xdefaults" "xresources" "terminalrc" "toml")
     (treemacs--setup-icon treemacs-icon-html       "html.png"       "html" "htm")
     (treemacs--setup-icon treemacs-icon-git        "git.png"        "git" "gitignore" "gitconfig")
     (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
@@ -216,19 +218,35 @@ inserted into `treemacs-icons-hash'."
 (defun treemacs-reset-icons ()
   "Reset customized icons to their default values."
   (interactive)
-  (setq treemacs-icon-open-png             (cdr (assq 'treemacs-icon-open-png             treemacs--defaults-icons))
-        treemacs-icon-open-text            (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
-        treemacs-icon-fallback             (cdr (assq 'treemacs-icon-fallback             treemacs--defaults-icons))
-        treemacs-icon-closed-png           (cdr (assq 'treemacs-icon-closed-png           treemacs--defaults-icons))
-        treemacs-icon-closed-text          (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
-        treemacs-icon-tag-node-open-png    (cdr (assq 'treemacs-icon-tag-node-open-png    treemacs--defaults-icons))
-        treemacs-icon-tag-node-open-text   (cdr (assq 'treemacs-icon-tag-node-open-text   treemacs--defaults-icons))
-        treemacs-icon-tag-node-closed-png  (cdr (assq 'treemacs-icon-tag-node-closed-png  treemacs--defaults-icons))
-        treemacs-icon-tag-node-closed-text (cdr (assq 'treemacs-icon-tag-node-closed-text treemacs--defaults-icons))
-        treemacs-icon-tag-leaf-png         (cdr (assq 'treemacs-icon-tag-leaf-png         treemacs--defaults-icons))
-        treemacs-icon-tag-leaf-text        (cdr (assq 'treemacs-icon-tag-leaf-text        treemacs--defaults-icons)))
+  ;; no warnings since the variables are known to exist
+  (with-no-warnings
+    (setq treemacs-icon-open-png             (cdr (assq 'treemacs-icon-open-png             treemacs--defaults-icons))
+          treemacs-icon-open-text            (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
+          treemacs-icon-fallback             (cdr (assq 'treemacs-icon-fallback             treemacs--defaults-icons))
+          treemacs-icon-closed-png           (cdr (assq 'treemacs-icon-closed-png           treemacs--defaults-icons))
+          treemacs-icon-closed-text          (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
+          treemacs-icon-tag-node-open-png    (cdr (assq 'treemacs-icon-tag-node-open-png    treemacs--defaults-icons))
+          treemacs-icon-tag-node-open-text   (cdr (assq 'treemacs-icon-tag-node-open-text   treemacs--defaults-icons))
+          treemacs-icon-tag-node-closed-png  (cdr (assq 'treemacs-icon-tag-node-closed-png  treemacs--defaults-icons))
+          treemacs-icon-tag-node-closed-text (cdr (assq 'treemacs-icon-tag-node-closed-text treemacs--defaults-icons))
+          treemacs-icon-tag-leaf-png         (cdr (assq 'treemacs-icon-tag-leaf-png         treemacs--defaults-icons))
+          treemacs-icon-tag-leaf-text        (cdr (assq 'treemacs-icon-tag-leaf-text        treemacs--defaults-icons))))
   (treemacs--create-icons)
   (clear-image-cache))
+
+(defun treemacs-map-icons-with-auto-mode-alist (extensions mode-icon-alist)
+  "Remaps icons for EXTENSIONS according to `auto-mode-alist'.
+EXTENSIONS should be a list of file extensions such that they match the regex
+stored in `auto-mode-alist', for example '\(\".cc\"\).
+MODE-ICON-ALIST is an alist that maps which mode from `auto-mode-alist' should
+be assigned which treemacs icon, for exmaple
+'\(\(c-mode . treemacs-icon-c\)
+  \(c++-mode . treemacs-icon-cpp\)\)"
+  (dolist (extension extensions)
+    (-when-let* ((mode (cdr (--first (s-matches? (car it) extension) auto-mode-alist)))
+                 (icon (cdr (assq mode mode-icon-alist))))
+      (treemacs--log "Map %s to %s" extension (symbol-name icon))
+      (puthash (substring extension 1) (symbol-value icon) treemacs-icons-hash))))
 
 (provide 'treemacs-visuals)
 

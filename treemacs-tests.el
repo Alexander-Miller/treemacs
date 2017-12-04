@@ -231,40 +231,6 @@
           (parent "~/A/prefixp"))
       (should-not (treemacs--is-path-in-dir? path parent)))))
 
-;; `treemacs--get-face'
-(progn
-  (let ((treemacs-git-integration t))
-    (ert-deftest get-face::unmodified-face-for-file-without-git-info ()
-      (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" nil))))
-
-    (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
-      (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
-        (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
-
-    (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-info ()
-      (let ((git-info '(("M" . "~/B") ("??" . "~A/b"))))
-        (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
-
-    (ert-deftest get-face::unmodified-face-for-file-without-fitting-git-status ()
-      (let ((git-info '(("0" . "~/A"))))
-        (should (eq 'treemacs-git-unmodified-face (treemacs--get-face "~/A" git-info)))))
-
-    (ert-deftest get-face::modified-face-for-modified-file ()
-      (let ((git-info '(("!!" . "~/A/B/c") ("M" . "~/A"))))
-        (should (eq 'treemacs-git-modified-face (treemacs--get-face "~/A" git-info)))))
-
-    (ert-deftest get-face::untracked-face-for-untracked-file ()
-      (let ((git-info '(("!!" . "~/A/B/c") ("??" . "~/A"))))
-        (should (eq 'treemacs-git-untracked-face (treemacs--get-face "~/A" git-info)))))
-
-    (ert-deftest get-face::ignored-face-for-ignored-file ()
-      (let ((git-info '(("!!" . "~/A/B/c") ("!!" . "~/A"))))
-        (should (eq 'treemacs-git-ignored-face (treemacs--get-face "~/A" git-info)))))
-
-    (ert-deftest get-face::added-face-for-added-file ()
-      (let ((git-info '(("!!" . "~/A/B/c") ("A" . "~/A"))))
-        (should (eq 'treemacs-git-added-face (treemacs--get-face "~/A" git-info)))))))
-
 ;; `treemacs--current-visibility'
 (progn
   (ert-deftest current-visibility::visible-buffer ()
@@ -289,31 +255,6 @@
       (stub s-starts-with? => nil)
       (stub assoc => '(nil . nil))
       (should (eq 'none (treemacs--current-visibility))))))
-
-;; `treemacs--unquote'
-(progn
-  (ert-deftest unquote::does-not-fail-on-nil-string ()
-    (should (null (treemacs--unqote nil))))
-
-  (ert-deftest unquote::does-not-fail-on-empty-string ()
-    (let ((input ""))
-      (should (eq input (treemacs--unqote input)))))
-
-  (ert-deftest unquote::returns-input-unchanged-when-unquoted ()
-    (let ((input "input"))
-      (should (eq input (treemacs--unqote input)))))
-
-  (ert-deftest unquote::returns-input-unchanged-when-input-ends-with-quote ()
-    (let ((input "input\""))
-      (should (eq input (treemacs--unqote input)))))
-
-  (ert-deftest unquote::unquotes-when-input-is-quoted ()
-    (let ((input "\"input\""))
-      (should (equal "input" (treemacs--unqote input)))))
-
-  (ert-deftest unquote::unquotes-when-input-starts-with-quote ()
-    (let ((input "\"input"))
-      (should (equal "input" (treemacs--unqote input))))))
 
 ;; `treemacs--reject-ignored-files'
 (progn

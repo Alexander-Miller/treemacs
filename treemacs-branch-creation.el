@@ -30,7 +30,11 @@
 (require 'treemacs-async)
 (require 'treemacs-customization)
 
-(declare-function treemacs--start-watching "treemacs-filewatch-mode")
+(treemacs--import-functions-from "treemacs-filewatch-mode"
+  treemacs--start-watching
+  treemacs--stop-watching)
+
+(declare-function treemacs--remove-all-tags-under-path-from-cache "treemacs-tags")
 
 (defsubst treemacs--button-at (pos)
   "Return the button at position POS in the current buffer, or nil.
@@ -178,9 +182,14 @@ correct cache entries."
           (button-put b 'abs-path (nth (- (length it) 1) it))
           (button-put b 'parent-path root)
           (end-of-line)
-          (let ((beg (point)))
-            (insert (cadr it))
-            (add-text-properties beg (point) props)))))))
+          (let* ((beg (point))
+                 (dir (cadr it))
+                 (parent (file-name-directory dir)))
+            (insert dir)
+            (add-text-properties beg (point) props)
+            (add-text-properties
+             (button-start b) (+ beg (length parent))
+             '(face treemacs-directory-collapsed-face))))))))
 
 (defun treemacs--create-branch (root depth git-process collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
@@ -200,6 +209,10 @@ to PARENT."
        :node-name node
        :node-action (treemacs--insert-dir-node node dir-prefix parent depth))
       (setq git-info (treemacs--parse-git-status git-process))
+      (when treemacs-pre-file-insert-predicates
+        (setq files (-reject
+                     (lambda (file) (--any? (funcall it file git-info) treemacs-pre-file-insert-predicates))
+                     files)))
       (treemacs--create-buttons
        :nodes files
        :depth depth
@@ -251,6 +264,19 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
             (goto-char (button-start it))
             (treemacs--open-dir-node
              it :git-future git-future :recursive t)))))))
+
+(defun treemacs--close-dir-node (btn recursive)
+  "Close node given by BTN.
+Remove all open dir and tag entries under BTN when RECURSIVE."
+  (treemacs--button-close
+   :button btn
+   :new-state 'dir-node-closed
+   :new-icon (with-no-warnings treemacs-icon-closed)
+   :post-close-action
+   (let ((path (button-get btn 'abs-path)))
+     (treemacs--stop-watching path)
+     (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
+     (treemacs--clear-from-cache btn recursive))))
 
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.
