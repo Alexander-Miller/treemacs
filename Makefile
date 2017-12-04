@@ -4,10 +4,10 @@ LOAD_TREEMACS="(progn (require 'treemacs) (require 'treemacs-evil))"
 .PHONY: compile clean test
 
 clean:
-	rm -f *.elc
+	rm -f ./src/elisp/*.elc
 
 compile:
-	emacs -Q --batch -L . --eval ${ADD_ELPA} --eval ${LOAD_TREEMACS} -f batch-byte-compile ./*.el
+	emacs -Q --batch -L ./src/elisp/. --eval ${ADD_ELPA} --eval ${LOAD_TREEMACS} -f batch-byte-compile ./src/elisp/*.el
 
 test: clean compile
-	emacs -Q --batch -L . --eval ${ADD_ELPA} --eval ${LOAD_TREEMACS} -l treemacs-tests.el -f ert-run-tests-batch-and-exit
+	emacs -Q --batch -L ./src/elisp --eval ${ADD_ELPA} --eval ${LOAD_TREEMACS} -l ./src/elisp/treemacs-tests.el -f ert-run-tests-batch-and-exit

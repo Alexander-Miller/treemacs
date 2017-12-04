@@ -93,9 +93,13 @@ longer be contigious.")
 (defconst treemacs--buffer-name-prefix " *Treemacs-")
 
 (defconst treemacs-dir
-  (expand-file-name (if load-file-name
-                        (file-name-directory load-file-name)
-                      default-directory))
+  ;; we want the base package directory, not src/elisp
+  (-> (if load-file-name
+          (file-name-directory load-file-name)
+        default-directory)
+      (expand-file-name)
+      (f-parent)
+      (f-parent))
   "The directory treemacs.el is stored in.")
 
 (defvar-local treemacs--open-dirs-cache '()

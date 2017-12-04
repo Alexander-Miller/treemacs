@@ -26,7 +26,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-customization)
 
-(defvar treemacs--dirs-to-collpase.py (f-join treemacs-dir "treemacs-dirs-to-collapse.py"))
+(defvar treemacs--dirs-to-collpase.py (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py"))
 
 (defsubst treemacs--git-status-process (path &optional recursive)
   "Create a new process future to get the git status under PATH.
