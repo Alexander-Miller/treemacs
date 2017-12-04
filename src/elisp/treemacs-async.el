@@ -47,13 +47,24 @@ Optionally make the git request RECURSIVE."
             ;; need the actual git root since git status outputs paths relative to it
             ;; and the output must be valid also for files in dirs being reopened
             (let* ((git-root (vc-call-backend 'Git 'root (process-get git-future 'default-directory)))
-                   (status (->> (substring git-output 0 -1)
-                                (s-split "\0")
-                                (--map (s-split-up-to " " (s-trim it) 1)))))
-              (--each status
-                (puthash (f-join git-root (s-trim-left (cadr it)))
-                         (aref (s-trim-left (car it)) 0)
-                         git-info-hash)))))))
+                   (status-vec (->> (substring git-output 0 -1)
+                                    (s-split "\0")
+                                    (--map (s-split-up-to " " (s-trim it) 1)))))
+              (-let- [(i 0)
+                      (len (length status-vec))]
+                (while (< i len)
+                  (-let*- [(status-cons (nth i status-vec))
+                           (status (car status-cons))
+                           (path (cadr status-cons))]
+                    ;; there's a NUL after every filename, so a rename looks like
+                    ;; 'R oldnameNULnewnameNUL' which would break parsing that expects that a NUL separates
+                    ;; status entries and not just filenames
+                    (if (eq ?R (aref status 0))
+                        (setq i (1+ i))
+                      (puthash (f-join git-root (s-trim-left path))
+                               (aref (s-trim-left status) 0)
+                               git-info-hash)))
+                  (setq i (1+ i)))))))))
     git-info-hash))
 
 (defsubst treemacs--collapsed-dirs-process (path)
