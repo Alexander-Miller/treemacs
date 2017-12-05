@@ -70,6 +70,45 @@ times."
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defun treemacs-windows (&optional frame)
+  "Return a list of Treemacs windows across all frames or just from optional FRAME."
+  (delq nil (mapcar (lambda (win)
+		      (when (eq (buffer-local-value 'major-mode (window-buffer win))
+				'treemacs-mode)
+			win))
+		    (window-list-1 nil nil (or frame t)))))
+
+(defcustom treemacs-window-location 'left
+  "Symbol that specifies whether Treemacs windows are placed on the left or right of each frame.
+Default is 'left.  Use `customize-set-variable' to change its value to 'right."
+  :type '(radio (const left)
+		(const right))
+  :group 'treemacs-configuration
+  :initialize 'custom-initialize-default
+  :set (lambda (option value)
+	 (set option value)
+	 ;; Update location of all Treemacs windows.
+	 (mapc (lambda (win)
+		 (with-selected-frame (window-frame win)
+		   (select-window win)
+		   ;; Delete window.
+		   (treemacs-toggle)
+		   ;; Redisplay window with new location value.
+		   (treemacs)))
+	       (treemacs-windows))))
+
+(defcustom treemacs-preserve-window-flag nil
+  "If nil (default), Treemacs windows are deleted by delete-other-windows; otherwise, they are preserved.
+Use `customize-set-variable' to change its value."
+  :type 'boolean
+  :group 'treemacs-configuration
+  :initialize 'custom-initialize-default
+  :set (lambda (option value)
+	 (set option value)
+	 ;; Set this parameter for all Treemacs windows.
+	 (mapc (lambda (win) (set-window-parameter win 'no-delete-other-windows value))
+	       (treemacs-windows))))
+
 (defcustom treemacs-default-actions
   '((dir-node-open    . treemacs-push-button)
     (dir-node-closed  . treemacs-push-button)
