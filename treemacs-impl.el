@@ -684,15 +684,18 @@ treemacs buffer teardown\) otherwise the currently selected frame is used."
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
   (treemacs--forget-last-highlight)
-  (-> (selected-window)
-      (frame-root-window)
-      (split-window nil treemacs-position)
-      (select-window))
-  (let ((buf (treemacs--get-framelocal-buffer)))
-    (switch-to-buffer buf)
-    (bury-buffer buf))
-  (set-window-dedicated-p (selected-window) t)
-  (let ((window-size-fixed))
+  (let* ((buf (treemacs--get-framelocal-buffer))
+	 (win (select-window (display-buffer-in-side-window
+			      buf (list (cons 'side treemacs-window-location)
+					'(slot . -1)))))
+	 (window-size-fixed))
+    ;; Prevent delete-other-windows from deleting this window.
+    (set-window-parameter win 'no-delete-other-windows treemacs-delete-window-flag)
+    ;; Ensure this window displays only the Treemacs buffer.
+    (set-window-dedicated-p win t)
+    ;; Make the Treemacs buffer the last selectable buffer in the
+    ;; buffer list.
+    (bury-buffer buf)
     (treemacs--set-width treemacs-width)))
 
 (defun str-assq-delete-all (key alist)
