@@ -27,44 +27,43 @@
 (require 'treemacs-customization)
 
 (defvar treemacs--dirs-to-collpase.py (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py"))
+(defvar treemacs--git-status.py (f-join treemacs-dir "src/scripts/treemacs-git-status.py"))
 
 (defsubst treemacs--git-status-process (path &optional recursive)
   "Create a new process future to get the git status under PATH.
-Optionally make the git request RECURSIVE."
-  (let* ((default-directory (f-canonical path))
-         (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-z" (if recursive "-uall" "."))))
-    (process-put future 'default-directory default-directory)
-    future))
+Optionally make the git request RECURSIVE.
+
+PATH: Filepath
+RECURSIVE: Bool"
+  (when treemacs-git-integration
+    (-when-let- [git-root (vc-call-backend 'Git 'root path)]
+      (-let*- [(default-directory (f-canonical path))
+               (future (pfuture-new
+                        "python"
+                        "-O"
+                        "/home/a/Documents/git/treemacs/src/scripts/treemacs-git-status.py"
+                        (f-long git-root)
+                        path
+                        (if recursive "--recursive" "--nonrecursive")))]
+        future))))
 
 (defsubst treemacs--parse-git-status (git-future)
-  "Parse the git status derived from the output of GIT-FUTURE."
+  "Parse the git status derived from the output of GIT-FUTURE.
+The real parsing and formatting is done by the python process. All that's really
+left to do is pick up the cons list and put it in a hash table.
+
+GIT-FUTURE: Pfuture"
   (-let [git-info-hash (make-hash-table :test #'equal :size 300)]
     (when git-future
       (pfuture-await-to-finish git-future)
       (when (= 0 (process-exit-status git-future))
-        (let ((git-output (pfuture-result git-future)))
+        (-let [git-output (pfuture-result git-future)]
           (unless (s-blank? git-output)
-            ;; need the actual git root since git status outputs paths relative to it
-            ;; and the output must be valid also for files in dirs being reopened
-            (let* ((git-root (vc-call-backend 'Git 'root (process-get git-future 'default-directory)))
-                   (status-vec (->> (substring git-output 0 -1)
-                                    (s-split "\0")
-                                    (--map (s-split-up-to " " (s-trim it) 1)))))
-              (-let- [(i 0)
-                      (len (length status-vec))]
-                (while (< i len)
-                  (-let*- [(status-cons (nth i status-vec))
-                           (status (car status-cons))
-                           (path (cadr status-cons))]
-                    ;; there's a NUL after every filename, so a rename looks like
-                    ;; 'R oldnameNULnewnameNUL' which would break parsing that expects that a NUL separates
-                    ;; status entries and not just filenames
-                    (if (eq ?R (aref status 0))
-                        (setq i (1+ i))
-                      (puthash (f-join git-root (s-trim-left path))
-                               (aref (s-trim-left status) 0)
-                               git-info-hash)))
-                  (setq i (1+ i)))))))))
+            (--each (read git-output)
+              ;; key = path, value = git state char
+              (puthash (cdr it)
+                       (aref (car it) 0)
+                       git-info-hash))))))
     git-info-hash))
 
 (defsubst treemacs--collapsed-dirs-process (path)

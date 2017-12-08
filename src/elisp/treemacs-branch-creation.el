@@ -75,6 +75,23 @@ is a marker pointing to POS."
     (add-text-properties beg (point) (append '(button (t) category default-button) properties))
     beg))
 
+(defsubst treemacs--get-node-face (path git-info default)
+  "Return the appropriate face for PATH based on GIT-INFO.
+If there is no git entry for PATH return DEFAULT.
+
+PATH: Filepath
+GIT-INFO: Hashtable
+DEFAULT: Face"
+  (declare (pure t) (side-effect-free t))
+  (-pcase (gethash path git-info)
+    [?M 'treemacs-git-modified-face]
+    [?U 'treemacs-git-conflict-face]
+    [?? 'treemacs-git-untracked-face]
+    [?! 'treemacs-git-ignored-face]
+    [?A 'treemacs-git-added-face]
+    [?R 'treemacs-git-renamed-face]
+    [_  default]))
+
 (defsubst treemacs--get-dir-content (dir)
   "Get the content of DIR, separated into sublists of first dirs, then files."
   (let* ((sort-func
@@ -105,15 +122,13 @@ DEPTH indicates how deep in the filetree the current button is."
                'state 'dir-node-closed
                'abs-path path
                'parent parent
-               'depth depth
-               'face 'treemacs-directory-face)))
+               'depth depth)))
 
-(defsubst treemacs--insert-file-node (path prefix parent depth git-info)
+(defsubst treemacs--insert-file-node (path prefix parent depth)
   "Return the text to insert for a file node for PATH.
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
-DEPTH indicates how deep in the filetree the current button is.
-GIT-INFO (if any) is used to determine the node's face."
+DEPTH indicates how deep in the filetree the current button is."
   (list
    prefix
    (with-no-warnings
@@ -126,25 +141,31 @@ GIT-INFO (if any) is used to determine the node's face."
                'state 'file-node-closed
                'abs-path path
                'parent parent
-               'depth depth
-               'face (if treemacs-git-integration
-                         (treemacs--get-face path git-info)
-                       'treemacs-file-face))))
+               'depth depth)))
 
-(cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action)
-  "Open BUTTON.
-Give it NEW-STATE, and, optionally, NEW-ICON. Perform first OPEN-ACTION and,
-optionally, POST-OPEN-ACTION."
+(cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action immediate-insert)
+  "Building block macro to open a BUTTON.
+Gives the button a NEW-STATE, and, optionally, a NEW-ICON. Performs OPEN-ACTION
+and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
+and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
+OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
   `(treemacs--with-writable-buffer
     (button-put ,button 'state ,new-state)
     (beginning-of-line)
     ,@(when new-icon
       `((treemacs--node-symbol-switch ,new-icon)))
-    ,open-action
+    ,@(if immediate-insert
+          `((progn
+              (end-of-line)
+              (insert (apply #'concat ,open-action))))
+        `(,open-action))
     ,post-open-action))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
   "Building block macro for creating buttons from a list of items.
+Will not making any insertions, but instead return a list of strings returned by
+NODE-ACTION, so that the list can be further manipulated and efficiently
+inserted in one go.
 NODES is the list to create buttons from.
 DEPTH is the indentation level buttons will be created on.
 EXTRA-VARS are additional var bindings inserted into the initial let block.
@@ -159,8 +180,7 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
        (dolist (,node-name ,nodes)
          (--each ,node-action
            (push it strings))))
-     (end-of-line)
-     (insert (apply #'concat (nreverse strings)))))
+     (nreverse strings)))
 
 (defsubst treemacs--collapse-dirs (dirs root)
   "Display DIRS as collpased under ROOT.
@@ -201,27 +221,47 @@ to PARENT."
     (let* ((dirs-and-files (treemacs--get-dir-content root))
            (dirs (cl-first dirs-and-files))
            (files (cl-second dirs-and-files))
-           (git-info))
-      (treemacs--create-buttons
-       :nodes dirs
-       :extra-vars ((dir-prefix (concat prefix (with-no-warnings treemacs-icon-closed))))
-       :depth depth
-       :node-name node
-       :node-action (treemacs--insert-dir-node node dir-prefix parent depth))
-      (setq git-info (treemacs--parse-git-status git-process))
+           (git-info)
+           (file-strings)
+           (dir-strings))
+      (setq dir-strings
+            (treemacs--create-buttons
+             :nodes dirs
+             :extra-vars ((dir-prefix (concat prefix (with-no-warnings treemacs-icon-closed))))
+             :depth depth
+             :node-name node
+             :node-action (treemacs--insert-dir-node node dir-prefix parent depth)))
       (when treemacs-pre-file-insert-predicates
         (setq files (-reject
                      (lambda (file) (--any? (funcall it file git-info) treemacs-pre-file-insert-predicates))
                      files)))
-      (treemacs--create-buttons
-       :nodes files
-       :depth depth
-       :node-name node
-       :node-action (treemacs--insert-file-node node prefix parent depth git-info))
-      (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process) root))
-    ;; reopen here only since create-branch is called both when opening a node and
-    ;; building the entire tree
-    (treemacs--reopen-at root)))
+      (setq file-strings
+            (treemacs--create-buttons
+             :nodes files
+             :depth depth
+             :node-name node
+             :node-action (treemacs--insert-file-node node prefix parent depth)))
+      (if (hash-table-p git-process)
+          (setq git-info git-process)
+        (setq git-info (treemacs--parse-git-status git-process)))
+      ;; list contains prefixes and dirs, so every second item is a directory that needs a git face
+      (end-of-line)
+      (insert (apply #'concat
+                     (--map-when (= 0 (% (+ 1 it-index) 2))
+                                 (propertize it 'face
+                                             (treemacs--get-node-face (concat root "/" it) git-info 'treemacs-directory-face))
+                                 dir-strings)))
+      (end-of-line)
+      ;; list contains prefixes icons and files, so every third item is a file that needs a git face
+      (insert (apply #'concat
+                     (--map-when (= 0 (% (+ 1 it-index) 3))
+                                 (propertize it 'face
+                                             (treemacs--get-node-face (concat root "/" it) git-info 'treemacs-git-unmodified-face))
+                                 file-strings)))
+      (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process) root)
+      ;; reopen here only since create-branch is called both when opening a node and
+      ;; building the entire tree
+      (treemacs--reopen-at root))))
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
   "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
@@ -249,6 +289,7 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
            (git-future (or git-future (treemacs--git-status-process abs-path recursive)))
            (collapse-future (treemacs--collapsed-dirs-process abs-path)))
       (treemacs--button-open
+       :immediate-insert nil
        :button btn
        :new-state 'dir-node-open
        :new-icon (with-no-warnings treemacs-icon-open)
@@ -257,13 +298,13 @@ Reuse given GIT-FUTURE when this call is RECURSIVE."
        :post-open-action
        (progn
          (unless no-add (treemacs--add-to-cache btn))
-         (treemacs--start-watching abs-path)))
-      (when recursive
-        (--each (treemacs--get-children-of btn)
-          (when (eq 'dir-node-closed (button-get it 'state))
-            (goto-char (button-start it))
-            (treemacs--open-dir-node
-             it :git-future git-future :recursive t)))))))
+         (treemacs--start-watching abs-path)
+         (when recursive
+           (--each (treemacs--get-children-of btn)
+             (when (eq 'dir-node-closed (button-get it 'state))
+               (goto-char (button-start it))
+               (treemacs--open-dir-node
+                it :git-future git-future :recursive t)))))))))
 
 (defun treemacs--close-dir-node (btn recursive)
   "Close node given by BTN.

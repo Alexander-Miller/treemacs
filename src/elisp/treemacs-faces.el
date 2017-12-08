@@ -57,6 +57,11 @@ if the node is 'foo/bar/baz', the face is used for 'foo/bar/'."
   "Face used for modified files."
   :group 'treemacs-faces)
 
+(defface treemacs-git-renamed-face
+  '((t :inherit font-lock-doc-face))
+  "Face used for renamed files."
+  :group 'treemacs-faces)
+
 (defface treemacs-git-ignored-face
   '((t :inherit font-lock-comment-face))
   "Face for ignored files."

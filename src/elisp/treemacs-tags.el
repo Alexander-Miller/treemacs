@@ -197,27 +197,29 @@ Do not add the file to the open file cache when NOADD is given. NOADD is given
 during a reopen process. Recursively open all tag below BTN when RECURSIVE is t."
   (-let [path (button-get btn 'abs-path)]
     (-if-let- [index (treemacs--get-imenu-index path)]
-        (progn
-          (treemacs--button-open
-           :button btn
-           :new-state 'file-node-open
-           :post-open-action (progn
-                               (unless no-add (treemacs--add-to-cache btn))
-                               (treemacs--reopen-tags-under btn))
-           :open-action (treemacs--create-buttons
-                         :nodes index
-                         :extra-vars ((node-prefix (concat prefix treemacs-icon-tag-node-closed))
-                                      (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
-                         :depth (1+ (button-get btn 'depth))
-                         :node-name item
-                         :node-action (if (imenu--subalist-p item)
-                                          (treemacs--insert-tag-node item node-prefix btn depth)
-                                        (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
-          (when recursive
-            (--each (treemacs--get-children-of btn)
-              (when (eq 'tag-node-closed (button-get it 'state))
-                (goto-char (button-start it))
-                (treemacs--open-tag-node it :recursive t)))))
+        (treemacs--button-open
+         :button btn
+         :immediate-insert t
+         :new-state 'file-node-open
+         :open-action (treemacs--create-buttons
+                       :nodes index
+                       :extra-vars
+                       ((node-prefix (concat prefix treemacs-icon-tag-node-closed))
+                        (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
+                       :depth (1+ (button-get btn 'depth))
+                       :node-name item
+                       :node-action (if (imenu--subalist-p item)
+                                        (treemacs--insert-tag-node item node-prefix btn depth)
+                                      (treemacs--insert-tag-leaf item leaf-prefix btn depth)))
+         :post-open-action (progn
+                             (unless no-add (treemacs--add-to-cache btn))
+                             (treemacs--reopen-tags-under btn)
+                             (end-of-line)
+                             (when recursive
+                               (--each (treemacs--get-children-of btn)
+                                 (when (eq 'tag-node-closed (button-get it 'state))
+                                   (goto-char (button-start it))
+                                   (treemacs--open-tag-node it :recursive t))))))
       (treemacs--log "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
 
 (defun treemacs--close-tags-for-file (btn &optional recursive)
@@ -252,27 +254,29 @@ Set PARENT and DEPTH button properties."
 Do not add the node the open file cache when NO-ADD is given.
 NO-ADD is usually given during a reopen process.
 Open all tag section under BTN when call is RECURSIVE."
-  (let ((index (button-get btn 'index)))
+  (-let [index (button-get btn 'index)]
     (treemacs--button-open
-        :button btn
-        :new-state 'tag-node-open
-        :new-icon treemacs-icon-tag-node-open
-        :post-open-action (unless no-add (treemacs--add-to-tags-cache btn))
-        :open-action (treemacs--create-buttons
-                      :nodes index
-                      :depth (1+ (button-get btn 'depth))
-                      :node-name item
-                      :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))
-                                   (node-prefix (concat prefix treemacs-icon-tag-node-closed)))
-         :node-action (if (imenu--subalist-p item)
-                          (treemacs--insert-tag-node item node-prefix btn depth)
-                        (treemacs--insert-tag-leaf item leaf-prefix btn depth))))
-    (if recursive
-        (--each (treemacs--get-children-of btn)
-          (when (eq 'tag-node-closed (button-get it 'state))
-            (goto-char (button-start it))
-            (treemacs--open-tag-node it :recursive t)))
-      (treemacs--reopen-tags-under btn))))
+     :button btn
+     :immediate-insert t
+     :new-state 'tag-node-open
+     :new-icon treemacs-icon-tag-node-open
+     :open-action (treemacs--create-buttons
+                   :nodes index
+                   :depth (1+ (button-get btn 'depth))
+                   :node-name item
+                   :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))
+                                (node-prefix (concat prefix treemacs-icon-tag-node-closed)))
+                   :node-action (if (imenu--subalist-p item)
+                                    (treemacs--insert-tag-node item node-prefix btn depth)
+                                  (treemacs--insert-tag-leaf item leaf-prefix btn depth)))
+     :post-open-action (progn
+                         (unless no-add (treemacs--add-to-tags-cache btn))
+                         (if recursive
+                             (--each (treemacs--get-children-of btn)
+                               (when (eq 'tag-node-closed (button-get it 'state))
+                                 (goto-char (button-start it))
+                                 (treemacs--open-tag-node it :recursive t)))
+                           (treemacs--reopen-tags-under btn))))))
 
 (defun treemacs--insert-tag-leaf (item prefix parent depth)
   "Return the text to insert for a tag leaf ITEM.

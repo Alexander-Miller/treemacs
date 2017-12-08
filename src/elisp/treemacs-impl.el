@@ -244,19 +244,6 @@ FILE here is a list consisting of an absolute path and file attributes."
     (and (not (s-matches? treemacs-dotfiles-regex filename))
          (--none? (funcall it filename file) treemacs-ignored-file-predicates))))
 
-(defsubst treemacs--get-face (path git-info)
-  "Return the appropriate face for PATH based on GIT-INFO."
-  ;; for the sake of simplicity we only look at the state in the working tree
-  ;; see OUTPUT section `git help status'
-  (declare (pure t) (side-effect-free t))
-  (-pcase (gethash path git-info)
-    [?M 'treemacs-git-modified-face]
-    [?U 'treemacs-git-conflict-face]
-    [?? 'treemacs-git-untracked-face]
-    [?! 'treemacs-git-ignored-face]
-    [?A 'treemacs-git-added-face]
-    [_  'treemacs-git-unmodified-face]))
-
 (defsubst treemacs--file-extension (file)
   "Same as `file-name-extension', but also works with leading periods.
 
