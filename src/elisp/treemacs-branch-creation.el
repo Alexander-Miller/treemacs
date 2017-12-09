@@ -211,10 +211,10 @@ correct cache entries."
              (button-start b) (+ beg (length parent))
              '(face treemacs-directory-collapsed-face))))))))
 
-(defun treemacs--create-branch (root depth git-process collapse-process &optional parent)
+(defun treemacs--create-branch (root depth git-future collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at DEPTH and uses the eventual outputs of
-GIT-PROCESS to decide on file nodes' faces and COLLAPSE-PROCESS to determine
+GIT-FUTURE to decide on file nodes' faces and COLLAPSE-PROCESS to determine
 which directories should be displayed as one. The nodes' parent property is set
 to PARENT."
   (save-excursion
@@ -241,9 +241,12 @@ to PARENT."
              :depth depth
              :node-name node
              :node-action (treemacs--insert-file-node node prefix parent depth)))
-      (if (hash-table-p git-process)
-          (setq git-info git-process)
-        (setq git-info (treemacs--parse-git-status git-process)))
+      ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
+      ;; so there are two possibilities: either the future given to this function is a pfuture object
+      ;; that needs to complete and be parsed or it's an already finished git status hash table
+      (if (hash-table-p git-future)
+          (setq git-info git-future)
+        (setq git-info (treemacs--parse-git-status git-future)))
       ;; list contains prefixes and dirs, so every second item is a directory that needs a git face
       (end-of-line)
       (insert (apply #'concat
@@ -261,7 +264,7 @@ to PARENT."
       (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process) root)
       ;; reopen here only since create-branch is called both when opening a node and
       ;; building the entire tree
-      (treemacs--reopen-at root))))
+      (treemacs--reopen-at root git-info))))
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
   "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
@@ -282,7 +285,10 @@ to PARENT."
 (cl-defun treemacs--open-dir-node (btn &key no-add git-future recursive)
   "Open the node given by BTN.
 Do not reopen its previously open children when NO-ADD is given.
-Reuse given GIT-FUTURE when this call is RECURSIVE."
+Reuse given GIT-FUTURE when this call is RECURSIVE (as in recursively opening
+all directories and not just one via the prefix arg) or when this call is part
+of a recursive reopen process (as in also opening all directories that were open
+below the one being openeded)."
   (if (not (f-readable? (button-get btn 'abs-path)))
       (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
     (let* ((abs-path (button-get btn 'abs-path))

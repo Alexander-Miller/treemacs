@@ -479,28 +479,30 @@ Optionally do so in a RECURSIVE fashion."
     (`tag-node         (progn (other-window 1) (treemacs--goto-tag btn)))
     (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
 
-(defun treemacs--reopen-node (btn)
-  "Reopen file BTN."
+(defun treemacs--reopen-node (btn git-info)
+  "Reopen file BTN.
+GIT-INFO is passed through from the previous branch build."
   (if (null btn)
       ;; the most likely reason for receiving a nil button here is that the undelying file has been deleted,
       ;; so we'll just throw the path out of the cache and assume that all is well
       (treemacs--clear-from-cache btn)
     (pcase (button-get btn 'state)
-      (`dir-node-closed  (treemacs--open-dir-node btn :no-add t))
+      (`dir-node-closed  (treemacs--open-dir-node btn :no-add t :git-future git-info))
       (`file-node-closed (treemacs--open-tags-for-file btn :no-add t))
       (`tag-node-closed  (treemacs--open-tag-node btn :no-add t))
       (other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
                                 (button-get btn 'abs-path) other)))))
 
-(defun treemacs--reopen-at (path)
-  "Reopen dirs below PATH."
+(defun treemacs--reopen-at (path git-info)
+  "Reopen dirs below PATH.
+GIT-INFO is passed through from the previous branch build."
   (treemacs--without-messages
    (-some->
     path
     (assoc treemacs--open-dirs-cache)
     (cdr)
     (treemacs--maybe-filter-dotfiles)
-    (--each (treemacs--reopen-node (treemacs--goto-button-at it))))))
+    (--each (treemacs--reopen-node (treemacs--goto-button-at it) git-info)))))
 
 (defun treemacs--clear-from-cache (path-or-btn &optional purge)
   "Remove PATH-OR-BTN from the open dirs cache.
