@@ -23,7 +23,7 @@
 
 (require 'treemacs-customization)
 (require 'treemacs-impl)
-(require 'treemacs-macros)
+(eval-and-compile (require 'treemacs-macros))
 
 (with-eval-after-load 'winum
 

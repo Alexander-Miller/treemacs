@@ -21,14 +21,14 @@
 ;;; Code:
 
 (require 's)
-(require 'treemacs-macros)
+(require 'hydra)
 (require 'treemacs-interface)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
 (require 'treemacs-persist)
-(require 'hydra)
+(eval-and-compile (require 'treemacs-macros))
 
 (declare-function treemacs-refresh "treemacs")
 (declare-function treemacs--helpful-hydra/body "treemacs-mode")

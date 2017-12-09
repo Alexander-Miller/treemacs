@@ -23,14 +23,15 @@
 (require 'f)
 (require 's)
 (require 'dash)
-(require 'cl-lib)
 (require 'treemacs-impl)
-(require 'treemacs-macros)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-branch-creation)
 (require 'treemacs-follow-mode)
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-customization)
+(eval-and-compile
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
 (treemacs--import-functions-from "treemacs"
   treemacs-refresh

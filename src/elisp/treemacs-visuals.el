@@ -20,11 +20,11 @@
 
 ;;; Code:
 
-(require 'treemacs-impl)
-(require 'treemacs-customization)
-(require 'treemacs-macros)
 (require 'image)
 (require 'hl-line)
+(require 'treemacs-impl)
+(require 'treemacs-customization)
+(eval-and-compile (require 'treemacs-macros))
 
 ;; An explanation for the what and why of the icon highlighting code below:
 ;; Using png images in treemacs has one annoying visual flaw: they overwrite the overlay

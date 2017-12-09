@@ -29,9 +29,7 @@
 (require 'dash)
 (require 's)
 (require 'f)
-(require 'cl-lib)
 (require 'bookmark)
-(require 'treemacs-macros)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-visuals)
@@ -47,6 +45,9 @@
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-async)
 (require 'treemacs-compatibility)
+(eval-and-compile
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
 (defconst treemacs-version "1.14")
 

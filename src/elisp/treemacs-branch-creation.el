@@ -26,9 +26,9 @@
 (require 'cl-lib)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
-(require 'treemacs-macros)
 (require 'treemacs-async)
 (require 'treemacs-customization)
+(eval-and-compile (require 'treemacs-macros))
 
 (treemacs--import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching

@@ -29,15 +29,16 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'imenu)
 (require 'f)
 (require 'hl-line)
 (require 'treemacs-customization)
-(require 'treemacs-macros)
 (require 'treemacs-impl)
 (require 'treemacs-tags)
 (require 'treemacs-follow-mode)
+(eval-and-compile
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
 (defvar treemacs--tag-follow-timer nil
   "The idle timer object for `treemacs-tag-follow-mode'.

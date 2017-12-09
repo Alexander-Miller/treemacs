@@ -21,9 +21,9 @@
 ;;; Code:
 
 (require 'xref)
-(require 'treemacs-macros)
 (require 'treemacs-impl)
 (require 'treemacs-tags)
+(eval-and-compile (require 'treemacs-macros))
 
 ;;;###autoload
 (defun treemacs-node-buffer-and-position (&optional _)

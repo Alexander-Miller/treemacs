@@ -24,7 +24,6 @@
 ;; Requirements ;;
 ;;;;;;;;;;;;;;;;;;
 
-(require 'cl-lib)
 (require 'hl-line)
 (require 'dash)
 (require 's)
@@ -33,7 +32,9 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
-(require 'treemacs-macros)
+(eval-and-compile
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
 (treemacs--import-functions-from "treemacs-tags"
   treemacs--clear-tags-cache

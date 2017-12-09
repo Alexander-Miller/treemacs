@@ -25,13 +25,14 @@
 
 (require 'imenu)
 (require 'dash)
-(require 'cl-lib)
 (require 'f)
 (require 'treemacs-impl)
-(require 'treemacs-macros)
 (require 'treemacs-branch-creation)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
+(eval-and-compile
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
 (treemacs--defvar-with-default
  treemacs-icon-tag-leaf-text (propertize "🞄 " 'face 'font-lock-constant-face))
