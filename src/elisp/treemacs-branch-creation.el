@@ -285,14 +285,17 @@ to PARENT."
 (cl-defun treemacs--open-dir-node (btn &key no-add git-future recursive)
   "Open the node given by BTN.
 Do not reopen its previously open children when NO-ADD is given.
-Reuse given GIT-FUTURE when this call is RECURSIVE (as in recursively opening
-all directories and not just one via the prefix arg) or when this call is part
-of a recursive reopen process (as in also opening all directories that were open
-below the one being openeded)."
+GIT-FUTURE is reused in recursive calls and so might be an already parsed hash
+table.
+
+BTN: Button
+NO-ADD: Bool
+GIT-FUTURE: Pfuture|Hashtable
+RECURSIVE: Bool"
   (if (not (f-readable? (button-get btn 'abs-path)))
       (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
     (let* ((abs-path (button-get btn 'abs-path))
-           (git-future (or git-future (treemacs--git-status-process abs-path recursive)))
+           (git-future (or git-future (treemacs--git-status-process abs-path)))
            (collapse-future (treemacs--collapsed-dirs-process abs-path)))
       (treemacs--button-open
        :immediate-insert nil

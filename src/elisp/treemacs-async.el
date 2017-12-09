@@ -29,12 +29,10 @@
 (defvar treemacs--dirs-to-collpase.py (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py"))
 (defvar treemacs--git-status.py (f-join treemacs-dir "src/scripts/treemacs-git-status.py"))
 
-(defsubst treemacs--git-status-process (path &optional recursive)
+(defsubst treemacs--git-status-process (path)
   "Create a new process future to get the git status under PATH.
-Optionally make the git request RECURSIVE.
 
-PATH: Filepath
-RECURSIVE: Bool"
+PATH: Filepath"
   (when treemacs-git-integration
     (-when-let- [git-root (vc-call-backend 'Git 'root path)]
       (-let*- [(default-directory (f-canonical path))
@@ -43,8 +41,7 @@ RECURSIVE: Bool"
                         "-O"
                         "/home/a/Documents/git/treemacs/src/scripts/treemacs-git-status.py"
                         (f-long git-root)
-                        path
-                        (if recursive "--recursive" "--nonrecursive")))]
+                        path))]
         future))))
 
 (defsubst treemacs--parse-git-status (git-future)

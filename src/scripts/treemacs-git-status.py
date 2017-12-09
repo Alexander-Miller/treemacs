@@ -4,8 +4,7 @@ from os.path import join, isfile, isdir
 import sys
 
 GIT_ROOT  = str.encode(sys.argv[1])
-RECURSIVE = sys.argv[2] == '--recursive'
-GIT_CMD   = "git status --porcelain --ignored " + ("-uall" if RECURSIVE else ".")
+GIT_CMD   = "git status --porcelain --ignored ."
 STDOUT    = sys.stdout.buffer
 OPEN      = b'("'
 CLOSE     = b'")'
