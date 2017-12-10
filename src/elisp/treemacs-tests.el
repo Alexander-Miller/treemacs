@@ -384,7 +384,7 @@
           (should-not (treemacs--is-event-relevant? '(nil stopped "~/A/a"))))
 
     (ert-deftest file-event-relevance::file-change-without-git-is-not-relevant ()
-      (let ((treemacs-git-mode))
+      (let ((treemacs-git-mode nil))
         (should-not (treemacs--is-event-relevant? '(nil changed "~/A/a")))))
 
     (ert-deftest file-event-relevance::lockfile-event-is-not-relevant ()
@@ -917,6 +917,12 @@
                 (call-interactively 'treemacs)
 
                 (should (treemacs-buffer-exists?))
+
+                (call-interactively 'treemacs-uproot)
+                (call-interactively 'treemacs-uproot)
+                (should (equal "src"
+                               (treemacs--get-label-of
+                                (treemacs-current-button))))
 
                 (treemacs--goto-button-at (f-join default-directory "test/testfolder1/testfolder2"))
                 (should (equal "test/testfolder1/testfolder2"
