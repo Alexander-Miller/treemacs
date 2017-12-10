@@ -69,7 +69,7 @@
   treemacs--forget-last-highlight)
 
 (treemacs--import-functions-from "treemacs-async"
-  treemacs--git-status-process
+  treemacs--git-status-process-function
   treemacs--collapsed-dirs-process)
 
 (declare-function treemacs-mode "treemacs-mode")
@@ -422,7 +422,7 @@ buffer."
    (treemacs--delete-all)
    (treemacs--insert-header root)
    (treemacs--create-branch root 0
-                            (treemacs--git-status-process root)
+                            (treemacs--git-status-process-function root)
                             (treemacs--collapsed-dirs-process root))
    (goto-char 0)
    (forward-line 1)

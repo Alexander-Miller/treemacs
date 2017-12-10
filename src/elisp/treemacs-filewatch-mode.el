@@ -25,7 +25,6 @@
 (require 'f)
 (require 'filenotify)
 (require 'cl-lib)
-(require 'treemacs-customization)
 (require 'treemacs-impl)
 (require 'treemacs-tags)
 
@@ -95,14 +94,14 @@ COLLAPSE: Bool"
   "Decide if EVENT is relevant to treemacs or should be ignored.
 An event counts as relevant when
 1) The event's action is not \"stopped\".
-2) The event's action is not \"changed\" while `treemacs-git-integration' is nil
+2) The event's action is not \"changed\" while `treemacs-git-mode' is disabled
 3) The event's file will not return t when given to any of the functions which
    are part of `treemacs-ignored-file-predicates'."
   (let ((action (cl-second event))
         (dir    (cl-third event)))
     (not (or (equal action 'stopped)
              (and (equal action 'changed)
-                  (not treemacs-git-integration))
+                  (not treemacs-git-mode))
              (--any? (funcall it (f-filename dir) dir) treemacs-ignored-file-predicates)))))
 
 (defun treemacs--filewatch-callback (event)
@@ -226,7 +225,7 @@ changes and automatically refresh itself by means of `treemacs-refresh' when it
 detects a change that it decides is relevant.
 
 A file event is relevant for treemacs if a new file has been created or deleted
-or a file has been changed and `treemacs-git-integration' is t. Events caused
+or a file has been changed and `treemacs-git-mode' is enabled. Events caused
 by files that are ignored as per `treemacs-ignored-file-predicates' are likewise
 counted as not relevant.
 

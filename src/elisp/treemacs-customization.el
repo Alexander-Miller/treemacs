@@ -122,6 +122,7 @@ and outputs the string header to be inserted in the treemacs buffer."
   "When t use different faces for files' different git states."
   :type 'boolean
   :group 'treemacs-configuration)
+(make-obsolete-variable 'treemacs-git-integration 'treemacs-git-mode "Treemacs v1.15")
 
 (defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
   "Files matching this regular expression count as dotfiles."

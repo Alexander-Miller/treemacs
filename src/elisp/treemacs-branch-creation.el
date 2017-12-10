@@ -246,7 +246,7 @@ to PARENT."
       ;; that needs to complete and be parsed or it's an already finished git status hash table
       (if (hash-table-p git-future)
           (setq git-info git-future)
-        (setq git-info (treemacs--parse-git-status git-future)))
+        (setq git-info (treemacs--git-status-parse-function git-future)))
       ;; list contains prefixes and dirs, so every second item is a directory that needs a git face
       (end-of-line)
       (insert (apply #'concat
@@ -295,7 +295,7 @@ RECURSIVE: Bool"
   (if (not (f-readable? (button-get btn 'abs-path)))
       (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
     (let* ((abs-path (button-get btn 'abs-path))
-           (git-future (or git-future (treemacs--git-status-process abs-path)))
+           (git-future (or git-future (treemacs--git-status-process-function abs-path)))
            (collapse-future (treemacs--collapsed-dirs-process abs-path)))
       (treemacs--button-open
        :immediate-insert nil

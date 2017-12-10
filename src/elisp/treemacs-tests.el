@@ -384,7 +384,7 @@
           (should-not (treemacs--is-event-relevant? '(nil stopped "~/A/a"))))
 
     (ert-deftest file-event-relevance::file-change-without-git-is-not-relevant ()
-      (let ((treemacs-git-integration))
+      (let ((treemacs-git-mode))
         (should-not (treemacs--is-event-relevant? '(nil changed "~/A/a")))))
 
     (ert-deftest file-event-relevance::lockfile-event-is-not-relevant ()
@@ -394,7 +394,7 @@
       (should-not (treemacs--is-event-relevant? '(nil created "~/A/flycheck_foo.el"))))
 
     (ert-deftest file-event-relevance::file-change-with-git-is-relevant ()
-      (let ((treemacs-git-integration t))
+      (let ((treemacs-git-mode t))
         (should (treemacs--is-event-relevant? '(nil changed "~/A/a")))))
 
     (ert-deftest file-event-relevance::file-creation-is-relevant ()

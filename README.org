@@ -13,6 +13,7 @@
   - [[#frame-locality][Frame Locality]]
   - [[#follow-mode][Follow-mode]]
   - [[#tag-follow-mode][Tag-follow-mode]]
+  - [[#git-mode][Git-mode]]
   - [[#filewatch-mode][Filewatch-mode]]
   - [[#session-persistence][Session Persistence]]
   - [[#terminal-compatibility][Terminal Compatibility]]
@@ -53,8 +54,8 @@ Specifically a quick feature overview looks as follows:
  * Treemacs respects frames - every frame will receive its own treemacs buffer that will live and die with that frame.
  * Optionally always follow along and keep in focus the currently selected file or even the tag at point using
    ~treemacs-follow-mode~ and ~treemacs-tag-follow-mode~ respectively.
- * Optional git integration - treemacs will use different faces for files based on their git status.
-   The git process runs asynchronously and so won't cause any perceptible delay.
+ * Optional git integration - treemacs will use different faces for files and directories based on their git status.
+   The git process runs asynchronously and so will rarely cause any perceptible delay.
  * [[https://github.com/deb0ch/emacs-winum][Winum]] integration - treemacs will always be assigned a static window number (10 by default), never interfering with the
    numbering layout of your other windows.
  * Projectile integration via the ~treemacs-projectile~ package to quickly open treemacs at any known project's root directory.
@@ -93,7 +94,6 @@ This allows to use treemacs to work on multiple projects inside the same emacs s
 A treemacs buffer that does not belong to a frame may still be made visible by manually selecting in in the buffer list. This
 would break various assumptions in treemacs' code base and effectively falls under undefined behaviour - a bad idea all around.
 ** Follow-mode
-
 ~treemacs-follow-mode~ is a minor mode which allows the treemacs view to always move its focus to the
 currently selected file. This is achieved by advising ~select-window~, which is a ubiquitous function, often called
 multiple times in a row when emacs is working. This means two things:
@@ -113,13 +113,33 @@ This mode runs on an idle timer - the exact duration of inactivity (in seconds) 
 Note that in order to move to a tag in treemacs the treemacs buffer's window needs to be temporarily selected, which will
 reset ~blink-cursor-mode~'s timer if it is enabled. This will result in the cursor blinking seemingly pausing for a
 short time and giving the appereance of the tag follow action lasting much longer than it really does.
-** Filewatch-mode
+** Git-mode
+~treemacs-git-mode~ is a minor mode which enables treemacs to check for files' and directories' git status information
+and highlight them accordingly (see also the ~treemacs-git-...~ faces). The mode is available in 2 variants: ~simple~ and
+~extended~:
 
+ * The simple variant starts a git status process and parses its output in elisp. The parsing is kept quick and simple,
+   so some info is missed: this version includes git status information only for files, but not directories.
+ * The extended variant highlights both files and directories. This greatly increases the complexity and length of the
+   parsing process, and is therefore done in a python process or the sake of performance. The extended variant will thus
+   not work without python.
+
+When called interactively ~treemacs-git-mode~ will ask for the variant to use. In lisp code an appropriate symbol can be
+directly passed to the minor mode function:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-git-mode 'extended)
+#+END_SRC
+
+Both variants use an asynchronous process and are optimized to not do morr work than necessary, so their performance cost
+should, for the most part, be the constant amount of time it takes to fork a subprocess.
+
+** Filewatch-mode
 ~treemacs-filewatch-mode~ is a minor mode which enables treemacs to watch the files it is displaying for changes
 and automatically refresh itself by means of ~treemacs-refresh~ when it detects a change that it decides is relevant.
 
 A file event is relevant for treemacs if a new file has been created or deleted or a file has been changed and
-~treemacs-git-integration~ is t. Events caused by files that are ignored as per ~treemacs-ignored-file-predicates~
+~treemacs-git-mode~ is enabled. Events caused by files that are ignored as per ~treemacs-ignored-file-predicates~
 are likewise counted as not relevant.
 
 The refresh is not called immediately after an event was received, treemacs instead waits ~treemacs-file-event-delay~
@@ -134,8 +154,8 @@ Turning off this mode is, on the other hand, instantaneous - it will immediately
 processes and outstanding refresh actions.
 
 _Known limitations_:
-Staging and committing changes does not produce any file change events of its own, if you use ~treemacs-git-integration~
-you still need to do a manual refresh to see your files' face go from 'changed' and 'untracked' to 'unchanged' after a commit.
+Staging and committing changes does not produce any file change events of its own, if you use ~treemacs-git-mode~
+you still need to do a manual refresh to see your files' faces go from 'changed' and 'untracked' to 'unchanged' after a commit.
 
 ** Session Persistence
 To persist treemacs state beyond emacs' shutdown treemacs offers integration with the builtin
@@ -199,7 +219,6 @@ You can find an exhaustive overview of all functions, their keybinds and functio
       (setq treemacs-follow-after-init          t
             treemacs-width                      35
             treemacs-indentation                2
-            treemacs-git-integration            t
             treemacs-collapse-dirs              (if (executable-find "python") 3 0)
             treemacs-silent-refresh             nil
             treemacs-change-root-without-asking nil
@@ -210,7 +229,13 @@ You can find an exhaustive overview of all functions, their keybinds and functio
             treemacs-goto-tag-strategy          'refetch-index)
 
       (treemacs-follow-mode t)
-      (treemacs-filewatch-mode t))
+      (treemacs-filewatch-mode t)
+      (pcase (cons (not (null (executable-find "git")))
+                   (not (null (executable-find "python"))))
+        (`(t . t)
+         (treemacs-git-mode 'extended))
+        (`(t . _)
+         (treemacs-git-mode 'simple))))
     :bind
     (:map global-map
           ([f8]         . treemacs-toggle)
@@ -242,7 +267,6 @@ Treemacs offers the following configuration options:
 | treemacs-width                      | 35                                                                              | Width of the treemacs window.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | treemacs-show-hidden-files          | t                                                                               | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | treemacs-header-function            | treemacs--create-header                                                         | The function which is used to create the header string for treemacs buffers. Default options are ~treemacs--create-header~ and ~treemacs--create-header-projectile~. Any function that takes the current root path and returns the header string may be used.                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| treemacs-git-integration            | based on (executable-find "git")                                                | When t use different faces for files' different git states.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | treemacs-follow-after-init          | nil                                                                             | When t follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-change-root-without-asking | nil                                                                             | When t don't ask to change the root when calling ~treemacs-find-file~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | treemacs-never-persist              | nil                                                                             | When t treemacs will never persist its state.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |

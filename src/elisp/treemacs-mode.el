@@ -90,6 +90,7 @@ to it will instead show a blank."
              (key-rename         (treemacs--find-keybind #'treemacs-rename))
              (key-follow-mode    (treemacs--find-keybind #'treemacs-follow-mode))
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
+             (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
              (key-show-dotfiles  (treemacs--find-keybind #'treemacs-toggle-show-dotfiles))
              (key-toggle-width   (treemacs--find-keybind #'treemacs-toggle-fixed-width))
              (key-refresh        (treemacs--find-keybind #'treemacs-refresh))
@@ -105,9 +106,9 @@ to it will instead show a blank."
 ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 %s next Line      │ %s open & close        │ %s create file │ %s follow mode    │ %s refresh
 %s prev line      │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
-%s next neighbour │ %s open no split       │ %s rename      │ %s show dotfiles  │ %s copy path
-%s prev neighbour │ %s open horizontal     │                    │ %s resizability   │ %s copy root
-%s go to parent   │ %s open vertical       │                    │                       │ %s re-sort
+%s next neighbour │ %s open no split       │ %s rename      │ %s git mode       │ %s copy path
+%s prev neighbour │ %s open horizontal     │                    │ %s show dotfiles  │ %s copy root
+%s go to parent   │ %s open vertical       │                    │ %s resizability   │ %s re-sort
 %s move root up   │ %s open ace            │                    │                       │
 %s move root into │ %s open ace horizontal │                    │                       │
                       │ %s open ace vertical   │                    │                       │
@@ -117,9 +118,9 @@ to it will instead show a blank."
                column-nav               column-nodes          column-files          column-toggles          column-misc
                (car key-next-line)      (car key-open/close)  (car key-create-file) (car key-follow-mode)   (car key-refresh)
                (car key-prev-line)      (car key-dwim)        (car key-create-dir)  (car key-fwatch-mode)   (car key-set-width)
-               (car key-next-neighbour) (car key-open)        (car key-rename)      (car key-show-dotfiles) (car key-copy-path)
-               (car key-prev-neighbour) (car key-open-horiz)                        (car key-toggle-width)  (car key-copy-root)
-               (car key-goto-parent)    (car key-open-vert)                                                 (car key-resort)
+               (car key-next-neighbour) (car key-open)        (car key-rename)      (car key-git-mode)      (car key-copy-path)
+               (car key-prev-neighbour) (car key-open-horiz)                        (car key-show-dotfiles) (car key-copy-root)
+               (car key-goto-parent)    (car key-open-vert)                         (car key-toggle-width)  (car key-resort)
                (car key-root-up)        (car key-open-ace)
                (car key-root-down)      (car key-open-ace-h)
                                         (car key-open-ace-v)
@@ -153,6 +154,7 @@ to it will instead show a blank."
               (,(cdr key-set-width)      #'treemacs-reset-width)
               (,(cdr key-copy-path)      #'treemacs-yank-path-at-point)
               (,(cdr key-copy-root)      #'treemacs-yank-root)
+              (,(cdr key-git-mode)       #'treemacs-git-mode)
               (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
               (,(cdr key-resort)         #'treemacs-resort)
               ("?" nil "Exit"))))
@@ -194,6 +196,7 @@ to it will instead show a blank."
       (define-key map (kbd "M-p")  #'treemacs-previous-neighbour)
       (define-key map (kbd "th")   #'treemacs-toggle-show-dotfiles)
       (define-key map (kbd "tw")   #'treemacs-toggle-fixed-width)
+      (define-key map (kbd "tg")   #'treemacs-git-mode)
       (define-key map (kbd "tf")   #'treemacs-follow-mode)
       (define-key map (kbd "ta")   #'treemacs-filewatch-mode)
       (define-key map (kbd "w")    #'treemacs-reset-width)
