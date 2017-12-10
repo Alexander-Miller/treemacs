@@ -182,7 +182,7 @@ treemacs views containing hundreds or even thousands of nodes."
 
 (defcustom treemacs-ignored-file-predicates
   '(treemacs--std-ignore-file-predicate)
-  "List of predicates to test for files ignored by Emacs.
+  "List of predicates to test for files and directories ignored by Emacs.
 
 Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles)
 whose presence is controlled by `treemacs-show-hidden-files').
@@ -199,22 +199,24 @@ instead."
   :group 'treemacs-configuration)
 
 (defcustom treemacs-pre-file-insert-predicates nil
-  "List of predicates to test for files that should not be shown.
+  "List of predicates to test for files and directories that shouldn't be shown.
 The difference between this and `treemacs-ignored-file-predicates' is that the
 functions in this list will be called on files just before they would be
 rendered, when the files' git status information is now available. This for
 example allows to make files ignored by git invisible.
 As such the functions in this list are expected to have a different signture:
 They must take two arguments - a file's absolute path and a hashtable that maps
-file to their git status. The files' paths are the table's keys, its values are
-characters (and not strings) indicating the file's git condition. The chas map
-as follows:
+files to their git status. The files' paths are the table's keys, its values are
+characters (and not strings) indicating the file's git condition. The chars map
+map as follows: (the pattern is derived from 'git status --porcelain')
+
  * M - file is modified
  * U - file is in conflict
  * ? - file is untracked
  * ! - file is ignored
  * A - file is added to index
  * other - file is unchanged
+
 Otherwise the behaviour is the same as `treemacs-ignored-file-predicates', in
 that any one function returning t for a file means that this file will not
 be rendered."

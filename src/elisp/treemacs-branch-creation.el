@@ -231,10 +231,6 @@ to PARENT."
              :depth depth
              :node-name node
              :node-action (treemacs--insert-dir-node node dir-prefix parent depth)))
-      (when treemacs-pre-file-insert-predicates
-        (setq files (-reject
-                     (lambda (file) (--any? (funcall it file git-info) treemacs-pre-file-insert-predicates))
-                     files)))
       (setq file-strings
             (treemacs--create-buttons
              :nodes files
@@ -249,13 +245,42 @@ to PARENT."
         (setq git-info (treemacs--git-status-parse-function git-future)))
       ;; list contains prefixes and dirs, so every second item is a directory that needs a git face
       (end-of-line)
+
+      ;; the files list contains 3 item tuples: the prefix the icon and the filename
+      ;; direcories are different, since dirs do not  have different icons the icon is part if the prefix
+      ;; therefore when filtering or propertizing the files and dirs only every 3rd or 2nd item must be looked at
+
+      (when treemacs-pre-file-insert-predicates
+        (-let [result nil]
+          (while file-strings
+            (-let*- [(prefix (car file-strings))
+                     (icon (cadr file-strings))
+                     (filename (cl-caddr file-strings))
+                     (filepath (concat root "/" filename))]
+              (unless (--any? (funcall it filepath git-info) treemacs-pre-file-insert-predicates)
+                (setq result (cons filename (cons icon (cons prefix result))))))
+            (setq file-strings (cl-cdddr file-strings)))
+          (setq file-strings (nreverse result))))
+
+      (when treemacs-pre-file-insert-predicates
+        (-let- [(result nil)]
+          (while dir-strings
+            (-let*- [(prefix (car dir-strings))
+                     (dirname (cl-caddr dir-strings))
+                     (dirpath (concat root "/" dirname))]
+              (unless (--any? (funcall it dirpath git-info) treemacs-pre-file-insert-predicates)
+                (setq result (cons dirname (cons prefix result)))))
+            (setq file-strings (cl-cdddr dir-strings)))
+          (setq file-strings (nreverse result))))
+
       (insert (apply #'concat
                      (--map-when (= 0 (% (+ 1 it-index) 2))
                                  (propertize it 'face
                                              (treemacs--get-node-face (concat root "/" it) git-info 'treemacs-directory-face))
                                  dir-strings)))
+
       (end-of-line)
-      ;; list contains prefixes icons and files, so every third item is a file that needs a git face
+
       (insert (apply #'concat
                      (--map-when (= 0 (% (+ 1 it-index) 3))
                                  (propertize it 'face
