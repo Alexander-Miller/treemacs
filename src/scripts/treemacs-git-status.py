@@ -9,18 +9,17 @@ STDOUT    = sys.stdout.buffer
 OPEN      = b'("'
 CLOSE     = b'")'
 CONS      = b'" . "'
-STATE_MOD = b'M'
 
 proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100)
 dirs = {}
 
 def print_all_untracked_files(path):
-    for i in listdir(path):
-        p = join(path, i)
-        STDOUT.write(OPEN + b'?' + CONS + p + CLOSE)
+    for item in listdir(path):
+        full_path = join(path, item)
+        STDOUT.write(OPEN + b'?' + CONS + full_path + CLOSE)
         #STDOUT.write(b'\n')
-        if isdir(p):
-            print_all_untracked_files(p)
+        if isdir(full_path):
+            print_all_untracked_files(full_path)
 
 STDOUT.write(b'(')
 for item in proc.stdout:
@@ -44,7 +43,8 @@ for item in proc.stdout:
     else:
         STDOUT.write(OPEN + state + CONS + full_root + CLOSE)
         STDOUT.write(b'\n')
-    # for files deeper down in the file hierarchy also print get all directories:
+    # for files deeper down in the file hierarchy also print all their directories
+    # if ./foo/bar/baz.el is changed then ./foo and ./foo/bar must be shown as changed as well
     if b'/' in filename:
         # print(b'dir candidate ' + filename)
         name_parts = filename.split(b'/')[:-1]
@@ -52,9 +52,10 @@ for item in proc.stdout:
         for name_part in name_parts:
             dirname = join(dirname, name_part)
             full_dirname = join(GIT_ROOT, dirname.lstrip())
-            # direcctories should not be printed more than once
+            # directories should not be printed more than once, which would happen if
+            # e.g. both ./foo/x and ./foo/y have changes
             if full_dirname not in dirs:
-                STDOUT.write(OPEN + STATE_MOD + CONS + full_dirname + CLOSE)
+                STDOUT.write(OPEN + b'M' + CONS + full_dirname + CLOSE)
                 #STDOUT.write(b'\n')
                 dirs[full_dirname] = True
     if state.startswith(b'?') and isdir(full_root):
