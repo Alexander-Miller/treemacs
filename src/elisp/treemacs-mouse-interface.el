@@ -51,7 +51,7 @@ ignore any prefix argument."
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
-            (-let [(buf pos) (treemacs--pos-from-marker
+            (-let [(buf . pos) (treemacs--pos-from-marker
                               (cdr (--first
                                     (equal (car it) tag)
                                     index)))]
@@ -77,7 +77,7 @@ ignore any prefix argument."
              (item)
              "Return the buffer position where xref ITEM is defined."
              (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
-    (-let [(tag-buf tag-pos)
+    (-let [(tag-buf . tag-pos)
            (treemacs--with-button-buffer btn
              (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
       (if tag-buf

@@ -439,6 +439,7 @@ the treemacs window and might therefore need their own global binding.
 |----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | treemacs                         | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.      |
 | treemacs-projectile              | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                           |
+| treemacs-bookmark                | Open treemacs with the location of a bookmark as root.                                                                                                                                               |
 | treemacs-toggle                  | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.            |
 | treemacs-toggle-projectile       | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-projectile. |
 | treemacs-find-file               | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed.                                                                                                  |
@@ -485,6 +486,7 @@ By default Treemacs's keymap looks as follows:
 | yy      | treemacs-yank-path-at-point                 | Copy the absolute path of the node at point.                                                                                                                              |
 | yr      | treemacs-yank-root                          | Copy the absolute path of the current treemacs root.                                                                                                                      |
 | s       | treemacs-resort                             | Set a new value for ~treemacs-sorting~. With a single or double prefix arg temporarily resort the current directory/the entire buffer.                                    |
+| b       | treemacs-add-bookmark                       | Bookmark the currently selected files's/dir's/tag's location.                                                                                                             |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting

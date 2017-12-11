@@ -20,6 +20,7 @@
 
 ;;; Code:
 
+(require 'bookmark)
 (require 'f)
 (require 's)
 (require 'dash)
@@ -578,6 +579,30 @@ Instead of calling this with a prefix arg you can also direcrly call
        (treemacs--log "Sorting method changed to '%s'."
                       (propertize sort-name 'face 'font-lock-type-face)))])
   (treemacs--evade-image))
+
+(defun treemacs-add-bookmark ()
+  "Add the current node to Emacs' list of bookmarks.
+For file and directory nodes their absolute path is saved. Tag nodes
+additionally also save the tag's position. A tag can only be bookmarked if the
+treemacs node is pointing to a valid buffer position."
+  (interactive)
+  (treemacs--with-current-button
+   "There is nothing to bookmark here."
+   (-pcase (button-get current-btn 'state)
+     [(or `file-node-open `file-node-closed `dir-node-open `dir-node-closed)
+      (-let [name (read-string "Bookmark name: ")]
+        (bookmark-store name `((filename . ,(button-get current-btn 'abs-path))) nil))]
+     [`tag-node
+      (-let [(tag-buffer . tag-pos) (treemacs--pos-from-marker (button-get current-btn 'marker))]
+        (if (buffer-live-p tag-buffer)
+            (bookmark-store
+             (read-string "Bookmark name: ")
+             `((filename . ,(buffer-file-name tag-buffer))
+               (position . ,tag-pos))
+             nil)
+          (treemacs--log "Tag info can not be saved because it is not pointing to a live buffer.")))]
+     [(or `tag-node-open `tag-node-closed)
+      (treemacs--log "There is nothing to bookmark here.")])))
 
 (provide 'treemacs-interface)
 

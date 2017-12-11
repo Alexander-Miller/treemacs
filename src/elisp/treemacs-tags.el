@@ -331,11 +331,11 @@ position of the tag. They might also be nil if the pointed-to buffer does not
 exist."
   (-pcase (type-of m)
     [`marker
-     (list (marker-buffer m) (marker-position m))]
+     (cons (marker-buffer m) (marker-position m))]
     [`overlay
-     (list (overlay-buffer m) (overlay-start m))]
+     (cons (overlay-buffer m) (overlay-start m))]
     [`integer
-     (list nil m)]))
+     (cons nil m)]))
 
 (defsubst treemacs--call-imenu-and-goto-tag (file tag-path)
   "Call the imenu index of FILE to go to position of TAG-PATH."
@@ -347,10 +347,10 @@ exist."
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
-            (-let [(buf pos) (treemacs--pos-from-marker
-                              (cdr (--first
-                                    (equal (car it) tag)
-                                    index)))]
+            (-let [(buf . pos) (treemacs--pos-from-marker
+                                (cdr (--first
+                                      (equal (car it) tag)
+                                      index)))]
               ;; some imenu implementations, like markdown, will only provide
               ;; a raw buffer position (an int) to move to
               (switch-to-buffer (or buf (get-file-buffer file)))
@@ -365,7 +365,7 @@ exist."
   ;; The only code currently calling this is run through `treemacs--execute-button-action' which always
   ;; switches windows before running it, so we need to be really careful here when querying any button
   ;; properties.
-  (-let [(tag-buf tag-pos)
+  (-let [(tag-buf . tag-pos)
          (treemacs--with-button-buffer btn
            (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
     (if tag-buf

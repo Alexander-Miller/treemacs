@@ -88,6 +88,15 @@ Delegates VAR-VAL, THEN and ELSE to `-if-let'."
   (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
     `(-if-let ,var-val-lst ,then ,@else)))
 
+(defmacro treemacs--with-current-button (error-msg &rest body)
+  "Execute an action with the current button bound to 'current-btn'.
+Log ERROR-MSG if no button is selected, otherwise run BODY."
+  (declare (debug (form body)))
+  `(-if-let- [current-btn (treemacs-current-button)]
+       (progn
+         ,@body)
+     (treemacs--log ,error-msg)))
+
 (defmacro -when-let- (var-val &rest body)
   "Same as `-when-let', but expects VAR-VAL to be a vector.
 Delegates VAR-VAL and BODY to `-when-let'."
