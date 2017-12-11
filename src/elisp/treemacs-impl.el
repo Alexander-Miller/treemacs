@@ -94,13 +94,15 @@ longer be contigious.")
 (defconst treemacs--buffer-name-prefix " *Treemacs-")
 
 (defconst treemacs-dir
-  ;; we want the base package directory, not src/elisp
-  (-> (if load-file-name
-          (file-name-directory load-file-name)
-        default-directory)
-      (expand-file-name)
-      (f-parent)
-      (f-parent))
+  ;; locally we're in src/elisp, installed from melpa we're at the package root
+  (-let [dir (-> (if load-file-name
+                     (file-name-directory load-file-name)
+                   default-directory)
+                 (expand-file-name))]
+    (if (s-ends-with? "src/elisp" dir)
+        (-> dir (f-parent) (f-parent))
+      dir))
+
   "The directory treemacs.el is stored in.")
 
 (defvar-local treemacs--open-dirs-cache '()

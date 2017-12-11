@@ -28,8 +28,15 @@
 (eval-and-compile
   (require 'treemacs-macros))
 
-(defvar treemacs--dirs-to-collpase.py (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py"))
-(defvar treemacs--git-status.py (f-join treemacs-dir "src/scripts/treemacs-git-status.py"))
+(defvar treemacs--dirs-to-collpase.py
+  (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
+      (f-join treemacs-dir "treemacs-dirs-to-collapse.py")
+    (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py")))
+
+(defvar treemacs--git-status.py
+  (if (member "treemacs-git-status.py" (directory-files treemacs-dir))
+      (f-join treemacs-dir "treemacs-git-status.py")
+    (f-join treemacs-dir "src/scripts/treemacs-status.py")))
 
 (defvar treemacs--git-status-process-function)
 (defvar treemacs--git-status-parse-function)
