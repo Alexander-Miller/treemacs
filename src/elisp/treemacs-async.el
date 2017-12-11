@@ -44,7 +44,7 @@
                (future (pfuture-new
                         "python"
                         "-O"
-                        "/home/a/Documents/git/treemacs/src/scripts/treemacs-git-status.py"
+                        treemacs--git-status.py
                         (f-long git-root)
                         path))]
         future))))
