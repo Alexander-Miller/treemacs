@@ -99,7 +99,7 @@ longer be contigious.")
                      (file-name-directory load-file-name)
                    default-directory)
                  (expand-file-name))]
-    (if (s-ends-with? "src/elisp" dir)
+    (if (s-ends-with? "src/elisp/" dir)
         (-> dir (f-parent) (f-parent))
       dir))
 

@@ -36,7 +36,7 @@
 (defvar treemacs--git-status.py
   (if (member "treemacs-git-status.py" (directory-files treemacs-dir))
       (f-join treemacs-dir "treemacs-git-status.py")
-    (f-join treemacs-dir "src/scripts/treemacs-status.py")))
+    (f-join treemacs-dir "src/scripts/treemacs-git-status.py")))
 
 (defvar treemacs--git-status-process-function)
 (defvar treemacs--git-status-parse-function)
