@@ -70,6 +70,7 @@ is a marker pointing to POS."
 
 (defsubst treemacs--insert-button (label &rest properties)
   "Insert a button with LABEL and given PROPERTIES."
+  (declare (indent 1))
   (let ((beg (point)))
     (insert label)
     (add-text-properties beg (point) (append '(button (t) category default-button) properties))

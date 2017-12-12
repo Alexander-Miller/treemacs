@@ -66,6 +66,7 @@
 
 (treemacs--import-functions-from "treemacs-visuals"
   treemacs--tear-down-icon-highlight
+  treemacs--forget-previously-follow-tag-btn
   treemacs--forget-last-highlight)
 
 (treemacs--import-functions-from "treemacs-async"
@@ -418,6 +419,7 @@ buffer."
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
   (treemacs--forget-last-highlight)
+  (treemacs--forget-previously-follow-tag-btn)
   (treemacs--stop-watch-all-in-scope)
   (treemacs--cancel-refresh-timer)
   (treemacs--with-writable-buffer
@@ -466,6 +468,7 @@ buffer."
   (treemacs--clear-tags-cache)
   (treemacs--stop-watch-all-in-scope)
   (treemacs--cancel-refresh-timer)
+  (treemacs--forget-last-highlight)
   (treemacs--forget-last-highlight))
 
 (defun treemacs--push-button (btn &optional recursive)

@@ -24,7 +24,7 @@
 ;; * Beware of edge cases: org-mode headlines are containers, but also hold a position, hidden as a text property and
 ;;   semantic-mode parsed buffers use overlays instead of markers
 ;; * Find the last tag whose position begins before point
-;; * Jump to that tag  path
+;; * Jump to that tag path
 ;; * No jump when there's no buffer file, or no imenu, or buffer file is not seen in treemacs etc.
 
 ;;; Code:
@@ -43,6 +43,15 @@
 (defvar treemacs--tag-follow-timer nil
   "The idle timer object for `treemacs-tag-follow-mode'.
 Active while tag follow mode is enabled and nil/canceled otherwise.")
+
+(defvar-local treemacs--previously-followed-tag-btn nil
+  "Records the last button whose tags were expanded by tag follow mode.
+When `treemacs-tag-follow-cleanup' it t this button's tags will be closed up
+again when tag follow mode moves to another button.")
+
+(defsubst treemacs--forget-previously-follow-tag-btn ()
+  "Forget the previously followed button when treemacs is killed or rebuilt."
+  (setq treemacs--previously-followed-tag-btn nil))
 
 (defsubst treemacs--flatten&sort-imenu-index ()
   "Flatten current file's imenu index and sort it by tag position.
@@ -167,11 +176,7 @@ END: Integer"
 FLAT-INDEX: Sorted list of tag paths
 TREEMACS-WINDOW: Window
 BUFFER-FILE: Path"
-  ;; inhibit-quit = nil prevents emacs from complaining about block calls to accept process output
-  ;; with quit inhibited. apparently this happens when process output is read from a timer-run funcction,
-  ;; in other words: when tag follow mode is working as intended
-  (let* ((inhibit-quit nil)
-         (tag-path (treemacs--find-index-pos (point) flat-index))
+  (let* ((tag-path (treemacs--find-index-pos (point) flat-index))
          (file-states '(file-node-open file-node-closed))
          (btn))
     (when tag-path
@@ -184,6 +189,15 @@ BUFFER-FILE: Path"
               (when (memq (button-get btn 'state) '(tag-node-open tag-node-closed tag-node))
                 (while (not (memq (button-get btn 'state) file-states))
                   (setq btn (button-get btn 'parent))))
+              ;; close the button that was opened on the previous follow
+              (when (and treemacs--previously-followed-tag-btn
+                         (not (eq treemacs--previously-followed-tag-btn btn)))
+                (save-excursion
+                  (goto-char (button-start treemacs--previously-followed-tag-btn))
+                  (when  (and (string= (button-get (treemacs-current-button) 'abs-path)
+                                       (button-get treemacs--previously-followed-tag-btn 'abs-path))
+                              (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn 'state)))
+                    (treemacs--close-tags-for-file treemacs--previously-followed-tag-btn))))
               ;; when that doesnt work move manually to the correct file
               (unless (string-equal buffer-file (button-get btn 'abs-path))
                 (treemacs--do-follow buffer-file)
@@ -192,8 +206,9 @@ BUFFER-FILE: Path"
           (treemacs--do-follow buffer-file)
           (setq btn (treemacs-current-button)))
         (goto-char (button-start btn))
-        (unless (eq 'file-node-closed (button-get btn 'state))
+        (unless (eq 'file-node-open (button-get btn 'state))
           (treemacs--close-tags-for-file btn))
+        (setq treemacs--previously-followed-tag-btn btn)
         ;; imenu already rescanned when fetching the tag path
         (let ((imenu-auto-rescan nil))
           ;; the target tag still has its position marker attached

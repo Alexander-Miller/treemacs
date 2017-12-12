@@ -314,6 +314,13 @@ Set to nil to disable the static number assignment."
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-tag-follow-cleanup t
+  "When non-nil `treemacs-tag-follow-mode' will close file nodes it is leaving.
+When jumping between different files this can prevent the view from being
+flooded with their tags."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-pre-refresh-hook nil
   "Hooks to run right before the refresh process kicks off.
 During the refresh process the entire treemacs buffer is torn down and repainted
