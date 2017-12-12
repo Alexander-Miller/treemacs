@@ -261,18 +261,16 @@ to PARENT."
               (unless (--any? (funcall it filepath git-info) treemacs-pre-file-insert-predicates)
                 (setq result (cons filename (cons icon (cons prefix result))))))
             (setq file-strings (cl-cdddr file-strings)))
-          (setq file-strings (nreverse result))))
-
-      (when treemacs-pre-file-insert-predicates
+          (setq file-strings (nreverse result)))
         (-let- [(result nil)]
           (while dir-strings
             (-let*- [(prefix (car dir-strings))
-                     (dirname (cl-caddr dir-strings))
+                     (dirname (cadr dir-strings))
                      (dirpath (concat root "/" dirname))]
               (unless (--any? (funcall it dirpath git-info) treemacs-pre-file-insert-predicates)
                 (setq result (cons dirname (cons prefix result)))))
-            (setq file-strings (cl-cdddr dir-strings)))
-          (setq file-strings (nreverse result))))
+            (setq dir-strings (cddr dir-strings)))
+          (setq dir-strings (nreverse result))))
 
       (insert (apply #'concat
                      (--map-when (= 0 (% (+ 1 it-index) 2))
