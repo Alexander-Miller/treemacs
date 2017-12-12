@@ -319,6 +319,10 @@ Will also perform cleanup if the buffer is dead."
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
 
+(defun treemacs-is-file-git-ignored? (file git-info)
+  "Determined if FILE is ignored by git by means of GIT-INFO."
+  (eq ?! (gethash file git-info)))
+
 (defun treemacs-is-treemacs-window-selected? ()
   "Return t when the treemacs window is selected."
   (s-starts-with? treemacs--buffer-name-prefix (buffer-name)))

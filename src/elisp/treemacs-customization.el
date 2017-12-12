@@ -219,7 +219,10 @@ map as follows: (the pattern is derived from 'git status --porcelain')
 
 Otherwise the behaviour is the same as `treemacs-ignored-file-predicates', in
 that any one function returning t for a file means that this file will not
-be rendered."
+be rendered.
+
+Since removing files ignored by git is the most likely use-case treemacs offers
+`treemacs-is-file-git-ignored?' to quickly make this possible."
   :type 'list
   :group 'treemacs-configuration)
 
