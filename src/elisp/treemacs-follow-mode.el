@@ -20,6 +20,7 @@
 
 ;;; Code:
 
+(require 'hl-line)
 (require 'dash)
 (require 's)
 (require 'f)
@@ -62,10 +63,13 @@ The followed file MUST be under root or the search will break."
     ;; hl-line *needs* to be toggled here otherwise it won't appear to
     ;; move until the treemacs buffer is selected again and follow must
     ;; work when called from outside the treemacs buffer with treemacs-follow-mode
-    (hl-line-mode -1)
-    (hl-line-mode t)
     (treemacs--evade-image)
-    (set-window-point (get-buffer-window) (point))))
+    (hl-line-highlight)
+    (set-window-point (get-buffer-window) (point))
+    (when treemacs-recenter-after-file-follow
+      (treemacs--without-following
+        (with-selected-window (get-buffer-window)
+         (recenter))))))
 
 (defun treemacs--follow ()
   "Move point to the current file in the treemacs buffer.

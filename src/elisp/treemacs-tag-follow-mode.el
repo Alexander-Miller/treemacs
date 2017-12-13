@@ -180,42 +180,45 @@ BUFFER-FILE: Path"
          (file-states '(file-node-open file-node-closed))
          (btn))
     (when tag-path
-      (with-selected-window treemacs-window
-        (setq btn (treemacs-current-button))
-        ;; current button might not be there when point is on the header
-        (if btn
-            (progn
-              ;; first move to the nearest file when we're on a tag
-              (when (memq (button-get btn 'state) '(tag-node-open tag-node-closed tag-node))
-                (while (not (memq (button-get btn 'state) file-states))
-                  (setq btn (button-get btn 'parent))))
-              ;; close the button that was opened on the previous follow
-              (when (and treemacs--previously-followed-tag-btn
-                         (not (eq treemacs--previously-followed-tag-btn btn)))
-                (save-excursion
-                  (goto-char (button-start treemacs--previously-followed-tag-btn))
-                  (when  (and (string= (button-get (treemacs-current-button) 'abs-path)
-                                       (button-get treemacs--previously-followed-tag-btn 'abs-path))
-                              (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn 'state)))
-                    (treemacs--close-tags-for-file treemacs--previously-followed-tag-btn))))
-              ;; when that doesnt work move manually to the correct file
-              (unless (string-equal buffer-file (button-get btn 'abs-path))
-                (treemacs--do-follow buffer-file)
-                (setq btn (treemacs-current-button))))
-          ;; also move manually when point is on the header
-          (treemacs--do-follow buffer-file)
-          (setq btn (treemacs-current-button)))
-        (goto-char (button-start btn))
-        (unless (eq 'file-node-open (button-get btn 'state))
-          (treemacs--close-tags-for-file btn))
-        (setq treemacs--previously-followed-tag-btn btn)
-        ;; imenu already rescanned when fetching the tag path
-        (let ((imenu-auto-rescan nil))
-          ;; the target tag still has its position marker attached
-          (setcar tag-path (car (car tag-path)))
-          (treemacs--goto-tag-button-at tag-path buffer-file (button-start btn)))
-        (hl-line-highlight)
-        (treemacs--evade-image)))))
+      (treemacs--without-following
+       (with-selected-window treemacs-window
+         (setq btn (treemacs-current-button))
+         ;; current button might not be there when point is on the header
+         (if btn
+             (progn
+               ;; first move to the nearest file when we're on a tag
+               (when (memq (button-get btn 'state) '(tag-node-open tag-node-closed tag-node))
+                 (while (not (memq (button-get btn 'state) file-states))
+                   (setq btn (button-get btn 'parent))))
+               ;; close the button that was opened on the previous follow
+               (when (and treemacs--previously-followed-tag-btn
+                          (not (eq treemacs--previously-followed-tag-btn btn)))
+                 (save-excursion
+                   (goto-char (button-start treemacs--previously-followed-tag-btn))
+                   (when  (and (string= (button-get (treemacs-current-button) 'abs-path)
+                                        (button-get treemacs--previously-followed-tag-btn 'abs-path))
+                               (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn 'state)))
+                     (treemacs--close-tags-for-file treemacs--previously-followed-tag-btn))))
+               ;; when that doesnt work move manually to the correct file
+               (unless (string-equal buffer-file (button-get btn 'abs-path))
+                 (treemacs--do-follow buffer-file)
+                 (setq btn (treemacs-current-button))))
+           ;; also move manually when point is on the header
+           (treemacs--do-follow buffer-file)
+           (setq btn (treemacs-current-button)))
+         (goto-char (button-start btn))
+         (unless (eq 'file-node-open (button-get btn 'state))
+           (treemacs--close-tags-for-file btn))
+         (setq treemacs--previously-followed-tag-btn btn)
+         ;; imenu already rescanned when fetching the tag path
+         (let ((imenu-auto-rescan nil))
+           ;; the target tag still has its position marker attached
+           (setcar tag-path (car (car tag-path)))
+           (treemacs--goto-tag-button-at tag-path buffer-file (button-start btn)))
+         (hl-line-highlight)
+         (treemacs--evade-image)
+         (when treemacs-recenter-after-tag-follow
+           (recenter)))))))
 
 (defun treemacs--follow-tag-at-point ()
   "Follow the tag at point in the treemacs view."
@@ -223,7 +226,9 @@ BUFFER-FILE: Path"
   (let* ((treemacs-window (treemacs--is-visible?))
          (buffer (current-buffer))
          (buffer-file (when buffer (buffer-file-name)))
-         (root (when treemacs-window (with-selected-window treemacs-window (treemacs--current-root)))))
+         (root (when treemacs-window
+                 (treemacs--without-following
+                  (with-selected-window treemacs-window (treemacs--current-root))))))
     (when (and treemacs-window
                buffer-file
                (when root (treemacs--is-path-in-dir? buffer-file root)))

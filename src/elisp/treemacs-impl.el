@@ -358,11 +358,12 @@ Will also perform cleanup if the buffer is dead."
         (when buff-file
           (setq buff-file (f-long buff-file))
           (when (treemacs--is-path-in-dir? buff-file old-path)
-            (with-selected-window window
-              (kill-buffer win-buff)
-              (let ((new-file (s-replace old-path new-path buff-file)))
-                (find-file-existing new-file)
-                (treemacs--replace-recentf-entry buff-file new-file))))))))
+            (treemacs--without-following
+             (with-selected-window window
+               (kill-buffer win-buff)
+               (let ((new-file (s-replace old-path new-path buff-file)))
+                 (find-file-existing new-file)
+                 (treemacs--replace-recentf-entry buff-file new-file)))))))))
   ;; then the rest
   (--each (buffer-list)
     (-when-let (buff-file (buffer-file-name it))
@@ -613,16 +614,17 @@ Callers must make sure to save match data"
 (defun treemacs--on-window-config-change ()
   "Collects all tasks that need to run on a window config change."
   (-when-let (w (treemacs--is-visible?))
-    (with-selected-window w
-      ;; apparently keeping the hook around can lead to a feeback loop together with helms
-      ;; auto-resize mode as seen in https://github.com/Alexander-Miller/treemacs/issues/76
-      (let (window-configuration-change-hook)
-        ;; Reset the treemacs window width to its default - required after window deletions
-        (when treemacs--width-is-locked
-          (treemacs--set-width treemacs-width))
-        ;; Prevent treemacs from being used as other-window
-        (when treemacs-is-never-other-window
-          (set-window-parameter w 'no-other-window t))))))
+    (treemacs--without-following
+     (with-selected-window w
+       ;; apparently keeping the hook around can lead to a feeback loop together with helms
+       ;; auto-resize mode as seen in https://github.com/Alexander-Miller/treemacs/issues/76
+       (let (window-configuration-change-hook)
+         ;; Reset the treemacs window width to its default - required after window deletions
+         (when treemacs--width-is-locked
+           (treemacs--set-width treemacs-width))
+         ;; Prevent treemacs from being used as other-window
+         (when treemacs-is-never-other-window
+           (set-window-parameter w 'no-other-window t)))))))
 
 (defun treemacs--set-width (width)
   "Set the width of the treemacs buffer to WIDTH when it is created."

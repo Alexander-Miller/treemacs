@@ -336,6 +336,20 @@ flooded with their tags."
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-recenter-after-file-follow nil
+  "When non-nil the view will be centered when follow mode is active.
+This is done by calling `recenter' after `treemacs-follow-mode' moves to a new
+file."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-recenter-after-tag-follow nil
+  "When non-nil the view will be centered when tag follow mode is active.
+This is done by calling `recenter' after `treemacs-tag-follow-mode' moves to a
+new file."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-pre-refresh-hook nil
   "Hooks to run right before the refresh process kicks off.
 During the refresh process the entire treemacs buffer is torn down and repainted
