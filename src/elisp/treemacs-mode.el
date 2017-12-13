@@ -98,6 +98,7 @@ to it will instead show a blank."
              (key-copy-path      (treemacs--find-keybind #'treemacs-yank-path-at-point))
              (key-copy-root      (treemacs--find-keybind #'treemacs-yank-root))
              (key-resort         (treemacs--find-keybind #'treemacs-resort))
+             (key-bookmark       (treemacs--find-keybind #'treemacs-add-bookmark))
              (hydra-str
               (format
                "
@@ -109,7 +110,7 @@ to it will instead show a blank."
 %s next neighbour │ %s open no split       │ %s rename      │ %s git mode       │ %s copy path
 %s prev neighbour │ %s open horizontal     │                    │ %s show dotfiles  │ %s copy root
 %s go to parent   │ %s open vertical       │                    │ %s resizability   │ %s re-sort
-%s move root up   │ %s open ace            │                    │                       │
+%s move root up   │ %s open ace            │                    │                       │ %s bookmark
 %s move root into │ %s open ace horizontal │                    │                       │
                       │ %s open ace vertical   │                    │                       │
                       │ %s open externally     │                    │                       │
@@ -121,7 +122,7 @@ to it will instead show a blank."
                (car key-next-neighbour) (car key-open)        (car key-rename)      (car key-git-mode)      (car key-copy-path)
                (car key-prev-neighbour) (car key-open-horiz)                        (car key-show-dotfiles) (car key-copy-root)
                (car key-goto-parent)    (car key-open-vert)                         (car key-toggle-width)  (car key-resort)
-               (car key-root-up)        (car key-open-ace)
+               (car key-root-up)        (car key-open-ace)                                                  (car key-bookmark)
                (car key-root-down)      (car key-open-ace-h)
                                         (car key-open-ace-v)
                                         (car key-open-ext))))
@@ -157,6 +158,7 @@ to it will instead show a blank."
               (,(cdr key-git-mode)       #'treemacs-git-mode)
               (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
               (,(cdr key-resort)         #'treemacs-resort)
+              (,(cdr key-bookmark)       #'treemacs-add-bookmark)
               ("?" nil "Exit"))))
         (treemacs--helpful-hydra/body))
     (treemacs--log "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
@@ -204,6 +206,7 @@ to it will instead show a blank."
       (define-key map (kbd "yr")   #'treemacs-yank-root)
       (define-key map (kbd "g")    #'treemacs-refresh)
       (define-key map (kbd "s")    #'treemacs-resort)
+      (define-key map (kbd "b")    #'treemacs-add-bookmark)
       map)
     "Keymap for `treemacs-mode'."))
 

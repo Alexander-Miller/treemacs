@@ -47,6 +47,7 @@
 (define-key evil-treemacs-state-map (kbd "ta")  #'treemacs-filewatch-mode)
 (define-key evil-treemacs-state-map (kbd "tg")  #'treemacs-git-mode)
 (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-reset-width)
+(define-key evil-treemacs-state-map (kbd "b")   #'treemacs-add-bookmark)
 (define-key evil-treemacs-state-map (kbd "?")   #'treemacs-helpful-hydra)
 (define-key evil-treemacs-state-map (kbd "RET") #'treemacs-visit-node-default-action)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yr") #'treemacs-yank-root)
