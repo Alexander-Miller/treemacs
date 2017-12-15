@@ -35,7 +35,7 @@
   (require 'treemacs-macros))
 
 (treemacs--defvar-with-default
- treemacs-icon-tag-leaf-text (propertize "🞄 " 'face 'font-lock-constant-face))
+ treemacs-icon-tag-leaf-text (propertize "• " 'face 'font-lock-constant-face))
 (treemacs--defvar-with-default
  treemacs-icon-tag-node-closed-text (propertize "▸ " 'face 'font-lock-string-face))
 (treemacs--defvar-with-default
