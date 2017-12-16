@@ -139,18 +139,18 @@ should be placed under."
         (existing-buffer (get-file-buffer file)))
     (if existing-buffer
         (setq buff existing-buffer)
-      (setq buff (find-file-noselect file)))
-    (with-current-buffer buff
-      (setq result (condition-case _
-                       (imenu--make-index-alist t)
-                     (error nil))
-            mode major-mode))
-    (unless existing-buffer (kill-buffer buff))
-    (when result
-      (when (string= "*Rescan*" (car (car result)))
-        (setq result (cdr result)))
-      (unless (equal result '(nil))
-        (treemacs--post-process-index result mode)))))
+      (letf (((symbol-function 'run-mode-hooks) (symbol-function 'ignore)))
+        (setq buff (find-file-noselect file))))
+    (when (buffer-live-p buff)
+      (with-current-buffer buff
+        (setq result (imenu--make-index-alist t)
+              mode major-mode))
+      (unless existing-buffer (kill-buffer buff))
+      (when result
+        (when (string= "*Rescan*" (car (car result)))
+          (setq result (cdr result)))
+        (unless (equal result '(nil))
+          (treemacs--post-process-index result mode))))))
 
 (defun treemacs--add-to-tags-cache (btn)
   "Add BTN's path to the cache of open nodes."
