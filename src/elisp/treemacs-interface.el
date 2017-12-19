@@ -205,22 +205,27 @@ Stay in current window with a prefix argument ARG."
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
-(defun treemacs-visit-node-default-action (&optional arg)
-  "Run the action defined in `treemacs-default-actions' for the current button.
-Pass on prefix ARG to the action."
+(defun treemacs-RET-action (&optional arg)
+  "Run the appropriate RET action for the current button.
+
+In the default configuration this usually means to open the content of the
+currently selected node. A potential prefix ARG is passed on to the executed
+action, if possible.
+
+This function's exact configuration is stored in `treemacs-RET-actions-config'."
   (interactive "P")
   (-when-let (state (treemacs--prop-at-point :state))
-    (funcall (cdr (assoc state treemacs-default-actions)) arg)))
+    (funcall (cdr (assoc state treemacs-RET-actions-config)) arg)))
 
-(defun treemacs-define-default-action (state action)
-  "Define the behaviour of `treemacs-visit-default-action'.
-Determines that a button with state STATE should lead to the execution of
+(defun treemacs-define-RET-action (state action)
+  "Define the behaviour of `treemacs-RET-action'.
+Determines that a button with a given STATE should lead to the execution of
 ACTION.
 
-First deletes the previous entry with key STATE from `treemacs-default-actions'
-and then inserts the new tuple."
-  (assq-delete-all state treemacs-default-actions)
-  (push (cons state action) treemacs-default-actions))
+First deletes the previous entry with key STATE from
+`treemacs-RET-actions-config'and then inserts the new tuple."
+  (setq treemacs-RET-actions-config (assq-delete-all state treemacs-RET-actions-config))
+  (push (cons state action) treemacs-RET-actions-config))
 
 (defun treemacs-xdg-open ()
   "Open current file, using the `xdg-open' shell command."

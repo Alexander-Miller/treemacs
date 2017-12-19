@@ -70,7 +70,7 @@ times."
   :type 'boolean
   :group 'treemacs-configuration)
 
-(defcustom treemacs-default-actions
+(defcustom treemacs-RET-actions-config
   '((dir-node-open    . treemacs-push-button)
     (dir-node-closed  . treemacs-push-button)
     (file-node-open   . treemacs-visit-node-no-split)
@@ -78,16 +78,18 @@ times."
     (tag-node-open    . treemacs-push-button)
     (tag-node-closed  . treemacs-push-button)
     (tag-node         . treemacs-visit-node-no-split))
-  "Defines the behaviour of `treemacs-visit-node-default-action'.
+  "Defines the behaviour of `treemacs-RET-action'.
 
 Each alist element maps from a button state to the function that should be used
 for that state. The list of all possible button states is defined in
 `treemacs-valid-button-states'. Possible values are all treemacs-visit-node-*
-functions as well as `treemacs-push-button' for simple open/close actions.
+functions as well as `treemacs-push-button' for simple open/close actions,
+though in general you can use any function that accepts the prefix arg as its
+single argument.
 
 To keep the alist clean changes should not be made directly, but with
-`treemacs-define-default-action', for example like this:
-\(treemacs-define-default-action 'file-node-closed #'treemacs-visit-node-ace\)"
+`treemacs-define-RET-action', for example like this:
+\(treemacs-define-RET-action 'file-node-closed #'treemacs-visit-node-ace\)"
   :type 'alist
   :group 'treemacs-configuration)
 
