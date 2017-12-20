@@ -865,16 +865,16 @@
                 (should (equal "testfile.el"
                                (treemacs--get-label-of (treemacs-current-button))))
 
-                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-TAB-action)
 
                 (should (equal '("Variables" "Functions")
                                (-map #'treemacs--get-label-of
                                      (treemacs--get-children-of (treemacs-current-button)))))
 
                 (call-interactively 'treemacs-next-line)
-                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-TAB-action)
                 (call-interactively 'treemacs-next-neighbour)
-                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-TAB-action)
 
                 (should (equal '("fn1" "fn2")
                                (-map #'treemacs--get-label-of
@@ -891,7 +891,7 @@
                 (call-interactively 'treemacs-goto-parent-node)
                 (call-interactively 'treemacs-goto-parent-node)
                 (call-interactively 'treemacs-next-neighbour)
-                (call-interactively 'treemacs-push-button)
+                (call-interactively 'treemacs-TAB-action)
 
                 (should (equal '("Foo" "Bar")
                                (-map #'treemacs--get-label-of
@@ -899,6 +899,7 @@
                 (should (equal "testfile.org"
                                (treemacs--get-label-of (treemacs-current-button))))
                 (call-interactively 'treemacs-next-line)
+
                 (should (equal "Foo"
                                (treemacs--get-label-of (treemacs-current-button))))
                 (call-interactively 'treemacs-push-button)
@@ -907,6 +908,7 @@
                                (treemacs--get-label-of (treemacs-current-button))))
 
                 (call-interactively 'treemacs-push-button)
+
                 (call-interactively 'treemacs-next-line)
 
                 (should (equal "Foo3" (treemacs--get-label-of (treemacs-current-button))))
@@ -919,7 +921,7 @@
                                                         (window-list))))))
 
                 (dotimes (_ 3) (call-interactively 'treemacs-goto-parent-node))
-                (dotimes (_ 2) (call-interactively 'treemacs-push-button))
+                (dotimes (_ 2) (call-interactively 'treemacs-TAB-action))
                 (dotimes (_ 3) (call-interactively 'treemacs-next-line))
                 (should (equal "Foo3" (treemacs--get-label-of (treemacs-current-button)))))
 

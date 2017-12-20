@@ -137,6 +137,43 @@ Otherwise just delegates EXP and CASES to `pcase'."
          (progn ,@body)
        (with-no-warnings (setq treemacs--ready-to-follow o)))))
 
+(cl-defmacro treemacs-do-for-button-state
+    (&key on-file-node-open
+          on-file-node-closed
+          on-dir-node-open
+          on-dir-node-closed
+          on-tag-node-open
+          on-tag-node-closed
+          on-tag-node-leaf
+          on-nil)
+  "Building block macro to execute a form based on the current node state.
+Will bind to current button to 'btn' for the executon of the action forms."
+  `(-if-let- [btn (treemacs-current-button)]
+       (-pcase (button-get btn :state)
+         ,@(when on-file-node-open
+             `([`file-node-open
+                ,on-file-node-open]))
+         ,@(when on-file-node-closed
+             `([`file-node-closed
+                ,on-file-node-closed]))
+         ,@(when on-dir-node-open
+             `([`dir-node-open
+                ,on-dir-node-open]))
+         ,@(when on-dir-node-closed
+             `([`dir-node-closed
+                ,on-dir-node-closed]))
+         ,@(when on-tag-node-open
+             `([`tag-node-open
+                ,on-tag-node-open]))
+         ,@(when on-tag-node-closed
+             `([`tag-node-closed
+                ,on-tag-node-closed]))
+         ,@(when on-tag-node-leaf
+             `([`tag-node
+                ,on-tag-node-leaf]))
+         [state (error "[Treemacs] Unexpected button state %s" state)])
+     ,on-nil))
+
 (cl-defmacro treemacs--execute-button-action
     (&key save-window
           ensure-window-split

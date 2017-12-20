@@ -70,20 +70,35 @@ times."
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-TAB-actions-config
+  '((dir-node-open    . treemacs-toggle-node)
+    (dir-node-closed  . treemacs-toggle-node)
+    (file-node-open   . treemacs-toggle-node)
+    (file-node-closed . treemacs-toggle-node)
+    (tag-node-open    . treemacs-toggle-node)
+    (tag-node-closed  . treemacs-toggle-node)
+    (tag-node         . treemacs-visit-node-no-split))
+  "Defines the behaviour of `treemacs-TAB-action'.
+
+See the doc string of `treemacs-RET-actions-config' for a detailed description
+of how this config works and how to modify it."
+  :type 'alist
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-RET-actions-config
-  '((dir-node-open    . treemacs-push-button)
-    (dir-node-closed  . treemacs-push-button)
+  '((dir-node-open    . treemacs-toggle-node)
+    (dir-node-closed  . treemacs-toggle-node)
     (file-node-open   . treemacs-visit-node-no-split)
     (file-node-closed . treemacs-visit-node-no-split)
-    (tag-node-open    . treemacs-push-button)
-    (tag-node-closed  . treemacs-push-button)
+    (tag-node-open    . treemacs-toggle-node)
+    (tag-node-closed  . treemacs-toggle-node)
     (tag-node         . treemacs-visit-node-no-split))
   "Defines the behaviour of `treemacs-RET-action'.
 
 Each alist element maps from a button state to the function that should be used
 for that state. The list of all possible button states is defined in
 `treemacs-valid-button-states'. Possible values are all treemacs-visit-node-*
-functions as well as `treemacs-push-button' for simple open/close actions,
+functions as well as `treemacs-toggle-node' for simple open/close actions,
 though in general you can use any function that accepts the prefix arg as its
 single argument.
 
