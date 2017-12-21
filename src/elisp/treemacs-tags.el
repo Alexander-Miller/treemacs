@@ -158,6 +158,7 @@ DEPTH: Int"
                'button '(t)
                'category 'default-button
                'face 'treemacs-tags-face
+               'help-echo nil
                :state 'tag-node
                :parent parent
                :depth depth
@@ -178,6 +179,7 @@ DEPTH: Int"
                'button '(t)
                'category 'default-button
                'face 'treemacs-tags-face
+               'help-echo nil
                :state 'tag-node-closed
                :parent parent
                :depth depth
@@ -253,7 +255,6 @@ Open all tag section under BTN when call is RECURSIVE."
                                  (goto-char (button-start it))
                                  (treemacs--expand-tag-node it t)))
                            (treemacs--reopen-tags-under btn))))))
-
 
 (defun treemacs--collapse-tag-node-recursive (btn)
   "Recursively close tag section BTN.

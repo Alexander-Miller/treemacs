@@ -120,6 +120,7 @@ DEPTH indicates how deep in the filetree the current button is."
    (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
+               'help-echo nil
                :state 'dir-node-closed
                :path path
                :parent parent
@@ -138,6 +139,7 @@ DEPTH indicates how deep in the filetree the current button is."
    (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
+               'help-echo nil
                :state 'file-node-closed
                :path path
                :parent parent
