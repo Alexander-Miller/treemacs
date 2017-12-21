@@ -118,6 +118,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (goto-char (posn-point (cadr event)))
     (beginning-of-line)
     (treemacs-toggle-node)))
+(make-obsolete 'treemacs-click-mouse1 #'treemacs-leftclick-action "Treemacs v1.18")
 
 (defun treemacs-uproot ()
   "Switch treemacs' root directory to current root's parent, if possible."
@@ -268,7 +269,7 @@ ACTION.
 
 First deletes the previous entry with key STATE from
 `treemacs-TAB-actions-config' and then inserts the new tuple."
-  (assq-delete-all state treemacs-TAB-actions-config)
+  (setq treemacs-TAB-actions-config (assq-delete-all state treemacs-TAB-actions-config))
   (push (cons state action) treemacs-TAB-actions-config))
 
 (defun treemacs-xdg-open ()

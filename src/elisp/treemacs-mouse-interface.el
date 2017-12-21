@@ -26,6 +26,44 @@
 (require 'treemacs-tags)
 (eval-and-compile (require 'treemacs-macros))
 
+(defun treemacs-leftclick-action (event)
+  "Move focus to the clicked line.
+Must be bound to a mouse click, or EVENT will not be supplied."
+  (interactive "e")
+  (when (eq 'mouse-1 (elt event 0))
+    (goto-char (posn-point (cadr event)))
+    (when (region-active-p)
+      (keyboard-quit))
+    (treemacs--evade-image)))
+
+(defun treemacs-doubleclick-action (event)
+  "Run the appropriate doubeclick action for the current node.
+In the default configuration this means to do the same as `treemacs-RET-action'.
+
+This function's exact configuration is stored in
+`treemacs-doubleclick-actions-config'.
+
+Must be bound to a mouse click, or EVENT will not be supplied."
+  (interactive "e")
+  (when (eq 'double-mouse-1 (elt event 0))
+    (goto-char (posn-point (cadr event)))
+    (treemacs--evade-image)
+    (when (region-active-p)
+      (keyboard-quit))
+    (-when-let (state (treemacs--prop-at-point 'state))
+      (funcall (cdr (assoc state treemacs-doubleclick-actions-config)))
+      (treemacs--evade-image))))
+
+(defun treemacs-define-doubleclick-action (state action)
+  "Define the behaviour of `treemacs-doubleclick-action'.
+Determines that a button with a given STATE should lead to the execution of
+ACTION.
+
+First deletes the previous entry with key STATE from
+`treemacs-doubleclick-actions-config' and then inserts the new tuple."
+  (setq treemacs-doubleclick-actions-config (assq-delete-all state treemacs-doubleclick-actions-config))
+  (push (cons state action) treemacs-doubleclick-actions-config))
+
 ;;;###autoload
 (defun treemacs-node-buffer-and-position (&optional _)
   "Return source buffer or list of buffer and position for the current node.

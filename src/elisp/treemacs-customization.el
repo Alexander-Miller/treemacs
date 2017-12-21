@@ -85,6 +85,21 @@ of how this config works and how to modify it."
   :type 'alist
   :group 'treemacs-configuration)
 
+(defcustom treemacs-doubleclick-actions-config
+  '((dir-node-open    . treemacs-toggle-node)
+    (dir-node-closed  . treemacs-toggle-node)
+    (file-node-open   . treemacs-visit-node-no-split)
+    (file-node-closed . treemacs-visit-node-no-split)
+    (tag-node-open    . treemacs-toggle-node)
+    (tag-node-closed  . treemacs-toggle-node)
+    (tag-node         . treemacs-visit-node-no-split))
+  "Defines the behaviour of `treemacs-doubleclick-action'.
+
+See the doc string of `treemacs-RET-actions-config' for a detailed description
+of how this config works and how to modify it."
+  :type 'alist
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-RET-actions-config
   '((dir-node-open    . treemacs-toggle-node)
     (dir-node-closed  . treemacs-toggle-node)

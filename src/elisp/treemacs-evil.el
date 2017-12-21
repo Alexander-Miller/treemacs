@@ -35,6 +35,17 @@
 
 (evil-set-initial-state 'treemacs-mode 'treemacs)
 
+(defun treemacs--turn-off-visual-state-after-click (&rest _)
+  "Go back to `evil-treemacs-state' after a mouse click."
+  ;; a double click will likely have opened a file so we need to make
+  ;; sure to go back in the right buffer
+  (-when-let- [b (treemacs-buffer-exists?)]
+    (with-current-buffer b
+      (evil-treemacs-state))))
+
+(advice-add 'treemacs-leftclick-action   :after #'treemacs--turn-off-visual-state-after-click)
+(advice-add 'treemacs-doubleclick-action :after #'treemacs--turn-off-visual-state-after-click)
+
 (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
 (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
 (define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
