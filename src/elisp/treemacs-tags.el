@@ -139,7 +139,7 @@ should be placed under."
         (existing-buffer (get-file-buffer file)))
     (if existing-buffer
         (setq buff existing-buffer)
-      (letf (((symbol-function 'run-mode-hooks) (symbol-function 'ignore)))
+      (cl-letf (((symbol-function 'run-mode-hooks) (symbol-function 'ignore)))
         (setq buff (find-file-noselect file))))
     (when (buffer-live-p buff)
       (with-current-buffer buff
