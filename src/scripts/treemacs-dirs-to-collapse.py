@@ -1,12 +1,13 @@
 from os import listdir
-from os.path import abspath, join, isdir, isfile
+from os.path import abspath, isdir, isfile
+from posixpath import join
 import sys
 import os
 
 def dir_content(path):
     ret = []
     for item in listdir(path):
-        full_path = path + "/" + item
+        full_path = join(path, item)
         if os.access(full_path, os.R_OK) and (SHOW_ALL or item[0] != '.'):
             ret.append(full_path)
     return ret
