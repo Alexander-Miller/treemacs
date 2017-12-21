@@ -149,17 +149,18 @@ Gives the button a NEW-STATE, and, optionally, a NEW-ICON. Performs OPEN-ACTION
 and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
 and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
-  `(treemacs-with-writable-buffer
-    (button-put ,button :state ,new-state)
-    (beginning-of-line)
-    ,@(when new-icon
-      `((treemacs--button-symbol-switch ,new-icon)))
-    ,@(if immediate-insert
-          `((progn
-              (end-of-line)
-              (insert (apply #'concat ,open-action))))
-        `(,open-action))
-    ,post-open-action))
+  `(save-excursion
+     (treemacs-with-writable-buffer
+      (button-put ,button :state ,new-state)
+      (beginning-of-line)
+      ,@(when new-icon
+          `((treemacs--button-symbol-switch ,new-icon)))
+      ,@(if immediate-insert
+            `((progn
+                (end-of-line)
+                (insert (apply #'concat ,open-action))))
+          `(,open-action))
+      ,post-open-action)))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
   "Building block macro for creating buttons from a list of items.
@@ -298,19 +299,20 @@ set to PARENT."
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
   "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
-  `(treemacs-with-writable-buffer
-    ,@(when new-icon
-        `((treemacs--button-symbol-switch ,new-icon)))
-    (end-of-line)
-    (forward-button 1)
-    (beginning-of-line)
-    (let* ((pos-start (point))
-           (next (treemacs--next-non-child-button ,button))
-           (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
-      (button-put ,button :state ,new-state)
-      (delete-region pos-start pos-end)
-      (delete-trailing-whitespace))
-    ,post-close-action))
+  `(save-excursion
+     (treemacs-with-writable-buffer
+      ,@(when new-icon
+          `((treemacs--button-symbol-switch ,new-icon)))
+      (end-of-line)
+      (forward-button 1)
+      (beginning-of-line)
+      (let* ((pos-start (point))
+             (next (treemacs--next-non-child-button ,button))
+             (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
+        (button-put ,button :state ,new-state)
+        (delete-region pos-start pos-end)
+        (delete-trailing-whitespace))
+      ,post-close-action)))
 
 (cl-defun treemacs--expand-dir-node (btn &key git-future recursive)
   "Open the node given by BTN.
