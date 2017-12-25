@@ -49,7 +49,7 @@
     (-when-let- [git-root (vc-call-backend 'Git 'root path)]
       (-let*- [(default-directory (f-canonical path))
                (future (pfuture-new
-                        "python"
+                        treemacs-python-executable
                         "-O"
                         treemacs--git-status.py
                         (f-long git-root)
@@ -125,7 +125,7 @@ Every string list consists of the following elements:
  * The single directories being collapsed, to be put under filewatch
    if `treemacs-filewatch-mode' is on."
   (when (> treemacs-collapse-dirs 0)
-    (pfuture-new "python"
+    (pfuture-new treemacs-python-executable
                  treemacs--dirs-to-collpase.py
                  path
                  (number-to-string treemacs-collapse-dirs)
@@ -149,8 +149,9 @@ The simple variant will start a git status process whose output is parsed in
 elisp. This version is simpler and slightly faster, but incomplete - it will
 highlight only files, not directories.
 The extended variant requires a non-trivial amount of parsing to be done, which
-is achieved with python. It is slightly slower, but complete - both files and
-directories will be highlighted according to their git status.
+is achieved with python (specifically python3). It is slightly slower, but
+complete - both files and directories will be highlighted according to their
+git status.
 Both versions run asynchronously and are optimized for not doing more work than
 is necessary, so their performance cost should, for the most part, be the
 constant time needed to fork a subprocess."
@@ -188,7 +189,7 @@ Use either ARG as git integration value of read it interactively."
 
 (when load-file-name
   (-pcase (cons (not (null (executable-find "git")))
-                (not (null (executable-find "python"))))
+                (not (null (executable-find "python3"))))
     [`(t . t)
      (treemacs-git-mode 'extended)]
     [`(t . _)

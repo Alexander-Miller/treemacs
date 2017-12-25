@@ -124,6 +124,18 @@ and outputs the string header to be inserted in the treemacs buffer."
   :group 'treemacs-configuration)
 (make-obsolete-variable 'treemacs-git-integration 'treemacs-git-mode "Treemacs v1.15")
 
+(defcustom treemacs-python-executable (executable-find "python")
+  "The python executable used by treemacs.
+An asynchronous python process is used in two optional feaures:
+`treemacs-collapse-dirs' and the extended variant of `treemacs-git-mode'.
+
+There is generally only one reason to change this value: an extended
+`treemacs-git-mode' requires python3 to work. If the default python executable
+is pointing to python2 this config variable can be used to direct treemacs to
+the python3 binary."
+  :type 'string
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
   "Files matching this regular expression count as dotfiles."
   :type 'regexp
