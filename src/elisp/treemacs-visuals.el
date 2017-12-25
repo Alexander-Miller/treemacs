@@ -152,7 +152,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (treemacs--defvar-with-default
    treemacs-icon-open-text (propertize "- " 'face 'treemacs-term-node-face))
   (treemacs--defvar-with-default
-   treemacs-icon-fallback-text (propertize "🗏 " 'face 'font-lock-keyword-face))
+   treemacs-icon-fallback-text (propertize "  " 'face 'font-lock-keyword-face))
 
   (defvar treemacs-icon-closed)
   (defvar treemacs-icon-open)
