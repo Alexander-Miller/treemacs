@@ -315,6 +315,13 @@ Will also perform cleanup if the buffer is dead."
         (setq next (next-button (button-end next) t)))
       next)))
 
+(defsubst treemacs--remove-framelocal-buffer ()
+  "Remove the frame-local buffer from the current frame.
+To be run in the kill buffer hook as it removes the mapping
+of the `current-buffer'."
+  (setq treemacs--buffer-access
+        (rassq-delete-all (current-buffer) treemacs--buffer-access)))
+
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
@@ -666,25 +673,19 @@ Will return t when FILE
   "Return whether the current visibility state of the treemacs buffer.
 Valid states are 'visible, 'exists and 'none."
   (cond
-   ((treemacs--is-visible?)    'visible)
+   ((treemacs--is-visible?)   'visible)
    ((treemacs-buffer-exists?) 'exists)
    (t 'none)))
 
-(defun treemacs--remove-framelocal-buffer (&optional frame)
-  "Remove FRAME's local treemacs buffer.
-FRAME is given when this is called via `delete-frame-functions' \(during
-treemacs buffer teardown\) otherwise the currently selected frame is used."
-  (when frame
-    (-when-let (b (cdr (assoc frame treemacs--buffer-access)))
-      ;; Only do the killing here when frame is non-nil, since a frame is being deleted then.
-      ;; If frame is non nil we're running from in the kill buffer hook - killing the buffer again
-      ;; will then trigger the kill buffer hook again etc ad stack overflow
-      (kill-buffer b)))
+(defun treemacs--on-frame-kill (frame)
+  "Remove its framelocal buffer when FRAME is killed."
+  (-when-let- [b (cdr (assq frame treemacs--buffer-access))]
+    (kill-buffer b))
   (setq treemacs--buffer-access
-        (assq-delete-all (or frame (selected-frame)) treemacs--buffer-access))
+        (assq-delete-all frame treemacs--buffer-access))
   (unless treemacs--buffer-access
     (setq delete-frame-functions
-          (delete #'treemacs--remove-framelocal-buffer delete-frame-functions))))
+          (delete #'treemacs--on-frame-kill delete-frame-functions))))
 
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
