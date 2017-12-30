@@ -18,6 +18,7 @@
   - [[#session-persistence][Session Persistence]]
   - [[#terminal-compatibility][Terminal Compatibility]]
   - [[#tag-view][Tag View]]
+    - [[#ggtags][ggtags]]
   - [[#additional-packages][Additional Packages]]
     - [[#treemacs-evil][treemacs-evil]]
     - [[#treemacs-projectile][treemacs-projectile]]
@@ -179,10 +180,14 @@ using emacs' builtin imenu functionality, so all file types that emacs can gener
 Imenu caches its result, so to avoid stale tag lists setting ~imenu-auto-rescan~ to t is recommended. Tags generated
 with the help of ~semantic-mode~ are likewise supported.
 
-Tag view support is in an early beta release stage, and so (other than the increased likelihood of bugs), it's currently
-missing certain features:
+*** ggtags
 
- * It won't look right in the terminal, there aren't any terminal icons for tags yet.
+Treemacs can show the tags produced by ggtags if you switch a buffer's imenu index function to use ggtags:
+
+#+BEGIN_SRC emacs-lisp
+  (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
+#+END_SRC
+
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 *** treemacs-evil
