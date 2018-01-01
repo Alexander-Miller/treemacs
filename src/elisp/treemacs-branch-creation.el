@@ -189,28 +189,25 @@ Go to each dir button, expand its label with the collpased dirs, set its new
 path and give it a special parent-path property so opening it will add the
 correct cache entries."
   (when dirs
-    (let ((search-start (if (string= root (treemacs--current-root))
-                            0
-                          (button-start (treemacs--goto-button-at root)))))
-      (--each dirs
-        ;; no warning since filewatch mode is known to be defined
-        (when (with-no-warnings treemacs-filewatch-mode)
-          (treemacs--start-watching (car it))
-          (dolist (step (nthcdr 2 it))
-            (treemacs--start-watching step t)))
-        (let* ((b (treemacs--goto-button-at (car it) search-start))
-               (props (text-properties-at (button-start b))))
-          (button-put b 'abs-path (nth (- (length it) 1) it))
-          (button-put b 'parent-path root)
-          (end-of-line)
-          (let* ((beg (point))
-                 (dir (cadr it))
-                 (parent (file-name-directory dir)))
-            (insert dir)
-            (add-text-properties beg (point) props)
-            (add-text-properties
-             (button-start b) (+ beg (length parent))
-             '(face treemacs-directory-collapsed-face))))))))
+    (--each dirs
+      ;; no warning since filewatch mode is known to be defined
+      (when (with-no-warnings treemacs-filewatch-mode)
+        (treemacs--start-watching (car it))
+        (dolist (step (nthcdr 2 it))
+          (treemacs--start-watching step t)))
+      (let* ((b (treemacs--goto-button-at (car it)))
+             (props (text-properties-at (button-start b))))
+        (button-put b 'abs-path (nth (- (length it) 1) it))
+        (button-put b 'parent-path root)
+        (end-of-line)
+        (let* ((beg (point))
+               (dir (cadr it))
+               (parent (file-name-directory dir)))
+          (insert dir)
+          (add-text-properties beg (point) props)
+          (add-text-properties
+           (button-start b) (+ beg (length parent))
+           '(face treemacs-directory-collapsed-face)))))))
 
 (defun treemacs--create-branch (root depth git-future collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
@@ -331,6 +328,7 @@ RECURSIVE: Bool"
        :post-open-action
        (progn
          (unless no-add (treemacs--add-to-cache btn))
+         (treemacs--add-to-position-cache abs-path btn)
          (treemacs--start-watching abs-path)
          (when recursive
            (--each (treemacs--get-children-of btn)
@@ -350,6 +348,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
    (let ((path (button-get btn 'abs-path)))
      (treemacs--stop-watching path)
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
+     (treemacs--remove-from-position-cache path)
      (treemacs--clear-from-cache btn recursive))))
 
 (defun treemacs--check-window-system ()

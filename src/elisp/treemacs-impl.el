@@ -103,11 +103,16 @@ longer be contigious.")
     (if (s-ends-with? "src/elisp/" dir)
         (-> dir (f-parent) (f-parent))
       dir))
-
   "The directory treemacs.el is stored in.")
 
 (defvar-local treemacs--open-dirs-cache '()
-  "Cache to keep track of opened subfolders.")
+  "Cache to keep track of opened subfolders.
+This cache serves to ensure that directories opened below a parent directory
+will be opened again when the parent is closed and reopened.")
+
+(defvar-local treemacs--open-node-position-cache (make-hash-table :size 300 :test #'equal)
+  "Cache to keep track of openened node locations.
+Exists specifically to make jumping to buttons more efficient.")
 
 (defvar-local treemacs--in-gui 'unset
   "Indicates whether Emacs is running in a gui or a terminal.")
@@ -142,6 +147,10 @@ Returns nil when point is on the header."
   (interactive)
   (buffer-substring-no-properties (button-start btn) (button-end btn)))
 
+(defsubst treemacs--is-path-in-dir? (path dir)
+  "Is PATH in directory DIR?"
+  (s-starts-with? (f-slash dir) path))
+
 (defsubst treemacs--add-to-cache (btn)
   "Add a cache entry for BTN's path under its parent.
 The parent may be stored in BTN's parent-path property if BTN is a collapsed
@@ -152,6 +161,29 @@ directory."
       (if cache
           (push opened-child (cdr cache))
         (add-to-list 'treemacs--open-dirs-cache `(,parent ,opened-child))))))
+
+(defsubst treemacs--add-to-position-cache (path position)
+  "Add PATH's POSITION to `treemacs--open-node-position-cache'."
+  (puthash path position treemacs--open-node-position-cache))
+
+(defsubst treemacs--remove-from-position-cache (path &optional purge)
+  "Remov PATH's position from `treemacs--open-node-position-cache'.
+When PURGE is non-nil also remove all directories below PATH."
+  (remhash path treemacs--open-node-position-cache)
+  (when purge
+    (maphash
+     (lambda (p _)
+       (when (treemacs--is-path-in-dir? p path)
+         (remhash p treemacs--open-node-position-cache)))
+     treemacs--open-node-position-cache)))
+
+(defsubst treemacs--clear-position-cache ()
+  "Clear `treemacs--open-node-position-cache'."
+  (clrhash treemacs--open-node-position-cache))
+
+(defsubst treemacs--get-position-of (path)
+  "Retrieve PATH's position from `treemacs--open-node-position-cache'."
+  (gethash path treemacs--open-node-position-cache))
 
 (defsubst treemacs--replace-hash-keys (table predicate make-new-key)
   "Selectively replace keys in a given hash TABLE.
@@ -225,10 +257,6 @@ Returns the buffer if it does exist."
 Returns nil when point is on the header."
   (-when-let (b (treemacs-current-button))
     (button-get b prop)))
-
-(defsubst treemacs--is-path-in-dir? (path dir)
-  "Is PATH in directory DIR?"
-  (s-starts-with? (f-slash dir) path))
 
 (defsubst treemacs--current-root ()
   "Return the current root directory.
@@ -435,7 +463,7 @@ buffer."
   (treemacs--stop-watch-all-in-scope)
   (treemacs--cancel-refresh-timer)
   (treemacs--with-writable-buffer
-   (treemacs--delete-all)
+   (delete-region (point-min) (point-max))
    (treemacs--insert-header root)
    (treemacs--create-branch root 0
                             (treemacs--git-status-process-function root)
@@ -448,10 +476,6 @@ buffer."
    ;; be started here
    ;; same goes for reopening
    (treemacs--start-watching root)))
-
-(defun treemacs--delete-all ()
-  "Delete all content of the buffer."
-  (delete-region (point-min) (point-max)))
 
 (defun treemacs--create-header (root)
   "Use ROOT's directory name as treemacs' header."
@@ -477,10 +501,10 @@ buffer."
 (defun treemacs--buffer-teardown ()
   "Cleanup to be run when an existing treemacs buffer is re-initialized."
   (setq treemacs--open-dirs-cache nil)
+  (treemacs--clear-position-cache)
   (treemacs--clear-tags-cache)
   (treemacs--stop-watch-all-in-scope)
   (treemacs--cancel-refresh-timer)
-  (treemacs--forget-last-highlight)
   (treemacs--forget-last-highlight))
 
 (defun treemacs--push-button (btn &optional recursive)
@@ -593,30 +617,24 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
         (treemacs--do-follow (f-long new-file))
         (recenter)))))
 
-(cl-defun treemacs--goto-button-at (abs-path &optional (start-from (point-min)))
-  "Move point to button identified by ABS-PATH, starting search at START.
-Also return that button.
-Callers must make sure to save match data"
-  (let ((keep-looking t)
-        (filename (f-filename abs-path))
-        (start (point))
-        (ret))
-    (goto-char start-from)
-    (while (and keep-looking
-                (search-forward filename nil t))
-      (beginning-of-line)
-      (let* ((btn (next-button (point) t))
-             (btn-path (button-get btn 'abs-path)))
-        (if (or (s-equals? abs-path btn-path)
-                ;; loosen matching for collapsed paths
-                (and (button-get btn 'parent-path)
-                     (treemacs--is-path-in-dir? btn-path abs-path)))
-            (progn (treemacs--evade-image)
-                   (setq keep-looking nil
-                         ret btn))
-          (beginning-of-line 2))))
-    (unless ret (goto-char start))
-    ret))
+(cl-defun treemacs--goto-button-at (abs-path)
+  "Move point to button identified by ABS-PATH, also return that button."
+  (-let [parent (f-parent abs-path)]
+    (-if-let- [pos-btn (treemacs--get-position-of parent)]
+        (--first
+         (when (string= abs-path (button-get it 'abs-path))
+           (goto-char it)
+           it)
+         (treemacs--get-children-of pos-btn))
+      (goto-char (point-min))
+      (-let [btn (next-button (point) t)]
+        (cl-block search
+          (while btn
+            (if (string= abs-path (button-get btn 'abs-path))
+                (progn
+                  (goto-char (button-start btn))
+                  (cl-return-from search btn))
+              (setq btn (next-button (button-end btn))))))))))
 
 (defun treemacs--on-window-config-change ()
   "Collects all tasks that need to run on a window config change."
@@ -802,7 +820,7 @@ filewatch mode can refresh multiple buffers at once."
             ;; using forwald-line
             (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
          ((or `tag-node-open `tag-node-closed `tag-node)
-          (treemacs--goto-tag-button-at curr-tagpath curr-file win-start))
+          (treemacs--goto-tag-button-at curr-tagpath curr-file))
          ((pred null)
           (with-no-warnings (goto-line 1)))
          (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))

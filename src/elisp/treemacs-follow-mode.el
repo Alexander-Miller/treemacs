@@ -35,22 +35,17 @@ functions.")
 
 (defsubst treemacs--follow-each-dir (dir-parts root)
   "Follow (goto and open) every single dir in DIR-PARTS, starting at ROOT."
-  (save-match-data
-    (catch 'follow-failed
-      (let ((last-index (- (length dir-parts) 1))
-            (search-start (point-min)))
-        (--each dir-parts
-          (setq root (f-join root it))
-          (let ((btn (treemacs--goto-button-at root search-start)))
-            (if (null btn)
-                (progn
-                  (throw 'follow-failed 'follow-failed)))
-            ;; don't open dir at the very end of the list since we only want to put
-            ;; point in its line
-            (when (and (eq 'dir-node-closed (button-get btn 'state))
-                       (< it-index last-index))
-              (treemacs--open-dir-node btn)))
-          (setq search-start (point)))))))
+  (catch 'follow-failed
+    (-let [last-index (- (length dir-parts) 1)]
+      (--each dir-parts
+        (setq root (f-join root it))
+        (let ((btn (treemacs--goto-button-at root)))
+          (unless btn (throw 'follow-failed 'follow-failed))
+          ;; don't open dir at the very end of the list since we only want to put
+          ;; point in its line
+          (when (and (eq 'dir-node-closed (button-get btn 'state))
+                     (< it-index last-index))
+            (treemacs--open-dir-node btn)))))))
 
 (cl-defun treemacs--do-follow (followed-file &optional (root (treemacs--current-root)))
   "In the treemacs buffer move point to FOLLOWED-FILE given current ROOT.

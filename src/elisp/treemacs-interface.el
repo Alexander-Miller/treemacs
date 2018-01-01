@@ -277,6 +277,7 @@ A delete action must always be confirmed. Directories are deleted recursively."
                     (treemacs--log "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
                     nil)))
             (treemacs--clear-from-cache btn t)
+            (treemacs--remove-from-position-cache path t)
             (treemacs--remove-all-tags-under-path-from-cache path)
             (treemacs--without-messages (treemacs-refresh)))))
     (treemacs--log "Nothing to delete here."))

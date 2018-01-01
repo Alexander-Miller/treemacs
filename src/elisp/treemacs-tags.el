@@ -388,12 +388,12 @@ exist."
                         (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
         [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
 
-(defun treemacs--goto-tag-button-at (tag-path file &optional start)
+(defun treemacs--goto-tag-button-at (tag-path file)
   "Goto tag given by TAG-PATH for button of FILE.
 Start the search at START."
   (let ((tag (car tag-path))
         (path (cdr tag-path)))
-    (-when-let (btn (treemacs--goto-button-at file (or start (point-min))))
+    (-when-let (btn (treemacs--goto-button-at file ))
       (when (eq 'file-node-closed (button-get btn 'state))
         (goto-char (button-start btn))
         (treemacs--open-tags-for-file btn))
