@@ -148,8 +148,8 @@ Returns nil when point is on the header."
   "Is PATH in directory DIR?"
   (s-starts-with? (f-slash dir) path))
 
-(defsubst treemacs--add-to-cache (btn)
-  "Add a cache entry for BTN's path under its parent.
+(defsubst treemacs--add-to-open-dirs-cache (btn)
+  "Add an entry for BTN's path under its parent in `treemacs--open-dirs-cache'.
 The parent may be stored in BTN's parent-path property if BTN is a collapsed
 directory."
   (let* ((opened-child (button-get btn 'abs-path))
@@ -285,10 +285,6 @@ and special names like this."
       (if (string-match "\\.[^.]*\\'" filename)
           (substring filename (1+ (match-beginning 0)))
         filename))))
-
-(defsubst treemacs--clear-dirs-cache ()
-  "Reset the cache of open dirs."
-  (setq treemacs--open-dirs-cache nil))
 
 (defsubst treemacs-is-treemacs-window? (window)
   "Return t when WINDOW is showing a treemacs buffer."
@@ -523,7 +519,7 @@ GIT-INFO is passed through from the previous branch build."
   (if (null btn)
       ;; the most likely reason for receiving a nil button here is that the undelying file has been deleted,
       ;; so we'll just throw the path out of the cache and assume that all is well
-      (treemacs--clear-from-cache btn)
+      (treemacs--remove-from-open-dirs-cache btn)
     (pcase (button-get btn 'state)
       (`dir-node-closed  (treemacs--open-dir-node btn :no-add t :git-future git-info))
       (`file-node-closed (treemacs--open-tags-for-file btn :no-add t))
@@ -542,8 +538,8 @@ GIT-INFO is passed through from the previous branch build."
     (treemacs--maybe-filter-dotfiles)
     (--each (treemacs--reopen-node (treemacs--goto-button-at it) git-info)))))
 
-(defun treemacs--clear-from-cache (path-or-btn &optional purge)
-  "Remove PATH-OR-BTN from the open dirs cache.
+(defun treemacs--remove-from-open-dirs-cache (path-or-btn &optional purge)
+  "Remove PATH-OR-BTN from `treemacs--open-dirs-cache'.
 Also remove any dirs below if PURGE is given.
 
 PATH-OR-BTN is a button only when simply grabbing a path's parent may lead to
@@ -568,7 +564,7 @@ parent-path property."
                 (->> values
                      (--map (cdr (assoc it treemacs--open-dirs-cache)))
                      (-flatten)))
-          (--each children (treemacs--clear-from-cache it t))))))
+          (--each children (treemacs--remove-from-open-dirs-cache it t))))))
 
 (defun treemacs--nearest-path (btn)
   "Return the 'abs-path' property of the current button (or BTN).

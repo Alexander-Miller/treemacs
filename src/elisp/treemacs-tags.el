@@ -213,7 +213,7 @@ during a reopen process. Recursively open all tag below BTN when RECURSIVE is t.
                                         (treemacs--insert-tag-node item node-prefix btn depth)
                                       (treemacs--insert-tag-leaf item leaf-prefix btn depth)))
          :post-open-action (progn
-                             (unless no-add (treemacs--add-to-cache btn))
+                             (unless no-add (treemacs--add-to-open-dirs-cache btn))
                              (treemacs--reopen-tags-under btn)
                              (end-of-line)
                              (when recursive
@@ -231,7 +231,7 @@ Remove all open tag entries under BTN when RECURSIVE."
    :new-state 'file-node-closed
    :post-close-action
    (let ((path (button-get btn 'abs-path)))
-     (treemacs--clear-from-cache path)
+     (treemacs--remove-from-open-dirs-cache path)
      (when recursive
        (treemacs--remove-all-tags-under-path-from-cache path)))))
 

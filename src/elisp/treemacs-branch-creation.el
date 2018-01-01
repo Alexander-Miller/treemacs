@@ -327,7 +327,7 @@ RECURSIVE: Bool"
        (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future collapse-future btn)
        :post-open-action
        (progn
-         (unless no-add (treemacs--add-to-cache btn))
+         (unless no-add (treemacs--add-to-open-dirs-cache btn))
          (treemacs--add-to-position-cache abs-path btn)
          (treemacs--start-watching abs-path)
          (when recursive
@@ -349,7 +349,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
      (treemacs--stop-watching path)
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
      (treemacs--remove-from-position-cache path)
-     (treemacs--clear-from-cache btn recursive))))
+     (treemacs--remove-from-open-dirs-cache btn recursive))))
 
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.

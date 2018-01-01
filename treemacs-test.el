@@ -67,7 +67,7 @@
           (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
       (should (equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E") (treemacs--maybe-filter-dotfiles input))))))
 
-;; `treemacs--add-to-cache'
+;; `treemacs--add-to-open-dirs-cache'
 (progn
   (ert-deftest add-to-dirs-cache::add-single-item ()
     (with-temp-buffer
@@ -78,7 +78,7 @@
         (button-put p 'abs-path "/home/A")
         (button-put b 'abs-path "/home/A/B")
         (button-put b 'parent p)
-        (treemacs--add-to-cache b)
+        (treemacs--add-to-open-dirs-cache b)
         (should (equal '(("/home/A" "/home/A/B")) treemacs--open-dirs-cache)))))
 
   (ert-deftest add-to-dirs-cache::add-single-collapsed-item ()
@@ -91,7 +91,7 @@
         (button-put b 'abs-path "/home/A/B")
         (button-put b 'parent p)
         (button-put b 'parent-path "/home/P")
-        (treemacs--add-to-cache b)
+        (treemacs--add-to-open-dirs-cache b)
         (should (equal '(("/home/P" "/home/A/B")) treemacs--open-dirs-cache)))))
 
   (ert-deftest add-to-dirs-cache::add-two-same-parent-items ()
@@ -105,8 +105,8 @@
         (button-put b2 'abs-path "/home/A/B2")
         (button-put b1 'parent p)
         (button-put b2 'parent p)
-        (treemacs--add-to-cache b1)
-        (treemacs--add-to-cache b2)
+        (treemacs--add-to-open-dirs-cache b1)
+        (treemacs--add-to-open-dirs-cache b2)
         (should (equal '(("/home/A" "/home/A/B2" "/home/A/B1")) treemacs--open-dirs-cache)))))
 
   (ert-deftest add-to-dirs-cache::add-two-different-parent-items ()
@@ -122,8 +122,8 @@
         (button-put b2 'abs-path "/A2/B2")
         (button-put b1 'parent p1)
         (button-put b2 'parent p2)
-        (treemacs--add-to-cache b1)
-        (treemacs--add-to-cache b2)
+        (treemacs--add-to-open-dirs-cache b1)
+        (treemacs--add-to-open-dirs-cache b2)
         (should (equal `(("/A2" "/A2/B2") ("/A1" "/A1/B1")) treemacs--open-dirs-cache)))))
 
   (ert-deftest add-to-dirs-cache::add-new-child-to-cache-with-multiple-items ()
@@ -142,60 +142,60 @@
         (button-put b1 'parent p1)
         (button-put b2 'parent p2)
         (button-put b3 'parent p1)
-        (treemacs--add-to-cache b1)
-        (treemacs--add-to-cache b2)
-        (treemacs--add-to-cache b3)
+        (treemacs--add-to-open-dirs-cache b1)
+        (treemacs--add-to-open-dirs-cache b2)
+        (treemacs--add-to-open-dirs-cache b3)
         (should (equal `(("/A2" "/A2/B2") ("/A1" "/A1/B3" "/A1/B1")) treemacs--open-dirs-cache))))))
 
-;; `treemacs--clear-from-cache'
+;; `treemacs--remove-from-open-dirs-cache'
 (progn
   (ert-deftest clear-from-dirs-cache::clear-item-from-empty-cache ()
     (let ((treemacs--open-dirs-cache nil))
-      (treemacs--clear-from-cache "/home/A")
+      (treemacs--remove-from-open-dirs-cache "/home/A")
       (should (null treemacs--open-dirs-cache))))
 
   (ert-deftest clear-from-dirs-cache::clear-item-not-in-the-cache ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
-      (treemacs--clear-from-cache "/home/X")
+      (treemacs--remove-from-open-dirs-cache "/home/X")
       (should (equal '(("/home/A" "/home/A/B")) treemacs--open-dirs-cache))))
 
   (ert-deftest clear-from-dirs-cache::clear-item-from-empty-cache-with-purge ()
     (let ((treemacs--open-dirs-cache nil))
-      (treemacs--clear-from-cache "/home/A" t)
+      (treemacs--remove-from-open-dirs-cache "/home/A" t)
       (should (null treemacs--open-dirs-cache))))
 
   (ert-deftest clear-from-dirs-cache::clear-item-from-cache-deleting-the-entry ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
-      (treemacs--clear-from-cache "/home/A/B")
+      (treemacs--remove-from-open-dirs-cache "/home/A/B")
       (should (null treemacs--open-dirs-cache))))
 
   (ert-deftest clear-from-dirs-cache::clear-item-from-cache-deleting-the-entry-with-purge ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
-      (treemacs--clear-from-cache "/home/A/B" t)
+      (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (null treemacs--open-dirs-cache))))
 
   (ert-deftest clear-from-dirs-cache::clear-item-from-cache-leaving-other-entry ()
     (let* ((entry1 '("/home/A" "/home/A/B"))
            (entry2 '("/home/C" "/home/C/D"))
            (treemacs--open-dirs-cache (list entry1 entry2)))
-      (treemacs--clear-from-cache "/home/A/B")
+      (treemacs--remove-from-open-dirs-cache "/home/A/B")
       (should (equal treemacs--open-dirs-cache `(,entry2)))))
 
   (ert-deftest clear-from-dirs-cache::clear-item-from-cache-leaving-other-entry-with-purge ()
     (let* ((entry1 '("/home/A" "/home/A/B"))
            (entry2 '("/home/C" "/home/C/D"))
            (treemacs--open-dirs-cache (list entry1 entry2)))
-      (treemacs--clear-from-cache "/home/A/B" t)
+      (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache `(,entry2)))))
 
   (ert-deftest clear-from-dirs-cache::clear-one-of-two-items ()
     (let* ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B" "/home/A/C"))))
-      (treemacs--clear-from-cache "/home/A/B" t)
+      (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A" "/home/A/C"))))))
 
   (ert-deftest clear-from-dirs-cache::clear-one-of-two-items-with-purge ()
     (let* ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B" "/home/A/C"))))
-      (treemacs--clear-from-cache "/home/A/B" t)
+      (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A" "/home/A/C"))))))
 
   (ert-deftest clear-from-dirs-cache::clear-item-and-purge-children ()
@@ -206,7 +206,7 @@
               ("/home/A/B/C2" "/home/A/B/C2/D1")
               ("/home/A/B/C1/D3" "/home/A/B/C1/D3/E1")
               ("/home/A2" "/home/A2/B1" "/home/A2/B2"))))
-      (treemacs--clear-from-cache "/home/A/B" t)
+      (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A2" "/home/A2/B1" "/home/A2/B2")))))))
 
 ;; `treemacs--is-path-in-dir?'
