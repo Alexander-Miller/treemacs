@@ -114,9 +114,6 @@ will be opened again when the parent is closed and reopened.")
   "Cache to keep track of openened node locations.
 Exists specifically to make jumping to buttons more efficient.")
 
-(defvar-local treemacs--in-gui 'unset
-  "Indicates whether Emacs is running in a gui or a terminal.")
-
 (defvar treemacs--no-messages nil
   "When set to t `treemacs--log' will produce no output.
 Not used directly, but as part of `treemacs--without-messages'.")
