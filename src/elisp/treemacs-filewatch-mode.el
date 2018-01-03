@@ -113,9 +113,7 @@ Also immediately remove the changed file from caches if it has been deleted
 instead of waiting for file processing."
   (when (treemacs--is-event-relevant? event)
     (when (eq 'deleted (cadr event))
-      (let ((path (cl-third event)))
-        (treemacs--remove-from-open-dirs-cache path t)
-        (treemacs--remove-all-tags-under-path-from-cache path)))
+      (treemacs--on-file-deletion (cl-third event)))
     (if treemacs--collected-file-events
         (push event treemacs--collected-file-events)
       (setq treemacs--collected-file-events (list event)

@@ -38,6 +38,7 @@
 
 (treemacs--import-functions-from "treemacs-tags"
   treemacs--clear-tags-cache
+  treemacs--remove-all-tags-under-path-from-cache
   treemacs--open-tags-for-file
   treemacs--close-tags-for-file
   treemacs--open-tag-node
@@ -342,6 +343,13 @@ To be run in the kill buffer hook as it removes the mapping
 of the `current-buffer'."
   (setq treemacs--buffer-access
         (rassq-delete-all (current-buffer) treemacs--buffer-access)))
+
+(defsubst treemacs--on-file-deletion (path)
+  "Cleanup to run when treemacs file at PATH was deleted."
+  (treemacs--remove-from-open-dirs-cache path t)
+  (treemacs--kill-buffers-after-deletion path t)
+  (treemacs--remove-from-position-cache path t)
+  (treemacs--remove-all-tags-under-path-from-cache path))
 
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
