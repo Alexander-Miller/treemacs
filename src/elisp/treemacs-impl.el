@@ -318,18 +318,18 @@ Will also perform cleanup if the buffer is dead."
   (declare (side-effect-free t))
   (-let- [(depth (button-get btn 'depth))
           (next (next-button (button-end btn)))]
-    (while (and next (/= depth (button-get next 'depth)))
+    (while (and next (< depth (button-get next 'depth)))
       (setq next (next-button (button-end next))))
-    next))
+    (when (= depth (button-get next 'depth)) next)))
 
 (defsubst treemacs--prev-neighbour (btn)
   "Get the previous same-level node of BTN, if any."
   (declare (side-effect-free t))
   (-let- [(depth (button-get btn 'depth))
           (prev (previous-button (button-start btn)))]
-    (while (and prev (/= depth (button-get prev 'depth)))
+    (while (and prev (< depth (button-get prev 'depth)))
       (setq prev (previous-button (button-start prev))))
-    prev))
+    (when (= depth (button-get prev 'depth)) prev)))
 
 (defsubst treemacs--next-non-child-node (btn)
   "Return the next node after BTN that is not a child of BTB."
