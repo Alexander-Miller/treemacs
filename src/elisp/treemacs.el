@@ -110,7 +110,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
               (if (treemacs--is-path-in-dir? location (treemacs--current-root))
                 (treemacs--init dir)))
           (treemacs--init dir))
-        (treemacs--goto-button-at location)
+        (treemacs--goto-node-at location)
         (when arg
           (treemacs-visit-node-default-action)))))
 

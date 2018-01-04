@@ -195,7 +195,7 @@ correct cache entries."
         (treemacs--start-watching (car it))
         (dolist (step (nthcdr 2 it))
           (treemacs--start-watching step t)))
-      (let* ((b (treemacs--goto-button-at (car it)))
+      (let* ((b (treemacs--goto-node-at (car it)))
              (props (text-properties-at (button-start b))))
         (button-put b 'abs-path (nth (- (length it) 1) it))
         (button-put b 'parent-path root)

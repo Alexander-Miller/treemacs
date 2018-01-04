@@ -47,18 +47,13 @@ Remember the value in `treemacs--defaults-icons'."
 
 (defmacro treemacs--with-writable-buffer (&rest body)
   "Temporarily turn off read-ony mode to execute BODY."
-  `(progn
-     (read-only-mode -1)
-     (unwind-protect
-         (progn ,@body)
-       (read-only-mode t))))
+  `(let (buffer-read-only)
+     ,@body))
 
 (defmacro treemacs--without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
   `(let ((treemacs--no-messages t))
-     (unwind-protect
-         ,@body
-       (setq treemacs--no-messages nil))))
+     ,@body))
 
 (defmacro treemacs--safe-button-get (button &rest properties)
   "Safely extract BUTTON's PROPERTIES.
@@ -199,6 +194,17 @@ under or below it."
 				 state ',valid-states)))
 		(when ,save-window
                   (select-window current-window))))))))))
+
+(defmacro treemacs--with-uncached-movement (&rest body)
+  "Execute BODY using `treemacs--uncached-goto-node-at'.
+This is necessary e.g. during refresh, when `treemacs--open-node-position-cache'
+is invalidated."
+  `(-let [o (symbol-function 'treemacs--goto-node-at)]
+     (unwind-protect
+         (progn
+           (fset 'treemacs--goto-node-at #'treemacs--uncached-goto-node-at)
+           ,@body)
+       (fset 'treemacs--goto-node-at o))))
 
 (provide 'treemacs-macros)
 

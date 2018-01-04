@@ -39,7 +39,7 @@ functions.")
     (-let [last-index (- (length dir-parts) 1)]
       (--each dir-parts
         (setq root (f-join root it))
-        (let ((btn (treemacs--goto-button-at root)))
+        (-let [btn (treemacs--goto-node-at root)]
           (unless btn (throw 'follow-failed 'follow-failed))
           ;; don't open dir at the very end of the list since we only want to put
           ;; point in its line

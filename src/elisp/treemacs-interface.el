@@ -90,7 +90,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
          (new-root  (treemacs--parent root)))
     (unless (s-equals? root new-root)
       (treemacs--build-tree new-root)
-      (treemacs--goto-button-at root)
+      (treemacs--goto-node-at root)
       (treemacs--evade-image))))
 
 (defun treemacs-goto-parent-node ()
@@ -319,7 +319,7 @@ likewise be updated."
        (treemacs--update-caches-after-rename old-path new-path)
        (treemacs--reload-buffers-after-rename old-path new-path)
        (treemacs-refresh)
-       (treemacs--goto-button-at new-path)
+       (treemacs--goto-node-at new-path)
        (throw 'exit (format "Renamed %s to %s."
                             (propertize (f-filename old-path) 'face font-lock-string-face)
                             (propertize new-name 'face font-lock-string-face)))))))
@@ -399,7 +399,7 @@ given and the current buffer is not editing a file."
                        (treemacs--init path)
                      (progn
                        (treemacs--init (f-dirname path))
-                       (treemacs--goto-button-at path)
+                       (treemacs--goto-node-at path)
                        (hl-line-mode -1)
                        (hl-line-mode t)))))))))))))
 

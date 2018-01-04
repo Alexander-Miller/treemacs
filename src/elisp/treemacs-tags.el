@@ -393,7 +393,7 @@ exist."
 Start the search at START."
   (let ((tag (car tag-path))
         (path (cdr tag-path)))
-    (-when-let (btn (treemacs--goto-button-at file ))
+    (-when-let (btn (treemacs--goto-node-at file))
       (when (eq 'file-node-closed (button-get btn 'state))
         (goto-char (button-start btn))
         (treemacs--open-tags-for-file btn))

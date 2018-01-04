@@ -113,7 +113,11 @@ will be opened again when the parent is closed and reopened.")
 
 (defvar-local treemacs--open-node-position-cache (make-hash-table :size 300 :test #'equal)
   "Cache to keep track of openened node locations.
-Exists specifically to make jumping to buttons more efficient.")
+Exists specifically to make `treemacs--goto-node-at' more effiecient.
+Will become invalidated when some action deletes the treemacs buffer's content,
+even if it is only to rebuild it, like during refresh. In such instances either
+`treemacs--uncached-goto-node-at' or, mode generally, the
+`treemacs--with-uncached-movement' macro should be used.")
 
 (defvar treemacs--no-messages nil
   "When set to t `treemacs--log' will produce no output.
@@ -544,7 +548,7 @@ GIT-INFO is passed through from the previous branch build."
     (assoc treemacs--open-dirs-cache)
     (cdr)
     (treemacs--maybe-filter-dotfiles)
-    (--each (treemacs--reopen-node (treemacs--goto-button-at it) git-info)))))
+    (--each (treemacs--reopen-node (treemacs--goto-node-at it) git-info)))))
 
 (defun treemacs--remove-from-open-dirs-cache (path-or-btn &optional purge)
   "Remove PATH-OR-BTN from `treemacs--open-dirs-cache'.
@@ -618,15 +622,39 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
         (treemacs--do-follow (f-long new-file))
         (recenter)))))
 
-(cl-defun treemacs--goto-button-at (abs-path)
+(cl-defun treemacs--uncached-goto-node-at (abs-path &optional (start-from (point-min)))
+  "Move point to node identified by ABS-PATH, starting search at START.
+Also return that node.
+Unlike `treemacs--goto-node-at' this function does not make use of
+`treemacs--open-node-position-cache', which means 2 things: 1) It is
+considerably slower, and its use should thus be avoided, and 2) It can be used
+in times when the node position cache is invalidated, like the reopen phase of
+a refresh."
+  (-let- [(filename (f-filename abs-path))
+          (start (point))
+          (result nil)]
+    (goto-char start-from)
+    (cl-block search
+      (save-match-data
+        (while (search-forward filename nil t)
+          (beginning-of-line)
+          (-let*- [(btn (next-button (point) t))
+                   (btn-path (button-get btn 'abs-path))]
+            (if (or (s-equals? abs-path btn-path)
+                    ;; loosen matching for collapsed paths
+                    (and (button-get btn 'parent-path)
+                         (treemacs--is-path-in-dir? btn-path abs-path)))
+                (progn (treemacs--evade-image)
+                       (cl-return-from search (setq result btn)))
+              (beginning-of-line 2)))))
+      (unless result (goto-char start))
+      result)))
+
+(cl-defun treemacs--goto-node-at (abs-path)
   "Move point to button identified by ABS-PATH, also return that button."
-  (-let [parent (f-parent abs-path)]
+  (-let [parent (substring (file-name-directory abs-path) 0 -1)]
     (-if-let- [pos-btn (treemacs--get-position-of parent)]
-        (--first
-         (when (string= abs-path (button-get it 'abs-path))
-           (goto-char it)
-           it)
-         (treemacs--get-children-of pos-btn))
+        (treemacs--uncached-goto-node-at abs-path pos-btn)
       (goto-char (point-min))
       (-let [btn (next-button (point) t)]
         (cl-block search
@@ -796,47 +824,48 @@ through the buffer list and kill buffer if PATH is a prefix."
   "Execute the refresh process for BUFFER.
 Specifically extracted with the buffer to refresh being supplied so that
 filewatch mode can refresh multiple buffers at once."
-  (treemacs--without-following
-   (with-current-buffer buffer
-     (let* ((curr-line    (line-number-at-pos))
-            (curr-btn     (treemacs-current-button))
-            (curr-state   (when curr-btn (button-get curr-btn 'state)))
-            (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
-            (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
-            (win-start    (window-start (get-buffer-window)))
-            (root         (treemacs--current-root)))
-       (run-hook-with-args
-        'treemacs-pre-refresh-hook
-        root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
-       (treemacs--build-tree root)
-       ;; move point to the same file it was with before the refresh if the file
-       ;; still exists and is visible, stay in the same line otherwise
-       (pcase curr-state
-         ((or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
-          (if (and (f-exists? curr-file)
-                   (or treemacs-show-hidden-files
-                       (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
-              (treemacs--goto-button-at curr-file)
-            ;; not pretty, but there can still be some off by one jitter when
-            ;; using forwald-line
-            (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
-         ((or `tag-node-open `tag-node-closed `tag-node)
-          (treemacs--goto-tag-button-at curr-tagpath curr-file))
-         ((pred null)
-          (with-no-warnings (goto-line 1)))
-         (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
-       (treemacs--evade-image)
-       (set-window-start (get-buffer-window) win-start)
-       ;; this part seems to fix the issue of point being reset to the top
-       ;; when the buffe is refreshed without the window being selected
-       (-when-let- [w (get-buffer-window (buffer-name) t)]
-         (set-window-point w (point)))
-       (run-hook-with-args
-        'treemacs-post-refresh-hook
-        root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
-       (hl-line-highlight)
-       (unless treemacs-silent-refresh
-         (treemacs--log "Refresh complete."))))))
+  (treemacs--with-uncached-movement
+   (treemacs--without-following
+    (with-current-buffer buffer
+      (let* ((curr-line    (line-number-at-pos))
+             (curr-btn     (treemacs-current-button))
+             (curr-state   (when curr-btn (button-get curr-btn 'state)))
+             (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
+             (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
+             (win-start    (window-start (get-buffer-window)))
+             (root         (treemacs--current-root)))
+        (run-hook-with-args
+         'treemacs-pre-refresh-hook
+         root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
+        (treemacs--build-tree root)
+        ;; move point to the same file it was with before the refresh if the file
+        ;; still exists and is visible, stay in the same line otherwise
+        (pcase curr-state
+          ((or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
+           (if (and (f-exists? curr-file)
+                    (or treemacs-show-hidden-files
+                        (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
+               (treemacs--goto-node-at curr-file)
+             ;; not pretty, but there can still be some off by one jitter when
+             ;; using forwald-line
+             (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
+          ((or `tag-node-open `tag-node-closed `tag-node)
+           (treemacs--goto-tag-button-at curr-tagpath curr-file))
+          ((pred null)
+           (with-no-warnings (goto-line 1)))
+          (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
+        (treemacs--evade-image)
+        (set-window-start (get-buffer-window) win-start)
+        ;; this part seems to fix the issue of point being reset to the top
+        ;; when the buffe is refreshed without the window being selected
+        (-when-let- [w (get-buffer-window (buffer-name) t)]
+          (set-window-point w (point)))
+        (run-hook-with-args
+         'treemacs-post-refresh-hook
+         root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
+        (hl-line-highlight)
+        (unless treemacs-silent-refresh
+          (treemacs--log "Refresh complete.")))))))
 
 (provide 'treemacs-impl)
 

@@ -924,7 +924,7 @@
                                (treemacs--get-label-of
                                 (treemacs-current-button))))
 
-                (treemacs--goto-button-at (f-join default-directory "test/testfolder1/testfolder2"))
+                (treemacs--goto-node-at (f-join default-directory "test/testfolder1/testfolder2"))
                 (should (equal "test/testfolder1/testfolder2"
                                (treemacs--get-label-of
                                 (treemacs-current-button))))
