@@ -117,7 +117,7 @@ DEPTH indicates how deep in the filetree the current button is."
   ;; for directories the icon is included in the prefix since it's always known
   (list
    prefix
-   (propertize (f-filename path)
+   (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
                'state 'dir-node-closed
@@ -136,7 +136,7 @@ DEPTH indicates how deep in the filetree the current button is."
      (gethash (-> path (treemacs--file-extension) (downcase))
               treemacs-icons-hash
               treemacs-icon-fallback))
-   (propertize (f-filename path)
+   (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
                'state 'file-node-closed
