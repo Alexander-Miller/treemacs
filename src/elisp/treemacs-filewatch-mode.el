@@ -28,10 +28,12 @@
 (require 'treemacs-impl)
 (require 'treemacs-tags)
 
-(declare-function treemacs-refresh "treemacs")
+(treemacs--import-functions-from "treemacs"
+  treemacs-refresh
+  treemacs-push-button)
 
-(defvar treemacs--collected-file-events nil
-  "List of file change events treemacs needs to process.
+(defvar treemacs--dirs-to-refresh nil
+  "List of directories that need to be updated to reflect recent file changes.
 If this is non-nil a timer to execute `treemacs--process-file-events' is
 currently running.")
 
@@ -84,41 +86,11 @@ COLLAPSE: Bool"
         ;; only add current buffer to watch list if path is watched already
         (unless (--any? (eq it (current-buffer)) (car watch-info))
           (setcar watch-info (cons (current-buffer) (car watch-info))))
-      ;; make new entry otherwise
+      ;; make new entry otherwise and start the refresh timer
       (puthash path
                (cons (list (current-buffer))
                      (file-notify-add-watch path '(change) #'treemacs--filewatch-callback))
                treemacs--filewatch-hash))))
-
-(defsubst treemacs--is-event-relevant? (event)
-  "Decide if EVENT is relevant to treemacs or should be ignored.
-An event counts as relevant when
-1) The event's action is not \"stopped\".
-2) The event's action is not \"changed\" while `treemacs-git-mode' is disabled
-3) The event's file will not return t when given to any of the functions which
-   are part of `treemacs-ignored-file-predicates'."
-  (let ((action (cl-second event))
-        (dir    (cl-third event)))
-    (not (or (equal action 'stopped)
-             (and (equal action 'changed)
-                  (not treemacs-git-mode))
-             (--any? (funcall it (f-filename dir) dir) treemacs-ignored-file-predicates)))))
-
-(defun treemacs--filewatch-callback (event)
-  "Add EVENT to the list of file change events.
-Start a timer to process the collected events if it has not been started
-already. Do nothing if this event's file is irrelevant as per
-`treemacs--is-event-relevant?'.
-Also immediately remove the changed file from caches if it has been deleted
-instead of waiting for file processing."
-  (when (treemacs--is-event-relevant? event)
-    (when (eq 'deleted (cadr event))
-      (treemacs--on-file-deletion (cl-third event)))
-    (if treemacs--collected-file-events
-        (push event treemacs--collected-file-events)
-      (setq treemacs--collected-file-events (list event)
-            treemacs--refresh-timer (run-at-time (format "%s millisecond" treemacs-file-event-delay)
-                                                 nil #'treemacs--process-file-events)))))
 
 (defsubst treemacs--stop-watching (path &optional all)
   "Stop watching PATH for file events.
@@ -152,35 +124,66 @@ ALL: Bool"
      treemacs--filewatch-hash)
     (--each to-remove (remhash it treemacs--filewatch-hash))))
 
+(defsubst treemacs--is-event-relevant? (event)
+  "Decide if EVENT is relevant to treemacs or should be ignored.
+An event counts as relevant when
+1) The event's action is not \"stopped\".
+2) The event's action is not \"changed\" while `treemacs-git-mode' is disabled
+3) The event's file will not return t when given to any of the functions which
+   are part of `treemacs-ignored-file-predicates'."
+  (let ((action (cl-second event))
+        (dir    (cl-third event)))
+    (not (or (equal action 'stopped)
+             (and (equal action 'changed)
+                  (not treemacs-git-mode))
+             (--any? (funcall it (f-filename dir) dir) treemacs-ignored-file-predicates)))))
+
+(defun treemacs--filewatch-callback (event)
+  "Add EVENT to the list of file change events.
+Start a timer to process the collected events if it has not been started
+already. Do nothing if this event's file is irrelevant as per
+`treemacs--is-event-relevant?'.
+Also immediately remove the changed file from caches if it has been deleted
+instead of waiting for file processing."
+  (when (treemacs--is-event-relevant? event)
+    (when (eq 'deleted (cadr event))
+      (treemacs--on-file-deletion (cl-third event) t))
+    (-let [change-type (cadr event)]
+      (when (or (and (eq change-type 'changed) treemacs-git-mode)
+                (eq change-type 'created)
+                (eq change-type 'deleted))
+        (-let [changed-dir (f-parent (cl-third event))]
+          (if treemacs--dirs-to-refresh
+              (unless (member changed-dir treemacs--dirs-to-refresh)
+                (push changed-dir treemacs--dirs-to-refresh))
+            (setq treemacs--dirs-to-refresh (list changed-dir)
+                  treemacs--refresh-timer (run-at-time (format "%s millisecond" treemacs-file-event-delay)
+                                                       nil #'treemacs--process-file-events))))))))
+
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected.
 Stop watching deleted dirs and refresh all the buffers that need updating."
   (setq treemacs--refresh-timer nil)
-  ;; inhibit-quit = nil prevents emacs from complaining about block calls to accept process output
-  ;; with quit inhibited. apparently this happens when process output is read from a timer-run funcction,
-  ;; in other words: when tag follow mode is working as intended
-  (let ((inhibit-quit nil)
-        (paths))
-    (while treemacs--collected-file-events
-      (let* ((event   (pop treemacs--collected-file-events))
-             (action  (cl-second event))
-             (path    (cl-third event))
-             (dir     (if (f-dir? path) path (f-dirname path))))
-        (push dir paths)
-        (cond ((eq 'deleted action)
-               (treemacs--stop-watching path t)
-               (treemacs--remove-from-position-cache path t))
-              ((gethash dir treemacs--collapsed-filewatch-hash)
-               (treemacs--stop-watching dir)))))
-    (let (buffers-to-refresh)
-      (--each paths
-        (-when-let (watch-info (gethash it treemacs--filewatch-hash))
-          (dolist (b (car watch-info))
-            (unless (memq b buffers-to-refresh)
-              (push b buffers-to-refresh)))))
-      (let ((treemacs-silent-refresh (or treemacs-silent-refresh treemacs-silent-filewatch)))
-        (--each buffers-to-refresh
-          (treemacs--do-refresh it))))))
+  (let (paths-to-refresh)
+    (while treemacs--dirs-to-refresh
+      (-let [dir (pop treemacs--dirs-to-refresh)]
+        (push dir paths-to-refresh)
+        (when (gethash dir treemacs--collapsed-filewatch-hash)
+          (treemacs--stop-watching dir))))
+    (-let [fully-refreshed-buffers nil]
+      (--each paths-to-refresh
+        (dolist (watching-buffer (car (gethash it treemacs--filewatch-hash)))
+          (unless (memq watching-buffer fully-refreshed-buffers)
+            (with-current-buffer watching-buffer
+              (treemacs--save-position
+                  (if (string= it (treemacs--current-root))
+                      (progn
+                        (treemacs--do-refresh it)
+                        (push watching-buffer fully-refreshed-buffers))
+                    (-let [b (treemacs--goto-node-at it)]
+                      (when (eq 'dir-node-open (button-get b 'state))
+                        (treemacs-push-button)
+                        (treemacs-push-button))))))))))))
 
 (defun treemacs--stop-watch-all-in-scope ()
   "Called when a treemacs buffer is torn down/killed.
@@ -210,7 +213,7 @@ Called when filewatch mode is disabled."
    treemacs--filewatch-hash)
   (clrhash treemacs--filewatch-hash)
   (clrhash treemacs--collapsed-filewatch-hash)
-  (setq treemacs--collected-file-events nil))
+  (setq treemacs--dirs-to-refresh nil))
 
 (defsubst treemacs--tear-down-filewatch-mode ()
   "Stop watch processes, throw away file events, stop the timer."

@@ -196,7 +196,7 @@ under or below it."
                   (select-window current-window))))))))))
 
 (defmacro treemacs--with-uncached-movement (&rest body)
-  "Execute BODY using `treemacs--uncached-goto-node-at'.
+  "Execute BODY using `treemacs--uncached-goto-node-at' for node movement.
 This is necessary e.g. during refresh, when `treemacs--open-node-position-cache'
 is invalidated."
   `(-let [o (symbol-function 'treemacs--goto-node-at)]
@@ -205,6 +205,46 @@ is invalidated."
            (fset 'treemacs--goto-node-at #'treemacs--uncached-goto-node-at)
            ,@body)
        (fset 'treemacs--goto-node-at o))))
+
+(defmacro treemacs--save-position (main-form &rest final-form)
+  "Execute MAIN-FORM without switching position.
+Finally execute FINAL-FORM after the code to restore the position has run.
+
+This macro is meant for cases where a simple `save-excursion' will not do, like
+a refresh, which can potentially change the entire buffer layout. This means
+attempt first to keep point on the same file/tag, and if that does not work keep
+it on the same line."
+  `(treemacs--without-following
+    (let* ((curr-line    (line-number-at-pos))
+           (curr-btn     (treemacs-current-button))
+           (curr-state   (when curr-btn (button-get curr-btn 'state)))
+           (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
+           (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
+           (win-start    (window-start (get-buffer-window))))
+      ,main-form
+      ;; move point to the same file it was with before the refresh if the file
+      ;; still exists and is visible, stay in the same line otherwise
+      (-pcase curr-state
+        [(or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
+         (if (and (f-exists? curr-file)
+                  (or treemacs-show-hidden-files
+                      (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
+             (treemacs--goto-node-at curr-file)
+           (treemacs--without-messages (with-no-warnings (goto-line curr-line))))]
+        [(or `tag-node-open `tag-node-closed `tag-node)
+         (treemacs--goto-tag-button-at curr-tagpath curr-file)]
+        [(pred null)
+         (with-no-warnings (goto-line 1))]
+        [_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)])
+      (treemacs--evade-image)
+      (set-window-start (get-buffer-window) win-start)
+
+      ;; this part seems to fix the issue of point being reset to the top
+      ;; when the buffer is refreshed without the window being selected
+      (-when-let- [w (get-buffer-window (buffer-name) t)]
+        (set-window-point w (point)))
+      ,@final-form
+      (hl-line-highlight))))
 
 (provide 'treemacs-macros)
 

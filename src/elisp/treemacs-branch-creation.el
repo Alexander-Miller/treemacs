@@ -348,7 +348,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
    (let ((path (button-get btn 'abs-path)))
      (treemacs--stop-watching path)
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
-     (treemacs--remove-from-position-cache path)
+     (treemacs--remove-from-position-cache path t)
      (treemacs--remove-from-open-dirs-cache btn recursive))))
 
 (defun treemacs--check-window-system ()

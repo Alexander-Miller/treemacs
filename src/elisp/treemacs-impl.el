@@ -59,6 +59,7 @@
 (treemacs--import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
   treemacs--stop-watch-all-in-scope
+  treemacs--stop-watching
   treemacs--cancel-refresh-timer)
 
 (treemacs--import-functions-from "treemacs-follow-mode"
@@ -348,10 +349,14 @@ of the `current-buffer'."
   (setq treemacs--buffer-access
         (rassq-delete-all (current-buffer) treemacs--buffer-access)))
 
-(defsubst treemacs--on-file-deletion (path)
-  "Cleanup to run when treemacs file at PATH was deleted."
+(defsubst treemacs--on-file-deletion (path &optional no-buffer-delete)
+  "Cleanup to run when treemacs file at PATH was deleted.
+Do not try to delete buffers for PATH when NO-BUFFER-DELETE is non-nil. This is
+necessary since interacting with magit can cause file delete events for files
+being edited to trigger."
+  (unless no-buffer-delete (treemacs--kill-buffers-after-deletion path t))
+  (treemacs--stop-watching path t)
   (treemacs--remove-from-open-dirs-cache path t)
-  (treemacs--kill-buffers-after-deletion path t)
   (treemacs--remove-from-position-cache path t)
   (treemacs--remove-all-tags-under-path-from-cache path))
 
@@ -824,48 +829,21 @@ through the buffer list and kill buffer if PATH is a prefix."
   "Execute the refresh process for BUFFER.
 Specifically extracted with the buffer to refresh being supplied so that
 filewatch mode can refresh multiple buffers at once."
-  (treemacs--with-uncached-movement
-   (treemacs--without-following
-    (with-current-buffer buffer
-      (let* ((curr-line    (line-number-at-pos))
-             (curr-btn     (treemacs-current-button))
-             (curr-state   (when curr-btn (button-get curr-btn 'state)))
-             (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
-             (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
-             (win-start    (window-start (get-buffer-window)))
-             (root         (treemacs--current-root)))
-        (run-hook-with-args
-         'treemacs-pre-refresh-hook
-         root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
-        (treemacs--build-tree root)
-        ;; move point to the same file it was with before the refresh if the file
-        ;; still exists and is visible, stay in the same line otherwise
-        (pcase curr-state
-          ((or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
-           (if (and (f-exists? curr-file)
-                    (or treemacs-show-hidden-files
-                        (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
-               (treemacs--goto-node-at curr-file)
-             ;; not pretty, but there can still be some off by one jitter when
-             ;; using forwald-line
-             (treemacs--without-messages (with-no-warnings (goto-line curr-line)))))
-          ((or `tag-node-open `tag-node-closed `tag-node)
-           (treemacs--goto-tag-button-at curr-tagpath curr-file))
-          ((pred null)
-           (with-no-warnings (goto-line 1)))
-          (_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
-        (treemacs--evade-image)
-        (set-window-start (get-buffer-window) win-start)
-        ;; this part seems to fix the issue of point being reset to the top
-        ;; when the buffe is refreshed without the window being selected
-        (-when-let- [w (get-buffer-window (buffer-name) t)]
-          (set-window-point w (point)))
-        (run-hook-with-args
-         'treemacs-post-refresh-hook
-         root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
-        (hl-line-highlight)
-        (unless treemacs-silent-refresh
-          (treemacs--log "Refresh complete.")))))))
+  (with-current-buffer buffer
+    (treemacs--with-uncached-movement
+     (-let [root (treemacs--current-root)]
+       (treemacs--save-position
+           (progn
+             (run-hook-with-args
+              'treemacs-pre-refresh-hook
+              root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
+             (treemacs--build-tree root))
+
+         (run-hook-with-args
+          'treemacs-post-refresh-hook
+          root curr-line curr-btn curr-state curr-file curr-tagpath win-start)
+         (unless treemacs-silent-refresh
+           (treemacs--log "Refresh complete.")))))))
 
 (provide 'treemacs-impl)
 
