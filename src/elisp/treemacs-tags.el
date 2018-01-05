@@ -385,29 +385,34 @@ exist."
                         (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
         [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
 
-(defun treemacs--goto-tag-button-at (tag-path file)
-  "Goto tag given by TAG-PATH for button of FILE.
-Start the search at START."
+(cl-defun treemacs--goto-tag-button-at (tag-path file)
+  "Goto tag given by TAG-PATH for the tags of FILE.
+Will return the found tag node, or nil if no such node exists (anymore). In this
+case point will be left at the next highest node available."
   (let ((tag (car tag-path))
         (path (cdr tag-path)))
-    (-when-let (btn (treemacs--goto-node-at file))
-      (when (eq 'file-node-closed (button-get btn 'state))
-        (goto-char (button-start btn))
-        (treemacs--open-tags-for-file btn))
+    (-when-let (file-node (treemacs--goto-node-at file))
+      (when (eq 'file-node-closed (button-get file-node 'state))
+        (goto-char (button-start file-node))
+        (treemacs--open-tags-for-file file-node))
       (dolist (tag-path-item path)
-        (-if-let (tag-path-btn (--first
+        (-if-let (tag-path-node (--first
                                 (string= (treemacs--get-label-of it) tag-path-item)
-                                (treemacs--get-children-of btn)))
+                                (treemacs--get-children-of file-node)))
             (progn
-              (setq btn tag-path-btn)
-              (when (eq 'tag-node-closed (button-get btn 'state))
-                (goto-char (button-start btn))
-                (treemacs--open-tag-node btn)))
-          (error "[Treemacs] Couldn't go to tag button %s in path %s" tag-path-item tag-path)))
-      (let ((pos (button-start (--first (string= (treemacs--get-label-of it) tag)
-                                        (treemacs--get-children-of btn)))))
-        (goto-char pos)
-        (treemacs--button-at pos)))))
+              (setq file-node tag-path-node)
+              (when (eq 'tag-node-closed (button-get file-node 'state))
+                (goto-char (button-start file-node))
+                (treemacs--open-tag-node file-node)))
+          (goto-char file-node)
+          (cl-return-from treemacs--goto-tag-button-at nil)))
+      (-if-let- [pos (--first (string= (treemacs--get-label-of it) tag)
+                              (treemacs--get-children-of file-node))]
+          (progn
+            (goto-char pos)
+            (treemacs--button-at pos))
+        (goto-char file-node)
+        (cl-return-from treemacs--goto-tag-button-at nil)))))
 
 (defun treemacs--reopen-tags-under (btn)
   "Reopen previously openeded tags under BTN."

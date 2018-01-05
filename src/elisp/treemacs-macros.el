@@ -215,15 +215,16 @@ a refresh, which can potentially change the entire buffer layout. This means
 attempt first to keep point on the same file/tag, and if that does not work keep
 it on the same line."
   `(treemacs--without-following
-    (let* ((curr-line    (line-number-at-pos))
-           (curr-btn     (treemacs-current-button))
-           (curr-state   (when curr-btn (button-get curr-btn 'state)))
-           (curr-file    (when curr-btn (treemacs--nearest-path curr-btn)))
-           (curr-tagpath (when curr-btn (treemacs--tags-path-of curr-btn)))
-           (win-start    (window-start (get-buffer-window))))
+    (let* ((curr-line     (line-number-at-pos))
+           (curr-btn      (treemacs-current-button))
+           (curr-state    (when curr-btn (button-get curr-btn 'state)))
+           (curr-file     (when curr-btn (treemacs--nearest-path curr-btn)))
+           (curr-tagpath  (when curr-btn (treemacs--tags-path-of curr-btn)))
+           (curr-winstart (window-start (get-buffer-window))))
       ,main-form
-      ;; move point to the same file it was with before the refresh if the file
-      ;; still exists and is visible, stay in the same line otherwise
+      ;; try to stay at the same file/tag
+      ;; if the tag no longer exists move to the tag's owning file node
+      ;; if the file no longer exists try to stay in the same visual line
       (-pcase curr-state
         [(or `dir-node-open `dir-node-closed `file-node-open `file-node-closed)
          (if (and (f-exists? curr-file)
@@ -232,12 +233,13 @@ it on the same line."
              (treemacs--goto-node-at curr-file)
            (treemacs--without-messages (with-no-warnings (goto-line curr-line))))]
         [(or `tag-node-open `tag-node-closed `tag-node)
+         ;; no correction needed, if the tag does not exist point is left at the next best node
          (treemacs--goto-tag-button-at curr-tagpath curr-file)]
         [(pred null)
          (with-no-warnings (goto-line 1))]
         [_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)])
       (treemacs--evade-image)
-      (set-window-start (get-buffer-window) win-start)
+      (set-window-start (get-buffer-window) curr-winstart)
 
       ;; this part seems to fix the issue of point being reset to the top
       ;; when the buffer is refreshed without the window being selected
