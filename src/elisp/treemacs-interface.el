@@ -20,6 +20,7 @@
 
 ;;; Code:
 
+(require 'hl-line)
 (require 'bookmark)
 (require 'f)
 (require 's)
@@ -337,7 +338,7 @@ itself, using the root directory when point is on the header line."
   "Toggle the hiding and displaying of dotfiles."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
-  (treemacs-refresh)
+  (-each (-map #'cdr treemacs--buffer-access) #'treemacs--do-refresh)
   (treemacs--log (concat "Dotfiles will now be "
                          (if treemacs-show-hidden-files
                              "displayed." "hidden."))))
@@ -400,8 +401,7 @@ given and the current buffer is not editing a file."
                      (progn
                        (treemacs--init (f-dirname path))
                        (treemacs--goto-node-at path)
-                       (hl-line-mode -1)
-                       (hl-line-mode t)))))))))))))
+                       (hl-line-highlight)))))))))))))
 
 (defun treemacs-find-tag ()
   "Find and move point to the tag at point in the treemacs view.
