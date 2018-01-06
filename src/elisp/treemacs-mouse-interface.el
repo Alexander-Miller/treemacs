@@ -20,7 +20,8 @@
 
 ;;; Code:
 
-(require 'xref)
+;; noerror to be removed when emacs26 is released
+(require 'xref nil t)
 (require 'treemacs-impl)
 (require 'treemacs-tags)
 (eval-and-compile (require 'treemacs-macros))
