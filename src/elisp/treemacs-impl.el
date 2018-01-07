@@ -116,9 +116,7 @@ will be opened again when the parent is closed and reopened.")
   "Cache to keep track of openened node locations.
 Exists specifically to make `treemacs--goto-node-at' more effiecient.
 Will become invalidated when some action deletes the treemacs buffer's content,
-even if it is only to rebuild it, like during refresh. In such instances either
-`treemacs--uncached-goto-node-at' or, mode generally, the
-`treemacs--with-uncached-movement' macro should be used.")
+even if it is only to rebuild it, like during refresh.")
 
 (defvar treemacs--no-messages nil
   "When set to t `treemacs--log' will produce no output.
@@ -461,8 +459,6 @@ buffer."
     ;; than desktop save mode) treemacs will attempt to restore the previous session
     (unless (eq major-mode 'treemacs-mode)
       (treemacs-mode))
-    ;; create buffer-local hashes that need to be initialized
-    (with-no-warnings (setq treemacs--tags-cache (make-hash-table :test #'equal :size 100)))
     (treemacs--check-window-system)
     (treemacs--build-tree (treemacs--unslash (f-long root)))
     ;; no warnings since follow mode is known to be defined
@@ -473,6 +469,7 @@ buffer."
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
+  (treemacs--clear-position-cache)
   (treemacs--forget-last-highlight)
   (treemacs--forget-previously-follow-tag-btn)
   (treemacs--stop-watch-all-in-scope)
@@ -835,20 +832,19 @@ through the buffer list and kill buffer if PATH is a prefix."
 Specifically extracted with the buffer to refresh being supplied so that
 filewatch mode can refresh multiple buffers at once."
   (with-current-buffer buffer
-    (treemacs--with-uncached-movement
-     (-let [root (treemacs--current-root)]
-       (treemacs--save-position
-           (progn
-             (run-hook-with-args
-              'treemacs-pre-refresh-hook
-              root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
-             (treemacs--build-tree root))
-
+    (-let [root (treemacs--current-root)]
+      (treemacs--save-position
+       (progn
          (run-hook-with-args
-          'treemacs-post-refresh-hook
+          'treemacs-pre-refresh-hook
           root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
-         (unless treemacs-silent-refresh
-           (treemacs--log "Refresh complete.")))))))
+         (treemacs--build-tree root))
+
+       (run-hook-with-args
+        'treemacs-post-refresh-hook
+        root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+       (unless treemacs-silent-refresh
+         (treemacs--log "Refresh complete."))))))
 
 (provide 'treemacs-impl)
 

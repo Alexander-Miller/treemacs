@@ -195,17 +195,6 @@ under or below it."
 		(when ,save-window
                   (select-window current-window))))))))))
 
-(defmacro treemacs--with-uncached-movement (&rest body)
-  "Execute BODY using `treemacs--uncached-goto-node-at' for node movement.
-This is necessary e.g. during refresh, when `treemacs--open-node-position-cache'
-is invalidated."
-  `(-let [o (symbol-function 'treemacs--goto-node-at)]
-     (unwind-protect
-         (progn
-           (fset 'treemacs--goto-node-at #'treemacs--uncached-goto-node-at)
-           ,@body)
-       (fset 'treemacs--goto-node-at o))))
-
 (defmacro treemacs--save-position (main-form &rest final-form)
   "Execute MAIN-FORM without switching position.
 Finally execute FINAL-FORM after the code to restore the position has run.
