@@ -10,5 +10,7 @@
  (depends-on "ace-window")
  (depends-on "pfuture")
  (depends-on "hydra")
+ (depends-on "evil")
+ (depends-on "projectile")
  (depends-on "el-mock")
  (depends-on "ert-runner"))
