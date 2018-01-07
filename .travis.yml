@@ -20,7 +20,6 @@ install:
   - cask install
 script:
   - make compile
-  - make lint
   - make test
 notifications:
   email:
