@@ -237,7 +237,8 @@ inserted into `treemacs-icons-hash'."
           treemacs-icon-tag-leaf-png         (cdr (assq 'treemacs-icon-tag-leaf-png         treemacs--defaults-icons))
           treemacs-icon-tag-leaf-text        (cdr (assq 'treemacs-icon-tag-leaf-text        treemacs--defaults-icons))))
   (treemacs--create-icons)
-  (clear-image-cache))
+  (when (fboundp 'clear-image-cache)
+    (clear-image-cache)))
 
 (defun treemacs-map-icons-with-auto-mode-alist (extensions mode-icon-alist)
   "Remaps icons for EXTENSIONS according to `auto-mode-alist'.
