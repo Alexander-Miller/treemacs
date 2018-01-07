@@ -59,14 +59,14 @@ and select it.
 If no treemacs buffer exists call `treemacs'."
   (interactive)
   (-pcase (treemacs--current-visibility)
-    ['visible
+    [`visible
      (treemacs--select-visible)
      (if (one-window-p)
          (switch-to-buffer (other-buffer))
        (bury-buffer))]
-    ['exists
+    [`exists
      (treemacs--select-not-visible)]
-    ['none
+    [`none
      (treemacs)]
     [_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility))]))
 
