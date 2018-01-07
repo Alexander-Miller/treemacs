@@ -23,6 +23,8 @@
 
 ;;; Code:
 
+;; noerror to be removed with release of emacs26
+(require 'xref nil t)
 (require 'imenu)
 (require 'dash)
 (require 'f)
@@ -377,9 +379,11 @@ exist."
                    tag-path (treemacs--tags-path-of btn)))
            (treemacs--call-imenu-and-goto-tag file tag-path))]
         [`call-xref
-         (xref-find-definitions
-          (treemacs--with-button-buffer btn
-            (treemacs--get-label-of btn)))]
+         ;; for emacs24
+         (with-no-warnings
+           (xref-find-definitions
+            (treemacs--with-button-buffer btn
+              (treemacs--get-label-of btn))))]
         [`issue-warning
          (treemacs--log "Tag '%s' is located in a buffer that does not exist."
                         (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
