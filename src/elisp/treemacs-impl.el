@@ -326,7 +326,7 @@ Will also perform cleanup if the buffer is dead."
           (next (next-button (button-end btn)))]
     (while (and next (< depth (button-get next 'depth)))
       (setq next (next-button (button-end next))))
-    (when (= depth (button-get next 'depth)) next)))
+    (when (and next (= depth (button-get next 'depth))) next)))
 
 (defsubst treemacs--prev-neighbour (btn)
   "Get the previous same-level node of BTN, if any."

@@ -1,4 +1,4 @@
-;;; treemacs.el --- A tree style file viewer package
+;;; treemacs-test.el --- Tests for treemacs
 
 ;; Copyright (C) 2017 Alexander Miller
 
@@ -69,7 +69,7 @@
 
 ;; `treemacs--add-to-open-dirs-cache'
 (progn
-  (ert-deftest add-to-dirs-cache::add-single-item ()
+  (ert-deftest add-to-open-dirs-cache::add-single-item ()
     (with-temp-buffer
       (let ((b (insert-text-button "b"))
             (p (insert-text-button "p"))
@@ -81,7 +81,7 @@
         (treemacs--add-to-open-dirs-cache b)
         (should (equal '(("/home/A" "/home/A/B")) treemacs--open-dirs-cache)))))
 
-  (ert-deftest add-to-dirs-cache::add-single-collapsed-item ()
+  (ert-deftest add-to-open-dirs-cache::add-single-collapsed-item ()
     (with-temp-buffer
       (let ((b (insert-text-button "b"))
             (p (insert-text-button "p"))
@@ -94,7 +94,7 @@
         (treemacs--add-to-open-dirs-cache b)
         (should (equal '(("/home/P" "/home/A/B")) treemacs--open-dirs-cache)))))
 
-  (ert-deftest add-to-dirs-cache::add-two-same-parent-items ()
+  (ert-deftest add-to-open-dirs-cache::add-two-same-parent-items ()
     (with-temp-buffer
       (let ((p  (insert-text-button "p"))
             (b1 (insert-text-button "b1"))
@@ -109,7 +109,7 @@
         (treemacs--add-to-open-dirs-cache b2)
         (should (equal '(("/home/A" "/home/A/B2" "/home/A/B1")) treemacs--open-dirs-cache)))))
 
-  (ert-deftest add-to-dirs-cache::add-two-different-parent-items ()
+  (ert-deftest add-to-open-dirs-cache::add-two-different-parent-items ()
     (with-temp-buffer
       (let ((p1 (insert-text-button "p1"))
             (p2 (insert-text-button "p2"))
@@ -126,7 +126,7 @@
         (treemacs--add-to-open-dirs-cache b2)
         (should (equal `(("/A2" "/A2/B2") ("/A1" "/A1/B1")) treemacs--open-dirs-cache)))))
 
-  (ert-deftest add-to-dirs-cache::add-new-child-to-cache-with-multiple-items ()
+  (ert-deftest add-to-open-dirs-cache::add-new-child-to-cache-with-multiple-items ()
     (with-temp-buffer
       (let ((p1 (insert-text-button "p1"))
             (p2 (insert-text-button "p2"))
@@ -149,56 +149,56 @@
 
 ;; `treemacs--remove-from-open-dirs-cache'
 (progn
-  (ert-deftest clear-from-dirs-cache::clear-item-from-empty-cache ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-from-empty-cache ()
     (let ((treemacs--open-dirs-cache nil))
       (treemacs--remove-from-open-dirs-cache "/home/A")
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache::clear-item-not-in-the-cache ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-not-in-the-cache ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
       (treemacs--remove-from-open-dirs-cache "/home/X")
       (should (equal '(("/home/A" "/home/A/B")) treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache::clear-item-from-empty-cache-with-purge ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-from-empty-cache-with-purge ()
     (let ((treemacs--open-dirs-cache nil))
       (treemacs--remove-from-open-dirs-cache "/home/A" t)
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-deleting-the-entry ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-from-cache-deleting-the-entry ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
       (treemacs--remove-from-open-dirs-cache "/home/A/B")
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-deleting-the-entry-with-purge ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-from-cache-deleting-the-entry-with-purge ()
     (let ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B"))))
       (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (null treemacs--open-dirs-cache))))
 
-  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-leaving-other-entry ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-from-cache-leaving-other-entry ()
     (let* ((entry1 '("/home/A" "/home/A/B"))
            (entry2 '("/home/C" "/home/C/D"))
            (treemacs--open-dirs-cache (list entry1 entry2)))
       (treemacs--remove-from-open-dirs-cache "/home/A/B")
       (should (equal treemacs--open-dirs-cache `(,entry2)))))
 
-  (ert-deftest clear-from-dirs-cache::clear-item-from-cache-leaving-other-entry-with-purge ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-from-cache-leaving-other-entry-with-purge ()
     (let* ((entry1 '("/home/A" "/home/A/B"))
            (entry2 '("/home/C" "/home/C/D"))
            (treemacs--open-dirs-cache (list entry1 entry2)))
       (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache `(,entry2)))))
 
-  (ert-deftest clear-from-dirs-cache::clear-one-of-two-items ()
+  (ert-deftest clear-from-open-dirs-cache::clear-one-of-two-items ()
     (let* ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B" "/home/A/C"))))
       (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A" "/home/A/C"))))))
 
-  (ert-deftest clear-from-dirs-cache::clear-one-of-two-items-with-purge ()
+  (ert-deftest clear-from-open-dirs-cache::clear-one-of-two-items-with-purge ()
     (let* ((treemacs--open-dirs-cache '(("/home/A" "/home/A/B" "/home/A/C"))))
       (treemacs--remove-from-open-dirs-cache "/home/A/B" t)
       (should (equal treemacs--open-dirs-cache '(("/home/A" "/home/A/C"))))))
 
-  (ert-deftest clear-from-dirs-cache::clear-item-and-purge-children ()
+  (ert-deftest clear-from-open-dirs-cache::clear-item-and-purge-children ()
     (let* ((treemacs--open-dirs-cache
             '(("/home/A" "/home/A/B")
               ("/home/A/B" "/home/A/B/C1" "/home/A/B/C2")
@@ -906,28 +906,35 @@
     (save-match-data
       (let ((test-buffer (get-buffer-create "*Treemacs Sys Test*"))
             (imenu-auto-rescan t)
+            (org-imenu-depth 10)
             (treemacs-collapse-dirs 3))
         (if noninteractive
             (message "Sys Test not run in batch mode.")
           (unwind-protect
               (progn
                 (switch-to-buffer test-buffer)
+                (setq-local default-directory (f-join treemacs-dir "test"))
                 (delete-other-windows)
                 (-when-let (b (treemacs-buffer-exists?)) (kill-buffer b))
+
                 (call-interactively 'treemacs)
 
                 (should (treemacs-buffer-exists?))
 
                 (call-interactively 'treemacs-uproot)
-                (call-interactively 'treemacs-uproot)
-                (should (equal "src"
+                ;; (shell-command (format "notify-send '%s'" (treemacs--get-label-of (treemacs-current-button))))
+                (should (equal "test"
                                (treemacs--get-label-of
                                 (treemacs-current-button))))
 
-                (treemacs--goto-node-at (f-join default-directory "test/testfolder1/testfolder2"))
-                (should (equal "test/testfolder1/testfolder2"
-                               (treemacs--get-label-of
-                                (treemacs-current-button))))
+                (with-current-buffer (treemacs-buffer-exists?)
+                  (treemacs--do-follow (f-join default-directory "test/testdir1/testdir2/testfile.org")))
+                (should (equal "testfile.org"
+                               (treemacs--get-label-of (treemacs-current-button))))
+
+                (call-interactively 'treemacs-goto-parent-node)
+                (should (equal "testdir1/testdir2"
+                               (treemacs--get-label-of (treemacs-current-button))))
 
                 (call-interactively 'treemacs-change-root)
                 (should (equal "testfile.el"
@@ -964,10 +971,16 @@
                 (should (equal '("Foo" "Bar")
                                (-map #'treemacs--get-label-of
                                      (treemacs--get-children-of (treemacs-current-button)))))
-
+                (should (equal "testfile.org"
+                               (treemacs--get-label-of (treemacs-current-button))))
                 (call-interactively 'treemacs-next-line)
+                (should (equal "Foo"
+                               (treemacs--get-label-of (treemacs-current-button))))
                 (call-interactively 'treemacs-push-button)
                 (call-interactively 'treemacs-next-line)
+                (should (equal "Foo2"
+                               (treemacs--get-label-of (treemacs-current-button))))
+
                 (call-interactively 'treemacs-push-button)
                 (call-interactively 'treemacs-next-line)
 
@@ -987,6 +1000,6 @@
 
             (kill-buffer test-buffer)))))))
 
-(provide 'treemacs-tests)
+(provide 'treemacs-test)
 
-;;; treemacs-tests.el ends here
+;;; treemacs-test.el ends here

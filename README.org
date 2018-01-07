@@ -1,6 +1,9 @@
 #+STARTUP: noinlineimages
 
-[[https://melpa.org/#/treemacs][file:https://melpa.org/packages/treemacs-badge.svg]] [[https://stable.melpa.org/#/treemacs][file:https://stable.melpa.org/packages/treemacs-badge.svg]] [[http://spacemacs.org][file:https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg]]
+[[https://melpa.org/#/treemacs][file:https://melpa.org/packages/treemacs-badge.svg]]
+[[https://stable.melpa.org/#/treemacs][file:https://stable.melpa.org/packages/treemacs-badge.svg]]
+[[https://travis-ci.org/Alexander-Miller/treemacs][file:https://travis-ci.org/Alexander-Miller/treemacs.svg?branch=CI]]
+[[http://spacemacs.org][file:https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg]]
 
 * Treemacs - a tree layout file explorer for Emacs                                   :noexport:
 
