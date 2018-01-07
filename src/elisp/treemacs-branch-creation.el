@@ -132,10 +132,9 @@ PARENT is the (optional) button under which this one is inserted.
 DEPTH indicates how deep in the filetree the current button is."
   (list
    prefix
-   (with-no-warnings
-     (gethash (-> path (treemacs--file-extension) (downcase))
-              treemacs-icons-hash
-              treemacs-icon-fallback))
+   (gethash (-> path (treemacs--file-extension) (downcase))
+            treemacs-icons-hash
+            treemacs-icon-fallback)
    (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
@@ -225,7 +224,7 @@ to PARENT."
       (setq dir-strings
             (treemacs--create-buttons
              :nodes dirs
-             :extra-vars ((dir-prefix (concat prefix (with-no-warnings treemacs-icon-closed))))
+             :extra-vars ((dir-prefix (concat prefix treemacs-icon-closed)))
              :depth depth
              :node-name node
              :node-action (treemacs--insert-dir-node node dir-prefix parent depth)))
@@ -322,7 +321,7 @@ RECURSIVE: Bool"
        :immediate-insert nil
        :button btn
        :new-state 'dir-node-open
-       :new-icon (with-no-warnings treemacs-icon-open)
+       :new-icon treemacs-icon-open
        :open-action
        (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future collapse-future btn)
        :post-open-action
@@ -343,7 +342,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
   (treemacs--button-close
    :button btn
    :new-state 'dir-node-closed
-   :new-icon (with-no-warnings treemacs-icon-closed)
+   :new-icon treemacs-icon-closed
    :post-close-action
    (let ((path (button-get btn 'abs-path)))
      (treemacs--stop-watching path)

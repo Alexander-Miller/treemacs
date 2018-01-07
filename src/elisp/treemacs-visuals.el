@@ -41,6 +41,18 @@
 ;; Since it is a marker in the treemacs buffer it is important for it to be reset whenever it might
 ;; become invalid.
 
+;; values will be properly set (and reset) in `treemacs--create-icons'
+(defvar treemacs-icon-closed "")
+(defvar treemacs-icon-open "")
+(defvar treemacs-icon-fallback "")
+
+(treemacs--defvar-with-default
+ treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
+(treemacs--defvar-with-default
+ treemacs-icon-open-text (propertize "- " 'face 'treemacs-term-node-face))
+(treemacs--defvar-with-default
+ treemacs-icon-fallback-text (propertize "  " 'face 'font-lock-keyword-face))
+
 (defvar treemacs--icons nil
   "Stash of all created icons.
 Used by `treemacs--setup-icon-highlight' to realign icons' highlight colors
@@ -147,17 +159,6 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
 (defun treemacs--create-icons ()
   "Create icons and put them in the icons hash."
 
-  (treemacs--defvar-with-default
-   treemacs-icon-closed-text (propertize "+ " 'face 'treemacs-term-node-face))
-  (treemacs--defvar-with-default
-   treemacs-icon-open-text (propertize "- " 'face 'treemacs-term-node-face))
-  (treemacs--defvar-with-default
-   treemacs-icon-fallback-text (propertize "  " 'face 'font-lock-keyword-face))
-
-  (defvar treemacs-icon-closed)
-  (defvar treemacs-icon-open)
-  (defvar treemacs-icon-fallback)
-
   (if treemacs--image-creation-impossible
       (setq treemacs-icon-closed   treemacs-icon-closed-text
             treemacs-icon-open     treemacs-icon-open-text
@@ -169,7 +170,10 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
      (cons 'treemacs-icon-closed-png (treemacs--setup-icon treemacs-icon-closed-png "dir_closed.png"))
      treemacs--defaults-icons)
     (push
-     (cons 'treemacs-icon-open-png (treemacs--setup-icon treemacs-icon-open-png   "dir_open.png"))
+     (cons 'treemacs-icon-open-png (treemacs--setup-icon treemacs-icon-open-png "dir_open.png"))
+     treemacs--defaults-icons)
+    (push
+     (cons 'treemacs-icon-fallback treemacs-icon-fallback)
      treemacs--defaults-icons)
 
     (treemacs--setup-icon treemacs-icon-text "txt.png")
