@@ -145,6 +145,13 @@ Returns nil when point is on the header."
       (when (and (get-char-property p 'button))
           (copy-marker p t)))))
 
+(defsubst treemacs--unslash (path)
+  "Remove the final slash in PATH."
+  (declare (pure t) (side-effect-free t))
+  (if (eq ?/ (aref path (1- (length path))))
+      (substring path 0 -1)
+    path))
+
 (defsubst treemacs--get-label-of (btn)
   "Return the text label of BTN."
   (interactive)
@@ -264,7 +271,7 @@ Returns nil when point is on the header."
 (defsubst treemacs--current-root ()
   "Return the current root directory.
 Requires and assumes to be called inside the treemacs buffer."
-  (f-long default-directory))
+  (treemacs--unslash (f-long default-directory)))
 
 (defsubst treemacs--reject-ignored-files (file)
   "Return t if FILE is *not* an ignored file.
@@ -457,9 +464,7 @@ buffer."
     ;; create buffer-local hashes that need to be initialized
     (with-no-warnings (setq treemacs--tags-cache (make-hash-table :test #'equal :size 100)))
     (treemacs--check-window-system)
-    ;; f-long to expand ~ and remove final slash
-    ;; needed for root dirs given by projectile if it's used
-    (treemacs--build-tree (f-long root))
+    (treemacs--build-tree (treemacs--unslash (f-long root)))
     ;; no warnings since follow mode is known to be defined
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
