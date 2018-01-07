@@ -8,7 +8,6 @@ matrix:
   allow_failures:
     - env: EMACS_VERSION=snapshot
 env:
-  - EMACS_VERSION=24.4
   - EMACS_VERSION=25.3
   - EMACS_VERSION=snapshot
 before_install:
