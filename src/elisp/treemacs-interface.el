@@ -95,11 +95,12 @@ Must be bound to a mouse click, or EVENT will not be supplied."
       (treemacs--evade-image))))
 
 (defun treemacs-goto-parent-node ()
-  "Select parent of selected node, if possible."
+  "Select parent of selected node, if possible.
+If there is no parent to go up to call `treemacs-uproot' instead."
   (interactive)
-  (beginning-of-line)
-  (-some-> (next-button (point)) (button-get 'parent) (button-start) (goto-char))
-  (treemacs--evade-image))
+  (--if-let (-some-> (treemacs-current-button) (button-get 'parent))
+      (goto-char it)
+    (treemacs-uproot)))
 
 (defun treemacs-next-neighbour ()
   "Select next node at the same depth as currently selected node, if possible."
