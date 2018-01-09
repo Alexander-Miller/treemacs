@@ -27,8 +27,10 @@
 (require 'treemacs-customization)
 (require 'treemacs-impl)
 (require 'treemacs-follow-mode)
+(eval-and-compile (require 'treemacs-macros))
 
 (declare-function treemacs-mode "treemacs-mode")
+(declare-function treemacs-toggle "treemacs")
 
 (defconst treemacs--persist-file (f-join user-emacs-directory ".cache" "treemacs-persist")
   "File treemacs uses to persist its current state.")
@@ -57,18 +59,20 @@
            ;; inhibit quit to quiet the error messages that crop up since this is in a timer
            (let ((inhibit-quit nil)
                  (scope-id (cdr (assoc "scope-id" buffer-data)))
-                 (root     (cdr (assoc "root" buffer-data)))
-                 (point    (cdr (assoc "point" buffer-data))))
-             (-when-let (frame (--first (string= scope-id (frame-parameter it 'treemacs-id)) (frame-list)))
+                 (root     (cdr (assoc "root"     buffer-data)))
+                 (point    (cdr (assoc "point"    buffer-data)))
+                 (visible  (cdr (assoc "visible"  buffer-data))))
+             (-when-let- [frame (--first (string= scope-id (frame-parameter it 'treemacs-id)) (frame-list))]
                (unless (-> frame (assq treemacs--buffer-access) (cdr) (buffer-live-p))
                  (save-selected-window
                    (with-selected-frame frame
                      (treemacs--init root)
-                     (bury-buffer (current-buffer))
                      (when (and (not (string= point "<root>"))
                                 (f-exists? point))
                        (treemacs--do-follow point))
-                     (hl-line-highlight))))))))))))
+                     (hl-line-highlight)
+                     (unless visible
+                       (treemacs-toggle)))))))))))))
 
 (defun treemacs--persist ()
   "Save current state, allowing it to be restored with `treemacs--restore'.
@@ -84,11 +88,13 @@ persisted state so it will not be loaded on the next desktop read."
         (dolist (access-pair treemacs--buffer-access)
           (-let [(frame . buffer) access-pair]
             (when (buffer-live-p buffer)
-              (with-current-buffer buffer
-                (push `(,(cons "scope-id" (frame-parameter frame 'treemacs-id))
-                        ,(cons "root" (treemacs--current-root))
-                        ,(cons "point" (-if-let (b (treemacs-current-button)) (treemacs--nearest-path b) "<root>")))
-                      state)))))
+              (with-selected-frame frame
+                (with-current-buffer buffer
+                  (push `(,(cons "scope-id" (frame-parameter frame 'treemacs-id))
+                          ,(cons "root" (treemacs--current-root))
+                          ,(cons "point" (--if-let (treemacs-current-button) (treemacs--nearest-path it) "<root>"))
+                          ,(cons "visible" (if (treemacs--is-visible?) t nil)))
+                        state))))))
         (f-write (pp-to-string state) 'utf-8 treemacs--persist-file)))))
 
 (with-eval-after-load "desktop"
