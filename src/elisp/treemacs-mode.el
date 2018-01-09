@@ -99,21 +99,23 @@ to it will instead show a blank."
              (key-copy-root      (treemacs--find-keybind #'treemacs-yank-root))
              (key-resort         (treemacs--find-keybind #'treemacs-resort))
              (key-bookmark       (treemacs--find-keybind #'treemacs-add-bookmark))
+             (key-down-next-w    (treemacs--find-keybind #'treemacs-next-line-other-window))
+             (key-up-next-w      (treemacs--find-keybind #'treemacs-previous-line-other-window))
              (hydra-str
               (format
                "
 %s
 %s            │ %s              │ %s    │ %s              │ %s
 ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-%s next Line      │ %s open & close        │ %s create file │ %s follow mode    │ %s refresh
-%s prev line      │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
-%s next neighbour │ %s open no split       │ %s rename      │ %s git mode       │ %s copy path
-%s prev neighbour │ %s open horizontal     │                    │ %s show dotfiles  │ %s copy root
-%s go to parent   │ %s open vertical       │                    │ %s resizability   │ %s re-sort
-%s move root up   │ %s open ace            │                    │                       │ %s bookmark
-%s move root into │ %s open ace horizontal │                    │                       │
-                      │ %s open ace vertical   │                    │                       │
-                      │ %s open externally     │                    │                       │
+%s next Line        │ %s open & close        │ %s create file │ %s follow mode    │ %s refresh
+%s prev line        │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
+%s next neighbour   │ %s open no split       │ %s rename      │ %s git mode       │ %s copy path
+%s prev neighbour   │ %s open horizontal     │                    │ %s show dotfiles  │ %s copy root
+%s go to parent     │ %s open vertical       │                    │ %s resizability   │ %s re-sort
+%s move root up     │ %s open ace            │                    │                       │ %s bookmark
+%s move root into   │ %s open ace horizontal │                    │                       │
+%s down next window │ %s open ace vertical   │                    │                       │
+%s up next window   │ %s open externally     │                    │                       │
 "
                title
                column-nav               column-nodes          column-files          column-toggles          column-misc
@@ -124,13 +126,15 @@ to it will instead show a blank."
                (car key-goto-parent)    (car key-open-vert)                         (car key-toggle-width)  (car key-resort)
                (car key-root-up)        (car key-open-ace)                                                  (car key-bookmark)
                (car key-root-down)      (car key-open-ace-h)
-                                        (car key-open-ace-v)
-                                        (car key-open-ext))))
+               (car key-down-next-w)    (car key-open-ace-v)
+               (car key-up-next-w)      (car key-open-ext))))
           (eval
            `(defhydra treemacs--helpful-hydra (:exit nil :hint nil :columns 5)
               ,hydra-str
               (,(cdr key-next-line)      #'treemacs-next-line)
               (,(cdr key-prev-line)      #'treemacs-previous-line)
+              (,(cdr key-down-next-w)    #'treemacs-next-line-other-window)
+              (,(cdr key-up-next-w)      #'treemacs-previous-line-other-window)
               (,(cdr key-next-neighbour) #'treemacs-next-neighbour)
               (,(cdr key-prev-neighbour) #'treemacs-previous-neighbour)
               (,(cdr key-goto-parent)    #'treemacs-goto-parent-node)
@@ -194,6 +198,8 @@ to it will instead show a blank."
       (define-key map (kbd "ox")   #'treemacs-visit-node-in-external-application)
       (define-key map (kbd "n")    #'treemacs-next-line)
       (define-key map (kbd "p")    #'treemacs-previous-line)
+      (define-key map (kbd "M-N")  #'treemacs-next-line-other-window)
+      (define-key map (kbd "M-P")  #'treemacs-previous-line-other-window)
       (define-key map (kbd "M-n")  #'treemacs-next-neighbour)
       (define-key map (kbd "M-p")  #'treemacs-previous-neighbour)
       (define-key map (kbd "th")   #'treemacs-toggle-show-dotfiles)

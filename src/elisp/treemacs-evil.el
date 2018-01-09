@@ -41,6 +41,8 @@
 (define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
 (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
 (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
+(define-key evil-treemacs-state-map (kbd "M-J") #'treemacs-next-line-other-window)
+(define-key evil-treemacs-state-map (kbd "M-K") #'treemacs-previous-line-other-window)
 (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
 (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
 (define-key evil-treemacs-state-map (kbd "tf")  #'treemacs-follow-mode)

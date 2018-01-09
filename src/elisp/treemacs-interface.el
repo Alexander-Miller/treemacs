@@ -601,6 +601,18 @@ treemacs node is pointing to a valid buffer position."
      [(or `tag-node-open `tag-node-closed)
       (treemacs--log "There is nothing to bookmark here.")])))
 
+(defun treemacs-next-line-other-window (&optional count)
+  "Scroll forward COUNT lines in `next-window'."
+  (interactive "p")
+  (with-selected-window (next-window)
+    (scroll-up-line count)))
+
+(defun treemacs-previous-line-other-window (&optional count)
+  "Scroll backward COUNT lines in `next-window'."
+  (interactive "p")
+  (with-selected-window (other-window-for-scrolling)
+    (scroll-down-line count)))
+
 (provide 'treemacs-interface)
 
 ;;; treemacs-interface.el ends here
