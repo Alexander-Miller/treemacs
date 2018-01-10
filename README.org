@@ -224,17 +224,26 @@ You can find an exhaustive overview of all functions, their keybinds and functio
       (use-package treemacs-evil
         :ensure t
         :demand t)
-      (setq treemacs-follow-after-init          t
-            treemacs-width                      35
-            treemacs-indentation                2
+      (setq treemacs-change-root-without-asking nil
             treemacs-collapse-dirs              (if (executable-find "python") 3 0)
-            treemacs-silent-refresh             nil
-            treemacs-change-root-without-asking nil
-            treemacs-sorting                    'alphabetic-desc
-            treemacs-show-hidden-files          t
-            treemacs-never-persist              nil
+            treemacs-file-event-delay           5000
+            treemacs-follow-after-init          t
+            treemacs-goto-tag-strategy          'refetch-index
+            treemacs-indentation                2
+            treemacs-indentation-string         " "
             treemacs-is-never-other-window      nil
-            treemacs-goto-tag-strategy          'refetch-index)
+            treemacs-never-persist              nil
+            treemacs-no-png-images              nil
+            treemacs-recenter-after-file-follow nil
+            treemacs-recenter-after-tag-follow  nil
+            treemacs-show-hidden-files          t
+            treemacs-silent-filewatch           nil
+            treemacs-silent-refresh             nil
+            treemacs-sorting                    'alphabetic-desc
+            treemacs-tag-follow-cleanup         t
+            treemacs-tag-follow-delay           1.5
+            treemacs-winum-number               10
+            treemacs-width                      35)
 
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t)
@@ -466,10 +475,10 @@ By default Treemacs's keymap looks as follows:
 | Key     | Action                                      | Description                                                                                                                                                               |
 |---------+---------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | ?       | treemacs-helpful-hydra                      | Summon the helpful hydra to show you the treemacs keymap.                                                                                                                 |
-| j/n     | treemacs-next-line                          | Goto the next line.                                                                                                                                                      |
-| k/p     | treemacs-previous-line                      | Goto the previous line.                                                                                                                                                  |
-| M-J/N   | treemacs-next-line-other-window             | Goto the next line in ~next-window~.                                                                                                                                     |
-| M-K/P   | treemacs-previous-line-other-window         | Goto the previous line in ~next-window~..                                                                                                                                                   |
+| j/n     | treemacs-next-line                          | Goto the next line.                                                                                                                                                       |
+| k/p     | treemacs-previous-line                      | Goto the previous line.                                                                                                                                                   |
+| M-J/N   | treemacs-next-line-other-window             | Goto the next line in ~next-window~.                                                                                                                                      |
+| M-K/P   | treemacs-previous-line-other-window         | Goto the previous line in ~next-window~..                                                                                                                                 |
 | h       | treemacs-uproot                             | Switch treemacs' root directory to current root's parent, if possible.                                                                                                    |
 | l       | treemacs-change-root                        | Use currently selected directory as new root. Do nothing for files.                                                                                                       |
 | M-j/M-n | treemacs-next-neighbour                     | Select next node at the same depth as currently selected node, if possible.                                                                                               |
