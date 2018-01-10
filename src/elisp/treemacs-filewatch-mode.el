@@ -178,7 +178,7 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
               (treemacs--save-position
                   (if (string= it (treemacs--current-root))
                       (progn
-                        (treemacs--do-refresh it)
+                        (treemacs--do-refresh watching-buffer)
                         (push watching-buffer fully-refreshed-buffers))
                     (-let [b (treemacs--goto-node-at it)]
                       (when (eq 'dir-node-open (button-get b 'state))
