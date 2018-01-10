@@ -528,6 +528,10 @@ Aside from this there are the following known incompatibilities:
    create images. You can test this by evaluating ~(create-image "" 'png)~. If this code returns an error like
    "Invalid image type ´png´" your emacs does not support images.
 
+ * How do I get treemacs to stop telling me when it's been refreshed, especially with filewatch-mode?
+
+   See ~treemacs-silent-refresh~ and ~treemacs-silent-filewatch~.
+
  * Why is treemacs warning me about not being able to find some background colors and falling back to something else?
 
    Treemacs needs those colors to make sure that background colors of its icons correctly align with hl-line-mode. Png images'
