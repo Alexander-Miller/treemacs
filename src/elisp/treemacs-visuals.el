@@ -21,6 +21,7 @@
 ;;; Code:
 
 (require 'image)
+(require 'pulse)
 (require 'hl-line)
 (require 'treemacs-impl)
 (require 'treemacs-customization)
@@ -253,6 +254,43 @@ be assigned which treemacs icon, for exmaple
                  (icon (cdr (assq mode mode-icon-alist))))
       (treemacs--log "Map %s to %s" extension (symbol-name icon))
       (puthash (substring extension 1) (symbol-value icon) treemacs-icons-hash))))
+
+(defun treemacs--pulse-png-advice (&rest _)
+  "Make sure icons' background are pusled alongside the entire line."
+  (when (eq 'treemacs-mode major-mode)
+    (treemacs--with-writable-buffer
+     (-let*- [(btn (treemacs-current-button))
+              (start (- (button-start btn) 2) )
+              (end (1+ start))
+              (img (get-text-property start 'display))
+              (cp (copy-sequence img))]
+       (treemacs--set-img-property cp :background
+                                   (face-attribute
+                                    (overlay-get pulse-momentary-overlay 'face)
+                                    :background nil t))
+       (put-text-property start end 'display cp)))))
+
+(defun treemacs--do-pulse (face)
+  "Visually pulse current line using FACE."
+  (pulse-momentary-highlight-one-line (point) face)
+  (advice-add 'pulse-momentary-unhighlight :after #'hl-line-highlight)
+  (advice-add 'pulse-lighten-highlight :after #'treemacs--pulse-png-advice))
+
+(defsubst treemacs-pulse-on-success (&rest log-args)
+  "Pulse current line with `treemacs-on-success-pulse-face'.
+Optionally issue a log statment with LOG-ARGS."
+  (when log-args
+    (treemacs--log (apply #'format log-args)))
+  (when treemacs-pulse-on-success
+    (treemacs--do-pulse 'treemacs-on-success-pulse-face)))
+
+(defsubst treemacs-pulse-on-failure (&rest log-args)
+  "Pulse current line with `treemacs-on-failure-pulse-face'.
+Optionally issue a log statment with LOG-ARGS."
+  (when log-args
+    (treemacs--log (apply #'format log-args)))
+  (when treemacs-pulse-on-failure
+    (treemacs--do-pulse 'treemacs-on-failure-pulse-face)))
 
 (provide 'treemacs-visuals)
 

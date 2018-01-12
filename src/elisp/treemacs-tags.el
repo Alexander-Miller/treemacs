@@ -32,6 +32,7 @@
 (require 'treemacs-branch-creation)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
+(require 'treemacs-visuals)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -220,7 +221,7 @@ during a reopen process. Recursively open all tag below BTN when RECURSIVE is t.
                                  (when (eq 'tag-node-closed (button-get it 'state))
                                    (goto-char (button-start it))
                                    (treemacs--open-tag-node it :recursive t))))))
-      (treemacs--log "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
+      (treemacs-pulse-on-failure "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
 
 (defun treemacs--close-tags-for-file (btn &optional recursive)
   "Close node given by BTN.
@@ -385,8 +386,9 @@ exist."
             (treemacs--with-button-buffer btn
               (treemacs--get-label-of btn))))]
         [`issue-warning
-         (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-                        (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
+         (treemacs-pulse-on-failure
+          "Tag '%s' is located in a buffer that does not exist."
+          (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
         [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
 
 (cl-defun treemacs--goto-tag-button-at (tag-path file)

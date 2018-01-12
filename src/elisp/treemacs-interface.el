@@ -30,6 +30,7 @@
 (require 'treemacs-branch-creation)
 (require 'treemacs-follow-mode)
 (require 'treemacs-tag-follow-mode)
+(require 'treemacs-visuals)
 (require 'treemacs-customization)
 (eval-and-compile
   (require 'cl-lib)
@@ -447,16 +448,16 @@ generated."
 (defun treemacs-yank-path-at-point ()
   "Copy the absolute path of the node at point."
   (interactive)
-  (-when-let (yank (-some-> (treemacs--prop-at-point 'abs-path) (f-full) (kill-new)))
-    (treemacs--log "Yanked path: %s" (propertize yank 'face 'font-lock-string-face))))
+  (--if-let (-some-> (treemacs--prop-at-point 'abs-path) (f-full) (kill-new))
+        (treemacs-pulse-on-success "Yanked path: %s" (propertize it 'face 'font-lock-string-face))
+    (treemacs-pulse-on-failure  "There is nothing to copy here")))
 
 (defun treemacs-yank-root ()
   "Copy the absolute path of the current treemacs root."
   (interactive)
-  (let ((yank (-> default-directory
-                  (f-full)
-                  (kill-new))))
-    (treemacs--log "Yanked root: %s" (propertize yank 'face 'font-lock-string-face))))
+  (--if-let (-> default-directory (f-full) (kill-new))
+      (treemacs--log "Yanked root: %s" (propertize it 'face 'font-lock-string-face))
+    (treemacs-pulse-on-failure "Failed to yank root")))
 
 (defun treemacs-delete-other-windows ()
   "Same as `delete-other-windows', but will not delete the treemacs window."

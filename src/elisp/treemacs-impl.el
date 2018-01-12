@@ -67,6 +67,7 @@
   treemacs--do-follow)
 
 (treemacs--import-functions-from "treemacs-visuals"
+  treemacs-pulse-on-success
   treemacs--tear-down-icon-highlight
   treemacs--forget-previously-follow-tag-btn
   treemacs--forget-last-highlight)
@@ -627,7 +628,8 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
         (funcall creation-func new-file)
         (treemacs--without-messages (treemacs-refresh))
         (treemacs--do-follow (f-long new-file))
-        (recenter)))))
+        (recenter)
+        (treemacs-pulse-on-success)))))
 
 (cl-defun treemacs--uncached-goto-node-at (abs-path &optional (start-from (point-min)))
   "Move point to node identified by ABS-PATH, starting search at START.
