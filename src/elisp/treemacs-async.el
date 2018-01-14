@@ -40,8 +40,9 @@
 
 (defvar treemacs--git-status-process-function)
 (defvar treemacs--git-status-parse-function)
-(fset 'treemacs--git-status-process-function #'ignore)
-(fset 'treemacs--git-status-parse-function   (lambda (_) (make-hash-table)))
+(when load-file-name
+  (fset 'treemacs--git-status-process-function #'ignore)
+  (fset 'treemacs--git-status-parse-function   (lambda (_) (make-hash-table))))
 
 (defun treemacs--git-status-process-extended (path)
   "Start an extended python-parsed git status process for files under PATH."
