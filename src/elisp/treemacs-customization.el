@@ -323,6 +323,7 @@ Valid values are
 Set to nil to disable the static number assignment."
   :type 'number
   :group 'treemacs-configuration)
+(make-obsolete-variable 'treemacs-winum-number "Treemacs is ignored by winum since v1.16.1" "v1.16.1")
 
 (defcustom treemacs-no-png-images nil
   "When non-nil treemacs will use TUI string icons even when running in a GUI."

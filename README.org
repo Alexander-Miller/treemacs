@@ -60,9 +60,9 @@ Specifically a quick feature overview looks as follows:
    ~treemacs-follow-mode~ and ~treemacs-tag-follow-mode~ respectively.
  * Optional git integration - treemacs will use different faces for files and directories based on their git status.
    The git process runs asynchronously and so will rarely cause any perceptible delay.
- * [[https://github.com/deb0ch/emacs-winum][Winum]] integration - treemacs will always be assigned a static window number (10 by default), never interfering with the
-   numbering layout of your other windows.
- * Projectile integration via the ~treemacs-projectile~ package to quickly open treemacs at any known project's root directory.
+ * [[https://github.com/deb0ch/emacs-winum][Winum]] compatibility - treemacs will not interfere with winum's numbering layout, your first window will always remain
+   your first window.
+ * [[https://github.com/bbatsov/projectile][Projectile]] integration via the ~treemacs-projectile~ package to quickly open treemacs at any known project's root directory.
  * Simple mouse interface - you can close/expand folders and open files by left-clicking.
  * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
    another matter). When run in a terminal a very simple fallback is used.
@@ -243,8 +243,10 @@ You can find an exhaustive overview of all functions, their keybinds and functio
             treemacs-sorting                    'alphabetic-desc
             treemacs-tag-follow-cleanup         t
             treemacs-tag-follow-delay           1.5
-            treemacs-winum-number               10
             treemacs-width                      35)
+
+      (with-eval-after-load 'winum
+        (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
 
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t)
@@ -301,7 +303,6 @@ Treemacs offers the following configuration options:
 | treemacs-position                   | left                                                                            | Position of treemacs buffer. Valid values are ~left~, ~right~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | treemacs-tag-follow-delay           | 1.5                                                                             | Delay in seconds of inactivity for ~treemacs-tag-follow-mode~ to trigger.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | treemacs-tag-follow-cleanup         | t                                                                               | When non-nil ~treemacs-tag-follow-mode~ will close keep only the current file's tags visible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| treemacs-winum-number               | 10                                                                              | Window number treemacs will always assume when winum.el is used. Set to nil to disable the static number assignment.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | treemacs-no-png-images              | nil                                                                             | When non-nil treemacs will use TUI string icons even when running in a GUI.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | treemacs-python-executable          | (executable-find "python")                                                      | Python binary used by treemacs. Should only need changing if python2 is the default and you want treemacs to use python3 for the extended version of ~treemacs-git-mode~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | treemacs-recenter-after-file-follow | nil                                                                             | When non-nil ~recenter~ will be called when ~treemacs-follow-mode~ moves to a new file.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -531,10 +532,6 @@ Aside from this there are the following known incompatibilities:
  * The only known example of this is an older version of swiper.
  * Rainbow mode activated in treemacs will likewise cause this behaviour. Make sure not to include rainbow-mode as part
    of ~special-mode-hook~, since this is the mode ~treemacs-mode~ is derived from.
- * Using ~winum-mode~ with a scope other than ~frame-local~ means that potentially multiple treemacs windows can be part
-   of the same window numbering scheme, resulting in a conflict since by default all treemacs windows are assigned
-   ~treemacs-winum-number~ as their window number. To prevent this treemacs will only be assigned a custom number when
-   the value of ~winum-scope~ is ~frame-local~.
 * FAQ
  * Why am I seeing no file icons and only +/- for directories?
 

@@ -27,21 +27,10 @@
 
 (with-eval-after-load 'winum
 
-  ;; somestimes the compiler asks for the strangest things
-  (declare-function treemacs--window-number-ten "treemacs-compatibility")
-
-  (defun treemacs--window-number-ten ()
-    (when (and (eq (selected-window) (frame-first-window))
-               (treemacs-is-treemacs-window-selected?)
-               (boundp 'winum-scope)
-               (eq winum-scope 'frame-local))
-      treemacs-winum-number))
-
-  ;; only works in old versions of winum, should be deleted soon
-  (when (boundp 'winum-assign-func)
-    (setq winum-assign-func #'treemacs--window-number-ten))
-  (when (boundp 'winum-assign-functions)
-    (add-to-list 'winum-assign-functions #'treemacs--window-number-ten)))
+  (when (boundp 'winum-ignored-buffers)
+    (dolist (n (number-sequence 1 5))
+      (add-to-list 'winum-ignored-buffers
+                   (format "%sFramebuffer-%s*" treemacs--buffer-name-prefix n)))))
 
 (with-eval-after-load 'golden-ratio
   (when (bound-and-true-p golden-ratio-exclude-modes)

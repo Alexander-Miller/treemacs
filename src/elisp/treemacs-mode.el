@@ -223,8 +223,7 @@ to it will instead show a blank."
   (if (fboundp 'spaceline-install)
       (progn
         (spaceline-install
-         "treemacs" '(((workspace-number window-number)
-                       :separator "|"
+         "treemacs" '((workspace-number
                        :face highlight-face)
                       major-mode)
          nil)
@@ -244,6 +243,8 @@ to it will instead show a blank."
   (setq-local show-paren-mode nil)
   (electric-indent-local-mode -1)
   (visual-line-mode -1)
+  (font-lock-mode -1)
+  (jit-lock-mode -1)
   (hl-line-mode t)
 
   ;; needs to run manually the first time treemacs is loaded, since the hook is only added *after*
