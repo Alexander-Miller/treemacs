@@ -172,7 +172,8 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
         (push dir paths-to-refresh)
         (when (gethash dir treemacs--collapsed-filewatch-hash)
           (treemacs--stop-watching dir))))
-    (-let [fully-refreshed-buffers nil]
+    (-let- [(fully-refreshed-buffers nil)
+            (treemacs--no-messages treemacs-silent-filewatch)]
       (--each paths-to-refresh
         (dolist (watching-buffer (car (gethash it treemacs--filewatch-hash)))
           (unless (memq watching-buffer fully-refreshed-buffers)

@@ -846,7 +846,7 @@ filewatch mode can refresh multiple buffers at once."
        (run-hook-with-args
         'treemacs-post-refresh-hook
         root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
-       (unless (or treemacs-silent-refresh treemacs-silent-filewatch)
+       (unless treemacs-silent-refresh
          (treemacs--log "Refresh complete."))))))
 
 (provide 'treemacs-impl)
