@@ -846,7 +846,7 @@
                 (should (treemacs-buffer-exists?))
 
                 (call-interactively 'treemacs-uproot)
-                ;; (shell-command (format "notify-send '%s'" (treemacs--get-label-of (treemacs-current-button))))
+
                 (should (equal "test"
                                (treemacs--get-label-of
                                 (treemacs-current-button))))
