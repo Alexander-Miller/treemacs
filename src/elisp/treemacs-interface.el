@@ -91,6 +91,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (let* ((root      (treemacs--current-root))
          (new-root  (treemacs--parent root)))
     (unless (s-equals? root new-root)
+      (treemacs--reroot-up root new-root)
       (treemacs--build-tree new-root)
       (treemacs--goto-node-at root)
       (treemacs--evade-image))))
@@ -122,7 +123,9 @@ Do nothing for other node types."
   (-if-let- [btn (treemacs-current-button)]
     (-pcase (button-get btn 'state)
       [(or `dir-node-open `dir-node-closed)
-       (treemacs--build-tree (button-get btn 'abs-path))]
+       (-let [new-root (button-get btn 'abs-path)]
+         (treemacs--reroot-down (treemacs--current-root) new-root)
+         (treemacs--build-tree new-root))]
       [_
        (treemacs--log "Button in current line is not a directory.")])
     (treemacs--log "There is no directory to move into here.")))

@@ -76,6 +76,17 @@
   treemacs--git-status-process-function
   treemacs--collapsed-dirs-process)
 
+(treemacs--import-functions-from "treemacs-structure"
+  treemacs-on-collapse
+  treemacs-get-from-shadow-index
+  treemacs-get-position-of
+  treemacs-shadow-node->children
+  treemacs-shadow-node->key
+  treemacs-shadow-node->collapsed
+  treemacs--reset-index
+  treemacs--on-rename
+  treemacs--invalidate-position-cache)
+
 (declare-function treemacs-mode "treemacs-mode")
 
 ;;;;;;;;;;;;;;;;;;
@@ -107,17 +118,6 @@ longer be contigious.")
         (-> dir (f-parent) (f-parent))
       dir))
   "The directory treemacs.el is stored in.")
-
-(defvar-local treemacs--open-dirs-cache (make-hash-table :size 300 :test #'equal)
-  "Cache to keep track of opened subfolders.
-This cache serves to ensure that directories opened below a parent directory
-will be opened again when the parent is closed and reopened.")
-
-(defvar-local treemacs--open-node-position-cache (make-hash-table :size 300 :test #'equal)
-  "Cache to keep track of openened node locations.
-Exists specifically to make `treemacs--goto-node-at' more effiecient.
-Will become invalidated when some action deletes the treemacs buffer's content,
-even if it is only to rebuild it, like during refresh.")
 
 (defvar treemacs--no-messages nil
   "When set to t `treemacs--log' will produce no output.
@@ -159,39 +159,6 @@ Returns nil when point is on the header."
 (defsubst treemacs--is-path-in-dir? (path dir)
   "Is PATH in directory DIR?"
   (s-starts-with? (f-slash dir) path))
-
-(defsubst treemacs--add-to-open-dirs-cache (btn)
-  "Add an entry for BTN's path under its parent in `treemacs--open-dirs-cache'.
-The parent may be stored in BTN's parent-path property if BTN is a collapsed
-directory."
-  (-let*- [(opened-dir (button-get btn 'abs-path))
-           (parent     (or (button-get btn 'parent-path)
-                           (treemacs--parent opened-dir)))
-           (cache      (gethash parent treemacs--open-dirs-cache))]
-    (puthash parent (cons opened-dir cache) treemacs--open-dirs-cache)))
-
-(defsubst treemacs--add-to-position-cache (path position)
-  "Add PATH's POSITION to `treemacs--open-node-position-cache'."
-  (puthash path position treemacs--open-node-position-cache))
-
-(defsubst treemacs--remove-from-position-cache (path &optional purge)
-  "Remov PATH's position from `treemacs--open-node-position-cache'.
-When PURGE is non-nil also remove all directories below PATH."
-  (remhash path treemacs--open-node-position-cache)
-  (when purge
-    (maphash
-     (lambda (p _)
-       (when (treemacs--is-path-in-dir? p path)
-         (remhash p treemacs--open-node-position-cache)))
-     treemacs--open-node-position-cache)))
-
-(defsubst treemacs--clear-position-cache ()
-  "Clear `treemacs--open-node-position-cache'."
-  (clrhash treemacs--open-node-position-cache))
-
-(defsubst treemacs--get-position-of (path)
-  "Retrieve PATH's position from `treemacs--open-node-position-cache'."
-  (gethash path treemacs--open-node-position-cache))
 
 (defsubst treemacs--replace-hash-entries (table make-new-key make-new-val)
   "Selectively replace keys and values in a given hash TABLE.
@@ -267,6 +234,12 @@ Returns nil when point is on the header."
   "Return the current root directory.
 Requires and assumes to be called inside the treemacs buffer."
   (treemacs--unslash (f-long default-directory)))
+
+(defsubst treemacs-parent-of (btn)
+  "Return the parent path of BTN."
+  (--if-let (button-get btn 'parent)
+      (button-get it 'abs-path)
+    (treemacs--current-root)))
 
 (defsubst treemacs--reject-ignored-files (file)
   "Return t if FILE is *not* an ignored file.
@@ -358,8 +331,7 @@ necessary since interacting with magit can cause file delete events for files
 being edited to trigger."
   (unless no-buffer-delete (treemacs--kill-buffers-after-deletion path t))
   (treemacs--stop-watching path t)
-  (treemacs--remove-from-open-dirs-cache path t)
-  (treemacs--remove-from-position-cache path t)
+  (treemacs-on-collapse path t)
   (treemacs--remove-all-tags-under-path-from-cache path))
 
 ;;;;;;;;;;;;;;;
@@ -379,11 +351,7 @@ being edited to trigger."
   ;; no need to reset `treemacs--open-node-position-cache' as long as this function is
   ;; used such it is immediately followed with a refresh
 
-  ;; open dirs cache
-  (treemacs--replace-hash-entries
-   treemacs--open-dirs-cache
-   (lambda (k) (s-replace old-path new-path k))
-   (lambda (v) (--map (s-replace old-path new-path it) v)))
+  (treemacs--on-rename old-path new-path)
 
   ;; top level of tags cache
   (treemacs--replace-hash-entries
@@ -455,12 +423,9 @@ buffer."
     (if (treemacs--is-visible?)
         (treemacs--select-visible)
       (treemacs--setup-buffer))
-    (treemacs--buffer-teardown)
-    ;; do mode activation last - if the treemacs buffer is empty when the major
-    ;; mode is activated (this may happen when treemacs is restored from other
-    ;; than desktop save mode) treemacs will attempt to restore the previous session
     (unless (eq major-mode 'treemacs-mode)
       (treemacs-mode))
+    (treemacs--buffer-teardown (treemacs--unslash (f-long root)))
     (treemacs--check-window-system)
     (treemacs--build-tree (treemacs--unslash (f-long root)))
     ;; no warnings since follow mode is known to be defined
@@ -471,7 +436,7 @@ buffer."
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
-  (treemacs--clear-position-cache)
+  (treemacs--invalidate-position-cache)
   (treemacs--forget-last-highlight)
   (treemacs--forget-previously-follow-tag-btn)
   (treemacs--stop-watch-all-in-scope)
@@ -512,10 +477,9 @@ buffer."
     ;; TODO make local maybe
     (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)))
 
-(defun treemacs--buffer-teardown ()
-  "Cleanup to be run when an existing treemacs buffer is re-initialized."
-  (clrhash treemacs--open-dirs-cache)
-  (treemacs--clear-position-cache)
+(defun treemacs--buffer-teardown (root)
+  "Cleanup to be run when an existing treemacs buffer is re-initialized at ROOT."
+  (treemacs--reset-index root)
   (treemacs--clear-tags-cache)
   (treemacs--stop-watch-all-in-scope)
   (treemacs--cancel-refresh-timer)
@@ -524,21 +488,21 @@ buffer."
 (defun treemacs--push-button (btn &optional recursive)
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
-  (pcase (button-get btn 'state)
-    (`dir-node-open    (treemacs--close-dir-node btn recursive))
-    (`dir-node-closed  (treemacs--open-dir-node btn :recursive recursive))
-    (`file-node-open   (treemacs--close-tags-for-file btn recursive))
-    (`file-node-closed (treemacs--open-tags-for-file btn :recursive recursive))
-    (`tag-node-open    (treemacs--close-tag-node btn recursive))
-    (`tag-node-closed  (treemacs--open-tag-node btn :recursive recursive))
-    (`tag-node         (progn (other-window 1) (treemacs--goto-tag btn)))
-    (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state)))))
+  (-pcase (button-get btn 'state)
+    [`dir-node-open    (treemacs--close-dir-node btn recursive)]
+    [`dir-node-closed  (treemacs--open-dir-node btn :recursive recursive)]
+    [`file-node-open   (treemacs--close-tags-for-file btn recursive)]
+    [`file-node-closed (treemacs--open-tags-for-file btn :recursive recursive)]
+    [`tag-node-open    (treemacs--close-tag-node btn recursive)]
+    [`tag-node-closed  (treemacs--open-tag-node btn :recursive recursive)]
+    [`tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
+    [_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state))]))
 
 (defun treemacs--reopen-node (btn git-info)
   "Reopen file BTN.
 GIT-INFO is passed through from the previous branch build."
   (-pcase (button-get btn 'state)
-    [`dir-node-closed  (treemacs--open-dir-node btn :no-add t :git-future git-info)]
+    [`dir-node-closed  (treemacs--open-dir-node btn :git-future git-info)]
     [`file-node-closed (treemacs--open-tags-for-file btn :no-add t)]
     [`tag-node-closed  (treemacs--open-tag-node btn :no-add t)]
     [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
@@ -548,38 +512,14 @@ GIT-INFO is passed through from the previous branch build."
   "Reopen dirs below PATH.
 GIT-INFO is passed through from the previous branch build."
   (treemacs--without-messages
-   (-some->
-    path
-    (gethash treemacs--open-dirs-cache)
-    (treemacs--maybe-filter-dotfiles)
-    (--each (treemacs--reopen-node (treemacs--goto-node-at it) git-info)))))
-
-(defun treemacs--remove-from-open-dirs-cache (path-or-btn &optional purge)
-  "Remove PATH-OR-BTN from `treemacs--open-dirs-cache'.
-Also remove any dirs below if PURGE is given.
-
-PATH-OR-BTN is a button only when simply grabbing a path's parent may lead to
-incorrect results since the button may belong to a collapsed directory.
-In this case the parent must be determined by first checking the button's
-parent-path property."
-  (-let*- [(is-path?  (stringp path-or-btn))
-           (path      (if is-path? path-or-btn (button-get path-or-btn 'abs-path)))
-           (parent    (if is-path?
-                          (treemacs--parent path)
-                        (or (button-get path-or-btn 'parent-path)
-                            (treemacs--parent (button-get path-or-btn 'abs-path)))))
-           (cache     (gethash parent treemacs--open-dirs-cache))
-           (new-cache (delete path cache))]
-    (if new-cache
-        (puthash parent new-cache treemacs--open-dirs-cache)
-      (remhash parent treemacs--open-dirs-cache))
-    (when purge
-      (maphash
-       (lambda (dir _)
-         (when (treemacs--is-path-in-dir? dir path)
-           (remhash dir treemacs--open-dirs-cache)
-           (treemacs--remove-from-open-dirs-cache dir t)))
-       treemacs--open-dirs-cache))))
+   (dolist (it (-some->>
+                path
+                (treemacs-get-from-shadow-index)
+                (treemacs-shadow-node->children)
+                (-reject #'treemacs-shadow-node->collapsed)
+                (-map #'treemacs-shadow-node->key)
+                (treemacs--maybe-filter-dotfiles)))
+     (treemacs--reopen-node (treemacs--goto-node-at it) git-info))))
 
 (defun treemacs--nearest-path (btn)
   "Return the 'abs-path' property of the current button (or BTN).
@@ -646,7 +586,7 @@ a refresh."
                    (btn-path (button-get btn 'abs-path))]
             (if (or (s-equals? abs-path btn-path)
                     ;; loosen matching for collapsed paths
-                    (and (button-get btn 'parent-path)
+                    (and (button-get btn :collapsed)
                          (treemacs--is-path-in-dir? btn-path abs-path)))
                 (progn (treemacs--evade-image)
                        (cl-return-from search (setq result btn)))
@@ -656,9 +596,9 @@ a refresh."
 
 (cl-defun treemacs--goto-node-at (abs-path)
   "Move point to button identified by ABS-PATH, also return that button."
-  (-let [parent (substring (file-name-directory abs-path) 0 -1)]
-    (-if-let- [pos-btn (treemacs--get-position-of parent)]
-        (treemacs--uncached-goto-node-at abs-path pos-btn)
+  (-let [parent (treemacs--unslash (file-name-directory abs-path))]
+    (-if-let- [btn-pos (treemacs-get-position-of parent)]
+        (treemacs--uncached-goto-node-at abs-path btn-pos)
       (goto-char (point-min))
       (-let [btn (next-button (point) t)]
         (cl-block search

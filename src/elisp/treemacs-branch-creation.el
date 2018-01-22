@@ -28,6 +28,7 @@
 (require 'treemacs-visuals)
 (require 'treemacs-async)
 (require 'treemacs-customization)
+(require 'treemacs-structure)
 (eval-and-compile (require 'treemacs-macros))
 
 (treemacs--import-functions-from "treemacs-filewatch-mode"
@@ -182,13 +183,23 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (push it strings))))
      (nreverse strings)))
 
-(defsubst treemacs--collapse-dirs (dirs root)
-  "Display DIRS as collpased under ROOT.
-Go to each dir button, expand its label with the collpased dirs, set its new
-path and give it a special parent-path property so opening it will add the
-correct cache entries."
+(defsubst treemacs--collapse-dirs (dirs)
+  "Display DIRS as collpased.
+Go to each dir button, expand its label with the collapsed dirs, set its new
+path and give it a special parent-patX property so opening it will add the
+correct cache entries.
+
+DIRS: List of Collapse Paths. Each Collapse Path is a list of 1) The original,
+full and uncollapsed path, 2) the extra text that must be appended in the view,
+3) a series of intermediate steps which are the result of appending the
+collapsed path elements onto the original, ending in 4) the full path to the
+directory that the collapsing leads to. For Example:
+\(\"/home/a/Documents/git/treemacs/.cask\"
+ \"/26.0/elpa\"
+ \"/home/a/Documents/git/treemacs/.cask/26.0\"
+ \"/home/a/Documents/git/treemacs/.cask/26.0/elpa\"\)"
   (when dirs
-    (--each dirs
+    (dolist (it dirs)
       ;; no warning since filewatch mode is known to be defined
       (when (with-no-warnings treemacs-filewatch-mode)
         (treemacs--start-watching (car it))
@@ -197,7 +208,7 @@ correct cache entries."
       (let* ((b (treemacs--goto-node-at (car it)))
              (props (text-properties-at (button-start b))))
         (button-put b 'abs-path (nth (- (length it) 1) it))
-        (button-put b 'parent-path root)
+        (button-put b :collapsed t)
         (end-of-line)
         (let* ((beg (point))
                (dir (cadr it))
@@ -281,7 +292,7 @@ to PARENT."
                                  (propertize it 'face
                                              (treemacs--get-node-face (concat root "/" it) git-info 'treemacs-git-unmodified-face))
                                  file-strings)))
-      (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process) root)
+      (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process))
       ;; reopen here only since create-branch is called both when opening a node and
       ;; building the entire tree
       (treemacs--reopen-at root git-info))))
@@ -302,18 +313,15 @@ to PARENT."
       (delete-trailing-whitespace))
     ,post-close-action))
 
-(cl-defun treemacs--open-dir-node (btn &key no-add git-future recursive)
+(cl-defun treemacs--open-dir-node (btn &key git-future recursive)
   "Open the node given by BTN.
-Do not reopen its previously open children when NO-ADD is given.
-GIT-FUTURE is reused in recursive calls and so might be an already parsed hash
-table.
 
 BTN: Button
-NO-ADD: Bool
 GIT-FUTURE: Pfuture|Hashtable
 RECURSIVE: Bool"
   (if (not (f-readable? (button-get btn 'abs-path)))
-      (treemacs--log "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
+      (treemacs-pulse-on-failure
+       "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
     (let* ((abs-path (button-get btn 'abs-path))
            (git-future (or git-future (treemacs--git-status-process-function abs-path)))
            (collapse-future (treemacs--collapsed-dirs-process abs-path)))
@@ -326,8 +334,7 @@ RECURSIVE: Bool"
        (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future collapse-future btn)
        :post-open-action
        (progn
-         (unless no-add (treemacs--add-to-open-dirs-cache btn))
-         (treemacs--add-to-position-cache abs-path btn)
+         (treemacs-on-expand abs-path btn (treemacs-parent-of btn))
          (treemacs--start-watching abs-path)
          (when recursive
            (--each (treemacs--get-children-of btn)
@@ -347,8 +354,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
    (let ((path (button-get btn 'abs-path)))
      (treemacs--stop-watching path)
      (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
-     (treemacs--remove-from-position-cache path t)
-     (treemacs--remove-from-open-dirs-cache btn recursive))))
+     (treemacs-on-collapse path recursive))))
 
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.

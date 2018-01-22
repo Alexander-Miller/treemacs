@@ -95,8 +95,8 @@ GIT-FUTURE: Pfuture"
             ;; and the output must be valid also for files in dirs being reopened
             (let* ((git-root (vc-call-backend 'Git 'root (process-get git-future 'default-directory)))
                    (status-list (->> (substring git-output 0 -1)
-                                    (s-split "\0")
-                                    (--map (s-split-up-to " " (s-trim it) 1)))))
+                                     (s-split "\0")
+                                     (--map (s-split-up-to " " (s-trim it) 1)))))
               (-let- [(len (length status-list))
                       (i 0)]
                 (while (< i len)
