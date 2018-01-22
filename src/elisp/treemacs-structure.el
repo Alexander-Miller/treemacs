@@ -152,10 +152,14 @@ children from the index."
 
 (defun treemacs--on-rename (old-name new-name)
   "Routine to run after a file was renamed from OLD-NAME to NEW-NAME."
-  (-let [root (treemacs-get-from-shadow-index (treemacs--current-root))]
-    (treemacs--do-for-all-child-nodes root
+  (-let [node (treemacs-get-from-shadow-index old-name)]
+    (treemacs--do-for-all-child-nodes node
       (lambda (it)
-        (setf (treemacs-shadow-node->key it) (s-replace old-name new-name (treemacs-shadow-node->key it)))))))
+        (-let*- [(old-key (treemacs-shadow-node->key it))
+                 (new-key (s-replace old-name new-name old-key))]
+          (ht-remove! treemacs-shadow-index old-key)
+          (ht-set! treemacs-shadow-index new-key it)
+          (setf (treemacs-shadow-node->key it) new-key))))))
 
 (defun treemacs--reroot-up (old-key new-key)
   "Routine to run when root is changed upwards from OLD-KEY to NEW-KEY.
