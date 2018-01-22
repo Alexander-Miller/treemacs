@@ -271,11 +271,11 @@ A delete action must always be confirmed. Directories are deleted recursively."
               (cond
                ((f-file? path)
                 (when (y-or-n-p (format "Delete %s ? " file-name))
-                  (f-delete path)
+                  (treemacs--without-filewatch (f-delete path))
                   t))
                ((f-directory? path)
                 (when (y-or-n-p (format "Recursively delete %s ? " file-name))
-                  (f-delete path t)
+                  (treemacs--without-filewatch (f-delete path t))
                   t))
                (t (progn
                     (treemacs--log "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
@@ -320,12 +320,13 @@ likewise be updated."
        (when (file-exists-p new-name)
          (throw 'exit (format "A file named %s already exists."
                               (propertize new-name 'face font-lock-string-face))))
-       (rename-file old-path new-path)
+       (treemacs--without-filewatch (rename-file old-path new-path))
        (treemacs--replace-recentf-entry old-path new-path)
        (treemacs--update-caches-after-rename old-path new-path)
        (treemacs--reload-buffers-after-rename old-path new-path)
-       (treemacs-refresh)
+       (-let [treemacs-silent-refresh t] (treemacs-refresh))
        (treemacs--goto-node-at new-path)
+       (treemacs-pulse-on-success)
        (throw 'exit (format "Renamed %s to %s."
                             (propertize (f-filename old-path) 'face font-lock-string-face)
                             (propertize new-name 'face font-lock-string-face)))))))

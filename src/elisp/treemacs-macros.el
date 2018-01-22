@@ -195,6 +195,13 @@ under or below it."
 		(when ,save-window
                   (select-window current-window))))))))))
 
+(defmacro treemacs--without-filewatch (&rest body)
+  "Run BODY without triggering the filewatch callback.
+Required for manual interactions with the file system (like deletion), otherwise
+the on-delete code will run twice."
+  `(cl-flet (((symbol-function 'treemacs--filewatch-callback) (symbol-function 'ignore)))
+     ,@body))
+
 (defmacro treemacs--save-position (main-form &rest final-form)
   "Execute MAIN-FORM without switching position.
 Finally execute FINAL-FORM after the code to restore the position has run.

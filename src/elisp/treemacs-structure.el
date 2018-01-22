@@ -33,15 +33,19 @@
 (defsubst treemacs-shadow-node->key (node)
   "Get the key of NODE."
   (aref node 1))
+
 (defsubst treemacs-shadow-node->parent (node)
   "Get the parent node of NODE."
   (aref node 2))
+
 (defsubst treemacs-shadow-node->children (node)
   "Get the child nodes of NODE."
   (aref node 3))
+
 (defsubst treemacs-shadow-node->position (node)
   "Get the position marker of NODE."
   (aref node 4))
+
 (defsubst treemacs-shadow-node->collapsed (node)
   "Get the collapse info of NODE."
   (aref node 5))

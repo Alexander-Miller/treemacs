@@ -560,7 +560,7 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
           (cl-return-from body
             (treemacs--log "%s already exists."
                            (propertize  'face 'font-lock-string-face))))
-        (funcall creation-func new-file)
+        (treemacs--without-filewatch (funcall creation-func new-file))
         (treemacs--without-messages (treemacs-refresh))
         (treemacs--do-follow (f-long new-file))
         (recenter)
