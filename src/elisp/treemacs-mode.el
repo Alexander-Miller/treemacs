@@ -106,7 +106,7 @@ to it will instead show a blank."
               (format
                "
 %s
-%s            │ %s              │ %s    │ %s              │ %s
+%s              │ %s              │ %s    │ %s              │ %s
 ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 %s next Line        │ %s open & close        │ %s create file │ %s follow mode    │ %s refresh
 %s prev line        │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
