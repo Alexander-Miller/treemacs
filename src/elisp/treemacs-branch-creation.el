@@ -36,8 +36,6 @@
   treemacs--start-watching
   treemacs--stop-watching)
 
-(declare-function treemacs--remove-all-tags-under-path-from-cache "treemacs-tags")
-
 (defsubst treemacs--button-at (pos)
   "Return the button at position POS in the current buffer, or nil.
 If the button at POS is a text property button, the return value
@@ -354,7 +352,6 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
    :post-close-action
    (let ((path (button-get btn 'abs-path)))
      (treemacs--stop-watching path)
-     (when recursive (treemacs--remove-all-tags-under-path-from-cache path))
      (treemacs-on-collapse path recursive))))
 
 (defun treemacs--check-window-system ()

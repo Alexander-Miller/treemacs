@@ -39,7 +39,6 @@
 
 (treemacs--import-functions-from "treemacs-tags"
   treemacs--clear-tags-cache
-  treemacs--remove-all-tags-under-path-from-cache
   treemacs--expand-tags-for-file
   treemacs--collapse-tags-for-file
   treemacs--expand-tag-node
@@ -330,8 +329,7 @@ necessary since interacting with magit can cause file delete events for files
 being edited to trigger."
   (unless no-buffer-delete (treemacs--kill-buffers-after-deletion path t))
   (treemacs--stop-watching path t)
-  (treemacs-on-collapse path t)
-  (treemacs--remove-all-tags-under-path-from-cache path))
+  (treemacs-on-collapse path t))
 
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
