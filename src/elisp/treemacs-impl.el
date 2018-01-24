@@ -38,7 +38,6 @@
   (require 'treemacs-macros))
 
 (treemacs--import-functions-from "treemacs-tags"
-  treemacs--clear-tags-cache
   treemacs--expand-tags-for-file
   treemacs--collapse-tags-for-file
   treemacs--expand-tag-node
@@ -343,28 +342,6 @@ being edited to trigger."
   "Return t when the treemacs window is selected."
   (s-starts-with? treemacs--buffer-name-prefix (buffer-name)))
 
-(defun treemacs--update-caches-after-rename (old-path new-path)
-  "Update dirs and tags cache after OLD-PATH was renamed to NEW-PATH."
-  ;; no need to reset `treemacs--open-node-position-cache' as long as this function is
-  ;; used such it is immediately followed with a refresh
-
-  (treemacs--on-rename old-path new-path)
-
-  ;; top level of tags cache
-  (treemacs--replace-hash-entries
-   (with-no-warnings treemacs--tags-cache)
-   (lambda (k) (s-replace old-path new-path k))
-   #'identity)
-
-  ;; second level of tags cache as well, since the filename is the key for top level tags
-  (ht-each
-   (lambda (_ v)
-     (treemacs--replace-hash-entries
-      v
-      (lambda (k) (list (s-replace old-path new-path (car k))))
-      #'identity))
-   (with-no-warnings treemacs--tags-cache)))
-
 (defun treemacs--reload-buffers-after-rename (old-path new-path)
   "Reload buffers and windows after OLD-PATH was renamed to NEW-PATH."
   ;; first buffers shown in windows
@@ -477,7 +454,6 @@ buffer."
 (defun treemacs--buffer-teardown (root)
   "Cleanup to be run when an existing treemacs buffer is re-initialized at ROOT."
   (treemacs--reset-index root)
-  (treemacs--clear-tags-cache)
   (treemacs--stop-watch-all-in-scope)
   (treemacs--cancel-refresh-timer)
   (treemacs--forget-last-highlight))

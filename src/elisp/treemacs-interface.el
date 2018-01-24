@@ -322,7 +322,7 @@ likewise be updated."
                               (propertize new-name 'face font-lock-string-face))))
        (treemacs--without-filewatch (rename-file old-path new-path))
        (treemacs--replace-recentf-entry old-path new-path)
-       (treemacs--update-caches-after-rename old-path new-path)
+       (treemacs--on-rename old-path new-path)
        (treemacs--reload-buffers-after-rename old-path new-path)
        (-let [treemacs-silent-refresh t] (treemacs-refresh))
        (treemacs--goto-node-at new-path)
