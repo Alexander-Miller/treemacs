@@ -198,7 +198,7 @@ BUFFER-FILE: Path"
                    (when  (and (string= (button-get (treemacs-current-button) 'abs-path)
                                         (button-get treemacs--previously-followed-tag-btn 'abs-path))
                                (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn 'state)))
-                     (treemacs--close-tags-for-file treemacs--previously-followed-tag-btn))))
+                     (treemacs--collapse-tags-for-file treemacs--previously-followed-tag-btn))))
                ;; when that doesnt work move manually to the correct file
                (unless (string-equal buffer-file (button-get btn 'abs-path))
                  (treemacs--do-follow buffer-file)
@@ -208,7 +208,7 @@ BUFFER-FILE: Path"
            (setq btn (treemacs-current-button)))
          (goto-char (button-start btn))
          (unless (eq 'file-node-open (button-get btn 'state))
-           (treemacs--close-tags-for-file btn))
+           (treemacs--collapse-tags-for-file btn))
          (setq treemacs--previously-followed-tag-btn btn)
          ;; imenu already rescanned when fetching the tag path
          (let ((imenu-auto-rescan nil))

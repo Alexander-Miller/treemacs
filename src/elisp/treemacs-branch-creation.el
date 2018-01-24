@@ -23,6 +23,7 @@
 ;;; Code:
 
 (require 's)
+(require 'ht)
 (require 'cl-lib)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
@@ -85,7 +86,7 @@ PATH: Filepath
 GIT-INFO: Hashtable
 DEFAULT: Face"
   (declare (pure t) (side-effect-free t))
-  (-pcase (gethash path git-info)
+  (-pcase (ht-get git-info path)
     [?M 'treemacs-git-modified-face]
     [?U 'treemacs-git-conflict-face]
     [?? 'treemacs-git-untracked-face]
@@ -133,9 +134,9 @@ PARENT is the (optional) button under which this one is inserted.
 DEPTH indicates how deep in the filetree the current button is."
   (list
    prefix
-   (gethash (-> path (treemacs--file-extension) (downcase))
-            treemacs-icons-hash
-            treemacs-icon-fallback)
+   (ht-get treemacs-icons-hash
+           (-> path (treemacs--file-extension) (downcase))
+           treemacs-icon-fallback)
    (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
@@ -248,7 +249,7 @@ to PARENT."
       ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
       ;; so there are two possibilities: either the future given to this function is a pfuture object
       ;; that needs to complete and be parsed or it's an already finished git status hash table
-      (if (hash-table-p git-future)
+      (if (ht? git-future)
           (setq git-info git-future)
         (setq git-info (treemacs--git-status-parse-function git-future)))
       ;; list contains prefixes and dirs, so every second item is a directory that needs a git face
@@ -366,7 +367,7 @@ If it's running in a TUI use terminal switch to simple text icons."
       (setq-local treemacs-icon-open            (if no-images treemacs-icon-open-text treemacs-icon-open-png))
       (setq-local treemacs-icon-closed          (if no-images treemacs-icon-closed-text treemacs-icon-closed-png))
       (setq-local treemacs-icon-fallback        (if no-images treemacs-icon-fallback-text treemacs-icon-text))
-      (setq-local treemacs-icons-hash           (if no-images (make-hash-table :test #'eq) (default-value 'treemacs-icons-hash)))
+      (setq-local treemacs-icons-hash           (if no-images (ht) (default-value 'treemacs-icons-hash)))
       (setq-local treemacs-icon-tag-node-open   (if no-images treemacs-icon-tag-node-open-text treemacs-icon-tag-node-open-png))
       (setq-local treemacs-icon-tag-node-closed (if no-images treemacs-icon-tag-node-closed-text treemacs-icon-tag-node-closed-png))
       (setq-local treemacs-icon-tag-leaf        (if no-images treemacs-icon-tag-leaf-text treemacs-icon-tag-leaf-png)))))

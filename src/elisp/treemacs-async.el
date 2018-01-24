@@ -21,6 +21,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'ht)
 (require 's)
 (require 'pfuture)
 (require 'treemacs-impl)
@@ -42,7 +43,7 @@
 (defvar treemacs--git-status-parse-function)
 (when load-file-name
   (fset 'treemacs--git-status-process-function #'ignore)
-  (fset 'treemacs--git-status-parse-function   (lambda (_) (make-hash-table))))
+  (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
 
 (defun treemacs--git-status-process-extended (path)
   "Start an extended python-parsed git status process for files under PATH."
@@ -71,9 +72,9 @@ GIT-FUTURE: Pfuture"
           (unless (s-blank? git-output)
             (--each (read git-output)
               ;; key = path, value = git state char
-              (puthash (cdr it)
-                       (aref (car it) 0)
-                       git-info-hash))))))
+              (ht-set! git-info-hash
+                       (cdr it)
+                       (aref (car it) 0)))))))
     git-info-hash))
 
 (defun treemacs--git-status-process-simple (path)
@@ -111,9 +112,9 @@ GIT-FUTURE: Pfuture"
                       ;; status entries and not just filenames
                       (if (eq ?R (aref status 0))
                           (setq i (1+ i))
-                        (puthash (f-join git-root (s-trim-left path))
-                                 (aref (s-trim-left status) 0)
-                                 git-info-hash))))
+                        (ht-set! git-info-hash
+                                 (f-join git-root (s-trim-left path))
+                                 (aref (s-trim-left status) 0)))))
                   (setq i (1+ i)))))))))
     git-info-hash))
 
@@ -181,12 +182,12 @@ Use either ARG as git integration value of read it interactively."
      (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-simple)]
     [_
      (fset 'treemacs--git-status-process-function #'ignore)
-     (fset 'treemacs--git-status-parse-function   (lambda (_) (make-hash-table)))]))
+     (fset 'treemacs--git-status-parse-function   (lambda (_) (ht)))]))
 
 (defun treemacs--tear-down-git-mode ()
   "Tear down `treemacs-git-mode'."
   (fset 'treemacs--git-status-process-function #'ignore)
-  (fset 'treemacs--git-status-parse-function   (lambda (_) (make-hash-table))))
+  (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
 
 (when load-file-name
   (-pcase (cons (not (null (executable-find "git")))

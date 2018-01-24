@@ -27,6 +27,7 @@
 (require 'hl-line)
 (require 'dash)
 (require 's)
+(require 'ht)
 (require 'f)
 (require 'ace-window)
 (require 'vc-hooks)
@@ -39,9 +40,9 @@
 (treemacs--import-functions-from "treemacs-tags"
   treemacs--clear-tags-cache
   treemacs--remove-all-tags-under-path-from-cache
-  treemacs--open-tags-for-file
-  treemacs--close-tags-for-file
-  treemacs--open-tag-node
+  treemacs--expand-tags-for-file
+  treemacs--collapse-tags-for-file
+  treemacs--expand-tag-node
   treemacs--close-tag-node
   treemacs--goto-tag
   treemacs--tags-path-of
@@ -164,12 +165,10 @@ Returns nil when point is on the header."
   "Selectively replace keys and values in a given hash TABLE.
 Use MAKE-NEW-KEY and MAKE-NEW-VAL to create a new key from the old - both are
 functions that take the key/value as its argument and return the new key/value."
-  (maphash
+  (ht-each
    (lambda (k v)
-     (remhash k table)
-     (puthash (funcall make-new-key k)
-              (funcall make-new-val v)
-              table))
+     (ht-remove! table k)
+     (ht-set table (funcall make-new-key k) (funcall make-new-val v)))
    table))
 
 (defsubst treemacs--replace-recentf-entry (old-file new-file)
@@ -340,7 +339,7 @@ being edited to trigger."
 
 (defun treemacs-is-file-git-ignored? (file git-info)
   "Determined if FILE is ignored by git by means of GIT-INFO."
-  (eq ?! (gethash file git-info)))
+  (eq ?! (ht-get git-info file)))
 
 (defun treemacs-is-treemacs-window-selected? ()
   "Return t when the treemacs window is selected."
@@ -360,7 +359,7 @@ being edited to trigger."
    #'identity)
 
   ;; second level of tags cache as well, since the filename is the key for top level tags
-  (maphash
+  (ht-each
    (lambda (_ v)
      (treemacs--replace-hash-entries
       v
@@ -491,10 +490,10 @@ Optionally do so in a RECURSIVE fashion."
   (-pcase (button-get btn 'state)
     [`dir-node-open    (treemacs--close-dir-node btn recursive)]
     [`dir-node-closed  (treemacs--open-dir-node btn :recursive recursive)]
-    [`file-node-open   (treemacs--close-tags-for-file btn recursive)]
-    [`file-node-closed (treemacs--open-tags-for-file btn :recursive recursive)]
+    [`file-node-open   (treemacs--collapse-tags-for-file btn recursive)]
+    [`file-node-closed (treemacs--expand-tags-for-file btn recursive)]
     [`tag-node-open    (treemacs--close-tag-node btn recursive)]
-    [`tag-node-closed  (treemacs--open-tag-node btn :recursive recursive)]
+    [`tag-node-closed  (treemacs--expand-tag-node btn recursive)]
     [`tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
     [_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state))]))
 
@@ -503,8 +502,8 @@ Optionally do so in a RECURSIVE fashion."
 GIT-INFO is passed through from the previous branch build."
   (-pcase (button-get btn 'state)
     [`dir-node-closed  (treemacs--open-dir-node btn :git-future git-info)]
-    [`file-node-closed (treemacs--open-tags-for-file btn :no-add t)]
-    [`tag-node-closed  (treemacs--open-tag-node btn :no-add t)]
+    [`file-node-closed (treemacs--expand-tags-for-file btn)]
+    [`tag-node-closed  (treemacs--expand-tag-node btn :no-add t)]
     [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
                               (button-get btn 'abs-path) other)]))
 

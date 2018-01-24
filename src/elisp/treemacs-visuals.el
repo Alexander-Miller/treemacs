@@ -154,7 +154,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
                            'img-unselected image-unselected)
                " "))
      (push ,var treemacs--icons)
-     (--each (quote ,extensions) (puthash it ,var treemacs-icons-hash))
+     (--each (quote ,extensions) (ht-set! treemacs-icons-hash it ,var))
      ,var))
 
 (defun treemacs--create-icons ()
@@ -217,9 +217,9 @@ FILE-EXTENSIONS are also not case sensitive and will be downcased before they're
 inserted into `treemacs-icons-hash'."
   (push icon treemacs--icons)
   (--each file-extensions
-    (puthash (downcase it)
-             (concat icon " ")
-             treemacs-icons-hash)))
+    (ht-set! treemacs-icons-hash
+             (downcase it)
+             (concat icon " "))))
 
 (defun treemacs-reset-icons ()
   "Reset customized icons to their default values."
@@ -253,7 +253,7 @@ be assigned which treemacs icon, for exmaple
     (-when-let* ((mode (cdr (--first (s-matches? (car it) extension) auto-mode-alist)))
                  (icon (cdr (assq mode mode-icon-alist))))
       (treemacs--log "Map %s to %s" extension (symbol-name icon))
-      (puthash (substring extension 1) (symbol-value icon) treemacs-icons-hash))))
+      (ht-set! treemacs-icons-hash (substring extension 1) (symbol-value icon)))))
 
 (defun treemacs--pulse-png-advice (&rest _)
   "Make sure icons' background are pusled alongside the entire line."

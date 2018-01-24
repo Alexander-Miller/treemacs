@@ -33,6 +33,7 @@
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-visuals)
+(require 'treemacs-structure)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -63,36 +64,22 @@
         treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-png
         treemacs-icon-tag-node-open   treemacs-icon-tag-node-open-png))
 
-(defvar-local treemacs--tags-cache (make-hash-table :test #'equal :size 100)
-  "Cache storing all opened tags in treemacs view.
-The cache has 2 levels. The 1st is this has table, its keys are the absolute
-paths of files whose tags are open, its values are the 2nd level, another hash
-table mapping node's tag path (as given by `treemacs--tags-path-of') to a list
-of tag paths of its open direct children.")
-
-(defsubst treemacs--clear-tags-cache ()
-  "Clear out `treemacs--tags-cache'."
-  (when (hash-table-p treemacs--tags-cache)
-    (clrhash treemacs--tags-cache)))
-
 (defsubst treemacs--tags-path-of (btn)
   "Return the path of tag labels leading to BTN.
 
 The car of the returned list is the label of BTN while its cdr is the top down
-path starting at the first non-file button.
+path starting at the absolute path of the file the tags belong to.
 
-These paths are used to uniquely identify nodes not part of the filesystem, e.g.
-in `treemacs--tags-cache'.
-This is also why if the button is not a tag node its 'abs-path' property is
-returned as a singleton list instead."
+These paths are used to give tag nodes a unique key in the shadow tree."
   (-if-let (path (button-get btn 'abs-path))
-      (list path)
+      path
     (let ((lbl (treemacs--get-label-of btn))
           (btn (button-get btn 'parent))
           (ret))
       (while (and btn (null (button-get btn 'abs-path)))
         (push (treemacs--get-label-of btn) ret)
         (setq btn (button-get btn 'parent)))
+      (push (button-get btn 'abs-path) ret)
       (cons lbl ret))))
 
 (defun treemacs--partition-imenu-index (index default-name)
@@ -155,47 +142,9 @@ should be placed under."
         (unless (equal result '(nil))
           (treemacs--post-process-index result mode))))))
 
-(defun treemacs--add-to-tags-cache (btn)
-  "Add BTN's path to the cache of open nodes."
-  (let* ((file            (treemacs--nearest-path btn))
-         (cache-table     (gethash file treemacs--tags-cache))
-         (cache-key       (treemacs--tags-path-of (button-get btn 'parent)))
-         (new-cache-entry (treemacs--tags-path-of btn)))
-    (unless cache-table
-      (setq cache-table (make-hash-table :test #'equal :size 20))
-      (puthash file cache-table treemacs--tags-cache))
-    (let* ((present-cache   (gethash cache-key cache-table))
-           (new-cache-value (cons new-cache-entry present-cache)))
-      (puthash cache-key new-cache-value cache-table))))
-
-(defun treemacs--remove-from-tags-cache (btn)
-  "Remove BTN's path from the cache of open tag nodes."
-  (let* ((file           (treemacs--nearest-path btn))
-         (cache-table    (gethash file treemacs--tags-cache))
-         (cache-key      (-if-let (path (-some-> (button-get btn 'parent) (button-get 'abs-path)))
-                             (list path)
-                           (treemacs--tags-path-of (button-get btn 'parent))))
-         (present-cache   (gethash cache-key cache-table))
-         (entry-to-delete (treemacs--tags-path-of btn))
-         (new-cache-value (delete entry-to-delete present-cache)))
-    (if new-cache-value
-        (puthash cache-key new-cache-value cache-table)
-      (remhash cache-key cache-table))))
-
-(defun treemacs--remove-all-tags-under-path-from-cache (path)
-  "Remove all tag cache entries under PATH after it was deleted."
-  (-when-let- [buffer (treemacs-buffer-exists?)]
-    (with-current-buffer buffer
-      (maphash
-       (lambda (key _)
-         (when (treemacs--is-path-in-dir? key path)
-           (remhash key treemacs--tags-cache)))
-       treemacs--tags-cache))))
-
-(cl-defun treemacs--open-tags-for-file (btn &key no-add recursive)
+(defun treemacs--expand-tags-for-file (btn &optional recursive)
   "Open tag items for file BTN.
-Do not add the file to the open file cache when NOADD is given. NOADD is given
-during a reopen process. Recursively open all tag below BTN when RECURSIVE is t."
+Recursively open all tag below BTN when RECURSIVE is non-nil."
   (-let [path (button-get btn 'abs-path)]
     (-if-let- [index (treemacs--get-imenu-index path)]
         (treemacs--button-open
@@ -213,27 +162,23 @@ during a reopen process. Recursively open all tag below BTN when RECURSIVE is t.
                                         (treemacs--insert-tag-node item node-prefix btn depth)
                                       (treemacs--insert-tag-leaf item leaf-prefix btn depth)))
          :post-open-action (progn
-                             (unless no-add (treemacs--add-to-open-dirs-cache btn))
+                             (treemacs-on-expand path btn (treemacs-parent-of btn))
                              (treemacs--reopen-tags-under btn)
                              (end-of-line)
                              (when recursive
                                (--each (treemacs--get-children-of btn)
                                  (when (eq 'tag-node-closed (button-get it 'state))
                                    (goto-char (button-start it))
-                                   (treemacs--open-tag-node it :recursive t))))))
+                                   (treemacs--expand-tag-node it t))))))
       (treemacs-pulse-on-failure "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
 
-(defun treemacs--close-tags-for-file (btn &optional recursive)
+(defun treemacs--collapse-tags-for-file (btn &optional recursive)
   "Close node given by BTN.
 Remove all open tag entries under BTN when RECURSIVE."
   (treemacs--button-close
    :button btn
    :new-state 'file-node-closed
-   :post-close-action
-   (let ((path (button-get btn 'abs-path)))
-     (treemacs--remove-from-open-dirs-cache path)
-     (when recursive
-       (treemacs--remove-all-tags-under-path-from-cache path)))))
+   :post-close-action (treemacs-on-collapse (button-get btn 'abs-path) recursive)))
 
 (defun treemacs--insert-tag-node (node prefix parent depth)
   "Return the text to insert for a tag NODE.
@@ -250,10 +195,8 @@ Set PARENT and DEPTH button properties."
                'index (cdr node)
                'face 'treemacs-tags-face)))
 
-(cl-defun treemacs--open-tag-node (btn &key no-add recursive)
+(defun treemacs--expand-tag-node (btn &optional recursive)
   "Open tags node items for BTN.
-Do not add the node the open file cache when NO-ADD is given.
-NO-ADD is usually given during a reopen process.
 Open all tag section under BTN when call is RECURSIVE."
   (-let [index (button-get btn 'index)]
     (treemacs--button-open
@@ -271,12 +214,18 @@ Open all tag section under BTN when call is RECURSIVE."
                                     (treemacs--insert-tag-node item node-prefix btn depth)
                                   (treemacs--insert-tag-leaf item leaf-prefix btn depth)))
      :post-open-action (progn
-                         (unless no-add (treemacs--add-to-tags-cache btn))
+                         (treemacs-on-expand
+                          (treemacs--tags-path-of btn) btn
+                          (-let [parent (button-get btn 'parent)]
+                            (-pcase (button-get parent 'state)
+                              [`file-node-open (button-get parent 'abs-path)]
+                              [`tag-node-open  (treemacs--tags-path-of parent)]
+                              [other (error "Impossible state of parent: %s" other)])))
                          (if recursive
                              (--each (treemacs--get-children-of btn)
                                (when (eq 'tag-node-closed (button-get it 'state))
                                  (goto-char (button-start it))
-                                 (treemacs--open-tag-node it :recursive t)))
+                                 (treemacs--expand-tag-node it t)))
                            (treemacs--reopen-tags-under btn))))))
 
 (defun treemacs--insert-tag-leaf (item prefix parent depth)
@@ -316,7 +265,7 @@ Remove all open tag entries under BTN when RECURSIVE."
      :new-state 'tag-node-closed
      :new-icon treemacs-icon-tag-node-closed
      :post-close-action
-     (treemacs--remove-from-tags-cache btn))))
+     (treemacs-on-collapse (treemacs--tags-path-of btn)))))
 
 (defsubst treemacs--pos-from-marker (m)
   "Extract the tag position stored in marker M.
@@ -337,10 +286,11 @@ exist."
     [`integer
      (cons nil m)]))
 
-(defsubst treemacs--call-imenu-and-goto-tag (file tag-path)
-  "Call the imenu index of FILE to go to position of TAG-PATH."
-  (let ((tag (car tag-path))
-        (path (cdr tag-path)))
+(defsubst treemacs--call-imenu-and-goto-tag (tag-path)
+  "Call the imenu index of the tag at TAG-PATH and go to its position."
+  (let ((file (cadr tag-path))
+        (tag (car tag-path))
+        (path (cddr tag-path)))
     (condition-case e
         (progn
           (find-file-noselect file)
@@ -374,11 +324,9 @@ exist."
           (goto-char tag-pos))
       (-pcase treemacs-goto-tag-strategy
         [`refetch-index
-         (let (file tag-path)
-           (with-current-buffer (marker-buffer btn)
-             (setq file (treemacs--nearest-path btn)
-                   tag-path (treemacs--tags-path-of btn)))
-           (treemacs--call-imenu-and-goto-tag file tag-path))]
+         (treemacs--call-imenu-and-goto-tag
+          (with-current-buffer (marker-buffer btn)
+            (treemacs--tags-path-of btn)))]
         [`call-xref
          ;; for emacs24
          (with-no-warnings
@@ -400,7 +348,7 @@ case point will be left at the next highest node available."
     (-when-let (file-node (treemacs--goto-node-at file))
       (when (eq 'file-node-closed (button-get file-node 'state))
         (goto-char (button-start file-node))
-        (treemacs--open-tags-for-file file-node))
+        (treemacs--expand-tags-for-file file-node))
       (dolist (tag-path-item path)
         (-if-let (tag-path-node (--first
                                 (string= (treemacs--get-label-of it) tag-path-item)
@@ -409,7 +357,7 @@ case point will be left at the next highest node available."
               (setq file-node tag-path-node)
               (when (eq 'tag-node-closed (button-get file-node 'state))
                 (goto-char (button-start file-node))
-                (treemacs--open-tag-node file-node)))
+                (treemacs--expand-tag-node file-node)))
           (goto-char file-node)
           (cl-return-from treemacs--goto-tag-button-at nil)))
       (-if-let- [pos (--first (string= (treemacs--get-label-of it) tag)
@@ -423,28 +371,23 @@ case point will be left at the next highest node available."
 (defun treemacs--reopen-tags-under (btn)
   "Reopen previously openeded tags under BTN."
   (save-excursion
-    (let* ((file (treemacs--nearest-path btn))
-           (cache-table (gethash file treemacs--tags-cache)))
-      (when cache-table
-        (let* ((cache-key (treemacs--tags-path-of btn))
-               (cache (gethash cache-key cache-table))
-               (rejects))
-          (dolist (item cache)
-            (-if-let (node-btn (--first (equal item (treemacs--tags-path-of it))
-                                        (treemacs--get-children-of btn)))
-                (when (eq 'tag-node-closed (button-get node-btn 'state))
-                  (goto-char (button-start node-btn))
-                  (treemacs--open-tag-node node-btn :no-add t))
-              (remhash item cache-table)
-              (push item rejects)))
-          ;; nodes that could not be moved to - probably due to those nodes
-          ;; being deleted, but still remaining in the cache
-          ;; if theyre not accessible we just remove them from the cache
-          (when rejects
-            (let ((new-cache (--reject (member it rejects) cache)))
-              (if new-cache
-                  (puthash cache-key new-cache cache-table)
-                (remhash cache-key cache-table)))))))))
+    (-let*- [(tag-path (treemacs--tags-path-of btn))
+             (sh-node (treemacs-get-from-shadow-index tag-path))
+             (children (->> sh-node
+                            (treemacs-shadow-node->children)
+                            (-reject #'treemacs-shadow-node->collapsed)))
+             (btns-under-btn (treemacs--get-children-of btn))]
+      (dolist (sh-child children)
+        (-if-let- [child-btn (--first (equal (treemacs-shadow-node->key sh-child)
+                                             (treemacs--tags-path-of it))
+                                      btns-under-btn)]
+            (when (eq 'tag-node-closed (button-get child-btn 'state))
+              (goto-char (button-start child-btn))
+              (treemacs--expand-tag-node child-btn))
+          (setf (treemacs-shadow-node->children sh-node)
+                (delete sh-child (treemacs-shadow-node->children sh-node)))
+          (treemacs--do-for-all-child-nodes sh-child
+            #'treemacs-shadow-node->remove-from-index))))))
 
 (provide 'treemacs-tags)
 

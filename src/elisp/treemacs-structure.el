@@ -185,7 +185,7 @@ old root's positions."
 
 (defun treemacs--invalidate-position-cache ()
   "Invalidate the position of all nodes in the index."
-  (maphash
+  (ht-each
    (lambda (_ node) (treemacs-shadow-node->invalidate-pos node))
    treemacs-shadow-index))
 
