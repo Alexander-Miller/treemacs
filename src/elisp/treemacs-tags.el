@@ -142,6 +142,45 @@ should be placed under."
         (unless (equal result '(nil))
           (treemacs--post-process-index result mode))))))
 
+(defsubst treemacs--insert-tag-leaf (item prefix parent depth)
+  "Return the text to insert for a tag leaf ITEM.
+Use PREFIX for indentation.
+Set PARENT and DEPTH button properties.
+ITEM: String . Marker
+PREFIX: String
+PARENT: Button
+DEPTH: Int"
+  (list
+   prefix
+   (propertize (car item)
+               'button '(t)
+               'category 'default-button
+               'face 'treemacs-tags-face
+               :state 'tag-node
+               :parent parent
+               :depth depth
+               :marker (cdr item))))
+
+(defsubst treemacs--insert-tag-node (node prefix parent depth)
+  "Return the text to insert for a tag NODE.
+Use PREFIX for indentation.
+Set PARENT and DEPTH button properties.
+
+NODE: String & List of (String . Marker)
+PREFIX: String
+PARENT: Button
+DEPTH: Int"
+  (list
+   prefix
+   (propertize (car node)
+               'button '(t)
+               'category 'default-button
+               'face 'treemacs-tags-face
+               :state 'tag-node-closed
+               :parent parent
+               :depth depth
+               :index (cdr node))))
+
 (defun treemacs--expand-tags-for-file (btn &optional recursive)
   "Open tag items for file BTN.
 Recursively open all tag below BTN when RECURSIVE is non-nil."
@@ -180,21 +219,6 @@ Remove all open tag entries under BTN when RECURSIVE."
    :new-state 'file-node-closed
    :post-close-action (treemacs-on-collapse (button-get btn :path) recursive)))
 
-(defun treemacs--insert-tag-node (node prefix parent depth)
-  "Return the text to insert for a tag NODE.
-Use PREFIX for indentation.
-Set PARENT and DEPTH button properties."
-  (list
-   prefix
-   (propertize (car node)
-               'button '(t)
-               'category 'default-button
-               'face 'treemacs-tags-face
-               :state 'tag-node-closed
-               :parent parent
-               :depth depth
-               :index (cdr node))))
-
 (defun treemacs--expand-tag-node (btn &optional recursive)
   "Open tags node items for BTN.
 Open all tag section under BTN when call is RECURSIVE."
@@ -228,20 +252,6 @@ Open all tag section under BTN when call is RECURSIVE."
                                  (treemacs--expand-tag-node it t)))
                            (treemacs--reopen-tags-under btn))))))
 
-(defun treemacs--insert-tag-leaf (item prefix parent depth)
-  "Return the text to insert for a tag leaf ITEM.
-Use PREFIX for indentation.
-Set PARENT and DEPTH button properties."
-  (list
-   prefix
-   (propertize (car item)
-               'button '(t)
-               'category 'default-button
-               'face 'treemacs-tags-face
-               :state 'tag-node
-               :parent parent
-               :depth depth
-               :marker (cdr item))))
 
 (defun treemacs--close-tag-node-recursive (btn)
   "Recursively close tag section BTN.
