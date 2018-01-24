@@ -298,7 +298,7 @@
   (ert-deftest tags-path-of::directly-returns-path-when-possible ()
     (with-temp-buffer
       (let ((b (make-button 0 0)))
-        (button-put b 'abs-path "/a/b/c")
+        (button-put b :path "/a/b/c")
         (should (equal '("/a/b/c") (treemacs--tags-path-of b))))))
 
   (ert-deftest tags-path-of::walks-up-to-the-first-file-button ()
@@ -307,10 +307,10 @@
             (b2 (button-at (insert-text-button "b2")))
             (b3 (button-at (insert-text-button "b3")))
             (b4 (button-at (insert-text-button "b4"))))
-        (button-put b1 'parent b2)
-        (button-put b2 'parent b3)
-        (button-put b3 'parent b4)
-        (button-put b4 'abs-path "A")
+        (button-put b1 :parent b2)
+        (button-put b2 :parent b3)
+        (button-put b3 :parent b4)
+        (button-put b4 :path "A")
         (should (equal '("b1" "b3" "b2") (treemacs--tags-path-of b1)))))))
 
 ;; `treemacs--partition-imenu-index'
@@ -341,15 +341,15 @@
   (ert-deftest tags-path::returns-abs-path-for-non-tag-buttons ()
     (with-temp-buffer
       (let ((b (insert-text-button "b")))
-        (button-put b 'abs-path "/A/B/C/")
+        (button-put b :path "/A/B/C/")
         (should (equal '("/A/B/C/") (treemacs--tags-path-of b))))))
 
   (ert-deftest tags-path::returns-label-for-depth-1-button ()
     (with-temp-buffer
       (let ((p (insert-text-button "p"))
             (b (insert-text-button "label")))
-        (button-put p 'abs-path "/A/B/C/")
-        (button-put b 'parent p)
+        (button-put p :path "/A/B/C/")
+        (button-put b :parent p)
         (should (equal '("label") (treemacs--tags-path-of b))))))
 
   (ert-deftest tags-path::returns-full-path-for-deeply-nested-button ()
@@ -359,12 +359,12 @@
             (b3 (insert-text-button "b3"))
             (b4 (insert-text-button "b4"))
             (b5 (insert-text-button "b5")))
-        (button-put b5 'parent b4)
-        (button-put b4 'parent b3)
-        (button-put b3 'parent b2)
-        (button-put b2 'parent b1)
-        (button-put b2 'parent b1)
-        (button-put b1 'abs-path "/A/B/C")
+        (button-put b5 :parent b4)
+        (button-put b4 :parent b3)
+        (button-put b3 :parent b2)
+        (button-put b2 :parent b1)
+        (button-put b2 :parent b1)
+        (button-put b1 :path "/A/B/C")
         (should (equal '("b5" "b2" "b3" "b4") (treemacs--tags-path-of b5)))))))
 
 ;; `treemacs--next-non-child-node'
@@ -381,8 +381,8 @@
     (with-temp-buffer
       (let ((b1 (insert-text-button "b1"))
             (b2 (insert-text-button "b2")))
-        (button-put b1 'depth 1)
-        (button-put b2 'depth 1)
+        (button-put b1 :depth 1)
+        (button-put b2 :depth 1)
         (should (equal b2 (marker-position (treemacs--next-non-child-node b1)))))))
 
   (ert-deftest next-non-child::searches-through-higher-depth-buttons ()
@@ -393,12 +393,12 @@
             (b4 (insert-text-button "b4"))
             (b5 (insert-text-button "b5"))
             (b6 (insert-text-button "b6")))
-        (button-put b1 'depth 1)
-        (button-put b2 'depth 2)
-        (button-put b3 'depth 3)
-        (button-put b4 'depth 4)
-        (button-put b5 'depth 5)
-        (button-put b6 'depth 1)
+        (button-put b1 :depth 1)
+        (button-put b2 :depth 2)
+        (button-put b3 :depth 3)
+        (button-put b4 :depth 4)
+        (button-put b5 :depth 5)
+        (button-put b6 :depth 1)
         (should (equal b6 (marker-position (treemacs--next-non-child-node b1)))))))
 
   (ert-deftest next-non-child::returns-nil-when-there-is-no-next-non-child ()
@@ -409,12 +409,12 @@
               (b4 (insert-text-button "b4"))
               (b5 (insert-text-button "b5"))
               (b6 (insert-text-button "b6"))]
-        (button-put b1 'depth 1)
-        (button-put b2 'depth 2)
-        (button-put b3 'depth 3)
-        (button-put b4 'depth 4)
-        (button-put b5 'depth 5)
-        (button-put b6 'depth 6)
+        (button-put b1 :depth 1)
+        (button-put b2 :depth 2)
+        (button-put b3 :depth 3)
+        (button-put b4 :depth 4)
+        (button-put b5 :depth 5)
+        (button-put b6 :depth 6)
         (should-not (treemacs--next-non-child-node b1))))))
 
 ;; `treemacs--flatten-imenu-index'

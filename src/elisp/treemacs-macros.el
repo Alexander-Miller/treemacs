@@ -166,7 +166,7 @@ under or below it."
       (push 'tag-node valid-states))
     `(-when-let (btn (treemacs-current-button))
        (treemacs--without-following
-        (let* ((state (button-get btn 'state))
+        (let* ((state (button-get btn :state))
                (current-window (selected-window)))
           (if (not (memq state ',valid-states))
               (treemacs--log "%s" ,no-match-explanation)
@@ -213,7 +213,7 @@ it on the same line."
   `(treemacs--without-following
     (let* ((curr-line     (line-number-at-pos))
            (curr-btn      (treemacs-current-button))
-           (curr-state    (when curr-btn (button-get curr-btn 'state)))
+           (curr-state    (when curr-btn (button-get curr-btn :state)))
            (curr-file     (when curr-btn (treemacs--nearest-path curr-btn)))
            (curr-tagpath  (when curr-btn (treemacs--tags-path-of curr-btn)))
            (curr-winstart (window-start (get-buffer-window))))

@@ -187,27 +187,27 @@ BUFFER-FILE: Path"
          (if btn
              (progn
                ;; first move to the nearest file when we're on a tag
-               (when (memq (button-get btn 'state) '(tag-node-open tag-node-closed tag-node))
-                 (while (not (memq (button-get btn 'state) file-states))
-                   (setq btn (button-get btn 'parent))))
+               (when (memq (button-get btn :state) '(tag-node-open tag-node-closed tag-node))
+                 (while (not (memq (button-get btn :state) file-states))
+                   (setq btn (button-get btn :parent))))
                ;; close the button that was opened on the previous follow
                (when (and treemacs--previously-followed-tag-btn
                           (not (eq treemacs--previously-followed-tag-btn btn)))
                  (save-excursion
                    (goto-char (button-start treemacs--previously-followed-tag-btn))
-                   (when  (and (string= (button-get (treemacs-current-button) 'abs-path)
-                                        (button-get treemacs--previously-followed-tag-btn 'abs-path))
-                               (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn 'state)))
+                   (when  (and (string= (button-get (treemacs-current-button) :path)
+                                        (button-get treemacs--previously-followed-tag-btn :path))
+                               (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn :state)))
                      (treemacs--collapse-tags-for-file treemacs--previously-followed-tag-btn))))
                ;; when that doesnt work move manually to the correct file
-               (unless (string-equal buffer-file (button-get btn 'abs-path))
+               (unless (string-equal buffer-file (button-get btn :path))
                  (treemacs--do-follow buffer-file)
                  (setq btn (treemacs-current-button))))
            ;; also move manually when point is on the header
            (treemacs--do-follow buffer-file)
            (setq btn (treemacs-current-button)))
          (goto-char (button-start btn))
-         (unless (eq 'file-node-open (button-get btn 'state))
+         (unless (eq 'file-node-open (button-get btn :state))
            (treemacs--collapse-tags-for-file btn))
          (setq treemacs--previously-followed-tag-btn btn)
          ;; imenu already rescanned when fetching the tag path

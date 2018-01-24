@@ -120,10 +120,10 @@ DEPTH indicates how deep in the filetree the current button is."
    (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
-               'state 'dir-node-closed
-               'abs-path path
-               'parent parent
-               'depth depth)))
+               :state 'dir-node-closed
+               :path path
+               :parent parent
+               :depth depth)))
 
 (defsubst treemacs--insert-file-node (path prefix parent depth)
   "Return the text to insert for a file node for PATH.
@@ -138,10 +138,10 @@ DEPTH indicates how deep in the filetree the current button is."
    (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button
-               'state 'file-node-closed
-               'abs-path path
-               'parent parent
-               'depth depth)))
+               :state 'file-node-closed
+               :path path
+               :parent parent
+               :depth depth)))
 
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action immediate-insert)
   "Building block macro to open a BUTTON.
@@ -150,7 +150,7 @@ and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
 and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
   `(treemacs--with-writable-buffer
-    (button-put ,button 'state ,new-state)
+    (button-put ,button :state ,new-state)
     (beginning-of-line)
     ,@(when new-icon
       `((treemacs--node-symbol-switch ,new-icon)))
@@ -206,7 +206,7 @@ directory that the collapsing leads to. For Example:
           (treemacs--start-watching step t)))
       (let* ((b (treemacs--goto-node-at (car it)))
              (props (text-properties-at (button-start b))))
-        (button-put b 'abs-path (nth (- (length it) 1) it))
+        (button-put b :path (nth (- (length it) 1) it))
         (button-put b :collapsed t)
         (end-of-line)
         (let* ((beg (point))
@@ -307,7 +307,7 @@ to PARENT."
     (let* ((pos-start (point))
            (next (treemacs--next-non-child-node ,button))
            (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
-      (button-put ,button 'state ,new-state)
+      (button-put ,button :state ,new-state)
       (delete-region pos-start pos-end)
       (delete-trailing-whitespace))
     ,post-close-action))
@@ -318,10 +318,10 @@ to PARENT."
 BTN: Button
 GIT-FUTURE: Pfuture|Hashtable
 RECURSIVE: Bool"
-  (if (not (f-readable? (button-get btn 'abs-path)))
+  (if (not (f-readable? (button-get btn :path)))
       (treemacs-pulse-on-failure
-       "Directory %s is not readable." (propertize (button-get btn 'abs-path) 'face 'font-lock-string-face))
-    (let* ((abs-path (button-get btn 'abs-path))
+       "Directory %s is not readable." (propertize (button-get btn :path) 'face 'font-lock-string-face))
+    (let* ((abs-path (button-get btn :path))
            (git-future (or git-future (treemacs--git-status-process-function abs-path)))
            (collapse-future (treemacs--collapsed-dirs-process abs-path)))
       (treemacs--button-open
@@ -330,14 +330,14 @@ RECURSIVE: Bool"
        :new-state 'dir-node-open
        :new-icon treemacs-icon-open
        :open-action
-       (treemacs--create-branch abs-path (1+ (button-get btn 'depth)) git-future collapse-future btn)
+       (treemacs--create-branch abs-path (1+ (button-get btn :depth)) git-future collapse-future btn)
        :post-open-action
        (progn
          (treemacs-on-expand abs-path btn (treemacs-parent-of btn))
          (treemacs--start-watching abs-path)
          (when recursive
            (--each (treemacs--get-children-of btn)
-             (when (eq 'dir-node-closed (button-get it 'state))
+             (when (eq 'dir-node-closed (button-get it :state))
                (goto-char (button-start it))
                (treemacs--open-dir-node
                 it :git-future git-future :recursive t)))))))))
@@ -350,7 +350,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
    :new-state 'dir-node-closed
    :new-icon treemacs-icon-closed
    :post-close-action
-   (let ((path (button-get btn 'abs-path)))
+   (let ((path (button-get btn :path)))
      (treemacs--stop-watching path)
      (treemacs-on-collapse path recursive))))
 

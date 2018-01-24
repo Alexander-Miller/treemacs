@@ -34,8 +34,8 @@ ignore any prefix argument."
   (interactive "P")
   (treemacs--without-messages
     (treemacs--execute-button-action
-     :file-action (find-file-noselect (treemacs--safe-button-get btn 'abs-path))
-     :dir-action (find-file-noselect (treemacs--safe-button-get btn 'abs-path))
+     :file-action (find-file-noselect (treemacs--safe-button-get btn :path))
+     :dir-action (find-file-noselect (treemacs--safe-button-get btn :path))
      :tag-action (treemacs--tag-noselect btn)
      :window (selected-window)
      :save-window t
@@ -80,7 +80,7 @@ ignore any prefix argument."
              (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
     (-let [(tag-buf . tag-pos)
            (treemacs--with-button-buffer btn
-             (-> btn (button-get 'marker) (treemacs--pos-from-marker)))]
+             (-> btn (button-get :marker) (treemacs--pos-from-marker)))]
       (if tag-buf
           (list tag-buf tag-pos)
         (-pcase treemacs-goto-tag-strategy

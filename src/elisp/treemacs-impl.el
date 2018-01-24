@@ -235,8 +235,8 @@ Requires and assumes to be called inside the treemacs buffer."
 
 (defsubst treemacs-parent-of (btn)
   "Return the parent path of BTN."
-  (--if-let (button-get btn 'parent)
-      (button-get it 'abs-path)
+  (--if-let (button-get btn :parent)
+      (button-get it :path)
     (treemacs--current-root)))
 
 (defsubst treemacs--reject-ignored-files (file)
@@ -290,28 +290,28 @@ Will also perform cleanup if the buffer is dead."
 (defsubst treemacs--next-neighbour (btn)
   "Get the next same-level node of BTN, if any."
   (declare (side-effect-free t))
-  (-let- [(depth (button-get btn 'depth))
+  (-let- [(depth (button-get btn :depth))
           (next (next-button (button-end btn)))]
-    (while (and next (< depth (button-get next 'depth)))
+    (while (and next (< depth (button-get next :depth)))
       (setq next (next-button (button-end next))))
-    (when (and next (= depth (button-get next 'depth))) next)))
+    (when (and next (= depth (button-get next :depth))) next)))
 
 (defsubst treemacs--prev-neighbour (btn)
   "Get the previous same-level node of BTN, if any."
   (declare (side-effect-free t))
-  (-let- [(depth (button-get btn 'depth))
+  (-let- [(depth (button-get btn :depth))
           (prev (previous-button (button-start btn)))]
-    (while (and prev (< depth (button-get prev 'depth)))
+    (while (and prev (< depth (button-get prev :depth)))
       (setq prev (previous-button (button-start prev))))
-    (when (= depth (button-get prev 'depth)) prev)))
+    (when (= depth (button-get prev :depth)) prev)))
 
 (defsubst treemacs--next-non-child-node (btn)
   "Return the next node after BTN that is not a child of BTB."
   (declare (side-effect-free t))
   (when btn
-    (-let- [(depth (button-get btn 'depth))
+    (-let- [(depth (button-get btn :depth))
             (next (next-button (button-end btn) t))]
-      (while (and next (< depth (button-get next 'depth)))
+      (while (and next (< depth (button-get next :depth)))
         (setq next (next-button (button-end next) t)))
       next)))
 
@@ -408,7 +408,7 @@ The child buttons are returned in the same order as they appear in the treemacs
 buffer."
   (let ((ret)
         (btn (next-button (button-end parent-btn) t)))
-    (when (equal (1+ (button-get parent-btn 'depth)) (button-get btn 'depth))
+    (when (equal (1+ (button-get parent-btn :depth)) (button-get btn :depth))
       (setq ret (cons btn ret))
       (while (setq btn (treemacs--next-neighbour btn))
         (push btn ret)))
@@ -485,7 +485,7 @@ buffer."
 (defun treemacs--push-button (btn &optional recursive)
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
-  (-pcase (button-get btn 'state)
+  (-pcase (button-get btn :state)
     [`dir-node-open    (treemacs--close-dir-node btn recursive)]
     [`dir-node-closed  (treemacs--open-dir-node btn :recursive recursive)]
     [`file-node-open   (treemacs--collapse-tags-for-file btn recursive)]
@@ -493,17 +493,17 @@ Optionally do so in a RECURSIVE fashion."
     [`tag-node-open    (treemacs--close-tag-node btn recursive)]
     [`tag-node-closed  (treemacs--expand-tag-node btn recursive)]
     [`tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
-    [_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn 'state))]))
+    [_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn :state))]))
 
 (defun treemacs--reopen-node (btn git-info)
   "Reopen file BTN.
 GIT-INFO is passed through from the previous branch build."
-  (-pcase (button-get btn 'state)
+  (-pcase (button-get btn :state)
     [`dir-node-closed  (treemacs--open-dir-node btn :git-future git-info)]
     [`file-node-closed (treemacs--expand-tags-for-file btn)]
     [`tag-node-closed  (treemacs--expand-tag-node btn :no-add t)]
     [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
-                              (button-get btn 'abs-path) other)]))
+                              (button-get btn :path) other)]))
 
 (defun treemacs--reopen-at (path git-info)
   "Reopen dirs below PATH.
@@ -519,14 +519,14 @@ GIT-INFO is passed through from the previous branch build."
      (treemacs--reopen-node (treemacs--goto-node-at it) git-info))))
 
 (defun treemacs--nearest-path (btn)
-  "Return the 'abs-path' property of the current button (or BTN).
-If the property is not set keep looking upward, via the 'parent' property.
+  "Return the path property of the current button (or BTN).
+If the property is not set keep looking upward, via the :parent' property.
 Useful to e.g. find the path of the file of the currently selected tags entry.
 Must be called from treemacs buffer."
-  (let* ((path (button-get btn 'abs-path)))
+  (let* ((path (button-get btn :path)))
     (while (null path)
-      (setq btn (button-get btn 'parent)
-            path (button-get btn 'abs-path)))
+      (setq btn (button-get btn :parent)
+            path (button-get btn :path)))
     path))
 
 (defun treemacs--create-file/dir (prompt creation-func)
@@ -580,7 +580,7 @@ a refresh."
         (while (search-forward filename nil t)
           (beginning-of-line)
           (-let*- [(btn (next-button (point) t))
-                   (btn-path (button-get btn 'abs-path))]
+                   (btn-path (button-get btn :path))]
             (if (or (s-equals? abs-path btn-path)
                     ;; loosen matching for collapsed paths
                     (and (button-get btn :collapsed)
@@ -600,7 +600,7 @@ a refresh."
       (-let [btn (next-button (point) t)]
         (cl-block search
           (while btn
-            (if (string= abs-path (button-get btn 'abs-path))
+            (if (string= abs-path (button-get btn :path))
                 (progn
                   (goto-char (button-start btn))
                   (cl-return-from search btn))
