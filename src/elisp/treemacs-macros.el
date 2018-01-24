@@ -90,7 +90,7 @@ Log ERROR-MSG if no button is selected, otherwise run BODY."
   `(-if-let- [current-btn (treemacs-current-button)]
        (progn
          ,@body)
-     (treemacs--log ,error-msg)))
+     (treemacs-pulse-on-failure ,error-msg)))
 
 (defmacro -when-let- (var-val &rest body)
   "Same as `-when-let', but expects VAR-VAL to be a vector.
@@ -169,7 +169,7 @@ under or below it."
         (let* ((state (button-get btn :state))
                (current-window (selected-window)))
           (if (not (memq state ',valid-states))
-              (treemacs--log "%s" ,no-match-explanation)
+              (treemacs-pulse-on-failure "%s" ,no-match-explanation)
             (progn
               ,@(if ensure-window-split
                     `((when (one-window-p)

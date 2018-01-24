@@ -245,9 +245,9 @@ Treemacs knows how to open files on linux, windows and macos."
        [`gnu/linux
         (let ((process-connection-type nil))
           (start-process "" nil "xdg-open" path))]
-       [_ (treemacs--log "Don't know how to open files on %s."
+       [_ (treemacs-pulse-on-failure "Don't know how to open files on %s."
                          (propertize (symbol-name system-type) 'face 'font-lock-string-face))])
-    (treemacs--log "Nothing to open here.")))
+    (treemacs-pulse-on-failure "Nothing to open here.")))
 
 (defun treemacs-kill-buffer ()
   "Kill the treemacs buffer."
@@ -282,7 +282,7 @@ A delete action must always be confirmed. Directories are deleted recursively."
                     nil)))
             (treemacs--on-file-deletion path)
             (treemacs--without-messages (treemacs-refresh)))))
-    (treemacs--log "Nothing to delete here."))
+    (treemacs-pulse-on-failure "Nothing to delete here."))
   (treemacs--evade-image))
 
 (defun treemacs-create-file ()
@@ -605,7 +605,7 @@ treemacs node is pointing to a valid buffer position."
              nil)
           (treemacs--log "Tag info can not be saved because it is not pointing to a live buffer.")))]
      [(or `tag-node-open `tag-node-closed)
-      (treemacs--log "There is nothing to bookmark here.")])))
+      (treemacs-pulse-on-failure "There is nothing to bookmark here.")])))
 
 (defun treemacs-next-line-other-window (&optional count)
   "Scroll forward COUNT lines in `next-window'."
