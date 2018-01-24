@@ -76,7 +76,7 @@ is a marker pointing to POS."
     (add-text-properties beg (point) (append '(button (t) category default-button) properties))
     beg))
 
-(defsubst treemacs--get-node-face (path git-info default)
+(defsubst treemacs--get-button-face (path git-info default)
   "Return the appropriate face for PATH based on GIT-INFO.
 If there is no git entry for PATH return DEFAULT.
 
@@ -109,8 +109,8 @@ DEFAULT: Face"
     (list (sort (cl-first dirs-files) sort-func)
           (sort (cl-second dirs-files) sort-func))))
 
-(defsubst treemacs--insert-dir-node (path prefix parent depth)
-  "Return the text to insert for a directory node for PATH.
+(defsubst treemacs--create-dir-button-strings (path prefix parent depth)
+  "Return the text to insert for a directory button for PATH.
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
 DEPTH indicates how deep in the filetree the current button is."
@@ -125,8 +125,8 @@ DEPTH indicates how deep in the filetree the current button is."
                :parent parent
                :depth depth)))
 
-(defsubst treemacs--insert-file-node (path prefix parent depth)
-  "Return the text to insert for a file node for PATH.
+(defsubst treemacs--create-file-button-strings (path prefix parent depth)
+  "Return the text to insert for a file button for PATH.
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
 DEPTH indicates how deep in the filetree the current button is."
@@ -153,7 +153,7 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
     (button-put ,button :state ,new-state)
     (beginning-of-line)
     ,@(when new-icon
-      `((treemacs--node-symbol-switch ,new-icon)))
+      `((treemacs--button-symbol-switch ,new-icon)))
     ,@(if immediate-insert
           `((progn
               (end-of-line)
@@ -237,13 +237,13 @@ to PARENT."
              :extra-vars ((dir-prefix (concat prefix treemacs-icon-closed)))
              :depth depth
              :node-name node
-             :node-action (treemacs--insert-dir-node node dir-prefix parent depth)))
+             :node-action (treemacs--create-dir-button-strings node dir-prefix parent depth)))
       (setq file-strings
             (treemacs--create-buttons
              :nodes files
              :depth depth
              :node-name node
-             :node-action (treemacs--insert-file-node node prefix parent depth)))
+             :node-action (treemacs--create-file-button-strings node prefix parent depth)))
       ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
       ;; so there are two possibilities: either the future given to this function is a pfuture object
       ;; that needs to complete and be parsed or it's an already finished git status hash table
@@ -281,7 +281,7 @@ to PARENT."
       (insert (apply #'concat
                      (--map-when (= 0 (% (+ 1 it-index) 2))
                                  (propertize it 'face
-                                             (treemacs--get-node-face (concat root "/" it) git-info 'treemacs-directory-face))
+                                             (treemacs--get-button-face (concat root "/" it) git-info 'treemacs-directory-face))
                                  dir-strings)))
 
       (end-of-line)
@@ -289,7 +289,7 @@ to PARENT."
       (insert (apply #'concat
                      (--map-when (= 0 (% (+ 1 it-index) 3))
                                  (propertize it 'face
-                                             (treemacs--get-node-face (concat root "/" it) git-info 'treemacs-git-unmodified-face))
+                                             (treemacs--get-button-face (concat root "/" it) git-info 'treemacs-git-unmodified-face))
                                  file-strings)))
       (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process))
       ;; reopen here only since create-branch is called both when opening a node and
@@ -300,7 +300,7 @@ to PARENT."
   "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
   `(treemacs--with-writable-buffer
     ,@(when new-icon
-        `((treemacs--node-symbol-switch ,new-icon)))
+        `((treemacs--button-symbol-switch ,new-icon)))
     (end-of-line)
     (forward-button 1)
     (beginning-of-line)

@@ -212,7 +212,7 @@ Returns the buffer if it does exist."
       (replace-regexp-in-string "\"" "" str)
     str))
 
-(defsubst treemacs--node-symbol-switch (new-sym)
+(defsubst treemacs--button-symbol-switch (new-sym)
   "Replace icon in current line with NEW-SYM."
   (let* ((b   (next-button (point-at-bol) t))
          (pos (- (button-start b) 2)))
