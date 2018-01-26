@@ -478,7 +478,8 @@ Call `treemacs-toggle' if it is not."
   (interactive)
   (-if-let (w (treemacs--is-visible?))
       (select-window w t)
-    (treemacs-toggle)))
+    (treemacs-toggle))
+  (force-mode-line-update))
 
 (defun treemacs-push-button-select-sort (&optional arg)
   "Same as `treemacs-push-button', but the sorting function is chosen manually.
