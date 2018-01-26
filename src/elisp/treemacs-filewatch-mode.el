@@ -29,16 +29,8 @@
 (require 'filenotify)
 (require 'cl-lib)
 (require 'treemacs-impl)
+(require 'treemacs-structure)
 (require 'treemacs-tags)
-
-(treemacs--import-functions-from "treemacs"
-  treemacs-refresh
-  treemacs-push-button)
-
-(defvar treemacs--dirs-to-refresh nil
-  "List of directories that need to be updated to reflect recent file changes.
-If this is non-nil a timer to execute `treemacs--process-file-events' is
-currently running.")
 
 (defvar treemacs--collapsed-filewatch-hash (make-hash-table :size 100 :test #'equal)
   "Keeps track of dirs under filewatch due to being collapsed into one.

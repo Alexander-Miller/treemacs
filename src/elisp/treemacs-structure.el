@@ -46,13 +46,13 @@
   "Get the position marker of NODE."
   (aref node 4))
 
-(defsubst treemacs-shadow-node->collapsed (node)
   "Get the collapse info of NODE."
+(defsubst treemacs-shadow-node->closed (node)
   (aref node 5))
 
 (with-no-warnings
   (cl-defstruct (treemacs-shadow-node (:conc-name treemacs-shadow-node->))
-    key parent children position collapsed))
+    key parent children position closed))
 
 (defun treemacs--reset-index (root)
   "Reset the node index and reinitialize it at ROOT."
@@ -62,14 +62,14 @@
 
 (defun treemacs-shadow-node->print (node)
   "Pretty print NODE.
-Debug function"
+Debug function."
   (message
-   "Node %s\nChildren: %s\nOwner: %s\nPosition: %s\nCollapsed: %s"
+   "Node %s\nChildren: %s\nOwner: %s\nPosition: %s\nClosed: %s"
    (treemacs-shadow-node->key node)
    (-map #'treemacs-shadow-node->key (treemacs-shadow-node->children node))
    (--if-let (treemacs-shadow-node->parent node) (treemacs-shadow-node->key it) "NONE")
    (--if-let (treemacs-shadow-node->position node) it "NONE")
-   (treemacs-shadow-node->collapsed node)))
+   (treemacs-shadow-node->closed node)))
 
 (defsubst treemacs-get-position-of (key)
   "Get the position of node with KEY, if any."
@@ -92,7 +92,7 @@ Debug function"
   "Run when existing NODE is expanded.
 Sets its POS info and collpase field to nil."
   (setf (treemacs-shadow-node->position node) pos
-        (treemacs-shadow-node->collapsed node) nil))
+        (treemacs-shadow-node->closed node) nil))
 
 (defsubst treemacs--on-expanding-new-node (key pos parent-key)
   "When node at KEY is expanded and does not yet exist in the index.
@@ -107,7 +107,7 @@ the index."
 (defun treemacs-on-expand (key pos parent-key)
   "Routine to run when a node is expanded.
 Sets up a new node for KEY and POS and parent at PARENT-KEY or resurrects an
-already present node by setting its POS and marking at as no longer collapsed."
+already present node by setting its POS and marking at as no longer closed."
   (--if-let (ht-get treemacs-shadow-index key)
       (treemacs--on-expanding-existing-node it pos)
     (treemacs--on-expanding-new-node key pos parent-key)))
@@ -122,7 +122,7 @@ already present node by setting its POS and marking at as no longer collapsed."
 (defsubst treemacs--on-collapse-of-node-with-children (node purge)
   "Collapse a NODE that has children below it.
 If PURGE is non-nil remove NODE's branch from the shadow tree.
-Otherwise mark NODE as collapsed and invalidate the position data of NODE's branch."
+Otherwise mark NODE as closed and invalidate the position data of NODE's branch."
   (if purge
       ;; almost same as if the node did not have children - throw out of index and parent,
       ;; but remove the children as well
@@ -130,8 +130,8 @@ Otherwise mark NODE as collapsed and invalidate the position data of NODE's bran
         (setf (treemacs-shadow-node->children parent) (delete node (treemacs-shadow-node->children parent)))
         (treemacs--do-for-all-child-nodes node
           #'treemacs-shadow-node->remove-from-index))
-    ;; otherwise set the node to be collapsed and delete the lower tiers' position info
-    (setf (treemacs-shadow-node->collapsed node) t)
+    ;; otherwise set the node to be closed and delete the lower tiers' position info
+    (setf (treemacs-shadow-node->closed node) t)
     (treemacs--do-for-all-child-nodes node
       #'treemacs-shadow-node->invalidate-pos)))
 

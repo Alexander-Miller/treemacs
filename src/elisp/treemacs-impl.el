@@ -81,7 +81,7 @@
   treemacs-get-position-of
   treemacs-shadow-node->children
   treemacs-shadow-node->key
-  treemacs-shadow-node->collapsed
+  treemacs-shadow-node->closed
   treemacs--reset-index
   treemacs--on-rename
   treemacs--invalidate-position-cache)
@@ -490,7 +490,7 @@ GIT-INFO is passed through from the previous branch build."
                 path
                 (treemacs-get-from-shadow-index)
                 (treemacs-shadow-node->children)
-                (-reject #'treemacs-shadow-node->collapsed)
+                (-reject #'treemacs-shadow-node->closed)
                 (-map #'treemacs-shadow-node->key)
                 (treemacs--maybe-filter-dotfiles)))
      (treemacs--reopen-node (treemacs--goto-node-at it) git-info))))

@@ -385,7 +385,7 @@ case point will be left at the next highest node available."
              (sh-node (treemacs-get-from-shadow-index tag-path))
              (children (->> sh-node
                             (treemacs-shadow-node->children)
-                            (-reject #'treemacs-shadow-node->collapsed)))
+                            (-reject #'treemacs-shadow-node->closed)))
              (btns-under-btn (treemacs--get-children-of btn))]
       (dolist (sh-child children)
         (-if-let- [child-btn (--first (equal (treemacs-shadow-node->key sh-child)
