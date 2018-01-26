@@ -328,7 +328,8 @@ necessary since interacting with magit can cause file delete events for files
 being edited to trigger."
   (unless no-buffer-delete (treemacs--kill-buffers-after-deletion path t))
   (treemacs--stop-watching path t)
-  (treemacs-on-collapse path t))
+  (treemacs--run-in-every-buffer
+   (treemacs-on-collapse path t)))
 
 ;;;;;;;;;;;;;;;
 ;; Functions ;;

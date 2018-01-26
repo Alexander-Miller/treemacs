@@ -244,6 +244,14 @@ it on the same line."
       ,@final-form
       (hl-line-highlight))))
 
+(defmacro treemacs--run-in-every-buffer (&rest body)
+  "Run BODY once locally in every treemacs buffer."
+  `(dolist (frame->buffer treemacs--buffer-access)
+     (-let [buffer (cdr frame->buffer)]
+       (when (buffer-live-p buffer)
+         (with-current-buffer buffer
+           ,@body)))))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here
