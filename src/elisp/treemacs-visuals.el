@@ -259,16 +259,16 @@ be assigned which treemacs icon, for exmaple
   "Make sure icons' background are pusled alongside the entire line."
   (when (eq 'treemacs-mode major-mode)
     (treemacs--with-writable-buffer
-     (-let*- [(btn (treemacs-current-button))
-              (start (- (button-start btn) 2) )
-              (end (1+ start))
-              (img (get-text-property start 'display))
-              (cp (copy-sequence img))]
-       (treemacs--set-img-property cp :background
-                                   (face-attribute
-                                    (overlay-get pulse-momentary-overlay 'face)
-                                    :background nil t))
-       (put-text-property start end 'display cp)))))
+     (-when-let- [btn (treemacs-current-button)]
+       (-let*- [(start (- (button-start btn) 2) )
+                (end (1+ start))
+                (img (get-text-property start 'display))
+                (cp (copy-sequence img))]
+         (treemacs--set-img-property cp :background
+                                     (face-attribute
+                                      (overlay-get pulse-momentary-overlay 'face)
+                                      :background nil t))
+         (put-text-property start end 'display cp))))))
 
 (defun treemacs--do-pulse (face)
   "Visually pulse current line using FACE."
@@ -279,6 +279,7 @@ be assigned which treemacs icon, for exmaple
 (defsubst treemacs-pulse-on-success (&rest log-args)
   "Pulse current line with `treemacs-on-success-pulse-face'.
 Optionally issue a log statment with LOG-ARGS."
+  (declare (indent 1))
   (when log-args
     (treemacs--log (apply #'format log-args)))
   (when treemacs-pulse-on-success
@@ -287,6 +288,7 @@ Optionally issue a log statment with LOG-ARGS."
 (defsubst treemacs-pulse-on-failure (&rest log-args)
   "Pulse current line with `treemacs-on-failure-pulse-face'.
 Optionally issue a log statment with LOG-ARGS."
+  (declare (indent 1))
   (when log-args
     (treemacs--log (apply #'format log-args)))
   (when treemacs-pulse-on-failure

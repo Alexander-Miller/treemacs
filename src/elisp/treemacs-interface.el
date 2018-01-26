@@ -294,42 +294,45 @@ itself, using the root directory when point is on the header line."
   (interactive)
   (treemacs--create-file/dir "File name: " #'f-touch))
 
-(defun treemacs-rename ()
+(cl-defun treemacs-rename ()
   "Rename the currently selected node.
 Buffers visiting the renamed file or visiting a file inside a renamed directory
 and windows showing them will be reloaded. The list of recent files will
 likewise be updated."
   (interactive)
-  (treemacs--log
-   (catch 'exit
-     (let* ((btn (treemacs-current-button))
-            (old-path (button-get btn :path))
-            (new-path)
-            (new-name)
-            (dir))
-       (unless old-path
-         (throw 'exit "Found nothing to rename here."))
-       (unless (file-exists-p old-path)
-         (throw 'exit "The file to be renamed does not exist."))
-       (setq new-name (read-string "New name: ")
-             dir      (f-dirname old-path)
-             new-path (f-join dir new-name))
-       (when (get-buffer new-name)
-         (throw 'exit (format "A buffer named %s already exists."
-                              (propertize new-name 'face font-lock-string-face))))
-       (when (file-exists-p new-name)
-         (throw 'exit (format "A file named %s already exists."
-                              (propertize new-name 'face font-lock-string-face))))
-       (treemacs--without-filewatch (rename-file old-path new-path))
-       (treemacs--replace-recentf-entry old-path new-path)
-       (treemacs--on-rename old-path new-path)
-       (treemacs--reload-buffers-after-rename old-path new-path)
-       (-let [treemacs-silent-refresh t] (treemacs-refresh))
-       (treemacs--goto-node-at new-path)
-       (treemacs-pulse-on-success)
-       (throw 'exit (format "Renamed %s to %s."
-                            (propertize (f-filename old-path) 'face font-lock-string-face)
-                            (propertize new-name 'face font-lock-string-face)))))))
+  (cl-block nil
+    (-let [btn (treemacs-current-button)]
+      (unless btn
+        (cl-return
+         (treemacs-pulse-on-failure "Found nothing to rename here.")))
+      (-let*- [(old-path (button-get btn :path))
+               (new-path)
+               (new-name)
+               (dir)]
+        (unless old-path
+          (cl-return
+           (treemacs-pulse-on-failure "Found nothing to rename here.")))
+        (unless (file-exists-p old-path)
+          (cl-return
+           (treemacs-pulse-on-failure "The file to be renamed does not exist.")))
+        (setq new-name (read-string "New name: ")
+              dir      (f-dirname old-path)
+              new-path (f-join dir new-name))
+        (when (file-exists-p new-path)
+          (cl-return
+           (treemacs-pulse-on-failure "A file named %s already exists."
+             (propertize new-name 'face font-lock-string-face))))
+        (treemacs--without-filewatch (rename-file old-path new-path))
+        (treemacs--replace-recentf-entry old-path new-path)
+        (treemacs--run-in-every-buffer (treemacs--on-rename old-path new-path))
+        (treemacs--reload-buffers-after-rename old-path new-path)
+        (-let [treemacs-silent-refresh t] (treemacs-refresh));; TODO refresh all
+        (treemacs--goto-node-at new-path)
+        (treemacs-pulse-on-success)
+        (cl-return
+         (treemacs-pulse-on-success "Renamed %s to %s."
+           (propertize (f-filename old-path) 'face font-lock-string-face)
+           (propertize new-name 'face font-lock-string-face)))))))
 
 (defun treemacs-create-dir ()
   "Create a new directory.
