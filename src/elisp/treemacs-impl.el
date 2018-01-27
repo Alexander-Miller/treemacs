@@ -41,7 +41,7 @@
   treemacs--expand-tags-for-file
   treemacs--collapse-tags-for-file
   treemacs--expand-tag-node
-  treemacs--close-tag-node
+  treemacs--collapse-tag-node
   treemacs--goto-tag
   treemacs--tags-path-of
   treemacs--goto-tag-button-at)
@@ -51,13 +51,13 @@
 
 (treemacs--import-functions-from "treemacs-branch-creation"
   treemacs--check-window-system
-  treemacs--open-dir-node
-  treemacs--close-dir-node
+  treemacs--expand-dir-node
+  treemacs--collapse-dir-node
   treemacs--create-branch)
 
 (treemacs--import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
-  treemacs--current-buffer-stop-filewatch
+  treemacs--stop-filewatch-for-current-buffer
   treemacs--stop-watching
   treemacs--cancel-refresh-timer)
 
@@ -287,7 +287,7 @@ Will also perform cleanup if the buffer is dead."
     buf))
 
 (defsubst treemacs--next-neighbour (btn)
-  "Get the next same-level node of BTN, if any."
+  "Get the next same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
   (-let- [(depth (button-get btn :depth))
           (next (next-button (button-end btn)))]
@@ -296,7 +296,7 @@ Will also perform cleanup if the buffer is dead."
     (when (and next (= depth (button-get next :depth))) next)))
 
 (defsubst treemacs--prev-neighbour (btn)
-  "Get the previous same-level node of BTN, if any."
+  "Get the previous same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
   (-let- [(depth (button-get btn :depth))
           (prev (previous-button (button-start btn)))]
@@ -304,8 +304,8 @@ Will also perform cleanup if the buffer is dead."
       (setq prev (previous-button (button-start prev))))
     (when (= depth (button-get prev :depth)) prev)))
 
-(defsubst treemacs--next-non-child-node (btn)
-  "Return the next node after BTN that is not a child of BTB."
+(defsubst treemacs--next-non-child-button (btn)
+  "Return the next button after BTN that is not a child of BTB."
   (declare (side-effect-free t))
   (when btn
     (-let- [(depth (button-get btn :depth))
@@ -334,7 +334,7 @@ being edited to trigger."
 (defsubst treemacs--refresh-dir (path)
   "Local refresh for button at PATH.
 Simply collapses and re-expands the button (if it has not been closed)."
-  (-let [btn (treemacs--goto-node-at path)]
+  (-let [btn (treemacs--goto-button-at path)]
     (when (memq (button-get btn :state) '(dir-node-open file-node-open))
       (goto-char (button-start btn))
       (treemacs--push-button btn)
@@ -473,11 +473,11 @@ buffer."
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
   (-pcase (button-get btn :state)
-    [`dir-node-open    (treemacs--close-dir-node btn recursive)]
-    [`dir-node-closed  (treemacs--open-dir-node btn :recursive recursive)]
+    [`dir-node-open    (treemacs--collapse-dir-node btn recursive)]
+    [`dir-node-closed  (treemacs--expand-dir-node btn :recursive recursive)]
     [`file-node-open   (treemacs--collapse-tags-for-file btn recursive)]
     [`file-node-closed (treemacs--expand-tags-for-file btn recursive)]
-    [`tag-node-open    (treemacs--close-tag-node btn recursive)]
+    [`tag-node-open    (treemacs--collapse-tag-node btn recursive)]
     [`tag-node-closed  (treemacs--expand-tag-node btn recursive)]
     [`tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
     [_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn :state))]))
@@ -486,7 +486,7 @@ Optionally do so in a RECURSIVE fashion."
   "Reopen file BTN.
 GIT-INFO is passed through from the previous branch build."
   (-pcase (button-get btn :state)
-    [`dir-node-closed  (treemacs--open-dir-node btn :git-future git-info)]
+    [`dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info)]
     [`file-node-closed (treemacs--expand-tags-for-file btn)]
     [`tag-node-closed  (treemacs--expand-tag-node btn :no-add t)]
     [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
@@ -503,7 +503,7 @@ GIT-INFO is passed through from the previous branch build."
                 (-reject #'treemacs-shadow-node->closed)
                 (-map #'treemacs-shadow-node->key)
                 (treemacs--maybe-filter-dotfiles)))
-     (treemacs--reopen-node (treemacs--goto-node-at it) git-info))))
+     (treemacs--reopen-node (treemacs--goto-button-at it) git-info))))
 
 (defun treemacs--nearest-path (btn)
   "Return the path property of the current button (or BTN).
@@ -550,10 +550,10 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
         (recenter)
         (treemacs-pulse-on-success)))))
 
-(cl-defun treemacs--uncached-goto-node-at (abs-path &optional (start-from (point-min)))
+(cl-defun treemacs--uncached-goto-button-at (abs-path &optional (start-from (point-min)))
   "Move point to node identified by ABS-PATH, starting search at START.
 Also return that node.
-Unlike `treemacs--goto-node-at' this function does not make use of
+Unlike `treemacs--goto-button-at' this function does not make use of
 `treemacs--open-node-position-cache', which means 2 things: 1) It is
 considerably slower, and its use should thus be avoided, and 2) It can be used
 in times when the node position cache is invalidated, like the reopen phase of
@@ -578,11 +578,11 @@ a refresh."
       (unless result (goto-char start))
       result)))
 
-(cl-defun treemacs--goto-node-at (abs-path)
+(cl-defun treemacs--goto-button-at (abs-path)
   "Move point to button identified by ABS-PATH, also return that button."
   (-let [parent (treemacs--unslash (file-name-directory abs-path))]
     (-if-let- [btn-pos (treemacs-get-position-of parent)]
-        (treemacs--uncached-goto-node-at abs-path btn-pos)
+        (treemacs--uncached-goto-button-at abs-path btn-pos)
       (goto-char (point-min))
       (-let [btn (next-button (point) t)]
         (cl-block search

@@ -253,23 +253,23 @@ Open all tag section under BTN when call is RECURSIVE."
                            (treemacs--reopen-tags-under btn))))))
 
 
-(defun treemacs--close-tag-node-recursive (btn)
+(defun treemacs--collapse-tag-node-recursive (btn)
   "Recursively close tag section BTN.
 Workaround for tag section having no easy way to purge all open tags below a
 button from cache. Easiest way is to just do it manually here."
   (--each (treemacs--get-children-of btn)
     (when (eq 'tag-node-open (button-get it :state))
-      (treemacs--close-tag-node-recursive it)
+      (treemacs--collapse-tag-node-recursive it)
       (goto-char (button-start it))
-      (treemacs--close-tag-node it)))
+      (treemacs--collapse-tag-node it)))
   (goto-char (button-start btn))
-  (treemacs--close-tag-node btn))
+  (treemacs--collapse-tag-node btn))
 
-(defun treemacs--close-tag-node (btn &optional recursive)
+(defun treemacs--collapse-tag-node (btn &optional recursive)
   "Close tags node at BTN.
 Remove all open tag entries under BTN when RECURSIVE."
   (if recursive
-      (treemacs--close-tag-node-recursive btn)
+      (treemacs--collapse-tag-node-recursive btn)
     (treemacs--button-close
      :button btn
      :new-state 'tag-node-closed
@@ -355,7 +355,7 @@ Will return the found tag node, or nil if no such node exists (anymore). In this
 case point will be left at the next highest node available."
   (let ((tag (car tag-path))
         (path (cdr tag-path)))
-    (-when-let (file-node (treemacs--goto-node-at file))
+    (-when-let (file-node (treemacs--goto-button-at file))
       (when (eq 'file-node-closed (button-get file-node :state))
         (goto-char (button-start file-node))
         (treemacs--expand-tags-for-file file-node))

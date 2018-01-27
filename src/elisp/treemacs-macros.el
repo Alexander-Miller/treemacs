@@ -25,7 +25,8 @@
 (require 'dash)
 
 (defmacro treemacs--import-functions-from (file &rest functions)
-  "Import FILE's FUNCTIONS."
+  "Import FILE's FUNCTIONS.
+Creates a list of `declare-function' statements."
   (declare (indent 1))
   (let ((imports (--map (list 'declare-function it file) functions)))
     `(progn ,@imports)))
@@ -226,7 +227,7 @@ it on the same line."
          (if (and (f-exists? curr-file)
                   (or treemacs-show-hidden-files
                       (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
-             (treemacs--goto-node-at curr-file)
+             (treemacs--goto-button-at curr-file)
            (treemacs--without-messages (with-no-warnings (goto-line curr-line))))]
         [(or `tag-node-open `tag-node-closed `tag-node)
          ;; no correction needed, if the tag does not exist point is left at the next best node

@@ -204,7 +204,7 @@ directory that the collapsing leads to. For Example:
         (treemacs--start-watching (car it))
         (dolist (step (nthcdr 2 it))
           (treemacs--start-watching step t)))
-      (let* ((b (treemacs--goto-node-at (car it)))
+      (let* ((b (treemacs--goto-button-at (car it)))
              (props (text-properties-at (button-start b))))
         (button-put b :path (nth (- (length it) 1) it))
         (button-put b :collapsed t)
@@ -221,9 +221,9 @@ directory that the collapsing leads to. For Example:
 (defun treemacs--create-branch (root depth git-future collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at DEPTH and uses the eventual outputs of
-GIT-FUTURE to decide on file nodes' faces and COLLAPSE-PROCESS to determine
-which directories should be displayed as one. The nodes' parent property is set
-to PARENT."
+GIT-FUTURE to decide on file buttons' faces and COLLAPSE-PROCESS to determine
+which directories should be displayed as one. The buttons' parent property is
+set to PARENT."
   (save-excursion
     (let* ((dirs-and-files (treemacs--get-dir-content root))
            (dirs (cl-first dirs-and-files))
@@ -305,14 +305,14 @@ to PARENT."
     (forward-button 1)
     (beginning-of-line)
     (let* ((pos-start (point))
-           (next (treemacs--next-non-child-node ,button))
+           (next (treemacs--next-non-child-button ,button))
            (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
       (button-put ,button :state ,new-state)
       (delete-region pos-start pos-end)
       (delete-trailing-whitespace))
     ,post-close-action))
 
-(cl-defun treemacs--open-dir-node (btn &key git-future recursive)
+(cl-defun treemacs--expand-dir-node (btn &key git-future recursive)
   "Open the node given by BTN.
 
 BTN: Button
@@ -339,10 +339,10 @@ RECURSIVE: Bool"
            (--each (treemacs--get-children-of btn)
              (when (eq 'dir-node-closed (button-get it :state))
                (goto-char (button-start it))
-               (treemacs--open-dir-node
+               (treemacs--expand-dir-node
                 it :git-future git-future :recursive t)))))))))
 
-(defun treemacs--close-dir-node (btn recursive)
+(defun treemacs--collapse-dir-node (btn recursive)
   "Close node given by BTN.
 Remove all open dir and tag entries under BTN when RECURSIVE."
   (treemacs--button-close

@@ -93,7 +93,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (unless (s-equals? root new-root)
       (treemacs--reroot-up root new-root)
       (treemacs--build-tree new-root)
-      (treemacs--goto-node-at root)
+      (treemacs--goto-button-at root)
       (treemacs--evade-image))))
 
 (defun treemacs-goto-parent-node ()
@@ -327,7 +327,7 @@ likewise be updated."
         (treemacs--run-in-every-buffer (treemacs--on-rename old-path new-path))
         (treemacs--reload-buffers-after-rename old-path new-path)
         (-let [treemacs-silent-refresh t] (treemacs-refresh));; TODO refresh all
-        (treemacs--goto-node-at new-path)
+        (treemacs--goto-button-at new-path)
         (treemacs-pulse-on-success)
         (cl-return
          (treemacs-pulse-on-success "Renamed %s to %s."
@@ -409,7 +409,7 @@ given and the current buffer is not editing a file."
                        (treemacs--init path)
                      (progn
                        (treemacs--init (f-dirname path))
-                       (treemacs--goto-node-at path)
+                       (treemacs--goto-button-at path)
                        (hl-line-highlight)))))))))))))
 
 (defun treemacs-find-tag ()
@@ -525,14 +525,14 @@ without the need to call `treemacs-resort' with a prefix arg."
     (-if-let (btn (treemacs-current-button))
              (-pcase (button-get btn :state)
                [`dir-node-closed
-                (treemacs--open-dir-node btn)
+                (treemacs--expand-dir-node btn)
                 (treemacs--log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                                (propertize sort-name 'face 'font-lock-type-face))]
                [`dir-node-open
-                (treemacs--close-dir-node btn nil)
+                (treemacs--collapse-dir-node btn nil)
                 (goto-char (button-start btn))
-                (treemacs--open-dir-node btn)
+                (treemacs--expand-dir-node btn)
                 (treemacs--log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                                (propertize sort-name 'face 'font-lock-type-face))]
@@ -545,9 +545,9 @@ without the need to call `treemacs-resort' with a prefix arg."
                       (let ((line (line-number-at-pos))
                             (window-point (window-point)))
                         (goto-char (button-start parent))
-                        (treemacs--close-dir-node parent nil)
+                        (treemacs--collapse-dir-node parent nil)
                         (goto-char (button-start btn))
-                        (treemacs--open-dir-node parent)
+                        (treemacs--expand-dir-node parent)
                         (set-window-point (selected-window) window-point)
                         (with-no-warnings (goto-line line))
                         (treemacs--log "Resorted %s with sort method '%s'."
