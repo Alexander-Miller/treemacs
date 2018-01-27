@@ -27,32 +27,39 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
+(treemacs--import-functions-from "treemacs"
+  treemacs-refresh)
+
 (defvar-local treemacs-shadow-index nil)
 
 ;; don't need all that extra indirection of type checking
 (defsubst treemacs-shadow-node->key (node)
-  "Get the key of NODE."
+  "Get the key of shadow NODE."
   (aref node 1))
 
 (defsubst treemacs-shadow-node->parent (node)
-  "Get the parent node of NODE."
+  "Get the parent node of shadow NODE."
   (aref node 2))
 
 (defsubst treemacs-shadow-node->children (node)
-  "Get the child nodes of NODE."
+  "Get the child nodes of shadow NODE."
   (aref node 3))
 
 (defsubst treemacs-shadow-node->position (node)
-  "Get the position marker of NODE."
+  "Get the position marker of shadow NODE."
   (aref node 4))
 
-  "Get the collapse info of NODE."
 (defsubst treemacs-shadow-node->closed (node)
+  "Get the closed status info of shadow NODE."
   (aref node 5))
+
+(defsubst treemacs-shadow-node->refresh-flag (node)
+  "Get the refresh flag info of shadow NODE."
+  (aref node 6))
 
 (with-no-warnings
   (cl-defstruct (treemacs-shadow-node (:conc-name treemacs-shadow-node->))
-    key parent children position closed))
+    key parent children position closed refresh-flag))
 
 (defun treemacs--reset-index (root)
   "Reset the node index and reinitialize it at ROOT."
@@ -83,6 +90,10 @@ Debug function."
 (defun treemacs-shadow-node->invalidate-pos (node)
   "Set the pos field of NODE to nil."
   (setf (treemacs-shadow-node->position node) nil))
+
+(defun treemacs-shadow-node->reset-refresh-flag (node)
+  "Set the refresh flag of NODE to nil."
+  (setf (treemacs-shadow-node->refresh-flag node) nil))
 
 (defun treemacs-shadow-node->remove-from-index (node)
   "Remove NODE from the index."
@@ -189,6 +200,33 @@ old root's positions."
    (lambda (_ node) (treemacs-shadow-node->invalidate-pos node))
    treemacs-shadow-index))
 
+(defun treemacs--recursive-refresh-descent (node)
+ "The recursive descent implementation of `treemacs--recursive-refresh'.
+If NODE is marked for refresh and in an open state (since it could have been
+collapsed in the meantime) it will simply be collapsed and re-expanded. If NODE
+is node marked its children will be recursively investigated instead."
+  (if (treemacs-shadow-node->refresh-flag node)
+      (progn
+        (treemacs--refresh-dir (treemacs-shadow-node->key node))
+        (treemacs--do-for-all-child-nodes node
+          #'treemacs-shadow-node->reset-refresh-flag))
+    (dolist (child (treemacs-shadow-node->children node))
+      (treemacs--recursive-refresh-descent child))))
+
+(defun treemacs--recursive-refresh ()
+  "Recursively descend the shadow tree, updating only the refresh-marked nodes.
+If the root is marked simply reset all refresh flags and run `treemacs-refresh'
+instead."
+  (-let [root (-> (treemacs--current-root)
+                  (treemacs-get-from-shadow-index))]
+    (if (treemacs-shadow-node->refresh-flag root)
+        (progn
+          (treemacs--do-for-all-child-nodes root #'treemacs-shadow-node->reset-refresh-flag)
+          (treemacs-refresh (current-buffer)))
+      (dolist (root-child (treemacs-shadow-node->children root))
+        (treemacs--recursive-refresh-descent root-child)))))
+
 (provide 'treemacs-structure)
 
+;;; treemacs-impl.el ends here
 ;;; treemacs-structure.el ends here

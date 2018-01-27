@@ -57,7 +57,7 @@
 
 (treemacs--import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
-  treemacs--stop-watch-all-in-scope
+  treemacs--current-buffer-stop-filewatch
   treemacs--stop-watching
   treemacs--cancel-refresh-timer)
 
@@ -331,6 +331,16 @@ being edited to trigger."
   (treemacs--run-in-every-buffer
    (treemacs-on-collapse path t)))
 
+(defsubst treemacs--refresh-dir (path)
+  "Local refresh for button at PATH.
+Simply collapses and re-expands the button (if it has not been closed)."
+  (-let [btn (treemacs--goto-node-at path)]
+    (when (memq (button-get btn :state) '(dir-node-open file-node-open))
+      (goto-char (button-start btn))
+      (treemacs--push-button btn)
+      (goto-char (button-start btn))
+      (treemacs--push-button btn))))
+
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
@@ -414,7 +424,7 @@ buffer."
   (treemacs--invalidate-position-cache)
   (treemacs--forget-last-highlight)
   (treemacs--forget-previously-follow-tag-btn)
-  (treemacs--stop-watch-all-in-scope)
+  (treemacs--stop-filewatch-for-current-buffer)
   (treemacs--cancel-refresh-timer)
   (treemacs--with-writable-buffer
    (delete-region (point-min) (point-max))
@@ -445,7 +455,7 @@ buffer."
   "Cleanup to run when a treemacs buffer is killed."
   ;; stop watch must come first since we need a reference to the killed buffer
   ;; to remove it from the filewatch list
-  (treemacs--stop-watch-all-in-scope)
+  (treemacs--stop-filewatch-for-current-buffer)
   (treemacs--remove-framelocal-buffer)
   (treemacs--tear-down-icon-highlight)
   (unless treemacs--buffer-access
@@ -455,7 +465,7 @@ buffer."
 (defun treemacs--buffer-teardown (root)
   "Cleanup to be run when an existing treemacs buffer is re-initialized at ROOT."
   (treemacs--reset-index root)
-  (treemacs--stop-watch-all-in-scope)
+  (treemacs--stop-filewatch-for-current-buffer)
   (treemacs--cancel-refresh-timer)
   (treemacs--forget-last-highlight))
 
@@ -684,7 +694,9 @@ Delete all elements whose car is ‘string=’ to KEY from ALIST."
   "Parent of PATH, or PATH itself if PATH is the root directory."
   (if (f-root? path)
       path
-    (f-parent path)))
+    (-> path
+        (file-name-directory)
+        (treemacs--unslash))))
 
 (defun treemacs--evade-image ()
   "The cursor visibly blinks when on top of an icon.

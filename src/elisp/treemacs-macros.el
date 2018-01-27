@@ -247,9 +247,9 @@ it on the same line."
 (defmacro treemacs--run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer."
   `(dolist (frame->buffer treemacs--buffer-access)
-     (-let [buffer (cdr frame->buffer)]
-       (when (buffer-live-p buffer)
-         (with-current-buffer buffer
+     (-let [--buffer-- (cdr frame->buffer)]
+       (when (buffer-live-p --buffer--)
+         (with-current-buffer --buffer--
            ,@body)))))
 
 (provide 'treemacs-macros)
