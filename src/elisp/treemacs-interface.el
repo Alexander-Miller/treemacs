@@ -482,10 +482,10 @@ generated."
   "Select the treemacs window if it is visible.
 Call `treemacs-toggle' if it is not."
   (interactive)
+  (force-mode-line-update)
   (-if-let (w (treemacs--is-visible?))
       (select-window w t)
-    (treemacs-toggle))
-  (force-mode-line-update))
+    (treemacs-toggle)))
 
 (defun treemacs-push-button-select-sort (&optional arg)
   "Same as `treemacs-push-button', but the sorting function is chosen manually.
