@@ -88,6 +88,7 @@ to it will instead show a blank."
              (key-create-file    (treemacs--find-keybind #'treemacs-create-file))
              (key-create-dir     (treemacs--find-keybind #'treemacs-create-dir))
              (key-rename         (treemacs--find-keybind #'treemacs-rename))
+	     (key-delete         (treemacs--find-keybind #'treemacs-delete))
              (key-follow-mode    (treemacs--find-keybind #'treemacs-follow-mode))
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
              (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
@@ -110,7 +111,7 @@ to it will instead show a blank."
 %s next Line        │ %s open & close        │ %s create file │ %s follow mode    │ %s refresh
 %s prev line        │ %s open dwim           │ %s create dir  │ %s filewatch mode │ %s (re)set width
 %s next neighbour   │ %s open no split       │ %s rename      │ %s git mode       │ %s copy path
-%s prev neighbour   │ %s open horizontal     │                    │ %s show dotfiles  │ %s copy root
+%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles  │ %s copy root
 %s go to parent     │ %s open vertical       │                    │ %s resizability   │ %s re-sort
 %s move root up     │ %s open ace            │                    │                       │ %s bookmark
 %s move root into   │ %s open ace horizontal │                    │                       │
@@ -122,7 +123,7 @@ to it will instead show a blank."
                (car key-next-line)      (car key-open/close)  (car key-create-file) (car key-follow-mode)   (car key-refresh)
                (car key-prev-line)      (car key-dwim)        (car key-create-dir)  (car key-fwatch-mode)   (car key-set-width)
                (car key-next-neighbour) (car key-open)        (car key-rename)      (car key-git-mode)      (car key-copy-path)
-               (car key-prev-neighbour) (car key-open-horiz)                        (car key-show-dotfiles) (car key-copy-root)
+               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)      (car key-show-dotfiles) (car key-copy-root)
                (car key-goto-parent)    (car key-open-vert)                         (car key-toggle-width)  (car key-resort)
                (car key-root-up)        (car key-open-ace)                                                  (car key-bookmark)
                (car key-root-down)      (car key-open-ace-h)
@@ -152,6 +153,7 @@ to it will instead show a blank."
               (,(cdr key-create-file)    #'treemacs-create-file)
               (,(cdr key-create-dir)     #'treemacs-create-dir)
               (,(cdr key-rename)         #'treemacs-rename)
+	      (,(cdr key-delete)         #'treemacs-delete)
               (,(cdr key-follow-mode)    #'treemacs-follow-mode)
               (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
               (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
