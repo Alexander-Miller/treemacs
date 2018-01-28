@@ -226,8 +226,11 @@
   (ert-deftest parent::fails-on-nil-path ()
     (should-error (treemacs--parent nil)))
 
-  (ert-deftest parent::does-not-fail-on-empty-path ()
-    (should (treemacs--parent "")))
+  (ert-deftest parent::fails-on-empty-path ()
+    (should-error (treemacs--parent "")))
+
+  (ert-deftest parent::fails-on-invalid-path ()
+    (should-error (treemacs--parent "ABC")))
 
   (ert-deftest parent::returns-parent ()
     (should (equal "/home/A" (treemacs--parent "/home/A/B"))))
@@ -290,29 +293,6 @@
   (ert-deftest file-ext::return-extension-for-path-with-dots ()
     (should (equal "el" (treemacs--file-extension "~/A/foo.bar/baz.qux/foo.el")))))
 
-;; `treemacs--tags-path-of'
-(progn
-  (ert-deftest tags-path-of::fails-on-nil-btn ()
-    (should-error (treemacs--tags-path-of nil)))
-
-  (ert-deftest tags-path-of::directly-returns-path-when-possible ()
-    (with-temp-buffer
-      (let ((b (make-button 0 0)))
-        (button-put b :path "/a/b/c")
-        (should (equal '("/a/b/c") (treemacs--tags-path-of b))))))
-
-  (ert-deftest tags-path-of::walks-up-to-the-first-file-button ()
-    (with-temp-buffer
-      (let ((b1 (button-at (insert-text-button "b1")))
-            (b2 (button-at (insert-text-button "b2")))
-            (b3 (button-at (insert-text-button "b3")))
-            (b4 (button-at (insert-text-button "b4"))))
-        (button-put b1 :parent b2)
-        (button-put b2 :parent b3)
-        (button-put b3 :parent b4)
-        (button-put b4 :path "A")
-        (should (equal '("b1" "b3" "b2") (treemacs--tags-path-of b1)))))))
-
 ;; `treemacs--partition-imenu-index'
 (progn
   (ert-deftest partition-index::returns-nil-on-nil-input ()
@@ -341,16 +321,16 @@
   (ert-deftest tags-path::returns-abs-path-for-non-tag-buttons ()
     (with-temp-buffer
       (let ((b (insert-text-button "b")))
-        (button-put b :path "/A/B/C/")
-        (should (equal '("/A/B/C/") (treemacs--tags-path-of b))))))
+        (button-put b :path "/A/B/C")
+        (should (equal "/A/B/C" (treemacs--tags-path-of b))))))
 
-  (ert-deftest tags-path::returns-label-for-depth-1-button ()
+  (ert-deftest tags-path::returns-path-and-label-for-depth-1-button ()
     (with-temp-buffer
       (let ((p (insert-text-button "p"))
             (b (insert-text-button "label")))
-        (button-put p :path "/A/B/C/")
+        (button-put p :path "/A/B/C")
         (button-put b :parent p)
-        (should (equal '("label") (treemacs--tags-path-of b))))))
+        (should (equal '("label" "/A/B/C") (treemacs--tags-path-of b))))))
 
   (ert-deftest tags-path::returns-full-path-for-deeply-nested-button ()
     (with-temp-buffer
@@ -365,17 +345,17 @@
         (button-put b2 :parent b1)
         (button-put b2 :parent b1)
         (button-put b1 :path "/A/B/C")
-        (should (equal '("b5" "b2" "b3" "b4") (treemacs--tags-path-of b5)))))))
+        (should (equal '("b5" "/A/B/C" "b2" "b3" "b4") (treemacs--tags-path-of b5)))))))
 
-;; `treemacs--next-non-child-node'
+;; `treemacs--next-non-child-button'
 (progn
   (ert-deftest next-non-child::returns-nil-for-nil-input ()
-    (should-not (treemacs--next-non-child-node nil)))
+    (should-not (treemacs--next-non-child-button nil)))
 
   (ert-deftest next-non-child::returns-nil-for-single-button ()
     (with-temp-buffer
       (let ((b (insert-text-button "b")))
-        (should-not (treemacs--next-non-child-node b)))))
+        (should-not (treemacs--next-non-child-button b)))))
 
   (ert-deftest next-non-child::directly-retuns-next-button ()
     (with-temp-buffer
@@ -383,7 +363,7 @@
             (b2 (insert-text-button "b2")))
         (button-put b1 :depth 1)
         (button-put b2 :depth 1)
-        (should (equal b2 (marker-position (treemacs--next-non-child-node b1)))))))
+        (should (equal b2 (marker-position (treemacs--next-non-child-button b1)))))))
 
   (ert-deftest next-non-child::searches-through-higher-depth-buttons ()
     (with-temp-buffer
@@ -399,7 +379,7 @@
         (button-put b4 :depth 4)
         (button-put b5 :depth 5)
         (button-put b6 :depth 1)
-        (should (equal b6 (marker-position (treemacs--next-non-child-node b1)))))))
+        (should (equal b6 (marker-position (treemacs--next-non-child-button b1)))))))
 
   (ert-deftest next-non-child::returns-nil-when-there-is-no-next-non-child ()
     (with-temp-buffer
@@ -415,7 +395,7 @@
         (button-put b4 :depth 4)
         (button-put b5 :depth 5)
         (button-put b6 :depth 6)
-        (should-not (treemacs--next-non-child-node b1))))))
+        (should-not (treemacs--next-non-child-button b1))))))
 
 ;; `treemacs--flatten-imenu-index'
 (progn
@@ -533,96 +513,96 @@
      (stub file-notify-add-watch => 123456)
      (let ((path "/A")
            (treemacs-filewatch-mode t)
-           (treemacs--filewatch-hash (make-hash-table :test #'equal))
-           (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+           (treemacs--filewatch-index (make-hash-table :test #'equal))
+           (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
        (treemacs--start-watching path t)
-       (should (equal (gethash path treemacs--filewatch-hash)
+       (should (equal (gethash path treemacs--filewatch-index)
                       (cons (list (current-buffer)) 123456)))
-       (should (gethash path treemacs--collapsed-filewatch-hash)))))
+       (should (gethash path treemacs--collapsed-filewatch-index)))))
 
   (ert-deftest start-watching::start-watching-watched-file ()
     (with-mock
       (stub file-notify-add-watch => 123456)
       (let ((path "/A")
             (treemacs-filewatch-mode t)
-            (treemacs--filewatch-hash (make-hash-table :test #'equal))
-            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
-        (puthash path (cons '(x y) 123456) treemacs--filewatch-hash)
+            (treemacs--filewatch-index (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
+        (puthash path (cons '(x y) 123456) treemacs--filewatch-index)
         (treemacs--start-watching path t)
-        (should (equal (gethash path treemacs--filewatch-hash)
+        (should (equal (gethash path treemacs--filewatch-index)
                        (cons (list (current-buffer) 'x 'y) 123456)))
-        (should (gethash path treemacs--collapsed-filewatch-hash)))))
+        (should (gethash path treemacs--collapsed-filewatch-index)))))
 
   (ert-deftest start-watching::add-watching-buffer-only-once ()
     (with-mock
       (stub file-notify-add-watch => 123456)
       (let ((path "/A")
             (treemacs-filewatch-mode t)
-            (treemacs--filewatch-hash (make-hash-table :test #'equal))
-            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
-        (puthash path (cons '(x y) 123456) treemacs--filewatch-hash)
+            (treemacs--filewatch-index (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
+        (puthash path (cons '(x y) 123456) treemacs--filewatch-index)
         (treemacs--start-watching path t)
         (treemacs--start-watching path t)
-        (should (equal (gethash path treemacs--filewatch-hash)
+        (should (equal (gethash path treemacs--filewatch-index)
                        (cons (list (current-buffer) 'x 'y) 123456)))
-        (should (gethash path treemacs--collapsed-filewatch-hash))))))
+        (should (gethash path treemacs--collapsed-filewatch-index))))))
 
 ;; `treemacs--stop-watching'
 (progn
 
   (ert-deftest stop-watching::do-nothing-when-path-is-not-watched ()
-    (let ((treemacs--filewatch-hash (make-hash-table :test #'equal))
-          (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
+    (let ((treemacs--filewatch-index (make-hash-table :test #'equal))
+          (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
       (treemacs--stop-watching "/A")))
 
   (ert-deftest stop-watching::stop-watch-of-the-only-watching-buffer ()
     (with-mock
       (stub file-notify-rm-watch => t)
       (let ((path "/A")
-            (treemacs--filewatch-hash (make-hash-table :test #'equal))
-            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
-        (puthash path (cons (list (current-buffer)) 123456) treemacs--filewatch-hash)
-        (puthash path t treemacs--collapsed-filewatch-hash)
+            (treemacs--filewatch-index (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
+        (puthash path (cons (list (current-buffer)) 123456) treemacs--filewatch-index)
+        (puthash path t treemacs--collapsed-filewatch-index)
         (treemacs--stop-watching path)
-        (should-not (gethash path treemacs--filewatch-hash))
-        (should-not (gethash path treemacs--collapsed-filewatch-hash)))))
+        (should-not (gethash path treemacs--filewatch-index))
+        (should-not (gethash path treemacs--collapsed-filewatch-index)))))
 
   (ert-deftest stop-watching::stop-watch-of-one-of-several-buffers ()
     (let ((path "/A")
-          (treemacs--filewatch-hash (make-hash-table :test #'equal))
-          (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
-      (puthash path (cons (list 'x 'y (current-buffer)) 123456) treemacs--filewatch-hash)
-      (puthash path t treemacs--collapsed-filewatch-hash)
+          (treemacs--filewatch-index (make-hash-table :test #'equal))
+          (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
+      (puthash path (cons (list 'x 'y (current-buffer)) 123456) treemacs--filewatch-index)
+      (puthash path t treemacs--collapsed-filewatch-index)
       (treemacs--stop-watching path)
-      (should (equal (gethash path treemacs--filewatch-hash)
+      (should (equal (gethash path treemacs--filewatch-index)
                      (cons '(x y) 123456)))
-      (should (gethash path treemacs--collapsed-filewatch-hash))))
+      (should (gethash path treemacs--collapsed-filewatch-index))))
 
   (ert-deftest stop-watching::stop-watch-of-path-under-stopped-path ()
     (with-mock
       (stub file-notify-rm-watch => t)
       (let ((path "/A/B")
-            (treemacs--filewatch-hash (make-hash-table :test #'equal))
-            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
-        (puthash path (cons (list (current-buffer)) 123456) treemacs--filewatch-hash)
-        (puthash path t treemacs--collapsed-filewatch-hash)
+            (treemacs--filewatch-index (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
+        (puthash path (cons (list (current-buffer)) 123456) treemacs--filewatch-index)
+        (puthash path t treemacs--collapsed-filewatch-index)
         (treemacs--stop-watching "/A")
-        (should-not (gethash path treemacs--filewatch-hash))
-        (should-not (gethash path treemacs--collapsed-filewatch-hash)))))
+        (should-not (gethash path treemacs--filewatch-index))
+        (should-not (gethash path treemacs--collapsed-filewatch-index)))))
 
   (ert-deftest stop-watching::stop-watch-of-all-buffers ()
     (with-mock
       (stub file-notify-rm-watch => t)
       (let ((path "/A")
-            (treemacs--filewatch-hash (make-hash-table :test #'equal))
-            (treemacs--collapsed-filewatch-hash (make-hash-table :test #'equal)))
-        (puthash path (cons '(x y z) 123456) treemacs--filewatch-hash)
-        (puthash path t treemacs--collapsed-filewatch-hash)
+            (treemacs--filewatch-index (make-hash-table :test #'equal))
+            (treemacs--collapsed-filewatch-index (make-hash-table :test #'equal)))
+        (puthash path (cons '(x y z) 123456) treemacs--filewatch-index)
+        (puthash path t treemacs--collapsed-filewatch-index)
         (treemacs--stop-watching path t)
-        (should-not (gethash path treemacs--filewatch-hash))
-        (should-not (gethash path treemacs--collapsed-filewatch-hash))))))
+        (should-not (gethash path treemacs--filewatch-index))
+        (should-not (gethash path treemacs--collapsed-filewatch-index))))))
 
-;;; Thorough Sys Test
+;; Thorough Sys Test
 (ert-deftest treemacs::sys-test ()
   (save-window-excursion
     (save-match-data
