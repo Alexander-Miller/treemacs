@@ -50,7 +50,7 @@
   (declare-function treemacs--remove-treemacs-window-in-new-frames "treemacs-compatibility")
   (if (boundp 'persp-activated-functions)
       (add-to-list 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames)
-    (treemacs--log "`persp-activated-functions' not defined - couldn't add compatibility.")))
+    (treemacs-log "`persp-activated-functions' not defined - couldn't add compatibility.")))
 
 (provide 'treemacs-compatibility)
 

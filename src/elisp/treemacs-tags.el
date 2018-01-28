@@ -19,7 +19,7 @@
 ;;; Tags display functionality.
 ;;; Need to be very careful here - many of the functions in this module need to be run inside the treemacs buffer, while
 ;;; the `treemacs--execute-button-action' macro that runs them will switch windows before doing so. Heavy use of
-;;; `treemacs--safe-button-get' or `treemacs--with-button-buffer' is necessary.
+;;; `treemacs-safe-button-get' or `treemacs-with-button-buffer' is necessary.
 
 ;;; Code:
 
@@ -316,7 +316,7 @@ exist."
               (switch-to-buffer (or buf (get-file-buffer file)))
               (goto-char pos))))
       (error
-       (treemacs--log "Something went wrong when finding tag '%s': %s"
+       (treemacs-log "Something went wrong when finding tag '%s': %s"
                       (propertize tag 'face 'treemacs-tags-face)
                       e)))))
 
@@ -326,7 +326,7 @@ exist."
   ;; switches windows before running it, so we need to be really careful here when querying any button
   ;; properties.
   (-let [(tag-buf . tag-pos)
-         (treemacs--with-button-buffer btn
+         (treemacs-with-button-buffer btn
            (-> btn (button-get :marker) (treemacs--pos-from-marker)))]
     (if tag-buf
         (progn
@@ -341,12 +341,12 @@ exist."
          ;; for emacs24
          (with-no-warnings
            (xref-find-definitions
-            (treemacs--with-button-buffer btn
+            (treemacs-with-button-buffer btn
               (treemacs--get-label-of btn))))]
         [`issue-warning
          (treemacs-pulse-on-failure
           "Tag '%s' is located in a buffer that does not exist."
-          (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
+          (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
         [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
 
 (cl-defun treemacs--goto-tag-button-at (tag-path file)

@@ -24,7 +24,7 @@
 
 (require 'dash)
 
-(defmacro treemacs--import-functions-from (file &rest functions)
+(defmacro treemacs-import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS.
 Creates a list of `declare-function' statements."
   (declare (indent 1))
@@ -38,7 +38,7 @@ Remember the value in `treemacs--defaults-icons'."
      (defvar ,var ,val)
      (push (cons ',var ,val) treemacs--defaults-icons)))
 
-(defmacro treemacs--log (msg &rest args)
+(defmacro treemacs-log (msg &rest args)
   "Write a log statement given format string MSG and ARGS."
   `(unless treemacs--no-messages
      (message
@@ -46,17 +46,17 @@ Remember the value in `treemacs--defaults-icons'."
       (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
       (format ,msg ,@args))))
 
-(defmacro treemacs--with-writable-buffer (&rest body)
+(defmacro treemacs-with-writable-buffer (&rest body)
   "Temporarily turn off read-ony mode to execute BODY."
   `(let (buffer-read-only)
      ,@body))
 
-(defmacro treemacs--without-messages (&rest body)
+(defmacro treemacs-without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
   `(let ((treemacs--no-messages t))
      ,@body))
 
-(defmacro treemacs--safe-button-get (button &rest properties)
+(defmacro treemacs-safe-button-get (button &rest properties)
   "Safely extract BUTTON's PROPERTIES.
 
 Using `button-get' on a button located in a buffer that is not the current
@@ -67,11 +67,11 @@ inside BUTTON's buffer."
            `(button-get ,button ,(car properties))
          `(--map (button-get ,button it) ,properties))))
 
-(defmacro treemacs--with-button-buffer (btn &rest body)
+(defmacro treemacs-with-button-buffer (btn &rest body)
   "Use BTN's buffer to execute BODY.
 Required for button interactions (like `button-get') that do not work when
 called from another buffer than the one the button resides in and
-`treemacs--safe-button-get' is not enough."
+`treemacs-safe-button-get' is not enough."
   (declare (indent 1))
   `(with-current-buffer (marker-buffer ,btn)
     ,@body))
@@ -127,7 +127,7 @@ Otherwise just delegates EXP and CASES to `pcase'."
         (push  (nreverse c) cases-list)))
     `(pcase ,exp ,@(nreverse cases-list))))
 
-(defmacro treemacs--without-following (&rest body)
+(defmacro treemacs-without-following (&rest body)
   "Execute BODY with `treemacs--ready-to-follow' set to nil."
   ;; no warnings since `treemacs--ready-to-follow' is defined in treemacs-follow-mode.el
   ;; and should stay there since this file is for macros only
@@ -166,7 +166,7 @@ under or below it."
     (when tag-action
       (push 'tag-node valid-states))
     `(-when-let (btn (treemacs-current-button))
-       (treemacs--without-following
+       (treemacs-without-following
         (let* ((state (button-get btn :state))
                (current-window (selected-window)))
           (if (not (memq state ',valid-states))
@@ -203,7 +203,7 @@ the on-delete code will run twice."
   `(cl-flet (((symbol-function 'treemacs--filewatch-callback) (symbol-function 'ignore)))
      ,@body))
 
-(defmacro treemacs--save-position (main-form &rest final-form)
+(defmacro treemacs-save-position (main-form &rest final-form)
   "Execute MAIN-FORM without switching position.
 Finally execute FINAL-FORM after the code to restore the position has run.
 
@@ -211,7 +211,7 @@ This macro is meant for cases where a simple `save-excursion' will not do, like
 a refresh, which can potentially change the entire buffer layout. This means
 attempt first to keep point on the same file/tag, and if that does not work keep
 it on the same line."
-  `(treemacs--without-following
+  `(treemacs-without-following
     (let* ((curr-line     (line-number-at-pos))
            (curr-btn      (treemacs-current-button))
            (curr-state    (when curr-btn (button-get curr-btn :state)))
@@ -228,13 +228,13 @@ it on the same line."
                   (or treemacs-show-hidden-files
                       (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
              (treemacs--goto-button-at curr-file)
-           (treemacs--without-messages (with-no-warnings (goto-line curr-line))))]
+           (treemacs-without-messages (with-no-warnings (goto-line curr-line))))]
         [(or `tag-node-open `tag-node-closed `tag-node)
          ;; no correction needed, if the tag does not exist point is left at the next best node
          (treemacs--goto-tag-button-at curr-tagpath curr-file)]
         [(pred null)
          (with-no-warnings (goto-line 1))]
-        [_ (treemacs--log "Refresh doesn't yet know how to deal with '%s'" curr-state)])
+        [_ (treemacs-log "Refresh doesn't yet know how to deal with '%s'" curr-state)])
       (treemacs--evade-image)
       (set-window-start (get-buffer-window) curr-winstart)
 
@@ -245,7 +245,7 @@ it on the same line."
       ,@final-form
       (hl-line-highlight))))
 
-(defmacro treemacs--run-in-every-buffer (&rest body)
+(defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer."
   `(dolist (frame->buffer treemacs--buffer-access)
      (-let [--buffer-- (cdr frame->buffer)]

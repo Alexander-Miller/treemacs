@@ -32,10 +32,10 @@
 This information can be used for future display. Stay in the selected window and
 ignore any prefix argument."
   (interactive "P")
-  (treemacs--without-messages
+  (treemacs-without-messages
     (treemacs--execute-button-action
-     :file-action (find-file-noselect (treemacs--safe-button-get btn :path))
-     :dir-action (find-file-noselect (treemacs--safe-button-get btn :path))
+     :file-action (find-file-noselect (treemacs-safe-button-get btn :path))
+     :dir-action (find-file-noselect (treemacs-safe-button-get btn :path))
      :tag-action (treemacs--tag-noselect btn)
      :window (selected-window)
      :save-window t
@@ -60,7 +60,7 @@ ignore any prefix argument."
               ;; a raw buffer position (an int) to move to
 	      (list (or buf (get-file-buffer file)) pos))))
       (error
-       (treemacs--log "Something went wrong when finding tag '%s': %s"
+       (treemacs-log "Something went wrong when finding tag '%s': %s"
                       (propertize tag 'face 'treemacs-tags-face)
                       e)))))
 
@@ -79,7 +79,7 @@ ignore any prefix argument."
              "Return the buffer position where xref ITEM is defined."
              (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
     (-let [(tag-buf . tag-pos)
-           (treemacs--with-button-buffer btn
+           (treemacs-with-button-buffer btn
              (-> btn (button-get :marker) (treemacs--pos-from-marker)))]
       (if tag-buf
           (list tag-buf tag-pos)
@@ -92,13 +92,13 @@ ignore any prefix argument."
              (treemacs--imenu-tag-noselect file tag-path))]
           [`call-xref
            (let ((xref (xref-definition
-                        (treemacs--with-button-buffer btn
+                        (treemacs-with-button-buffer btn
                           (treemacs--get-label-of btn)))))
              (when xref
                (list (xref-item-buffer xref) (xref-item-position xref))))]
           [`issue-warning
-           (treemacs--log "Tag '%s' is located in a buffer that does not exist."
-                          (propertize (treemacs--with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
+           (treemacs-log "Tag '%s' is located in a buffer that does not exist."
+                          (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
           [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)])))))
 
 (provide 'treemacs-mouse-interface)

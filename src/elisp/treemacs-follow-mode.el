@@ -62,7 +62,7 @@ The followed file MUST be under root or the search will break."
     (hl-line-highlight)
     (set-window-point (get-buffer-window) (point))
     (when treemacs-recenter-after-file-follow
-      (treemacs--without-following
+      (treemacs-without-following
         (with-selected-window (get-buffer-window)
          (recenter))))))
 
@@ -74,7 +74,7 @@ not visible."
   ;; Treemacs selecting files with `ace-window' results in a large amount of
   ;; window selections, so we should be breaking out as soon as possbile
   (when treemacs--ready-to-follow
-    (treemacs--without-following
+    (treemacs-without-following
      (let* ((treemacs-window (treemacs--is-visible?))
             (current-buffer  (current-buffer))
             (current-file    (buffer-file-name current-buffer)))
@@ -104,8 +104,8 @@ Ignores the original arguments of `select-window' and directly calls
 
 (defun treemacs--follow-compatibility-advice (original-func &rest args)
   "Make ORIGINAL-FUNC compatible with `treemacs-follow-mode'.
-Do so by running it and its ARGS through `treemacs--without-following'."
-  (treemacs--without-following
+Do so by running it and its ARGS through `treemacs-without-following'."
+  (treemacs-without-following
    (apply original-func args)))
 
 (defsubst treemacs--setup-follow-mode ()

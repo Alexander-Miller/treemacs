@@ -37,7 +37,7 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
-(treemacs--import-functions-from "treemacs-tags"
+(treemacs-import-functions-from "treemacs-tags"
   treemacs--expand-tags-for-file
   treemacs--collapse-tags-for-file
   treemacs--expand-tag-node
@@ -46,36 +46,36 @@
   treemacs--tags-path-of
   treemacs--goto-tag-button-at)
 
-(treemacs--import-functions-from "treemacs"
+(treemacs-import-functions-from "treemacs"
   treemacs-refresh)
 
-(treemacs--import-functions-from "treemacs-branch-creation"
+(treemacs-import-functions-from "treemacs-branch-creation"
   treemacs--check-window-system
   treemacs--expand-dir-node
   treemacs--collapse-dir-node
   treemacs--create-branch)
 
-(treemacs--import-functions-from "treemacs-filewatch-mode"
+(treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
   treemacs--stop-filewatch-for-current-buffer
   treemacs--stop-watching
   treemacs--cancel-refresh-timer)
 
-(treemacs--import-functions-from "treemacs-follow-mode"
+(treemacs-import-functions-from "treemacs-follow-mode"
   treemacs--follow
   treemacs--do-follow)
 
-(treemacs--import-functions-from "treemacs-visuals"
+(treemacs-import-functions-from "treemacs-visuals"
   treemacs-pulse-on-success
   treemacs--tear-down-icon-highlight
   treemacs--forget-previously-follow-tag-btn
   treemacs--forget-last-highlight)
 
-(treemacs--import-functions-from "treemacs-async"
+(treemacs-import-functions-from "treemacs-async"
   treemacs--git-status-process-function
   treemacs--collapsed-dirs-process)
 
-(treemacs--import-functions-from "treemacs-structure"
+(treemacs-import-functions-from "treemacs-structure"
   treemacs-on-collapse
   treemacs-get-from-shadow-index
   treemacs-get-position-of
@@ -119,8 +119,8 @@ longer be contigious.")
   "The directory treemacs.el is stored in.")
 
 (defvar treemacs--no-messages nil
-  "When set to t `treemacs--log' will produce no output.
-Not used directly, but as part of `treemacs--without-messages'.")
+  "When set to t `treemacs-log' will produce no output.
+Not used directly, but as part of `treemacs-without-messages'.")
 
 (defvar-local treemacs--width-is-locked t
   "Keeps track of whether the width of the treemacs window is locked.")
@@ -328,7 +328,7 @@ necessary since interacting with magit can cause file delete events for files
 being edited to trigger."
   (unless no-buffer-delete (treemacs--kill-buffers-after-deletion path t))
   (treemacs--stop-watching path t)
-  (treemacs--run-in-every-buffer
+  (treemacs-run-in-every-buffer
    (treemacs-on-collapse path t)))
 
 (defsubst treemacs--refresh-dir (path)
@@ -363,7 +363,7 @@ Simply collapses and re-expands the button (if it has not been closed)."
         (when buff-file
           (setq buff-file (f-long buff-file))
           (when (treemacs--is-path-in-dir? buff-file old-path)
-            (treemacs--without-following
+            (treemacs-without-following
              (with-selected-window window
                (kill-buffer win-buff)
                (let ((new-file (s-replace old-path new-path buff-file)))
@@ -426,7 +426,7 @@ buffer."
   (treemacs--forget-previously-follow-tag-btn)
   (treemacs--stop-filewatch-for-current-buffer)
   (treemacs--cancel-refresh-timer)
-  (treemacs--with-writable-buffer
+  (treemacs-with-writable-buffer
    (delete-region (point-min) (point-max))
    (treemacs--insert-header root)
    (treemacs--create-branch root 0
@@ -495,7 +495,7 @@ GIT-INFO is passed through from the previous branch build."
 (defun treemacs--reopen-at (path git-info)
   "Reopen dirs below PATH.
 GIT-INFO is passed through from the previous branch build."
-  (treemacs--without-messages
+  (treemacs-without-messages
    (dolist (it (-some->>
                 path
                 (treemacs-get-from-shadow-index)
@@ -536,16 +536,16 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
       (setq location (read-directory-name "Create in: " curr-path))
       (when (not (f-directory? location))
         (cl-return-from body
-          (treemacs--log "%s is not a directory."
+          (treemacs-log "%s is not a directory."
                          (propertize location 'face 'font-lock-string-face))))
       (setq name (read-string prompt))
       (let ((new-file (f-join location name)))
         (when (f-exists? new-file)
           (cl-return-from body
-            (treemacs--log "%s already exists."
+            (treemacs-log "%s already exists."
                            (propertize  'face 'font-lock-string-face))))
         (treemacs--without-filewatch (funcall creation-func new-file))
-        (treemacs--without-messages (treemacs-refresh))
+        (treemacs-without-messages (treemacs-refresh))
         (treemacs--do-follow (f-long new-file))
         (recenter)
         (treemacs-pulse-on-success)))))
@@ -596,7 +596,7 @@ a refresh."
 (defun treemacs--on-window-config-change ()
   "Collects all tasks that need to run on a window config change."
   (-when-let (w (treemacs--is-visible?))
-    (treemacs--without-following
+    (treemacs-without-following
      (with-selected-window w
        ;; apparently keeping the hook around can lead to a feeback loop together with helms
        ;; auto-resize mode as seen in https://github.com/Alexander-Miller/treemacs/issues/76
@@ -756,7 +756,7 @@ Specifically extracted with the buffer to refresh being supplied so that
 filewatch mode can refresh multiple buffers at once."
   (with-current-buffer buffer
     (-let [root (treemacs--current-root)]
-      (treemacs--save-position
+      (treemacs-save-position
        (progn
          (treemacs--cancel-refresh-timer)
          (run-hook-with-args
@@ -768,7 +768,7 @@ filewatch mode can refresh multiple buffers at once."
         'treemacs-post-refresh-hook
         root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
        (unless treemacs-silent-refresh
-         (treemacs--log "Refresh complete."))))))
+         (treemacs-log "Refresh complete."))))))
 
 (provide 'treemacs-impl)
 

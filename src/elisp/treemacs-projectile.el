@@ -39,7 +39,7 @@ the project from among `projectile-known-projects'."
     (treemacs--init (completing-read "Project: " projectile-known-projects)))
    ((projectile-project-p)
     (treemacs--init (projectile-project-root)))
-   (t (treemacs--log "You're not in a project."))))
+   (t (treemacs-log "You're not in a project."))))
 
 ;;;###autoload
 (defun treemacs-projectile-toggle ()

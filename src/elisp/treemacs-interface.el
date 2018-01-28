@@ -36,7 +36,7 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
-(treemacs--import-functions-from "treemacs"
+(treemacs-import-functions-from "treemacs"
   treemacs-refresh
   treemacs-toggle)
 
@@ -127,8 +127,8 @@ Do nothing for other node types."
          (treemacs--reroot-down (treemacs--current-root) new-root)
          (treemacs--build-tree new-root))]
       [_
-       (treemacs--log "Button in current line is not a directory.")])
-    (treemacs--log "There is no directory to move into here.")))
+       (treemacs-log "Button in current line is not a directory.")])
+    (treemacs-log "There is no directory to move into here.")))
 
 (defun treemacs-visit-node-vertical-split (&optional arg)
   "Open current file or tag by vertically splitting `next-window'.
@@ -136,8 +136,8 @@ Stay in current window with a prefix argument ARG."
   (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
-   :file-action (find-file (treemacs--safe-button-get btn :path))
-   :dir-action (dired (treemacs--safe-button-get btn :path))
+   :file-action (find-file (treemacs-safe-button-get btn :path))
+   :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -148,8 +148,8 @@ Stay in current window with a prefix argument ARG."
   (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
-   :file-action (find-file (treemacs--safe-button-get btn :path))
-   :dir-action (dired (treemacs--safe-button-get btn :path))
+   :file-action (find-file (treemacs-safe-button-get btn :path))
+   :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -159,8 +159,8 @@ Stay in current window with a prefix argument ARG."
 Stay in current window with a prefix argument ARG."
   (interactive "P")
   (treemacs--execute-button-action
-   :file-action (find-file (treemacs--safe-button-get btn :path))
-   :dir-action (dired (treemacs--safe-button-get btn :path))
+   :file-action (find-file (treemacs-safe-button-get btn :path))
+   :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :ensure-window-split t
@@ -172,8 +172,8 @@ Stay in current window with a prefix argument ARG."
   (interactive "P")
   (treemacs--execute-button-action
    :window (aw-select "Select window")
-   :file-action (find-file (treemacs--safe-button-get btn :path))
-   :dir-action (dired (treemacs--safe-button-get btn :path))
+   :file-action (find-file (treemacs-safe-button-get btn :path))
+   :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :ensure-window-split t
@@ -186,8 +186,8 @@ Stay in current window with a prefix argument ARG."
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
    :window (aw-select "Select window")
-   :file-action (find-file (treemacs--safe-button-get btn :path))
-   :dir-action (dired (treemacs--safe-button-get btn :path))
+   :file-action (find-file (treemacs-safe-button-get btn :path))
+   :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -199,8 +199,8 @@ Stay in current window with a prefix argument ARG."
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
    :window (aw-select "Select window")
-   :file-action (find-file (treemacs--safe-button-get btn :path))
-   :dir-action (dired (treemacs--safe-button-get btn :path))
+   :file-action (find-file (treemacs-safe-button-get btn :path))
+   :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -264,7 +264,7 @@ A delete action must always be confirmed. Directories are deleted recursively."
   (interactive)
   (-if-let (btn (treemacs-current-button))
       (if (not (memq (button-get btn :state) '(file-node-open file-node-closed dir-node-open dir-node-closed)))
-          (treemacs--log "Only files and directories can be deleted.")
+          (treemacs-log "Only files and directories can be deleted.")
         (let* ((path      (button-get btn :path))
                (file-name (f-filename path)))
           (when
@@ -278,10 +278,10 @@ A delete action must always be confirmed. Directories are deleted recursively."
                   (treemacs--without-filewatch (f-delete path t))
                   t))
                (t (progn
-                    (treemacs--log "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
+                    (treemacs-log "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
                     nil)))
             (treemacs--on-file-deletion path)
-            (treemacs--without-messages (treemacs-refresh)))))
+            (treemacs-without-messages (treemacs-refresh)))))
     (treemacs-pulse-on-failure "Nothing to delete here."))
   (treemacs--evade-image))
 
@@ -324,7 +324,7 @@ likewise be updated."
              (propertize new-name 'face font-lock-string-face))))
         (treemacs--without-filewatch (rename-file old-path new-path))
         (treemacs--replace-recentf-entry old-path new-path)
-        (treemacs--run-in-every-buffer (treemacs--on-rename old-path new-path))
+        (treemacs-run-in-every-buffer (treemacs--on-rename old-path new-path))
         (treemacs--reload-buffers-after-rename old-path new-path)
         (-let [treemacs-silent-refresh t] (treemacs-refresh));; TODO refresh all
         (treemacs--goto-button-at new-path)
@@ -348,7 +348,7 @@ itself, using the root directory when point is on the header line."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
   (-each (-map #'cdr treemacs--buffer-access) #'treemacs--do-refresh)
-  (treemacs--log (concat "Dotfiles will now be "
+  (treemacs-log (concat "Dotfiles will now be "
                          (if treemacs-show-hidden-files
                              "displayed." "hidden."))))
 
@@ -357,7 +357,7 @@ itself, using the root directory when point is on the header line."
 See also `treemacs-width.'"
   (interactive)
   (setq treemacs--width-is-locked (not treemacs--width-is-locked))
-  (treemacs--log "Window width has been %s."
+  (treemacs-log "Window width has been %s."
                  (propertize (if treemacs--width-is-locked "locked" "unlocked")
                              'face 'font-lock-string-face)))
 
@@ -384,7 +384,7 @@ given and the current buffer is not editing a file."
   (interactive)
   (when (and path (f-exists? path))
     (save-selected-window
-      (treemacs--without-following
+      (treemacs-without-following
        (let* ((visibility (treemacs--current-visibility))
               (path       (f-long path))
               (is-dir?    (f-directory? path)))
@@ -450,7 +450,7 @@ generated."
             (treemacs--do-follow-tag index treemacs-window buffer-file))
         (error (setq msg (format "Encountered error while following tag at point: %s" e)))))
     (when msg
-      (treemacs--log msg))))
+      (treemacs-log msg))))
 
 (defun treemacs-yank-path-at-point ()
   "Copy the absolute path of the node at point."
@@ -463,7 +463,7 @@ generated."
   "Copy the absolute path of the current treemacs root."
   (interactive)
   (--if-let (-> default-directory (f-full) (kill-new))
-      (treemacs--log "Yanked root: %s" (propertize it 'face 'font-lock-string-face))
+      (treemacs-log "Yanked root: %s" (propertize it 'face 'font-lock-string-face))
     (treemacs-pulse-on-failure "Failed to yank root")))
 
 (defun treemacs-delete-other-windows ()
@@ -508,8 +508,8 @@ without the need to call `treemacs-resort' with a prefix arg."
   (interactive)
   (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
           (treemacs-sorting sort-method))
-    (treemacs--without-messages (treemacs-refresh))
-    (treemacs--log "Temporarily resorted everything with sort method '%s.'"
+    (treemacs-without-messages (treemacs-refresh))
+    (treemacs-log "Temporarily resorted everything with sort method '%s.'"
                    (propertize sort-name 'face 'font-lock-type-face))))
 
 (defun treemacs-temp-resort-current-dir (&optional sort-method)
@@ -526,14 +526,14 @@ without the need to call `treemacs-resort' with a prefix arg."
              (-pcase (button-get btn :state)
                [`dir-node-closed
                 (treemacs--expand-dir-node btn)
-                (treemacs--log "Resorted %s with sort method '%s'."
+                (treemacs-log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                                (propertize sort-name 'face 'font-lock-type-face))]
                [`dir-node-open
                 (treemacs--collapse-dir-node btn nil)
                 (goto-char (button-start btn))
                 (treemacs--expand-dir-node btn)
-                (treemacs--log "Resorted %s with sort method '%s'."
+                (treemacs-log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                                (propertize sort-name 'face 'font-lock-type-face))]
                [(or `file-node-open `file-node-closed `tag-node-open `tag-node-closed `tag-node)
@@ -550,12 +550,12 @@ without the need to call `treemacs-resort' with a prefix arg."
                         (treemacs--expand-dir-node parent)
                         (set-window-point (selected-window) window-point)
                         (with-no-warnings (goto-line line))
-                        (treemacs--log "Resorted %s with sort method '%s'."
+                        (treemacs-log "Resorted %s with sort method '%s'."
                                        (propertize (treemacs--get-label-of parent) 'face 'font-lock-string-face)
                                        (propertize sort-name 'face 'font-lock-type-face)))
                     ;; a top level file's containing dir is root
-                    (treemacs--without-messages (treemacs-refresh))
-                    (treemacs--log "Resorted root directory with sort method '%s'."
+                    (treemacs-without-messages (treemacs-refresh))
+                    (treemacs-log "Resorted root directory with sort method '%s'."
                                    (propertize sort-name 'face 'font-lock-type-face))))]))))
 
 (defun treemacs-resort (&optional arg)
@@ -582,8 +582,8 @@ Instead of calling this with a prefix arg you can also direcrly call
     [_
      (-let (((sort-name . sort-value) (treemacs--sort-value-selection)))
        (setq treemacs-sorting sort-value)
-       (treemacs--without-messages (treemacs-refresh))
-       (treemacs--log "Sorting method changed to '%s'."
+       (treemacs-without-messages (treemacs-refresh))
+       (treemacs-log "Sorting method changed to '%s'."
                       (propertize sort-name 'face 'font-lock-type-face)))])
   (treemacs--evade-image))
 
@@ -607,7 +607,7 @@ treemacs node is pointing to a valid buffer position."
              `((filename . ,(buffer-file-name tag-buffer))
                (position . ,tag-pos))
              nil)
-          (treemacs--log "Tag info can not be saved because it is not pointing to a live buffer.")))]
+          (treemacs-log "Tag info can not be saved because it is not pointing to a live buffer.")))]
      [(or `tag-node-open `tag-node-closed)
       (treemacs-pulse-on-failure "There is nothing to bookmark here.")])))
 

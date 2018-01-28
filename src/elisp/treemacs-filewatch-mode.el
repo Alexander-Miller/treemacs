@@ -148,7 +148,7 @@ file from caches if it has been deleted instead of waiting for file processing."
       (-let [changed-dir (cl-caddr event)]
         (unless (f-directory? changed-dir)
           (setq changed-dir (treemacs--parent changed-dir)))
-        (treemacs--run-in-every-buffer
+        (treemacs-run-in-every-buffer
          (--when-let (treemacs-get-from-shadow-index changed-dir)
            (setf (treemacs-shadow-node->refresh-flag it) t))
          (unless treemacs--refresh-timer
@@ -160,9 +160,9 @@ file from caches if it has been deleted instead of waiting for file processing."
   "Process the file events that have been collected.
 Stop watching deleted dirs and refresh all the buffers that need updating."
   (setq treemacs--refresh-timer nil)
-  (treemacs--without-following
-   (treemacs--run-in-every-buffer
-    (treemacs--save-position
+  (treemacs-without-following
+   (treemacs-run-in-every-buffer
+    (treemacs-save-position
      (treemacs--recursive-refresh)
      (hl-line-highlight)))))
 
@@ -191,7 +191,7 @@ Clear the filewatch and collapsed filewatch indices.
 Reset the refresh flags of every buffer.
 
 Called when filewatch mode is disabled."
-  (treemacs--run-in-every-buffer
+  (treemacs-run-in-every-buffer
    (ht-each
     (lambda (_ node) (treemacs-shadow-node->reset-refresh-flag node))
     treemacs-shadow-index))

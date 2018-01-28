@@ -129,7 +129,7 @@ argument."
         (-when-let (btn (treemacs-current-button))
           (let* ((pos (- (button-start btn) 2))
                  (img-selected (get-text-property pos 'img-selected)))
-            (treemacs--with-writable-buffer
+            (treemacs-with-writable-buffer
              (when treemacs--last-highlight
                (let* ((last-pos (- (button-start treemacs--last-highlight) 2))
                       (img-unselected (get-text-property last-pos 'img-unselected)))
@@ -138,7 +138,7 @@ argument."
                (put-text-property pos (1+ pos) 'display img-selected)
                (setq treemacs--last-highlight btn)))))
       (error
-       (treemacs--log "Error on highlight, this shouldn't happen: %s" e)))))
+       (treemacs-log "Error on highlight, this shouldn't happen: %s" e)))))
 
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define string VAR with its display being the image created from FILE-NAME.
@@ -252,13 +252,13 @@ be assigned which treemacs icon, for exmaple
   (dolist (extension extensions)
     (-when-let* ((mode (cdr (--first (s-matches? (car it) extension) auto-mode-alist)))
                  (icon (cdr (assq mode mode-icon-alist))))
-      (treemacs--log "Map %s to %s" extension (symbol-name icon))
+      (treemacs-log "Map %s to %s" extension (symbol-name icon))
       (ht-set! treemacs-icons-hash (substring extension 1) (symbol-value icon)))))
 
 (defun treemacs--pulse-png-advice (&rest _)
   "Make sure icons' background are pusled alongside the entire line."
   (when (eq 'treemacs-mode major-mode)
-    (treemacs--with-writable-buffer
+    (treemacs-with-writable-buffer
      (-when-let- [btn (treemacs-current-button)]
        (-let*- [(start (- (button-start btn) 2) )
                 (end (1+ start))
@@ -281,7 +281,7 @@ be assigned which treemacs icon, for exmaple
 Optionally issue a log statment with LOG-ARGS."
   (declare (indent 1))
   (when log-args
-    (treemacs--log (apply #'format log-args)))
+    (treemacs-log (apply #'format log-args)))
   (when treemacs-pulse-on-success
     (treemacs--do-pulse 'treemacs-on-success-pulse-face)))
 
@@ -290,7 +290,7 @@ Optionally issue a log statment with LOG-ARGS."
 Optionally issue a log statment with LOG-ARGS."
   (declare (indent 1))
   (when log-args
-    (treemacs--log (apply #'format log-args)))
+    (treemacs-log (apply #'format log-args)))
   (when treemacs-pulse-on-failure
     (treemacs--do-pulse 'treemacs-on-failure-pulse-face)))
 

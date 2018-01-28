@@ -180,7 +180,7 @@ BUFFER-FILE: Path"
          (file-states '(file-node-open file-node-closed))
          (btn))
     (when tag-path
-      (treemacs--without-following
+      (treemacs-without-following
        (with-selected-window treemacs-window
          (setq btn (treemacs-current-button))
          ;; current button might not be there when point is on the header
@@ -227,7 +227,7 @@ BUFFER-FILE: Path"
          (buffer (current-buffer))
          (buffer-file (when buffer (buffer-file-name)))
          (root (when treemacs-window
-                 (treemacs--without-following
+                 (treemacs-without-following
                   (with-selected-window treemacs-window (treemacs--current-root))))))
     (when (and treemacs-window
                buffer-file
@@ -235,7 +235,7 @@ BUFFER-FILE: Path"
       (condition-case e
           (-when-let (index (treemacs--flatten&sort-imenu-index))
             (treemacs--do-follow-tag index treemacs-window buffer-file))
-        (error (treemacs--log "Encountered error while following tag at point: %s" e))))))
+        (error (treemacs-log "Encountered error while following tag at point: %s" e))))))
 
 (defsubst treemacs--setup-tag-follow-mode ()
   "Setup tag follow mode."

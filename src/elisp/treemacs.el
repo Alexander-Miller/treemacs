@@ -121,7 +121,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
   (interactive)
   (-if-let (b (treemacs-buffer-exists?))
       (treemacs--do-refresh b)
-    (treemacs--log "There is nothing to refresh.")))
+    (treemacs-log "There is nothing to refresh.")))
 
 (provide 'treemacs)
 

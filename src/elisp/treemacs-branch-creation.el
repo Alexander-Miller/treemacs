@@ -32,7 +32,7 @@
 (require 'treemacs-structure)
 (eval-and-compile (require 'treemacs-macros))
 
-(treemacs--import-functions-from "treemacs-filewatch-mode"
+(treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
   treemacs--stop-watching)
 
@@ -149,7 +149,7 @@ Gives the button a NEW-STATE, and, optionally, a NEW-ICON. Performs OPEN-ACTION
 and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
 and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
-  `(treemacs--with-writable-buffer
+  `(treemacs-with-writable-buffer
     (button-put ,button :state ,new-state)
     (beginning-of-line)
     ,@(when new-icon
@@ -298,7 +298,7 @@ set to PARENT."
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
   "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
-  `(treemacs--with-writable-buffer
+  `(treemacs-with-writable-buffer
     ,@(when new-icon
         `((treemacs--button-symbol-switch ,new-icon)))
     (end-of-line)

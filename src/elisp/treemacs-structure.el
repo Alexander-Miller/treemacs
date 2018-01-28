@@ -27,7 +27,7 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
-(treemacs--import-functions-from "treemacs"
+(treemacs-import-functions-from "treemacs"
   treemacs-refresh)
 
 (defvar-local treemacs-shadow-index nil)
