@@ -24,6 +24,7 @@
 (require 'el-mock)
 (require 'subr-x)
 (require 'f)
+(require 'ht)
 
 ;; `treemacs--maybe-filter-dotfiles'
 (progn
@@ -601,6 +602,227 @@
         (treemacs--stop-watching path t)
         (should-not (gethash path treemacs--filewatch-index))
         (should-not (gethash path treemacs--collapsed-filewatch-index))))))
+
+;; `treemacs-on-expand'
+(progn
+  (ert-deftest on-expand::fails-on-nil-arguments ()
+    (with-temp-buffer
+      (setq treemacs-shadow-index (ht))
+      (should-error (treemacs-on-expand "A" 1 nil))
+      (should-error (treemacs-on-expand "A" nil "B"))
+      (should-error (treemacs-on-expand nil 1 "B"))))
+
+  (ert-deftest on-expand::correctly-expands-new-node ()
+    (with-temp-buffer
+      (-let*- [(default-directory "/A")
+               (treemacs-shadow-index (ht))
+               (root (progn
+                       (ht-set! treemacs-shadow-index default-directory
+                                (make-treemacs-shadow-node :key default-directory))
+                       (treemacs-get-from-shadow-index default-directory)))]
+        (treemacs-on-expand "/A/B" 22 "/A")
+        (-let [node (treemacs-get-from-shadow-index "/A/B")]
+          (should (= 2 (ht-size treemacs-shadow-index)))
+          (should (equal (list node) (treemacs-shadow-node->children root)))
+          (should (= 22 (treemacs-shadow-node->position node)))
+          (should (equal root (treemacs-shadow-node->parent node)))))))
+
+  (ert-deftest on-expand::correctly-expands-previously-open-node ()
+    (with-temp-buffer
+      (-let*- [(default-directory "/A")
+               (treemacs-shadow-index (ht))
+               (root (progn
+                       (ht-set! treemacs-shadow-index default-directory
+                                (make-treemacs-shadow-node :key default-directory))
+                       (treemacs-get-from-shadow-index default-directory)))
+               (node (progn
+                       (ht-set! treemacs-shadow-index "/A/B"
+                                (make-treemacs-shadow-node :key "/A/B" :closed t))
+                       (treemacs-get-from-shadow-index "/A/B")))]
+        (setf (treemacs-shadow-node->parent node) root)
+        (setf (treemacs-shadow-node->children root) (list node))
+        (treemacs-on-expand "/A/B" 22 "/A")
+        (-let [node (treemacs-get-from-shadow-index "/A/B")]
+          (should (= 2 (ht-size treemacs-shadow-index)))
+          (should (equal (list node) (treemacs-shadow-node->children root)))
+          (should (= 22 (treemacs-shadow-node->position node)))
+          (should (equal root (treemacs-shadow-node->parent node)))
+          (should-not (treemacs-shadow-node->closed node)))))))
+
+;; `treemacs-on-collapse'
+(progn
+  (ert-deftest on-collapse::does-nothing-on-nil-argument ()
+    (with-temp-buffer
+      (setq treemacs-shadow-index (ht))
+      (should-not (treemacs-on-collapse nil))
+      (should (= 0 (ht-size treemacs-shadow-index)))))
+
+  (ert-deftest on-collapse::fully-remove-node-without-children ()
+    (with-temp-buffer
+      (-let*- [(default-directory "/A")
+               (treemacs-shadow-index (ht))
+               (root (progn
+                       (ht-set! treemacs-shadow-index default-directory
+                                (make-treemacs-shadow-node :key default-directory))
+                       (treemacs-get-from-shadow-index default-directory)))
+               (node (progn
+                       (ht-set! treemacs-shadow-index "/A/B"
+                                (make-treemacs-shadow-node :key "/A/B"))
+                       (treemacs-get-from-shadow-index "/A/B")))]
+        (setf (treemacs-shadow-node->parent node) root)
+        (setf (treemacs-shadow-node->children root) (list node))
+        (treemacs-on-collapse "/A/B")
+        (should (= 1 (ht-size treemacs-shadow-index)))
+        (should-not (ht-get treemacs-shadow-index "/A/B"))
+        (should-not (treemacs-shadow-node->children root)))))
+
+  (ert-deftest on-collapse::mark-node-with-children-as-closed ()
+    (with-temp-buffer
+      (-let*- [(default-directory "/A")
+               (treemacs-shadow-index (ht))
+               (root (progn
+                       (ht-set! treemacs-shadow-index default-directory
+                                (make-treemacs-shadow-node :key default-directory))
+                       (treemacs-get-from-shadow-index default-directory)))
+               (node1 (progn
+                        (ht-set! treemacs-shadow-index "/A/B"
+                                 (make-treemacs-shadow-node :key "/A/B"))
+                        (treemacs-get-from-shadow-index "/A/B")))
+               (node2 (progn
+                        (ht-set! treemacs-shadow-index "/A/B/C"
+                                 (make-treemacs-shadow-node :key "/A/B/C"))
+                        (treemacs-get-from-shadow-index "/A/B/C")))]
+        (setf (treemacs-shadow-node->parent node1) root
+              (treemacs-shadow-node->parent node2) node1
+              (treemacs-shadow-node->children root) (list node1)
+              (treemacs-shadow-node->children node1) (list node2))
+        (treemacs-on-collapse "/A/B")
+        (should (= 3 (ht-size treemacs-shadow-index)))
+        (should (ht-get treemacs-shadow-index "/A/B"))
+        (should (ht-get treemacs-shadow-index "/A/B/C"))
+        (should (treemacs-shadow-node->closed node1))
+        (should-not (treemacs-shadow-node->closed node2))
+        (should (equal (list node1) (treemacs-shadow-node->children root)))
+        (should (equal (list node2) (treemacs-shadow-node->children node1)))
+        (should (equal root (treemacs-shadow-node->parent node1)))
+        (should (equal node1 (treemacs-shadow-node->parent node2))))))
+
+  (ert-deftest on-collapse::reset-subtrees-refresh-and-pos-on-collapse ()
+    (with-temp-buffer
+      (-let*- [(default-directory "/A")
+               (treemacs-shadow-index (ht))
+               (root (progn
+                       (ht-set! treemacs-shadow-index default-directory
+                                (make-treemacs-shadow-node :key default-directory))
+                       (treemacs-get-from-shadow-index default-directory)))
+               (node1 (progn
+                        (ht-set! treemacs-shadow-index "/A/B"
+                                 (make-treemacs-shadow-node :key "/A/B" :position 11 :refresh-flag t))
+                        (treemacs-get-from-shadow-index "/A/B")))
+               (node2 (progn
+                        (ht-set! treemacs-shadow-index "/A/B/C"
+                                 (make-treemacs-shadow-node :key "/A/B/C" :position 12 :refresh-flag t))
+                        (treemacs-get-from-shadow-index "/A/B/C")))]
+        (setf (treemacs-shadow-node->parent node1) root
+              (treemacs-shadow-node->parent node2) node1
+              (treemacs-shadow-node->children root) (list node1)
+              (treemacs-shadow-node->children node1) (list node2))
+        (treemacs-on-collapse "/A/B")
+        (should (= 3 (ht-size treemacs-shadow-index)))
+        (should (ht-get treemacs-shadow-index "/A/B"))
+        (should (ht-get treemacs-shadow-index "/A/B/C"))
+        (should-not (treemacs-shadow-node->refresh-flag node1))
+        (should-not (treemacs-shadow-node->refresh-flag node2))
+        (should-not (treemacs-shadow-node->position node1))
+        (should-not (treemacs-shadow-node->position node2)))))
+
+  (ert-deftest on-collapse::remove-subtree-on-purge ()
+    (with-temp-buffer
+      (-let*- [(default-directory "/A")
+               (treemacs-shadow-index (ht))
+               (root (progn
+                       (ht-set! treemacs-shadow-index default-directory
+                                (make-treemacs-shadow-node :key default-directory))
+                       (treemacs-get-from-shadow-index default-directory)))
+               (node1 (progn
+                        (ht-set! treemacs-shadow-index "/A/B"
+                                 (make-treemacs-shadow-node :key "/A/B" :position 11))
+                        (treemacs-get-from-shadow-index "/A/B")))
+               (node2 (progn
+                        (ht-set! treemacs-shadow-index "/A/B/C"
+                                 (make-treemacs-shadow-node :key "/A/B/C" :position 12))
+                        (treemacs-get-from-shadow-index "/A/B/C")))]
+        (setf (treemacs-shadow-node->parent node1) root
+              (treemacs-shadow-node->parent node2) node1
+              (treemacs-shadow-node->children root) (list node1)
+              (treemacs-shadow-node->children node1) (list node2))
+        (treemacs-on-collapse "/A/B" t)
+        (should (= 1 (ht-size treemacs-shadow-index)))
+        (should-not (ht-get treemacs-shadow-index "/A/B"))
+        (should-not (ht-get treemacs-shadow-index "/A/B/C"))
+        (should-not (treemacs-shadow-node->children root))))))
+
+;; `treemacs-on-rename'
+(progn
+  (ert-deftest on-rename::does-nothing-on-empty-index ()
+    (with-temp-buffer
+      (-let [treemacs-shadow-index (ht)]
+        (treemacs--on-rename "OLD" "NEW")
+        (should (ht-empty? treemacs-shadow-index)))))
+
+  (ert-deftest on-rename::does-nothing-when-old-key-not-in-index ()
+    (with-temp-buffer
+      (-let [treemacs-shadow-index (ht ("A" (make-treemacs-shadow-node :key "A")))]
+        (treemacs--on-rename "OLD" "NEW")
+        (should (= 1 (ht-size treemacs-shadow-index)))
+        (should (ht-get treemacs-shadow-index "A")))))
+
+  (ert-deftest on-rename::correctly-renames-full-subtree ()
+    (with-temp-buffer
+      (-let*- [(default-directory "/A")
+               (root (make-treemacs-shadow-node :key "/A"))
+               (node1 (make-treemacs-shadow-node :key "/A/OLD"))
+               (node2 (make-treemacs-shadow-node :key "/A/OLD/X"))
+               (node3 (make-treemacs-shadow-node :key "/A/OLD/X/Y"))
+               (node4 (make-treemacs-shadow-node :key (list "Classes" "/A/OLD/X/Y")))
+               (node5 (make-treemacs-shadow-node :key (list "Class Foo" "/A/OLD/X/Y" "Classes")))
+               (node6 (make-treemacs-shadow-node :key (list "void bar()" "/A/OLD/X/Y" "Classes" "Class Foo")))
+               (nodex (make-treemacs-shadow-node :key "/A/B"))
+               (nodey (make-treemacs-shadow-node :key "/A/B/C"))]
+        (setf (treemacs-shadow-node->parent nodex) root
+              (treemacs-shadow-node->parent nodey) root
+              (treemacs-shadow-node->parent node1) root
+              (treemacs-shadow-node->parent node2) node1
+              (treemacs-shadow-node->parent node3) node2
+              (treemacs-shadow-node->parent node4) node3
+              (treemacs-shadow-node->parent node5) node4
+              (treemacs-shadow-node->parent node6) node5
+              (treemacs-shadow-node->children root) (list node1 nodex nodey)
+              (treemacs-shadow-node->children node1) (list node2)
+              (treemacs-shadow-node->children node2) (list node3)
+              (treemacs-shadow-node->children node3) (list node4)
+              (treemacs-shadow-node->children node4) (list node5)
+              (treemacs-shadow-node->children node5) (list node6))
+        (setq treemacs-shadow-index
+              (ht ((treemacs-shadow-node->key root) root)
+                  ((treemacs-shadow-node->key nodex) nodex)
+                  ((treemacs-shadow-node->key nodey) nodey)
+                  ((treemacs-shadow-node->key node1) node1)
+                  ((treemacs-shadow-node->key node2) node2)
+                  ((treemacs-shadow-node->key node3) node3)
+                  ((treemacs-shadow-node->key node4) node4)
+                  ((treemacs-shadow-node->key node5) node5)
+                  ((treemacs-shadow-node->key node6) node6)))
+        (treemacs--on-rename "/A/OLD" "/A/NEW")
+        (print treemacs-shadow-index)
+        (dolist (key '("/A/OLD" "/A/OLD/X" "/A/OLD/X/Y" ("Classes" "/A/OLD/X/Y")
+                       ("Class Foo" "/A/OLD/X/Y" "Classes") ("void bar()" "/A/OLD/X/Y" "Classes" "Class Foo")))
+          (should-not (ht-get treemacs-shadow-index key)))
+        (dolist (key '("/A/NEW"   "/A/NEW/X" "/A/NEW/X/Y" ("Classes" "/A/NEW/X/Y")
+                       ("Class Foo" "/A/NEW/X/Y" "Classes") ("void bar()" "/A/NEW/X/Y" "Classes" "Class Foo")))
+          (should (ht-get treemacs-shadow-index key)))
+        (should (= 9 (ht-size treemacs-shadow-index)))))))
+
 
 ;; Thorough Sys Test
 (ert-deftest treemacs::sys-test ()

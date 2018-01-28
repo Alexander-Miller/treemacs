@@ -166,11 +166,17 @@ NODE and its children from the index."
 
 (defun treemacs--on-rename (old-name new-name)
   "Routine to run after a file was renamed from OLD-NAME to NEW-NAME."
-  (-let [node (treemacs-get-from-shadow-index old-name)]
+  (-when-let- [node (treemacs-get-from-shadow-index old-name)]
     (treemacs--do-for-all-child-nodes node
       (lambda (it)
         (-let*- [(old-key (treemacs-shadow-node->key it))
-                 (new-key (s-replace old-name new-name old-key))]
+                 (new-key nil)]
+          ;; keys of tags are tag paths
+          (setq new-key
+                (if (stringp old-key)
+                    (s-replace old-name new-name old-key)
+                  (-let [(tag file . path) old-key]
+                    (nconc (list tag (s-replace old-name new-name file)) path))))
           (ht-remove! treemacs-shadow-index old-key)
           (ht-set! treemacs-shadow-index new-key it)
           (setf (treemacs-shadow-node->key it) new-key))))))
