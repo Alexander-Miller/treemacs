@@ -171,19 +171,19 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
 Will stop file watch on every path watched by this buffer."
   (let ((buffer (treemacs-buffer-exists?))
         (to-remove))
-    (maphash
+    (ht-each
      (lambda (watched-path watch-info)
        (-let [(watching-buffers . watch-descr) watch-info]
          (when (memq buffer watching-buffers)
            (if (= 1 (length watching-buffers))
                (progn
                  (file-notify-rm-watch watch-descr)
-                 (ht-remove! watched-path treemacs--collapsed-filewatch-index)
+                 (ht-remove! treemacs--collapsed-filewatch-index watched-path)
                  (push watched-path to-remove))
              (setcar watch-info (delq buffer watching-buffers))))))
      treemacs--filewatch-index)
     (dolist (it to-remove)
-      (ht-remove! it treemacs--filewatch-index))))
+      (ht-remove! treemacs--filewatch-index it))))
 
 (defun treemacs--stop-watching-all ()
   "Cancel any and all running file watch processes.
