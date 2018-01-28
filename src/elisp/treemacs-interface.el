@@ -324,9 +324,12 @@ likewise be updated."
              (propertize new-name 'face font-lock-string-face))))
         (treemacs--without-filewatch (rename-file old-path new-path))
         (treemacs--replace-recentf-entry old-path new-path)
-        (treemacs-run-in-every-buffer (treemacs--on-rename old-path new-path))
+        (-let [treemacs-silent-refresh t]
+          (treemacs-run-in-every-buffer
+           (treemacs--on-rename old-path new-path)
+           (when (treemacs--is-path-in-dir? new-path (treemacs--current-root))
+             (treemacs--do-refresh (current-buffer)))))
         (treemacs--reload-buffers-after-rename old-path new-path)
-        (-let [treemacs-silent-refresh t] (treemacs-refresh));; TODO refresh all
         (treemacs--goto-button-at new-path)
         (treemacs-pulse-on-success)
         (cl-return
