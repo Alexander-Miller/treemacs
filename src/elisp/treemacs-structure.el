@@ -133,7 +133,8 @@ already present node by setting its POS and marking at as no longer closed."
 (defsubst treemacs--on-collapse-of-node-with-children (node purge)
   "Collapse a NODE that has children below it.
 If PURGE is non-nil remove NODE's branch from the shadow tree.
-Otherwise mark NODE as closed and invalidate the position data of NODE's branch."
+Otherwise mark NODE as closed and invalidate the position and refresh data of
+NODE's branch."
   (if purge
       ;; almost same as if the node did not have children - throw out of index and parent,
       ;; but remove the children as well
@@ -141,16 +142,18 @@ Otherwise mark NODE as closed and invalidate the position data of NODE's branch.
         (setf (treemacs-shadow-node->children parent) (delete node (treemacs-shadow-node->children parent)))
         (treemacs--do-for-all-child-nodes node
           #'treemacs-shadow-node->remove-from-index))
-    ;; otherwise set the node to be closed and delete the lower tiers' position info
+    ;; otherwise set the node to be closed and reset lower tiers' pos and refresh info
     (setf (treemacs-shadow-node->closed node) t)
     (treemacs--do-for-all-child-nodes node
-      #'treemacs-shadow-node->invalidate-pos)))
+      (lambda (it)
+        (treemacs-shadow-node->invalidate-pos it)
+        (treemacs-shadow-node->reset-refresh-flag it)))))
 
 (defun treemacs-on-collapse (key &optional purge)
   "Routine to run when node at KEY is closed again or deleted.
-Will remove NODE's parent/child link and invalidate the position cache of NODE
-and all its children. When PURGE is non-nil will instead remove NODE and its
-children from the index."
+Will remove NODE's parent/child link and invalidate the position and refresh
+data of NODE and all its children. When PURGE is non-nil will instead remove
+NODE and its children from the index."
   ;; need to check for nil, since this code also runs on deletion of files or closed dirs
   ;; which were never part of the index
   (-when-let- [node (treemacs-get-from-shadow-index key)]
@@ -158,7 +161,7 @@ children from the index."
         ;; no children - just throw the node out of the index and its parent
         (-let [parent (treemacs-shadow-node->parent node)]
           (setf (treemacs-shadow-node->children parent) (delete node (treemacs-shadow-node->children parent)))
-          (ht-remove treemacs-shadow-index key))
+          (ht-remove! treemacs-shadow-index key))
       (treemacs--on-collapse-of-node-with-children node purge))))
 
 (defun treemacs--on-rename (old-name new-name)
@@ -228,5 +231,4 @@ instead."
 
 (provide 'treemacs-structure)
 
-;;; treemacs-impl.el ends here
 ;;; treemacs-structure.el ends here
