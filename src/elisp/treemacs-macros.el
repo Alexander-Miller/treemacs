@@ -231,7 +231,7 @@ it on the same line."
            (treemacs-without-messages (with-no-warnings (goto-line curr-line))))]
         [(or `tag-node-open `tag-node-closed `tag-node)
          ;; no correction needed, if the tag does not exist point is left at the next best node
-         (treemacs--goto-tag-button-at curr-tagpath curr-file)]
+         (treemacs--goto-tag-button-at curr-tagpath)]
         [(pred null)
          (with-no-warnings (goto-line 1))]
         [_ (treemacs-log "Refresh doesn't yet know how to deal with '%s'" curr-state)])

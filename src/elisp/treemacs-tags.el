@@ -349,20 +349,19 @@ exist."
           (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
         [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)]))))
 
-(cl-defun treemacs--goto-tag-button-at (tag-path file)
-  "Goto tag given by TAG-PATH for the tags of FILE.
+(cl-defun treemacs--goto-tag-button-at (tag-path)
+  "Goto tag given by TAG-PATH.
 Will return the found tag node, or nil if no such node exists (anymore). In this
 case point will be left at the next highest node available."
-  (let ((tag (car tag-path))
-        (path (cdr tag-path)))
+  (-let [(tag file . path) tag-path]
     (-when-let (file-node (treemacs--goto-button-at file))
       (when (eq 'file-node-closed (button-get file-node :state))
         (goto-char (button-start file-node))
         (treemacs--expand-tags-for-file file-node))
       (dolist (tag-path-item path)
         (-if-let (tag-path-node (--first
-                                (string= (treemacs--get-label-of it) tag-path-item)
-                                (treemacs--get-children-of file-node)))
+                                 (string= (treemacs--get-label-of it) tag-path-item)
+                                 (treemacs--get-children-of file-node)))
             (progn
               (setq file-node tag-path-node)
               (when (eq 'tag-node-closed (button-get file-node :state))
