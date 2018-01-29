@@ -148,6 +148,9 @@ file from caches if it has been deleted instead of waiting for file processing."
       (-let [changed-dir (cl-caddr event)]
         (unless (f-directory? changed-dir)
           (setq changed-dir (treemacs--parent changed-dir)))
+        (when (ht-get treemacs--collapsed-filewatch-index changed-dir)
+          (ht-remove! treemacs--collapsed-filewatch-index changed-dir)
+          (treemacs--stop-watching changed-dir))
         (treemacs-run-in-every-buffer
          (--when-let (treemacs-get-from-shadow-index changed-dir)
            (setf (treemacs-shadow-node->refresh-flag it) t))
