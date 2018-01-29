@@ -342,7 +342,7 @@ RECURSIVE: Bool"
                (treemacs--expand-dir-node
                 it :git-future git-future :recursive t)))))))))
 
-(defun treemacs--collapse-dir-node (btn recursive)
+(defun treemacs--collapse-dir-node (btn &optional recursive)
   "Close node given by BTN.
 Remove all open dir and tag entries under BTN when RECURSIVE."
   (treemacs--button-close

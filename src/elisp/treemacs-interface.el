@@ -533,7 +533,7 @@ without the need to call `treemacs-resort' with a prefix arg."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                                (propertize sort-name 'face 'font-lock-type-face))]
                [`dir-node-open
-                (treemacs--collapse-dir-node btn nil)
+                (treemacs--collapse-dir-node btn)
                 (goto-char (button-start btn))
                 (treemacs--expand-dir-node btn)
                 (treemacs-log "Resorted %s with sort method '%s'."
@@ -548,7 +548,7 @@ without the need to call `treemacs-resort' with a prefix arg."
                       (let ((line (line-number-at-pos))
                             (window-point (window-point)))
                         (goto-char (button-start parent))
-                        (treemacs--collapse-dir-node parent nil)
+                        (treemacs--collapse-dir-node parent)
                         (goto-char (button-start btn))
                         (treemacs--expand-dir-node parent)
                         (set-window-point (selected-window) window-point)
