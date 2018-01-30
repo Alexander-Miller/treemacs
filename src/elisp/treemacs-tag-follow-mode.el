@@ -214,6 +214,8 @@ BUFFER-FILE: Path"
          (let ((imenu-auto-rescan nil))
            ;; the target tag still has its position marker attached
            (setcar tag-path (car (car tag-path)))
+           ;; the tag path also needs its file
+           (setcdr tag-path (cons buffer-file (cdr tag-path)))
            (treemacs--goto-tag-button-at tag-path))
          (hl-line-highlight)
          (treemacs--evade-image)

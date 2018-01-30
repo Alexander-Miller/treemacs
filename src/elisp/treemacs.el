@@ -123,6 +123,82 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
       (treemacs--do-refresh b)
     (treemacs-log "There is nothing to refresh.")))
 
+;;;###autoload
+(defun treemacs-find-file ()
+  "Find and focus the current file in the treemacs window.
+Most likley to be useful when `treemacs-follow-mode' is not active.
+
+Will ask to change the treemacs root if the file to find is not under the
+root. If no treemacs buffer exists it will be created with the current file's
+containing directory as root. Will do nothing if the current buffer is not
+visiting a file."
+  (interactive)
+  (-let [path (buffer-file-name (current-buffer))]
+    (when (and path (f-exists? path))
+      (save-selected-window
+        (treemacs-without-following
+         (-let*- [(visibility (treemacs--current-visibility))
+                  (path       (f-long path))
+                  (is-dir?    (f-directory? path))]
+           (if (eq visibility 'none)
+               ;; finding a file without an existing treemacs is just an init
+               ;; nothing else to do here
+               (treemacs--init (if is-dir? path (f-dirname path)))
+             (-pcase visibility
+               [`exists  (treemacs-toggle)]
+               [`visible (treemacs--select-visible)]
+               [other    (error "Unkown treemacs buffer visibility '%s'" other)])
+             ;; find the file given whether is a directory and if it can be found below
+             ;; the current root or not
+             (-let [root (treemacs--current-root)]
+               (if (treemacs--is-path-in-dir? path root)
+                   (treemacs--do-follow path root)
+                 (when (or treemacs-change-root-without-asking
+                           (y-or-n-p "Change the treemacs root to find the file? "))
+                   (if is-dir?
+                       (treemacs--init path)
+                     (progn
+                       (treemacs--init (f-dirname path))
+                       (treemacs--goto-button-at path)
+                       (hl-line-highlight)))))))))))))
+
+;;;###autoload
+(defun treemacs-find-tag ()
+  "Find and move point to the tag at point in the treemacs view.
+Most likley to be useful when `treemacs-tag-follow-mode' is not active.
+
+Will ask to change the treemacs root if the file to find is not under the
+root. If no treemacs buffer exists it will be created with the current file's
+containing directory as root. Will do nothing if the current buffer is not
+visiting a file or Emacs cannot find any tags for the current file."
+  (interactive)
+  (cl-block body
+    (let* ((buffer (current-buffer))
+           (buffer-file (when buffer (buffer-file-name buffer)))
+           (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
+           (treemacs-window))
+      (unless buffer-file
+        (treemacs-log "Nothing to find - current buffer is not visiting a file.")
+        (cl-return-from body))
+      (unless index
+        (treemacs-log "Nothing to find - current buffer has no tags.")
+        (cl-return-from body))
+      (save-selected-window
+        (-pcase (treemacs--current-visibility)
+          [`none
+           (treemacs-toggle)]
+          [visibility
+           (if (eq 'exists visibility)
+               (treemacs--select-not-visible)
+             (treemacs--select-visible))
+           (unless (treemacs--is-path-in-dir? buffer-file (treemacs--current-root))
+             (if (y-or-n-p "Change the root to find current tag? ")
+                 (treemacs--init (f-dirname buffer-file))
+               (treemacs-log "Root not changed, tag not followed.")
+               (cl-return-from body)))])
+        (setq treemacs-window (selected-window)))
+      (treemacs--do-follow-tag index treemacs-window buffer-file))))
+
 (provide 'treemacs)
 
 ;;; treemacs.el ends here
