@@ -20,6 +20,7 @@
 ;;; Code:
 
 (require 'treemacs)
+(require 'filenotify)
 (require 'ert)
 (require 'el-mock)
 (require 'subr-x)
@@ -508,7 +509,7 @@
           (delete-file temp-file))))))
 
 ;; `treemacs--start-watching'
-(progn
+(when file-notify--library
   (ert-deftest start-watching::start-watching-unwatched-file ()
     (with-mock
      (stub file-notify-add-watch => 123456)
@@ -549,7 +550,7 @@
         (should (gethash path treemacs--collapsed-filewatch-index))))))
 
 ;; `treemacs--stop-watching'
-(progn
+(when file-notify--library
 
   (ert-deftest stop-watching::do-nothing-when-path-is-not-watched ()
     (let ((treemacs--filewatch-index (make-hash-table :test #'equal))
