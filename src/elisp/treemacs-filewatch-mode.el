@@ -238,6 +238,11 @@ turn off all existing file watch processes and outstanding refresh actions."
   (unless treemacs-filewatch-mode
     (treemacs--tear-down-filewatch-mode)))
 
+;; in case we don't have a file notification library (like on travis CI)
+(unless file-notify--library
+  (fset 'treemacs--start-watching (lambda (_x &optional _y) (ignore)))
+  (fset 'treemacs--stop-watching (lambda (_x &optional _y) (ignore))))
+
 (provide 'treemacs-filewatch-mode)
 
 ;;; treemacs-filewatch-mode.el ends here
