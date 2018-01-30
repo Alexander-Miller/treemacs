@@ -231,7 +231,7 @@ instead."
     (if (treemacs-shadow-node->refresh-flag root)
         (progn
           (treemacs--do-for-all-child-nodes root #'treemacs-shadow-node->reset-refresh-flag)
-          (treemacs-refresh (current-buffer)))
+          (treemacs--do-refresh (current-buffer)))
       (dolist (root-child (treemacs-shadow-node->children root))
         (treemacs--recursive-refresh-descent root-child)))))
 
