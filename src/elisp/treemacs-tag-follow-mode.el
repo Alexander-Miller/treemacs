@@ -220,7 +220,7 @@ BUFFER-FILE: Path"
          (hl-line-highlight)
          (treemacs--evade-image)
          (when treemacs-recenter-after-tag-follow
-           (recenter)))))))
+           (treemacs--maybe-recenter)))))))
 
 (defun treemacs--follow-tag-at-point ()
   "Follow the tag at point in the treemacs view."

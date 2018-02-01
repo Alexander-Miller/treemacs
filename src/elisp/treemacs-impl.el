@@ -770,6 +770,19 @@ filewatch mode can refresh multiple buffers at once."
        (unless treemacs-silent-refresh
          (treemacs-log "Refresh complete."))))))
 
+(defun treemacs--maybe-recenter ()
+  "Potentially recenter after following a file or tag.
+The answer depends on the distance between `point' and the window top/bottom
+being smaller than `treemacs-follow-recenter-distance'."
+  (interactive);;
+  (-let*- [(current-line (float (count-lines (window-start) (point))))
+           (all-lines (float (window-height)))
+           (distance-from-top (/ current-line all-lines))
+           (distance-from-bottom (- 1.0 distance-from-top))]
+    (when (or (> treemacs-follow-recenter-distance distance-from-top)
+              (> treemacs-follow-recenter-distance distance-from-bottom))
+      (recenter))))
+
 (provide 'treemacs-impl)
 
 ;;; treemacs-impl.el ends here

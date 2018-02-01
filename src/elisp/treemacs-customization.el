@@ -404,6 +404,22 @@ This applies to actions like treemacs not finding any tags it can show when
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-follow-recenter-distance 0.1
+  "Minimum distance from the top/bottom for (tag-)follow mode to recenter.
+Treemacs will be calling `recenter' after following a file/tag if the distance
+between point and the top/bottom of the treemacs window is less then this many
+lines. The value is not an absolute line count, but a percentage, with 0.0
+being 0% and 1.0 being 100%. This means that when this variable is set to 0.1
+`recenter' will be called within a 10% distance of the window top/bottom. For a
+window height of 40 lines that means point being within the first or last 4
+lines of the treemacs window.
+Will only take effect if `treemacs-recenter-after-tag-follow' and/or
+`treemacs-recenter-after-file-follow' is non-nil.
+
+Note that this does *not* take `scroll-margin' into account."
+  :type 'float
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

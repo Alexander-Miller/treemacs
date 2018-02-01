@@ -64,7 +64,7 @@ The followed file MUST be under root or the search will break."
     (when treemacs-recenter-after-file-follow
       (treemacs-without-following
         (with-selected-window (get-buffer-window)
-         (recenter))))))
+          (treemacs--maybe-recenter))))))
 
 (defun treemacs--follow ()
   "Move point to the current file in the treemacs buffer.
