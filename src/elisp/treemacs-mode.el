@@ -176,7 +176,7 @@ to it will instead show a blank."
   (defvar treemacs-mode-map
     (let ((map (make-sparse-keymap)))
       (define-key map (kbd "?")        #'treemacs-helpful-hydra)
-      (define-key map [mouse-1]        #'treemacs-click-mouse1)
+      (define-key map [mouse-1]        #'treemacs-leftclick-action)
       (define-key map [double-mouse-1] #'treemacs-doubleclick-action)
       (define-key map [tab]            #'treemacs-TAB-action)
       (define-key map [?\t]            #'treemacs-TAB-action)
@@ -243,6 +243,9 @@ to it will instead show a blank."
         cursor-type         nil
         desktop-save-buffer t)
 
+  ;; higher fuzz value makes it less likely to start a mouse drag
+  ;; and make a switch to visual state
+  (setq-local double-click-fuzz 15)
   (setq-local show-paren-mode nil)
   (electric-indent-local-mode -1)
   (visual-line-mode -1)

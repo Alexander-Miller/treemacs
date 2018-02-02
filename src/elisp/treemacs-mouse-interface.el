@@ -31,6 +31,9 @@
 Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive "e")
   (when (eq 'mouse-1 (elt event 0))
+    (unless (eq major-mode 'treemacs-mode)
+      ;; no when-let - the window must exist or this function would not be called
+      (select-window (treemacs--is-visible?)))
     (goto-char (posn-point (cadr event)))
     (when (region-active-p)
       (keyboard-quit))
@@ -50,7 +53,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (treemacs--evade-image)
     (when (region-active-p)
       (keyboard-quit))
-    (-when-let (state (treemacs--prop-at-point 'state))
+    (-when-let (state (treemacs--prop-at-point :state))
       (funcall (cdr (assoc state treemacs-doubleclick-actions-config)))
       (treemacs--evade-image))))
 

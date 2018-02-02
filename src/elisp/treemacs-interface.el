@@ -30,7 +30,7 @@
 (require 'treemacs-branch-creation)
 (require 'treemacs-follow-mode)
 (require 'treemacs-tag-follow-mode)
-(require 'treemacs-visuals)
+(require 'treemacs-mouse-interface)
 (require 'treemacs-customization)
 (eval-and-compile
   (require 'cl-lib)
