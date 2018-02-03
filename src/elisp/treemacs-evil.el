@@ -1,6 +1,6 @@
 ;;; treemacs-evil.el --- Evil mode integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2017 Alexander Miller
+;; Copyright (C) 2018 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((evil "1.2.12") (treemacs "0"))
