@@ -199,6 +199,16 @@ visiting a file or Emacs cannot find any tags for the current file."
         (setq treemacs-window (selected-window)))
       (treemacs--do-follow-tag index treemacs-window buffer-file))))
 
+;;;###autoload
+(defun treemacs-select-window ()
+  "Select the treemacs window if it is visible.
+Call `treemacs-toggle' if it is not."
+  (interactive)
+  (force-mode-line-update)
+  (-if-let (w (treemacs--is-visible?))
+      (select-window w t)
+    (treemacs-toggle)))
+
 (provide 'treemacs)
 
 ;;; treemacs.el ends here

@@ -450,15 +450,6 @@ If a prefix argument ARG is provided read a new value for
                   (->> it (window-buffer) (buffer-name) (s-starts-with? treemacs--buffer-name-prefix)))
         (delete-window it)))))
 
-(defun treemacs-select-window ()
-  "Select the treemacs window if it is visible.
-Call `treemacs-toggle' if it is not."
-  (interactive)
-  (force-mode-line-update)
-  (-if-let (w (treemacs--is-visible?))
-      (select-window w t)
-    (treemacs-toggle)))
-
 (defun treemacs-push-button-select-sort (&optional arg)
   "Same as `treemacs-toggle-node', but the sorting function is chosen manually.
 The sort setting is active for only a single push, its effect will be undone on
