@@ -37,6 +37,14 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (goto-char (posn-point (cadr event)))
     (when (region-active-p)
       (keyboard-quit))
+    ;; 7th element is the clicked image
+    (when (->> event (cadr) (nth 7))
+      (treemacs-do-for-button-state
+       :on-file-node-closed (treemacs--expand-tags-for-file btn)
+       :on-file-node-open   (treemacs--collapse-tags-for-file btn)
+       :on-tag-node-closed  (treemacs--expand-tag-node btn)
+       :on-tag-node-open    (treemacs--collapse-tag-node btn)
+       :no-error            t))
     (treemacs--evade-image)))
 
 (defun treemacs-doubleclick-action (event)
@@ -50,12 +58,11 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive "e")
   (when (eq 'double-mouse-1 (elt event 0))
     (goto-char (posn-point (cadr event)))
-    (treemacs--evade-image)
     (when (region-active-p)
       (keyboard-quit))
     (-when-let (state (treemacs--prop-at-point :state))
-      (funcall (cdr (assoc state treemacs-doubleclick-actions-config)))
-      (treemacs--evade-image))))
+      (funcall (cdr (assoc state treemacs-doubleclick-actions-config))))
+    (treemacs--evade-image)))
 
 (defun treemacs-define-doubleclick-action (state action)
   "Define the behaviour of `treemacs-doubleclick-action'.

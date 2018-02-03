@@ -145,9 +145,12 @@ Otherwise just delegates EXP and CASES to `pcase'."
           on-tag-node-open
           on-tag-node-closed
           on-tag-node-leaf
-          on-nil)
+          on-nil
+          no-error)
   "Building block macro to execute a form based on the current node state.
-Will bind to current button to 'btn' for the executon of the action forms."
+Will bind to current button to 'btn' for the executon of the action forms.
+When NO-ERROR is non-nil no error will be thrown if no match for the button
+state is achieved."
   `(-if-let- [btn (treemacs-current-button)]
        (-pcase (button-get btn :state)
          ,@(when on-file-node-open
@@ -171,7 +174,8 @@ Will bind to current button to 'btn' for the executon of the action forms."
          ,@(when on-tag-node-leaf
              `([`tag-node
                 ,on-tag-node-leaf]))
-         [state (error "[Treemacs] Unexpected button state %s" state)])
+         ,@(unless no-error
+             `([state (error "[Treemacs] Unexpected button state %s" state)])))
      ,on-nil))
 
 (cl-defmacro treemacs--execute-button-action

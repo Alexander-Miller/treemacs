@@ -14,6 +14,7 @@
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
   - [[#frame-locality][Frame Locality]]
+  - [[#mouse-interface][Mouse Interface]]
   - [[#follow-mode][Follow-mode]]
   - [[#tag-follow-mode][Tag-follow-mode]]
   - [[#git-mode][Git-mode]]
@@ -63,7 +64,7 @@ Specifically a quick feature overview looks as follows:
  * [[https://github.com/deb0ch/emacs-winum][Winum]] compatibility - treemacs will not interfere with winum's numbering layout, your first window will always remain
    your first window.
  * [[https://github.com/bbatsov/projectile][Projectile]] integration via the ~treemacs-projectile~ package to quickly open treemacs at any known project's root directory.
- * Simple mouse interface - you can close/expand folders and open files by left-clicking.
+ * Simple mouse interface (for left clicks) in line with graphical applications
  * Dashing good looks - treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
    another matter). When run in a terminal a very simple fallback is used.
  * Session persistence with ~desktop-save-mode~
@@ -98,6 +99,11 @@ This allows to use treemacs to work on multiple projects inside the same emacs s
 
 A treemacs buffer that does not belong to a frame may still be made visible by manually selecting in in the buffer list. This
 would break various assumptions in treemacs' code base and effectively falls under undefined behaviour - a bad idea all around.
+** Mouse Interface
+Treemacs handles left clicks in much the same way as modern graphical applications do: a single click sets the focus, a
+double click expands or collapses a directory or tag section node and visits a file/moves to a tag for a file or tag node.
+
+Additionally tags can be expanded or collapsed by a single click on the file/tag section icon.
 
 ** Follow-mode
 ~treemacs-follow-mode~ is a minor mode which allows the treemacs view to always move its focus to the
