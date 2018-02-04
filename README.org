@@ -233,6 +233,9 @@ You can find an exhaustive overview of all functions, their keybinds and functio
   (use-package treemacs
     :ensure t
     :defer t
+    :init
+    (with-eval-after-load 'winum
+      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
     (progn
       (use-package treemacs-evil
@@ -259,9 +262,6 @@ You can find an exhaustive overview of all functions, their keybinds and functio
             treemacs-tag-follow-delay           1.5
             treemacs-width                      35)
 
-      (with-eval-after-load 'winum
-        (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t)
       (pcase (cons (not (null (executable-find "git")))
@@ -280,6 +280,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
           ("M-m fB"     . treemacs-bookmark)
           ("M-m f C-t"  . treemacs-find-file)
           ("M-m f M-t"  . treemacs-find-tag)))
+
   (use-package treemacs-projectile
     :defer t
     :ensure t
