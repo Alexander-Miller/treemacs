@@ -270,24 +270,22 @@ You can find an exhaustive overview of all functions, their keybinds and functio
          (treemacs-git-mode 'extended))
         (`(t . _)
          (treemacs-git-mode 'simple))))
-    :bind
-    (:map global-map
-          ([f8]         . treemacs-toggle)
-          ("M-0"        . treemacs-select-window)
-          ("C-c 1"      . treemacs-delete-other-windows)
-          ("M-m ft"     . treemacs-toggle)
-          ("M-m fT"     . treemacs)
-          ("M-m fB"     . treemacs-bookmark)
-          ("M-m f C-t"  . treemacs-find-file)
-          ("M-m f M-t"  . treemacs-find-tag)))
+    :bind (([f8]        . treemacs-toggle)
+           ("M-0"       . treemacs-select-window)
+           ("C-x f 1"   . treemacs-delete-other-windows)
+           ("C-x f t"   . treemacs-toggle)
+           ("C-x f T"   . treemacs)
+           ("C-x f B"   . treemacs-bookmark)
+           ("C-x f C-t" . treemacs-find-file)
+           ("C-x f M-t" . treemacs-find-tag)))
   (use-package treemacs-projectile
     :defer t
     :ensure t
+    :after projectile treemacs
     :config
     (setq treemacs-header-function #'treemacs-projectile-create-header)
-    :bind (:map global-map
-                ("M-m fP" . treemacs-projectile)
-                ("M-m fp" . treemacs-projectile-toggle)))
+    (bind-keys ("C-x f P" . treemacs-projectile)
+               ("C-x f p" . treemacs-projectile-toggle)))
 #+END_SRC
 
 * Configuration
