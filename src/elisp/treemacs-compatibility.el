@@ -52,6 +52,20 @@
       (add-to-list 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames)
     (treemacs-log "`persp-activated-functions' not defined - couldn't add compatibility.")))
 
+(defun treemacs--split-window-advice (original-split-function &rest args)
+  "Advice to make sure window splits are sized correctly with treemacs.
+This will treat the treemacs window as a side-window for the duration of the
+split, calling the ORIGINAL-SPLIT-FUNCTION with its ARGS. This prevents the
+calculations in `split-window-right' from outputting the wrong result for the
+width of the new window when the treemacs window is visible."
+  (-let [w (treemacs--is-visible?)]
+    (unwind-protect
+        (progn
+          (when w (set-window-parameter w 'window-side treemacs-position))
+          (apply original-split-function args))
+      (when w (set-window-parameter w 'window-side treemacs-position)))))
+(advice-add 'split-window-right :around #'treemacs--split-window-advice)
+
 (provide 'treemacs-compatibility)
 
 ;;; treemacs-compatibility.el ends here
