@@ -580,14 +580,16 @@ treemacs node is pointing to a valid buffer position."
 (defun treemacs-next-line-other-window (&optional count)
   "Scroll forward COUNT lines in `next-window'."
   (interactive "p")
-  (with-selected-window (next-window)
-    (scroll-up-line count)))
+  (treemacs-without-following
+   (with-selected-window (next-window)
+     (scroll-up-line count))))
 
 (defun treemacs-previous-line-other-window (&optional count)
   "Scroll backward COUNT lines in `next-window'."
   (interactive "p")
-  (with-selected-window (other-window-for-scrolling)
-    (scroll-down-line count)))
+  (treemacs-without-following
+   (with-selected-window (other-window-for-scrolling)
+     (scroll-down-line count))))
 
 (provide 'treemacs-interface)
 
