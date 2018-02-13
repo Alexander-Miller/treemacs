@@ -305,7 +305,7 @@ Will also perform cleanup if the buffer is dead."
     (when (= depth (button-get prev :depth)) prev)))
 
 (defsubst treemacs--next-non-child-button (btn)
-  "Return the next button after BTN that is not a child of BTB."
+  "Return the next button after BTN that is not a child of BTN."
   (declare (side-effect-free t))
   (when btn
     (-let- [(depth (button-get btn :depth))
