@@ -78,9 +78,9 @@ If the current buffer's `default-directory' is nil, use $HOME as fallback.
 If a prefix argument ARG is given manually select the root directory."
   (interactive "P")
   (treemacs--init (cond
-                   (arg (read-directory-name "Treemacs root: "))
-                   (default-directory default-directory)
-                   (t (getenv "HOME")))))
+            (arg (read-directory-name "Treemacs root: "))
+            (default-directory default-directory)
+            (t (getenv "HOME")))))
 
 ;;;###autoload
 (defun treemacs-bookmark (&optional arg)
