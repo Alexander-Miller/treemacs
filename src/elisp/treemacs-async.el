@@ -53,6 +53,7 @@
                (future (pfuture-new
                         treemacs-python-executable
                         "-O"
+                        "-S"
                         treemacs--git-status.py
                         (f-long git-root)
                         path))]
@@ -128,6 +129,8 @@ Every string list consists of the following elements:
    if `treemacs-filewatch-mode' is on."
   (when (> treemacs-collapse-dirs 0)
     (pfuture-new treemacs-python-executable
+                 "-O"
+                 "-S"
                  treemacs--dirs-to-collpase.py
                  path
                  (number-to-string treemacs-collapse-dirs)
