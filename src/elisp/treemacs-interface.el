@@ -88,6 +88,8 @@ everything that was expanded below that node.
 Since tags cannot be opened or closed a goto definition action will called on
 them instead."
   (treemacs-do-for-button-state
+   :on-root-node-open   (treemacs--collapse-root-node btn arg)
+   :on-root-node-closed (treemacs--expand-root-node btn arg)
    :on-dir-node-open    (treemacs--collapse-dir-node btn arg)
    :on-dir-node-closed  (treemacs--expand-dir-node btn :recursive arg)
    :on-file-node-open   (treemacs--collapse-tags-for-file btn arg)

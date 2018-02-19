@@ -138,7 +138,9 @@ Otherwise just delegates EXP and CASES to `pcase'."
        (with-no-warnings (setq treemacs--ready-to-follow o)))))
 
 (cl-defmacro treemacs-do-for-button-state
-    (&key on-file-node-open
+    (&key on-root-node-open
+          on-root-node-closed
+          on-file-node-open
           on-file-node-closed
           on-dir-node-open
           on-dir-node-closed
@@ -153,6 +155,12 @@ When NO-ERROR is non-nil no error will be thrown if no match for the button
 state is achieved."
   `(-if-let- [btn (treemacs-current-button)]
        (-pcase (button-get btn :state)
+         ,@(when on-root-node-open
+             `([`root-node-open
+                ,on-root-node-open]))
+         ,@(when on-root-node-closed
+             `([`root-node-closed
+                ,on-root-node-closed]))
          ,@(when on-file-node-open
              `([`file-node-open
                 ,on-file-node-open]))

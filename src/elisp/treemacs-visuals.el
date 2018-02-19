@@ -43,6 +43,7 @@
 ;; become invalid.
 
 ;; values will be properly set (and reset) in `treemacs--create-icons'
+(defvar treemacs-icon-root "")
 (defvar treemacs-icon-closed "")
 (defvar treemacs-icon-open "")
 (defvar treemacs-icon-fallback "")
@@ -183,6 +184,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
             treemacs-icon-open     treemacs-icon-open-png
             treemacs-icon-fallback treemacs-icon-text))
 
+    (treemacs--setup-icon treemacs-icon-root       "root.png")
     (treemacs--setup-icon treemacs-icon-yaml       "yaml.png"       "yml" "yaml")
     (treemacs--setup-icon treemacs-icon-shell      "shell.png"      "sh" "zsh" "fish")
     (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"        "pdf")

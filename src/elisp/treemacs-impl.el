@@ -33,6 +33,7 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
+(require 'treemacs-projects)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -429,10 +430,13 @@ buffer."
   (treemacs--cancel-refresh-timer)
   (treemacs-with-writable-buffer
    (delete-region (point-min) (point-max))
-   (treemacs--insert-header root)
-   (treemacs--create-branch root 0
-                            (treemacs--git-status-process-function root)
-                            (treemacs--collapsed-dirs-process root))
+   (setq default-directory (f-full root))
+   (save-excursion
+     (setq treemacs--projects `(,(make-treemacs-project
+                           :name root
+                           :path root
+                           :position (point-marker))))
+     (treemacs--add-root-element root))
    (goto-char 0)
    (forward-line 1)
    (treemacs--evade-image)
@@ -474,6 +478,7 @@ buffer."
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
   (-pcase (button-get btn :state)
+    [`root-node-closed (treemacs--expand-root-node btn)]
     [`dir-node-open    (treemacs--collapse-dir-node btn recursive)]
     [`dir-node-closed  (treemacs--expand-dir-node btn :recursive recursive)]
     [`file-node-open   (treemacs--collapse-tags-for-file btn recursive)]
@@ -490,6 +495,7 @@ GIT-INFO is passed through from the previous branch build."
     [`dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info)]
     [`file-node-closed (treemacs--expand-tags-for-file btn)]
     [`tag-node-closed  (treemacs--expand-tag-node btn :no-add t)]
+    [`root-node-closed (treemacs--expand-root-node btn :no-add t)]
     [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
                               (button-get btn :path) other)]))
 
@@ -758,20 +764,22 @@ through the buffer list and kill buffer if PATH is a prefix."
 Specifically extracted with the buffer to refresh being supplied so that
 filewatch mode can refresh multiple buffers at once."
   (with-current-buffer buffer
-    (-let [root (treemacs--current-root)]
-      (treemacs-save-position
-       (progn
-         (treemacs--cancel-refresh-timer)
-         (run-hook-with-args
-          'treemacs-pre-refresh-hook
-          root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
-         (treemacs--build-tree root))
+    (treemacs-save-position
+     (progn
+       (treemacs--cancel-refresh-timer)
+       ;; (run-hook-with-args
+       ;;  'treemacs-pre-refresh-hook
+       ;;  root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+       (dolist (it treemacs--projects)
+         (when (treemacs-project->is-expanded? it)
+           (treemacs--collapse-root-node it)
+           (treemacs--expand-root-node it))))
 
-       (run-hook-with-args
-        'treemacs-post-refresh-hook
-        root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
-       (unless treemacs-silent-refresh
-         (treemacs-log "Refresh complete."))))))
+     ;; (run-hook-with-args
+     ;;  'treemacs-post-refresh-hook
+     ;;  root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+     (unless treemacs-silent-refresh
+       (treemacs-log "Refresh complete.")))))
 
 (defun treemacs--maybe-recenter ()
   "Potentially recenter after following a file or tag.

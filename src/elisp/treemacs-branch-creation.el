@@ -114,7 +114,8 @@ DEFAULT: Face"
             [`mod-time-asc #'treemacs--sort-mod-time-asc]
             [`mod-time-desc #'treemacs--sort-mod-time-desc]
             [_ (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting)]))
-         (entries (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown)))
+         ;; `directory-files' is much faster in a temp buffer for whatever reason
+         (entries (with-temp-buffer (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown))))
          (dirs-files (-separate #'file-directory-p entries)))
     (list (sort (cl-first dirs-files) sort-func)
           (sort (cl-second dirs-files) sort-func))))
@@ -326,6 +327,30 @@ set to PARENT."
         (delete-trailing-whitespace))
       ,post-close-action)))
 
+(defun treemacs--expand-root-node (btn &optional _TODO_ARG)
+  "Expand the given root BTN."
+  (-let*- [(path (button-get btn :path))
+           (git-future (treemacs--git-status-process-function path))
+           (collapse-future (treemacs--collapsed-dirs-process path))]
+    (treemacs--button-open
+     :immediate-insert nil
+     :button btn
+     :new-state 'root-node-open
+     :open-action
+     (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn)
+     :post-open-action
+     (progn
+       (treemacs-on-expand path btn (treemacs-parent-of btn))
+       (treemacs--start-watching path)))))
+
+(defun treemacs--collapse-root-node (btn &optional _TODO_ARG)
+  "Collapse the given root BTN."
+  (treemacs--button-close
+   :button btn
+   :new-state 'root-node-closed
+   :post-close-action
+   (-let [path (button-get btn :path)]
+     (treemacs--stop-watching path))))
 (cl-defun treemacs--expand-dir-node (btn &key git-future recursive)
   "Open the node given by BTN.
 
@@ -364,9 +389,22 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
    :new-state 'dir-node-closed
    :new-icon treemacs-icon-closed
    :post-close-action
-   (let ((path (button-get btn :path)))
+   (-let [path (button-get btn :path)]
      (treemacs--stop-watching path)
      (treemacs-on-collapse path recursive))))
+
+(defun treemacs--add-root-element (root)
+  "Insert a new root node at ROOT path."
+  (insert
+   (concat
+    treemacs-icon-root
+    (propertize (file-name-nondirectory root)
+                'button '(t)
+                'category 'default-button
+                'face 'treemacs-root-face
+                :state 'root-node-closed
+                :path root
+                :depth 0))))
 
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.
