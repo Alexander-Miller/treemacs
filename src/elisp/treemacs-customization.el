@@ -88,7 +88,9 @@ of how this config works and how to modify it."
   :group 'treemacs-configuration)
 
 (defcustom treemacs-doubleclick-actions-config
-  '((dir-node-open    . treemacs-toggle-node)
+  '((root-node-open   . treemacs-toggle-node)
+    (root-node-closed . treemacs-toggle-node)
+    (dir-node-open    . treemacs-toggle-node)
     (dir-node-closed  . treemacs-toggle-node)
     (file-node-open   . treemacs-visit-node-no-split)
     (file-node-closed . treemacs-visit-node-no-split)
@@ -103,7 +105,9 @@ of how this config works and how to modify it."
   :group 'treemacs-configuration)
 
 (defcustom treemacs-RET-actions-config
-  '((dir-node-open    . treemacs-toggle-node)
+  '((root-node-open   . treemacs-toggle-node)
+    (root-node-closed . treemacs-toggle-node)
+    (dir-node-open    . treemacs-toggle-node)
     (dir-node-closed  . treemacs-toggle-node)
     (file-node-open   . treemacs-visit-node-no-split)
     (file-node-closed . treemacs-visit-node-no-split)
