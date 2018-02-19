@@ -71,7 +71,9 @@ times."
   :group 'treemacs-configuration)
 
 (defcustom treemacs-TAB-actions-config
-  '((dir-node-open    . treemacs-toggle-node)
+  '((root-node-open   . treemacs-toggle-node)
+    (root-node-closed . treemacs-toggle-node)
+    (dir-node-open    . treemacs-toggle-node)
     (dir-node-closed  . treemacs-toggle-node)
     (file-node-open   . treemacs-toggle-node)
     (file-node-closed . treemacs-toggle-node)

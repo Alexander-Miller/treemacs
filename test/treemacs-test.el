@@ -824,7 +824,6 @@
           (should (ht-get treemacs-shadow-index key)))
         (should (= 9 (ht-size treemacs-shadow-index)))))))
 
-
 ;; Thorough Sys Test
 (ert-deftest treemacs::sys-test ()
   (save-window-excursion
