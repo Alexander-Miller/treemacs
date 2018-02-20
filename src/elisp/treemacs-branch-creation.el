@@ -393,18 +393,23 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
      (treemacs--stop-watching path)
      (treemacs-on-collapse path recursive))))
 
-(defun treemacs--add-root-element (root)
-  "Insert a new root node at ROOT path."
-  (insert
-   (concat
-    treemacs-icon-root
-    (propertize (file-name-nondirectory root)
-                'button '(t)
-                'category 'default-button
-                'face 'treemacs-root-face
-                :state 'root-node-closed
-                :path root
-                :depth 0))))
+(defun treemacs--add-root-element (project)
+  "Insert a new root node for the given PROJECT node.
+
+PROJECT: `cl-struct-treemacs-project'"
+  (-let [point (point)]
+    (insert
+     (concat
+      treemacs-icon-root
+      (propertize (treemacs-project->name project)
+                  'button '(t)
+                  'category 'default-button
+                  'face 'treemacs-root-face
+                  :project project
+                  :state 'root-node-closed
+                  :path (treemacs-project->path project)
+                  :depth 0)))
+    (setf (treemacs-project->position project) (move-marker (make-marker) (+ 2 point)))))
 
 (defun treemacs--check-window-system ()
   "Check if this treemacs instance is running in a GUI or TUI.

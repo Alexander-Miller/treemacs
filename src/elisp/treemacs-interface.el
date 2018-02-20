@@ -32,6 +32,7 @@
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-mouse-interface)
 (require 'treemacs-customization)
+(require 'treemacs-projects)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -41,7 +42,9 @@
   treemacs-toggle)
 
 (defconst treemacs-valid-button-states
-  '(dir-node-open
+  '(root-node-open
+    root-node-closed
+    dir-node-open
     dir-node-closed
     file-node-open
     file-node-closed
@@ -592,6 +595,23 @@ treemacs node is pointing to a valid buffer position."
   (treemacs-without-following
    (with-selected-window (other-window-for-scrolling)
      (scroll-down-line count))))
+
+(defun treemacs-rename-project (name)
+  "Give the (nearest) project at point a new NAME."
+  (interactive "MNew name: ")
+  (treemacs-save-position
+    (treemacs-with-writable-buffer
+     (-let*- [(project (treemacs-project-at-point))
+              (pos (treemacs-project->position project))]
+       (setf (treemacs-project->name project) name)
+       (goto-char (button-end pos))
+       (delete-region (point-at-bol) (point-at-eol))
+       (treemacs--add-root-element project)
+       (treemacs--forget-last-highlight)
+       (treemacs--collapse-root-node (treemacs-project->position project))
+       (treemacs--expand-root-node (treemacs-project->position project)))))
+  (hl-line-highlight)
+  (treemacs--evade-image))
 
 (provide 'treemacs-interface)
 
