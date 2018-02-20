@@ -33,7 +33,6 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
-(require 'treemacs-projects)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -51,6 +50,9 @@
   treemacs-refresh)
 
 (treemacs-import-functions-from "treemacs-branch-creation"
+  treemacs--add-root-element
+  treemacs--expand-root-node
+  treemacs--collapse-root-node
   treemacs--check-window-system
   treemacs--expand-dir-node
   treemacs--collapse-dir-node
@@ -86,6 +88,10 @@
   treemacs--reset-index
   treemacs--on-rename
   treemacs--invalidate-position-cache)
+
+(treemacs-import-functions-from "treemacs-projects"
+  make-treemacs-project
+  treemacs-project->is-expanded?)
 
 (declare-function treemacs-mode "treemacs-mode")
 
@@ -432,11 +438,13 @@ buffer."
    (delete-region (point-min) (point-max))
    (setq default-directory (f-full root))
    (save-excursion
-     (setq treemacs--projects `(,(make-treemacs-project
-                           :name root
-                           :path root
-                           :position (point-marker))))
-     (treemacs--add-root-element root))
+     ;; TODO
+     (-let [project (make-treemacs-project
+                     :name (file-name-nondirectory root)
+                     :path root
+                     :position (point-marker))]
+       (setq treemacs--projects (list project))
+       (treemacs--add-root-element project)))
    (goto-char 0)
    (forward-line 1)
    (treemacs--evade-image)

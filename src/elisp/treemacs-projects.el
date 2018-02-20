@@ -20,6 +20,11 @@
 
 ;;; Code:
 
+(require 'dash)
+(require 'treemacs-impl)
+(eval-and-compile
+  (require 'cl-lib))
+
 (defvar-local treemacs--projects nil)
 
 (defsubst treemacs-project->name (project)
@@ -41,6 +46,22 @@
 (with-no-warnings
   (cl-defstruct (treemacs-project (:conc-name treemacs-project->))
     name path position))
+
+(defsubst treemacs-project-at-point ()
+  "Get the `treemacs-project' struct for the (nearest) project at point."
+  (-let [btn (treemacs-current-button)]
+    ;; if we're not on a button now look for the next best or previous best button
+    (unless btn
+      (--if-let (next-button (point))
+          (setq btn it)
+        (--if-let (previous-button (point))
+            (setq btn it)
+          (error "[Treemacs] It looks like the treemacs buffer is empty. That shouldn't happen!"))))
+    (-let [project (button-get btn :project)]
+      (while (not project)
+        (setq btn (button-get btn :parent)
+              project (button-get btn :project)))
+      project)))
 
 (provide 'treemacs-projects)
 

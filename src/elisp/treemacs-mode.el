@@ -216,6 +216,7 @@ to it will instead show a blank."
       (define-key map (kbd "g")        #'treemacs-refresh)
       (define-key map (kbd "s")        #'treemacs-resort)
       (define-key map (kbd "b")        #'treemacs-add-bookmark)
+      (define-key map (kbd "C-p r")    #'treemacs-rename-project)
       map)
     "Keymap for `treemacs-mode'."))
 
