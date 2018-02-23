@@ -48,6 +48,7 @@ Remember the value in `treemacs--defaults-icons'."
 
 (defmacro treemacs-with-writable-buffer (&rest body)
   "Temporarily turn off read-ony mode to execute BODY."
+  (declare (debug (form body)))
   `(let (buffer-read-only)
      ,@body))
 
@@ -104,7 +105,8 @@ Delegates VAR-VAL and BODY to `-when-let'."
 (defmacro -let- (vars &rest body)
   "Same as `let', but VARS is an array.
 Otherwise just delegates VARS and BODY to `let'."
-  (declare (indent 1))
+  (declare (debug (form body))
+           (indent 1))
   (-let [varlist (cl-map 'list #'identity vars)]
     `(let ,varlist ,@body)))
 
@@ -260,6 +262,7 @@ This macro is meant for cases where a simple `save-excursion' will not do, like
 a refresh, which can potentially change the entire buffer layout. This means
 attempt first to keep point on the same file/tag, and if that does not work keep
 it on the same line."
+  (declare (debug t))
   `(treemacs-without-following
     (let* ((curr-line     (line-number-at-pos))
            (curr-btn      (treemacs-current-button))

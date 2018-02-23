@@ -217,6 +217,8 @@ to it will instead show a blank."
       (define-key map (kbd "s")        #'treemacs-resort)
       (define-key map (kbd "b")        #'treemacs-add-bookmark)
       (define-key map (kbd "C-p r")    #'treemacs-rename-project)
+      (define-key map (kbd "C-p a")    #'treemacs-add-project)
+      (define-key map (kbd "C-p d")    #'treemacs-remove-project)
       map)
     "Keymap for `treemacs-mode'."))
 
