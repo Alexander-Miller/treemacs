@@ -310,7 +310,7 @@ Will also perform cleanup if the buffer is dead."
           (prev (previous-button (button-start btn)))]
     (while (and prev (< depth (button-get prev :depth)))
       (setq prev (previous-button (button-start prev))))
-    (when (= depth (button-get prev :depth)) prev)))
+    (when (and prev (= depth (button-get prev :depth))) prev)))
 
 (defsubst treemacs--next-non-child-button (btn)
   "Return the next button after BTN that is not a child of BTN."
@@ -780,8 +780,11 @@ filewatch mode can refresh multiple buffers at once."
        ;;  root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
        (dolist (it treemacs--projects)
          (when (treemacs-project->is-expanded? it)
-           (treemacs--collapse-root-node it)
-           (treemacs--expand-root-node it))))
+           (-let [root-btn (treemacs-project->position it)]
+             (goto-char root-btn)
+             (treemacs--forget-last-highlight)
+             (treemacs--collapse-root-node root-btn)
+             (treemacs--expand-root-node root-btn)))))
 
      ;; (run-hook-with-args
      ;;  'treemacs-post-refresh-hook

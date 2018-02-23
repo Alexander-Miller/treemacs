@@ -613,6 +613,44 @@ treemacs node is pointing to a valid buffer position."
   (hl-line-highlight)
   (treemacs--evade-image))
 
+(defun treemacs-add-project (path name)
+  "Add a new project for at given PATH with given display NAME."
+  (interactive "DDirectory:\nMName: ")
+  (cl-assert (eq major-mode 'treemacs-mode))
+  (-let [project (make-treemacs-project :name name :path path)]
+    (treemacs-with-writable-buffer
+     (goto-char (point-max))
+     (if (treemacs-current-button)
+         (insert "\n\n")
+       (insert "\n"))
+     (treemacs--add-root-element project)
+     (setf (treemacs-project->order project) (1+ (length treemacs--projects)))
+     (push project treemacs--projects))))
+
+(defun treemacs-remove-project ()
+  "Remove the project at point."
+  (interactive)
+  (-let [project (treemacs-project-at-point)]
+    (treemacs-with-writable-buffer
+     (-let [project-btn (treemacs-project->position project)]
+       (goto-char project-btn)
+       (when (eq 'root-node-open
+                 (button-get project-btn :state))
+         (treemacs--collapse-root-node project-btn))
+       (treemacs--forget-last-highlight)
+       (kill-whole-line)
+       (unless (= (treemacs-project->order project)
+                  (length treemacs--projects))
+         (kill-whole-line))
+       (delete-trailing-whitespace)))
+    (setq treemacs--projects (delete project treemacs--projects))
+    (treemacs-on-collapse (treemacs-project->path project) t)
+    (--each treemacs--projects
+      (setf (treemacs-project->order it) it-index))
+    (goto-char (treemacs-project->position (treemacs-project-at-point)))
+    (recenter)
+    (hl-line-highlight)))
+
 (provide 'treemacs-interface)
 
 ;;; treemacs-interface.el ends here

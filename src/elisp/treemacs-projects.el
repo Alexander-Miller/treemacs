@@ -39,16 +39,20 @@
   "Get the order number of PROJECT."
   (aref project 3))
 
+(defsubst treemacs-project->order (project)
+  "Get the order number of PROJECT."
+  (aref project 4))
+
 (defsubst treemacs-project->is-expanded? (project)
   "Return non-nil if PROJECT is expanded."
   (eq 'root-node-open (button-get (treemacs-project->position project) :state)))
 
 (with-no-warnings
   (cl-defstruct (treemacs-project (:conc-name treemacs-project->))
-    name path position))
+    name path position order))
 
 (defsubst treemacs-project-at-point ()
-  "Get the `treemacs-project' struct for the (nearest) project at point."
+  "Get the `cl-struct-treemacs-project' for the (nearest) project at point."
   (-let [btn (treemacs-current-button)]
     ;; if we're not on a button now look for the next best or previous best button
     (unless btn
