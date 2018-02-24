@@ -596,6 +596,24 @@ treemacs node is pointing to a valid buffer position."
    (with-selected-window (other-window-for-scrolling)
      (scroll-down-line count))))
 
+(defun treemacs-next-project ()
+  "Move to the next project root node."
+  (interactive)
+  (-let [pos (next-single-char-property-change (point-at-eol) :project)]
+    (if (or (= pos (point))
+            (= pos (point-max)))
+        (treemacs-pulse-on-failure "There is no next project to move to.")
+      (goto-char pos))))
+
+(defun treemacs-previous-project ()
+  "Move to the next project root node."
+  (interactive)
+  (-let [pos (previous-single-char-property-change (point-at-bol) :project)]
+    (if (or (= pos (point))
+            (= pos (point-min)))
+        (treemacs-pulse-on-failure "There is no previous project to move to.")
+      (goto-char pos))))
+
 (defun treemacs-rename-project (name)
   "Give the (nearest) project at point a new NAME."
   (interactive "MNew name: ")
