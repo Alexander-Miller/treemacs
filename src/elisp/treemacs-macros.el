@@ -23,6 +23,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'pcase)
 
 (defmacro treemacs-import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS.
@@ -48,12 +49,13 @@ Remember the value in `treemacs--defaults-icons'."
 
 (defmacro treemacs-with-writable-buffer (&rest body)
   "Temporarily turn off read-ony mode to execute BODY."
-  (declare (debug (form body)))
+  (declare (debug t))
   `(let (buffer-read-only)
      ,@body))
 
 (defmacro treemacs-without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
+  (declare (debug t))
   `(let ((treemacs--no-messages t))
      ,@body))
 
@@ -73,14 +75,15 @@ inside BUTTON's buffer."
 Required for button interactions (like `button-get') that do not work when
 called from another buffer than the one the button resides in and
 `treemacs-safe-button-get' is not enough."
-  (declare (indent 1))
+  (declare (indent 1)
+           (debug (form body)))
   `(with-current-buffer (marker-buffer ,btn)
     ,@body))
 
 (defmacro -if-let- (var-val then &rest else)
   "Same as `-if-let', but expects VAR-VAL to be a vector.
 Delegates VAR-VAL, THEN and ELSE to `-if-let'."
-  (declare (debug ((sexp form) form body))
+  (declare (debug ((vector sexp form) form body))
            (indent 2))
   (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
     `(-if-let ,var-val-lst ,then ,@else)))
@@ -97,7 +100,7 @@ Log ERROR-MSG if no button is selected, otherwise run BODY."
 (defmacro -when-let- (var-val &rest body)
   "Same as `-when-let', but expects VAR-VAL to be a vector.
 Delegates VAR-VAL and BODY to `-when-let'."
-  (declare (debug ((sexp form) body))
+  (declare (debug ((vector sexp form) body))
            (indent 1))
   (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
     `(-when-let ,var-val-lst ,@body)))
@@ -105,7 +108,7 @@ Delegates VAR-VAL and BODY to `-when-let'."
 (defmacro -let- (vars &rest body)
   "Same as `let', but VARS is an array.
 Otherwise just delegates VARS and BODY to `let'."
-  (declare (debug (form body))
+  (declare (debug ((vector &rest (sexp form)) body))
            (indent 1))
   (-let [varlist (cl-map 'list #'identity vars)]
     `(let ,varlist ,@body)))
@@ -113,14 +116,16 @@ Otherwise just delegates VARS and BODY to `let'."
 (defmacro -let*- (vars &rest body)
   "Same as `let*', but VARS is an array.
 Otherwise just delegates VARS and BODY to `let*'."
-  (declare (indent 1))
+  (declare (indent 1)
+           (debug ((vector &rest (sexp form)) body)))
   (-let [varlist (cl-map 'list #'identity vars)]
     `(let* ,varlist ,@body)))
 
 (defmacro -pcase (exp &rest cases)
   "Same as `pcase', except that the match arms are vectors.
 Otherwise just delegates EXP and CASES to `pcase'."
-  (declare (indent 1))
+  (declare (indent 1)
+           (debug (form &rest (vector pcase-PAT body))))
   (let (cases-list)
     (--each cases
       (let (c)
@@ -133,6 +138,7 @@ Otherwise just delegates EXP and CASES to `pcase'."
   "Execute BODY with `treemacs--ready-to-follow' set to nil."
   ;; no warnings since `treemacs--ready-to-follow' is defined in treemacs-follow-mode.el
   ;; and should stay there since this file is for macros only
+  (declare (debug t))
   `(let ((o (with-no-warnings treemacs--ready-to-follow)))
      (with-no-warnings (setq treemacs--ready-to-follow nil))
      (unwind-protect
@@ -155,6 +161,7 @@ Otherwise just delegates EXP and CASES to `pcase'."
 Will bind to current button to 'btn' for the executon of the action forms.
 When NO-ERROR is non-nil no error will be thrown if no match for the button
 state is achieved."
+  (declare (debug (&rest [sexp form])))
   `(-if-let- [btn (treemacs-current-button)]
        (-pcase (button-get btn :state)
          ,@(when on-root-node-open
@@ -207,6 +214,7 @@ matching the buttons state.
 If ENSURE-WINDOW-SPLIT is t treemacs will vertically split the window if
 treemacs is the only window to make sure a buffer is opened next to it, not
 under or below it."
+  (declare (debug (&rest [sexp form])))
   (let ((valid-states (list)))
     (when dir-action
       (push 'dir-node-open valid-states)
@@ -251,6 +259,7 @@ under or below it."
   "Run BODY without triggering the filewatch callback.
 Required for manual interactions with the file system (like deletion), otherwise
 the on-delete code will run twice."
+  (declare (debug t))
   `(cl-flet (((symbol-function 'treemacs--filewatch-callback) (symbol-function 'ignore)))
      ,@body))
 
@@ -262,7 +271,7 @@ This macro is meant for cases where a simple `save-excursion' will not do, like
 a refresh, which can potentially change the entire buffer layout. This means
 attempt first to keep point on the same file/tag, and if that does not work keep
 it on the same line."
-  (declare (debug t))
+  (declare (debug (form body)))
   `(treemacs-without-following
     (let* ((curr-line     (line-number-at-pos))
            (curr-btn      (treemacs-current-button))
@@ -299,6 +308,7 @@ it on the same line."
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer."
+  (declare (debug t))
   `(dolist (frame->buffer treemacs--buffer-access)
      (-let [--buffer-- (cdr frame->buffer)]
        (when (buffer-live-p --buffer--)
