@@ -219,6 +219,8 @@ to it will instead show a blank."
       (define-key map (kbd "C-p r")    #'treemacs-rename-project)
       (define-key map (kbd "C-p a")    #'treemacs-add-project)
       (define-key map (kbd "C-p d")    #'treemacs-remove-project)
+      (define-key map (kbd "C-j")      #'treemacs-next-project)
+      (define-key map (kbd "C-k")      #'treemacs-previous-project)
       map)
     "Keymap for `treemacs-mode'."))
 
