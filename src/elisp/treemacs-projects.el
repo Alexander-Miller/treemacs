@@ -39,17 +39,17 @@
   "Get the order number of PROJECT."
   (aref project 3))
 
-(defsubst treemacs-project->order (project)
-  "Get the order number of PROJECT."
-  (aref project 4))
-
 (defsubst treemacs-project->is-expanded? (project)
   "Return non-nil if PROJECT is expanded."
   (eq 'root-node-open (button-get (treemacs-project->position project) :state)))
 
+(defsubst treemacs-project->is-last? (project)
+  "Return t when PROJECT's root node is the last in the view."
+  (null (next-single-char-property-change (button-end (treemacs-project->position project)) :project)))
+
 (with-no-warnings
   (cl-defstruct (treemacs-project (:conc-name treemacs-project->))
-    name path position order))
+    name path position))
 
 (defsubst treemacs-project-at-point ()
   "Get the `cl-struct-treemacs-project' for the (nearest) project at point."

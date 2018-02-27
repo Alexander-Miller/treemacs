@@ -341,17 +341,20 @@ set to PARENT."
      (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn)
      :post-open-action
      (progn
-       (treemacs-on-expand path btn (treemacs-parent-of btn))
+       (treemacs-on-expand path btn nil)
        (treemacs--start-watching path)))))
 
-(defun treemacs--collapse-root-node (btn &optional _TODO_ARG)
-  "Collapse the given root BTN."
+(defun treemacs--collapse-root-node (btn &optional recursive)
+  "Collapse the given root BTN.
+Remove all open entries below BTN when RECURSIVE is non-nil."
   (treemacs--button-close
    :button btn
    :new-state 'root-node-closed
    :post-close-action
    (-let [path (button-get btn :path)]
-     (treemacs--stop-watching path))))
+     (treemacs--stop-watching path)
+     (treemacs-on-collapse path recursive))))
+
 (cl-defun treemacs--expand-dir-node (btn &key git-future recursive)
   "Open the node given by BTN.
 

@@ -111,8 +111,9 @@ Creates a new node for KEY at POS with parent at PARENT-KEY and inserts it in
 the index."
   (-let*- [(parent (treemacs-get-from-shadow-index parent-key))
            (new-node (make-treemacs-shadow-node :key key :parent parent :position pos))]
-    (setf (treemacs-shadow-node->children parent) (cons new-node (treemacs-shadow-node->children parent))
-          (treemacs-shadow-node->parent new-node) parent)
+    (when parent
+      (setf (treemacs-shadow-node->children parent) (cons new-node (treemacs-shadow-node->children parent))))
+    (setf (treemacs-shadow-node->parent new-node) parent)
     (ht-set! treemacs-shadow-index key new-node)))
 
 (defun treemacs-on-expand (key pos parent-key)
@@ -139,7 +140,9 @@ NODE's branch."
       ;; almost same as if the node did not have children - throw out of index and parent,
       ;; but remove the children as well
       (-let [parent (treemacs-shadow-node->parent node)]
-        (setf (treemacs-shadow-node->children parent) (delete node (treemacs-shadow-node->children parent)))
+        (when parent
+          (setf (treemacs-shadow-node->children parent)
+                (delete node (treemacs-shadow-node->children parent))))
         (treemacs--do-for-all-child-nodes node
           #'treemacs-shadow-node->remove-from-index))
     ;; otherwise set the node to be closed and reset lower tiers' pos and refresh info

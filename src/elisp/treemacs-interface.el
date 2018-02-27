@@ -642,7 +642,6 @@ treemacs node is pointing to a valid buffer position."
          (insert "\n\n")
        (insert "\n"))
      (treemacs--add-root-element project)
-     (setf (treemacs-project->order project) (1+ (length treemacs--projects)))
      (push project treemacs--projects))))
 
 (defun treemacs-remove-project ()
@@ -652,19 +651,15 @@ treemacs node is pointing to a valid buffer position."
     (treemacs-with-writable-buffer
      (-let [project-btn (treemacs-project->position project)]
        (goto-char project-btn)
-       (when (eq 'root-node-open
-                 (button-get project-btn :state))
-         (treemacs--collapse-root-node project-btn))
-       (treemacs--forget-last-highlight)
+       (when (treemacs-project->is-expanded? project)
+         (treemacs--collapse-root-node project-btn t))
        (kill-whole-line)
-       (unless (= (treemacs-project->order project)
-                  (length treemacs--projects))
+       (treemacs--forget-last-highlight)
+       (unless (treemacs-project->is-last? project)
          (kill-whole-line))
        (delete-trailing-whitespace)))
     (setq treemacs--projects (delete project treemacs--projects))
     (treemacs-on-collapse (treemacs-project->path project) t)
-    (--each treemacs--projects
-      (setf (treemacs-project->order it) it-index))
     (goto-char (treemacs-project->position (treemacs-project-at-point)))
     (recenter)
     (hl-line-highlight)))
