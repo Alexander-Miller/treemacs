@@ -163,7 +163,9 @@ NODE and its children from the index."
     (if (null (treemacs-shadow-node->children node))
         ;; no children - just throw the node out of the index and its parent
         (-let [parent (treemacs-shadow-node->parent node)]
-          (setf (treemacs-shadow-node->children parent) (delete node (treemacs-shadow-node->children parent)))
+          (when parent
+            (setf (treemacs-shadow-node->children parent)
+                  (delete node (treemacs-shadow-node->children parent))))
           (ht-remove! treemacs-shadow-index key))
       (treemacs--on-collapse-of-node-with-children node purge))))
 
