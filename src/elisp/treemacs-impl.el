@@ -167,16 +167,6 @@ Returns nil when point is on the header."
   "Is PATH in directory DIR?"
   (s-starts-with? (f-slash dir) path))
 
-(defsubst treemacs--replace-hash-entries (table make-new-key make-new-val)
-  "Selectively replace keys and values in a given hash TABLE.
-Use MAKE-NEW-KEY and MAKE-NEW-VAL to create a new key from the old - both are
-functions that take the key/value as its argument and return the new key/value."
-  (ht-each
-   (lambda (k v)
-     (ht-remove! table k)
-     (ht-set table (funcall make-new-key k) (funcall make-new-val v)))
-   table))
-
 (defsubst treemacs--replace-recentf-entry (old-file new-file)
   "Replace OLD-FILE with NEW-FILE in the recent file list."
   ;; code taken from spacemacs - is-bound check due to being introduced after emacs24?
@@ -212,13 +202,6 @@ Returns the buffer if it does exist."
 (defsubst treemacs--select-not-visible ()
   "Switch to treemacs buffer, given that it not visible."
   (treemacs--setup-buffer))
-
-(defsubst treemacs--unqote (str)
-  "Unquote STR if it is wrapped in quotes."
-  (declare (pure t) (side-effect-free t))
-  (if (s-starts-with? "\"" str)
-      (replace-regexp-in-string "\"" "" str)
-    str))
 
 (defsubst treemacs--button-symbol-switch (new-sym)
   "Replace icon in current line with NEW-SYM."
@@ -454,16 +437,6 @@ buffer."
    ;; same goes for reopening
    (treemacs--start-watching root)))
 
-(defun treemacs--create-header (root)
-  "Use ROOT's directory name as treemacs' header."
-   (format "*%s*" (f-filename root)))
-
-(defun treemacs--insert-header (root)
-  "Insert the header line for the given ROOT."
-  (setq default-directory (f-full root))
-  (insert (propertize (funcall treemacs-header-function root)
-                      'face 'treemacs-header-face)))
-
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
   ;; stop watch must come first since we need a reference to the killed buffer
@@ -691,19 +664,19 @@ Valid states are 'visible, 'exists and 'none."
   (let ((window-size-fixed))
     (treemacs--set-width treemacs-width)))
 
-(defun str-assq-delete-all (key alist)
-  "Same as `assq-delete-all', but use `string=' instead of `eq'.
-Delete all elements whose car is ‘string=’ to KEY from ALIST."
-  (while (and (consp (car alist))
-              (string= (car (car alist)) key))
-    (setq alist (cdr alist)))
-  (let ((tail alist) tail-cdr)
-    (while (setq tail-cdr (cdr tail))
-      (if (and (consp (car tail-cdr))
-               (string= (car (car tail-cdr)) key))
-          (setcdr tail (cdr tail-cdr))
-        (setq tail tail-cdr))))
-  alist)
+;; (defun str-assq-delete-all (key alist)
+;;   "Same as `assq-delete-all', but use `string=' instead of `eq'.
+;; Delete all elements whose car is ‘string=’ to KEY from ALIST."
+;;   (while (and (consp (car alist))
+;;               (string= (car (car alist)) key))
+;;     (setq alist (cdr alist)))
+;;   (let ((tail alist) tail-cdr)
+;;     (while (setq tail-cdr (cdr tail))
+;;       (if (and (consp (car tail-cdr))
+;;                (string= (car (car tail-cdr)) key))
+;;           (setcdr tail (cdr tail-cdr))
+;;         (setq tail tail-cdr))))
+;;   alist)
 
 (defun treemacs--parent (path)
   "Parent of PATH, or PATH itself if PATH is the root directory."

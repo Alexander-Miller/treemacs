@@ -186,28 +186,6 @@ NODE and its children from the index."
           (ht-set! treemacs-shadow-index new-key it)
           (setf (treemacs-shadow-node->key it) new-key))))))
 
-(defun treemacs--reroot-up (old-key new-key)
-  "Routine to run when root is changed upwards from OLD-KEY to NEW-KEY.
-Creates a new shadow node for the new root if necessary and sets the
-parent/child link."
-  (-let*- [(old-root (treemacs-get-from-shadow-index old-key))
-           (new-root (or (ht-get treemacs-shadow-index new-key)
-                         (make-treemacs-shadow-node :key new-key :position (point-min))))]
-    (setf (treemacs-shadow-node->parent old-root) new-root
-          (treemacs-shadow-node->position old-root) nil)
-    (ht-set! treemacs-shadow-index new-key new-root)))
-
-(defun treemacs--reroot-down (old-key new-key)
-  "Routine to run when root is changed downwards from OLD-KEY to NEW-KEY.
-Creates a new shadow node for the new root if necessary and resets both new and
-old root's positions."
-  (-let- [(old-root (treemacs-get-from-shadow-index old-key))
-          (new-root (or (treemacs-get-from-shadow-index new-key)
-                        (make-treemacs-shadow-node :key)))]
-    (setf (treemacs-shadow-node->position new-root) nil
-          (treemacs-shadow-node->position old-root) nil)
-    (ht-set! treemacs-shadow-index new-key new-root)))
-
 (defun treemacs--invalidate-position-cache ()
   "Invalidate the position of all nodes in the index."
   (ht-each

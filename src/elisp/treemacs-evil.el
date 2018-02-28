@@ -48,8 +48,6 @@
 
 (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
 (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
-(define-key evil-treemacs-state-map (kbd "h")   #'treemacs-uproot)
-(define-key evil-treemacs-state-map (kbd "l")   #'treemacs-change-root)
 (define-key evil-treemacs-state-map (kbd "M-j") #'treemacs-next-neighbour)
 (define-key evil-treemacs-state-map (kbd "M-k") #'treemacs-previous-neighbour)
 (define-key evil-treemacs-state-map (kbd "M-J") #'treemacs-next-line-other-window)
