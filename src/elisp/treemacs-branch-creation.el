@@ -77,14 +77,6 @@ is a marker pointing to POS."
   "Sort F1 and F2 by modification time desc."
   (file-newer-than-file-p f2 f1))
 
-(defsubst treemacs--insert-button (label &rest properties)
-  "Insert a button with LABEL and given PROPERTIES."
-  (declare (indent 1))
-  (let ((beg (point)))
-    (insert label)
-    (add-text-properties beg (point) (append '(button (t) category default-button) properties))
-    beg))
-
 (defsubst treemacs--get-button-face (path git-info default)
   "Return the appropriate face for PATH based on GIT-INFO.
 If there is no git entry for PATH return DEFAULT.

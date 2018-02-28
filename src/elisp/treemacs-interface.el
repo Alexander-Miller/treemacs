@@ -125,24 +125,13 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (treemacs-toggle-node)))
 (make-obsolete 'treemacs-click-mouse1 #'treemacs-leftclick-action "Treemacs v1.18")
 
-(defun treemacs-uproot ()
-  "Switch treemacs' root directory to current root's parent, if possible."
-  (interactive)
-  (let* ((root      (treemacs--current-root))
-         (new-root  (treemacs--parent root)))
-    (unless (s-equals? root new-root)
-      (treemacs--reroot-up root new-root)
-      (treemacs--build-tree new-root)
-      (treemacs--goto-button-at root)
-      (treemacs--evade-image))))
-
 (defun treemacs-goto-parent-node ()
   "Select parent of selected node, if possible.
 If there is no parent to go up to call `treemacs-uproot' instead."
   (interactive)
   (--if-let (-some-> (treemacs-current-button) (button-get :parent))
       (goto-char it)
-    (treemacs-uproot)))
+    (treemacs-pulse-on-failure "There is no parent to move up to.")))
 
 (defun treemacs-next-neighbour ()
   "Select next node at the same depth as currently selected node, if possible."
@@ -155,20 +144,6 @@ If there is no parent to go up to call `treemacs-uproot' instead."
   (interactive)
   (-when-let- [prev (treemacs--prev-neighbour (treemacs-current-button))]
     (goto-char prev)))
-
-(defun treemacs-change-root ()
-  "Use currently selected directory as new root.
-Do nothing for other node types."
-  (interactive)
-  (-if-let- [btn (treemacs-current-button)]
-    (-pcase (button-get btn :state)
-      [(or `dir-node-open `dir-node-closed)
-       (-let [new-root (button-get btn :path)]
-         (treemacs--reroot-down (treemacs--current-root) new-root)
-         (treemacs--build-tree new-root))]
-      [_
-       (treemacs-log "Button in current line is not a directory.")])
-    (treemacs-log "There is no directory to move into here.")))
 
 (defun treemacs-visit-node-vertical-split (&optional arg)
   "Open current file or tag by vertically splitting `next-window'.

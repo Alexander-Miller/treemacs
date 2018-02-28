@@ -74,10 +74,8 @@ to it will instead show a blank."
              (key-next-neighbour (treemacs--find-keybind #'treemacs-next-neighbour))
              (key-prev-neighbour (treemacs--find-keybind #'treemacs-previous-neighbour))
              (key-goto-parent    (treemacs--find-keybind #'treemacs-goto-parent-node))
-             (key-root-up        (treemacs--find-keybind #'treemacs-uproot))
-             (key-root-down      (treemacs--find-keybind #'treemacs-change-root))
              (key-ret            (treemacs--find-keybind #'treemacs-RET-action))
-             (key-open/close     (treemacs--find-keybind #'treemacs-TAB-action))
+             (key-tab            (treemacs--find-keybind #'treemacs-TAB-action))
              (key-open           (treemacs--find-keybind #'treemacs-visit-node-no-split))
              (key-open-horiz     (treemacs--find-keybind #'treemacs-visit-node-horizontal-split))
              (key-open-vert      (treemacs--find-keybind #'treemacs-visit-node-vertical-split))
@@ -108,27 +106,27 @@ to it will instead show a blank."
 %s
 %s              │ %s              │ %s    │ %s              │ %s
 ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-%s next Line        │ %s dwim RET            │ %s create file │ %s follow mode    │ %s refresh
-%s prev line        │ %s dwim TAB            │ %s create dir  │ %s filewatch mode │ %s (re)set width
+%s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode    │ %s refresh
+%s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode │ %s (re)set width
 %s next neighbour   │ %s open no split       │ %s rename      │ %s git mode       │ %s copy path
 %s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles  │ %s copy root
-%s go to parent     │ %s open vertical       │                    │ %s resizability   │ %s re-sort
-%s move root up     │ %s open ace            │                    │                       │ %s bookmark
-%s move root into   │ %s open ace horizontal │                    │                       │
-%s down next window │ %s open ace vertical   │                    │                       │
-%s up next window   │ %s open externally     │                    │                       │
+%s goto parent      │ %s open vertical       │                    │ %s resizability   │ %s re-sort
+%s down next window │ %s open ace            │                    │                       │ %s bookmark
+%s up next window   │ %s open ace horizontal │                    │                       │
+                        │ %s open ace vertical   │                    │                       │
+                        │ %s open externally     │                    │                       │
 "
                title
-               column-nav               column-nodes          column-files          column-toggles          column-misc
-               (car key-next-line)      (car key-open/close)  (car key-create-file) (car key-follow-mode)   (car key-refresh)
-               (car key-prev-line)      (car key-ret)         (car key-create-dir)  (car key-fwatch-mode)   (car key-set-width)
-               (car key-next-neighbour) (car key-open)        (car key-rename)      (car key-git-mode)      (car key-copy-path)
-               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)      (car key-show-dotfiles) (car key-copy-root)
-               (car key-goto-parent)    (car key-open-vert)                         (car key-toggle-width)  (car key-resort)
-               (car key-root-up)        (car key-open-ace)                                                  (car key-bookmark)
-               (car key-root-down)      (car key-open-ace-h)
-               (car key-down-next-w)    (car key-open-ace-v)
-               (car key-up-next-w)      (car key-open-ext))))
+               column-nav               column-nodes          column-files           column-toggles          column-misc
+               (car key-next-line)      (car key-tab)         (car key-create-file)  (car key-follow-mode)   (car key-refresh)
+               (car key-prev-line)      (car key-ret)         (car key-create-dir)   (car key-fwatch-mode)   (car key-set-width)
+               (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-copy-path)
+               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles) (car key-copy-root)
+               (car key-goto-parent)    (car key-open-vert)   (car key-toggle-width) (car key-resort)
+               (car key-down-next-w)    (car key-open-ace)                                                   (car key-bookmark)
+               (car key-up-next-w)      (car key-open-ace-h)
+               (car key-open-ext)       (car key-open-ace-v)
+               )))
           (eval
            `(defhydra treemacs--helpful-hydra (:exit nil :hint nil :columns 5)
               ,hydra-str
@@ -139,10 +137,8 @@ to it will instead show a blank."
               (,(cdr key-next-neighbour) #'treemacs-next-neighbour)
               (,(cdr key-prev-neighbour) #'treemacs-previous-neighbour)
               (,(cdr key-goto-parent)    #'treemacs-goto-parent-node)
-              (,(cdr key-root-up)        #'treemacs-uproot)
-              (,(cdr key-root-down)      #'treemacs-change-root)
               (,(cdr key-ret)            #'treemacs-RET-action)
-              (,(cdr key-open/close)     #'treemacs-TAB-action)
+              (,(cdr key-tab)            #'treemacs-TAB-action)
               (,(cdr key-open)           #'treemacs-visit-node-no-split)
               (,(cdr key-open-horiz)     #'treemacs-visit-node-horizontal-split)
               (,(cdr key-open-vert)      #'treemacs-visit-node-vertical-split)
@@ -182,13 +178,11 @@ to it will instead show a blank."
       (define-key map [?\t]            #'treemacs-TAB-action)
       (define-key map [return]         #'treemacs-RET-action)
       (define-key map (kbd "RET")      #'treemacs-RET-action)
-      (define-key map (kbd "l")        #'treemacs-change-root)
       (define-key map (kbd "r")        #'treemacs-refresh)
       (define-key map (kbd "d")        #'treemacs-delete)
       (define-key map (kbd "cf")       #'treemacs-create-file)
       (define-key map (kbd "cd")       #'treemacs-create-dir)
       (define-key map (kbd "R")        #'treemacs-rename)
-      (define-key map (kbd "h")        #'treemacs-uproot)
       (define-key map (kbd "u")        #'treemacs-goto-parent-node)
       (define-key map (kbd "q")        #'treemacs-toggle)
       (define-key map (kbd "Q")        #'treemacs-kill-buffer)

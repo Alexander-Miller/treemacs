@@ -137,20 +137,6 @@ A treemacs buffer is built when after calling `treemacs-init' or
   :type 'boolean
   :group 'treemacs-configuration)
 
-(defcustom treemacs-header-function 'treemacs--create-header
-  "The function which is used to create the header string for treemacs buffers.
-Treemacs offers two predefined header creators:
-1) `treemacs--create-header' (the default), which will simply output the current
-   treemacs root.
-2) `treemacs--create-header-projectile', defined in `treemacs-projectile' which
-   will first try to find the name of the current projectile project and fall
-   back on `treemacs--create-header' if no project name is found.
-Other than these two functions this value may be made to use any custom function
-which takes as input a string (the absolute path of the current treemacs root)
-and outputs the string header to be inserted in the treemacs buffer."
-  :type 'function
-  :group 'treemacs-configuration)
-
 (defcustom treemacs-icons-hash (make-hash-table :test 'equal)
   "Hash table containing a mapping of icons onto file extensions."
   :type 'plist

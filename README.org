@@ -13,35 +13,35 @@
 - [[#quick-feature-overview][Quick Feature Overview]]
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
-  - [[#frame-locality][Frame Locality]]
-  - [[#mouse-interface][Mouse Interface]]
-  - [[#follow-mode][Follow-mode]]
-  - [[#tag-follow-mode][Tag-follow-mode]]
-  - [[#git-mode][Git-mode]]
-  - [[#filewatch-mode][Filewatch-mode]]
-  - [[#session-persistence][Session Persistence]]
-  - [[#terminal-compatibility][Terminal Compatibility]]
-  - [[#tag-view][Tag View]]
-    - [[#ggtags][ggtags]]
-  - [[#additional-packages][Additional Packages]]
-    - [[#treemacs-evil][treemacs-evil]]
-    - [[#treemacs-projectile][treemacs-projectile]]
+   - [[#frame-locality][Frame Locality]]
+   - [[#mouse-interface][Mouse Interface]]
+   - [[#follow-mode][Follow-mode]]
+   - [[#tag-follow-mode][Tag-follow-mode]]
+   - [[#git-mode][Git-mode]]
+   - [[#filewatch-mode][Filewatch-mode]]
+   - [[#session-persistence][Session Persistence]]
+   - [[#terminal-compatibility][Terminal Compatibility]]
+   - [[#tag-view][Tag View]]
+      - [[#ggtags][ggtags]]
+   - [[#additional-packages][Additional Packages]]
+      - [[#treemacs-evil][treemacs-evil]]
+      - [[#treemacs-projectile][treemacs-projectile]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
-  - [[#variables][Variables]]
-  - [[#faces][Faces]]
-  - [[#evil-compatibility][Evil compatibility]]
-  - [[#custom-header-function][Custom header function]]
-  - [[#custom-icons][Custom Icons]]
-    - [[#directory-icons][Directory Icons]]
-    - [[#tag-icons][Tag Icons]]
-    - [[#file-icons][File Icons]]
-    - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
-    - [[#gui-vs-tui][GUI vs TUI]]
-    - [[#indent-guide][Indent guide]]
+   - [[#variables][Variables]]
+   - [[#faces][Faces]]
+   - [[#evil-compatibility][Evil compatibility]]
+   - [[#custom-header-function][Custom header function]]
+   - [[#custom-icons][Custom Icons]]
+      - [[#directory-icons][Directory Icons]]
+      - [[#tag-icons][Tag Icons]]
+      - [[#file-icons][File Icons]]
+      - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
+      - [[#gui-vs-tui][GUI vs TUI]]
+      - [[#indent-guide][Indent guide]]
 - [[#keymap][Keymap]]
-  - [[#unbound-functions][Unbound functions]]
-  - [[#default-keymap][Default keymap]]
+   - [[#unbound-functions][Unbound functions]]
+   - [[#default-keymap][Default keymap]]
 - [[#compatibility][Compatibility]]
 - [[#faq][FAQ]]
 - [[#working-with-the-code-base][Working With The Code Base]]
@@ -301,7 +301,6 @@ Treemacs offers the following configuration options:
 | treemacs-indentation-string         | " "                                         | The string that is used to create indentation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | treemacs-width                      | 35                                          | Width of the treemacs window.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | treemacs-show-hidden-files          | t                                           | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| treemacs-header-function            | treemacs--create-header                     | The function which is used to create the header string for treemacs buffers. Default options are ~treemacs--create-header~ and ~treemacs--create-header-projectile~. Any function that takes the current root path and returns the header string may be used.                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | treemacs-follow-after-init          | nil                                         | When t follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | treemacs-change-root-without-asking | nil                                         | When t don't ask to change the root when calling ~treemacs-find-file~.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | treemacs-never-persist              | nil                                         | When t treemacs will never persist its state.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -503,8 +502,6 @@ By default Treemacs's keymap looks as follows:
 | k/p     | treemacs-previous-line                      | Goto the previous line.                                                                                                                 |
 | M-J/N   | treemacs-next-line-other-window             | Goto the next line in ~next-window~.                                                                                                    |
 | M-K/P   | treemacs-previous-line-other-window         | Goto the previous line in ~next-window~..                                                                                               |
-| h       | treemacs-uproot                             | Switch treemacs' root directory to current root's parent, if possible.                                                                  |
-| l       | treemacs-change-root                        | Use currently selected directory as new root. Do nothing for files.                                                                     |
 | M-j/M-n | treemacs-next-neighbour                     | Select next node at the same depth as currently selected node, if possible.                                                             |
 | M-k/M-p | treemacs-previous-neighbour                 | Select previous node at the same depth as currently selected node, if possible.                                                         |
 | th      | treemacs-toggle-show-dotfiles               | Toggle the hiding and displaying of dotfiles.                                                                                           |
