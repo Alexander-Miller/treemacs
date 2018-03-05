@@ -62,6 +62,10 @@
 Used by `treemacs--setup-icon-highlight' to realign icons' highlight colors
 after a theme change.")
 
+(defvar treemacs--icon-size nil
+  "Size in pixels icons will be resized to.
+See also `treemacs-resize-icons'.")
+
 (defvar-local treemacs--last-highlight nil
   "The last button treemacs has highlighted.")
 
@@ -143,11 +147,18 @@ argument."
       (error
        (treemacs-log "Error on highlight, this shouldn't happen: %s" e)))))
 
+(defun treemacs--create-image (file-path)
+  "Load image from FILE-PATH and resize it to the configured icon size."
+  (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
+      (create-image file-path 'imagemagick nil :ascent 'center
+                    :width treemacs--icon-size :height treemacs--icon-size)
+    (create-image file-path 'png nil :ascent 'center)))
+
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define string VAR with its display being the image created from FILE-NAME.
 Insert VAR into icon-cache for each of the given file EXTENSIONS."
-  `(let* ((image-unselected (create-image (f-join treemacs-dir "icons/" ,file-name) 'png nil :ascent 'center))
-          (image-selected   (create-image (f-join treemacs-dir "icons/" ,file-name) 'png nil :ascent 'center)))
+  `(let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
+          (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
      (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
      (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
      (defconst ,var
@@ -256,7 +267,28 @@ inserted into `treemacs-icons-hash'."
           treemacs-icon-tag-leaf-text        (alist-get 'treemacs-icon-tag-leaf-text        treemacs--defaults-icons)))
   (treemacs--create-icons)
   (when (fboundp 'clear-image-cache)
-    (clear-image-cache)))
+    (clear-image-cache t))
+  (treemacs-run-in-every-buffer
+   ;; the reason this is called is because it updates the buffer local variables
+   ;; `treemacs-icon-open', `treemacs-icon-closed', etc.
+   (treemacs--check-window-system)
+   (treemacs--do-refresh (current-buffer))))
+
+;;;###autoload
+(defun treemacs-resize-icons (size)
+  "SIZE in pixels icons should be resized to.
+
+If SIZE is `nil' the icons are not resized and will retain their default size of
+22 pixels.
+
+There is only one size, the icons are square and the aspect ratio will be
+preserved when resizing them therefore width and height are the same.
+
+Resizing the icons only works if Emacs was built with ImageMagick support. If
+this is not the case this function will report an error."
+  (interactive "nIcon size in pixels: ")
+  (setq treemacs--icon-size (if (= size 22) nil size))
+  (treemacs-reset-icons))
 
 (defun treemacs-map-icons-with-auto-mode-alist (extensions mode-icon-alist)
   "Remaps icons for EXTENSIONS according to `auto-mode-alist'.
