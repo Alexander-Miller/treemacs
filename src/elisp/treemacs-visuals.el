@@ -196,6 +196,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (treemacs--setup-icon treemacs-icon-emacs      "emacs.png"      "el" "elc" "org")
     (treemacs--setup-icon treemacs-icon-clojure    "clojure.png"    "clj" "cljs" "cljc")
     (treemacs--setup-icon treemacs-icon-typescript "typescript.png" "ts")
+    (treemacs--setup-icon treemacs-icon-vue        "vue.png"        "vue")
     (treemacs--setup-icon treemacs-icon-css        "css.png"        "css")
     (treemacs--setup-icon treemacs-icon-conf       "conf.png"       "properties" "conf" "config" "ini" "xdefaults" "xresources" "terminalrc" "toml")
     (treemacs--setup-icon treemacs-icon-html       "html.png"       "html" "htm")
