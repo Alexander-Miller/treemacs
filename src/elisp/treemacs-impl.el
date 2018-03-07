@@ -146,7 +146,8 @@ Returns nil when point is on the header."
 (defsubst treemacs--unslash (path)
   "Remove the final slash in PATH."
   (declare (pure t) (side-effect-free t))
-  (if (eq ?/ (aref path (1- (length path))))
+  (if (and (> (length path) 1)
+           (eq ?/ (aref path (1- (length path)))))
       (substring path 0 -1)
     path))
 
