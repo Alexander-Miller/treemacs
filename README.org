@@ -495,41 +495,41 @@ the treemacs window and might therefore need their own global binding.
 ** Default keymap
 By default Treemacs's keymap looks as follows:
 
-| Key     | Action                                      | Description                                                                                                                             |
-|---------+---------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------|
-| ?       | treemacs-helpful-hydra                      | Summon the helpful hydra to show you the treemacs keymap.                                                                               |
-| j/n     | treemacs-next-line                          | Goto the next line.                                                                                                                     |
-| k/p     | treemacs-previous-line                      | Goto the previous line.                                                                                                                 |
-| M-J/N   | treemacs-next-line-other-window             | Goto the next line in ~next-window~.                                                                                                    |
-| M-K/P   | treemacs-previous-line-other-window         | Goto the previous line in ~next-window~..                                                                                               |
-| M-j/M-n | treemacs-next-neighbour                     | Select next node at the same depth as currently selected node, if possible.                                                             |
-| M-k/M-p | treemacs-previous-neighbour                 | Select previous node at the same depth as currently selected node, if possible.                                                         |
-| th      | treemacs-toggle-show-dotfiles               | Toggle the hiding and displaying of dotfiles.                                                                                           |
-| tw      | treemacs-toggle-fixed-width                 | Toggle whether the treemacs window should have a fixed width. See also treemacs-width.                                                  |
-| tf      | treemacs-follow-mode                        | Toggle treemacs-follow-mode (see above).                                                                                                |
-| ta      | treemacs-filewatch-mode                     | Toggle treemacs-filewatch-mode (see above).                                                                                             |
-| w       | treemacs-reset-width                        | Reset the width of the treemacs window to ~treemacs-width~. If a prefix argument is provided read a new value for treemacs-width first. |
-| RET     | treemacs-RET-action                         | Run the action defined in ~treemacs-RET-actions-config~ for the current node.                                                           |
-| TAB     | treemacs-TAB-action                         | Run the action defined in ~treemacs-TAB-actions-config~ for the current node.                                                           |
-| g/r/gr  | treemacs-refresh                            | Refresh and rebuild the treemacs buffer.                                                                                                |
-| d       | treemacs-delete                             | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                    |
-| cf      | treemacs-create-file                        | Create a file.                                                                                                                          |
-| cd      | treemacs-create-dir                         | Create a directory.                                                                                                                     |
-| R       | treemacs-rename                             | Rename the currently selected node. Reload buffers visiting renamed files or files in renamed directories.                              |
-| u       | treemacs-goto-parent-node                   | Select parent of selected node, if possible. If not call ~treemacs-uprooot~                                                             |
-| q       | treemacs-toggle                             | Hide/show an existing treemacs window.                                                                                                  |
-| Q       | treemacs-kill-buffer                        | Kill the treemacs buffer.                                                                                                               |
-| ov      | treemacs-visit-node-vertical-split          | Open current file or tag by vertically splitting next-window. Stay in current window with a prefix argument.                            |
-| oh      | treemacs-visit-node-horizontal-split        | Open current file or tag by horizontally splitting next-window. Stay in current window with a prefix argument.                          |
-| oo/RET  | treemacs-visit-node-no-split                | Open current file or tag, performing no split and using next-window directly. Stay in current window with a prefix argument.            |
-| oaa     | treemacs-visit-node-ace                     | Open current file or tag, using ace-window to decide which window to open the file in. Stay in current window with a prefix argument.   |
-| oah     | treemacs-visit-node-ace-horizontal-split    | Open current file or tag by horizontally splitting a window selected by ace-window. Stay in current window with a prefix argument.      |
-| oav     | treemacs-visit-node-ace-vertical-split      | Open current file or tag by vertically splitting a window selected by ace-window. Stay in current window with a prefix argument.        |
-| ox      | treemacs-visit-node-in-external-application | Open current file according to its mime type in an external application. Linux, Windows and Mac are supported.                          |
-| yy      | treemacs-yank-path-at-point                 | Copy the absolute path of the node at point.                                                                                            |
-| yr      | treemacs-yank-root                          | Copy the absolute path of the current treemacs root.                                                                                    |
-| s       | treemacs-resort                             | Set a new value for ~treemacs-sorting~. With a single or double prefix arg temporarily resort the current directory/the entire buffer.  |
-| b       | treemacs-add-bookmark                       | Bookmark the currently selected files's/dir's/tag's location.                                                                           |
+| Key     | Action                                      | Description                                                                                                                            |
+|---------+---------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------|
+| ?       | treemacs-helpful-hydra                      | Summon the helpful hydra to show you the treemacs keymap.                                                                              |
+| j/n     | treemacs-next-line                          | Goto the next line.                                                                                                                    |
+| k/p     | treemacs-previous-line                      | Goto the previous line.                                                                                                                |
+| M-J/N   | treemacs-next-line-other-window             | Goto the next line in ~next-window~.                                                                                                   |
+| M-K/P   | treemacs-previous-line-other-window         | Goto the previous line in ~next-window~..                                                                                              |
+| M-j/M-n | treemacs-next-neighbour                     | Select next node at the same depth as currently selected node, if possible.                                                            |
+| M-k/M-p | treemacs-previous-neighbour                 | Select previous node at the same depth as currently selected node, if possible.                                                        |
+| th      | treemacs-toggle-show-dotfiles               | Toggle the hiding and displaying of dotfiles.                                                                                          |
+| tw      | treemacs-toggle-fixed-width                 | Toggle whether the treemacs window should have a fixed width. See also treemacs-width.                                                 |
+| tf      | treemacs-follow-mode                        | Toggle treemacs-follow-mode (see above).                                                                                               |
+| ta      | treemacs-filewatch-mode                     | Toggle treemacs-filewatch-mode (see above).                                                                                            |
+| w       | treemacs-set-width                          | Select a new value for the width of the treemacs window.                                                                               |
+| RET     | treemacs-RET-action                         | Run the action defined in ~treemacs-RET-actions-config~ for the current node.                                                          |
+| TAB     | treemacs-TAB-action                         | Run the action defined in ~treemacs-TAB-actions-config~ for the current node.                                                          |
+| g/r/gr  | treemacs-refresh                            | Refresh and rebuild the treemacs buffer.                                                                                               |
+| d       | treemacs-delete                             | Delete node at point. A delete action must always be confirmed. Directories are deleted recursively.                                   |
+| cf      | treemacs-create-file                        | Create a file.                                                                                                                         |
+| cd      | treemacs-create-dir                         | Create a directory.                                                                                                                    |
+| R       | treemacs-rename                             | Rename the currently selected node. Reload buffers visiting renamed files or files in renamed directories.                             |
+| u       | treemacs-goto-parent-node                   | Select parent of selected node, if possible. If not call ~treemacs-uprooot~                                                            |
+| q       | treemacs-toggle                             | Hide/show an existing treemacs window.                                                                                                 |
+| Q       | treemacs-kill-buffer                        | Kill the treemacs buffer.                                                                                                              |
+| ov      | treemacs-visit-node-vertical-split          | Open current file or tag by vertically splitting next-window. Stay in current window with a prefix argument.                           |
+| oh      | treemacs-visit-node-horizontal-split        | Open current file or tag by horizontally splitting next-window. Stay in current window with a prefix argument.                         |
+| oo/RET  | treemacs-visit-node-no-split                | Open current file or tag, performing no split and using next-window directly. Stay in current window with a prefix argument.           |
+| oaa     | treemacs-visit-node-ace                     | Open current file or tag, using ace-window to decide which window to open the file in. Stay in current window with a prefix argument.  |
+| oah     | treemacs-visit-node-ace-horizontal-split    | Open current file or tag by horizontally splitting a window selected by ace-window. Stay in current window with a prefix argument.     |
+| oav     | treemacs-visit-node-ace-vertical-split      | Open current file or tag by vertically splitting a window selected by ace-window. Stay in current window with a prefix argument.       |
+| ox      | treemacs-visit-node-in-external-application | Open current file according to its mime type in an external application. Linux, Windows and Mac are supported.                         |
+| yy      | treemacs-yank-path-at-point                 | Copy the absolute path of the node at point.                                                                                           |
+| yr      | treemacs-yank-root                          | Copy the absolute path of the current treemacs root.                                                                                   |
+| s       | treemacs-resort                             | Set a new value for ~treemacs-sorting~. With a single or double prefix arg temporarily resort the current directory/the entire buffer. |
+| b       | treemacs-add-bookmark                       | Bookmark the currently selected files's/dir's/tag's location.                                                                          |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting

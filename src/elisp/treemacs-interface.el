@@ -394,18 +394,16 @@ See also `treemacs-width.'"
                  (propertize (if treemacs--width-is-locked "locked" "unlocked")
                              'face 'font-lock-string-face)))
 
-(defun treemacs-reset-width (&optional arg)
-  "Reset the width of the treemacs window to `treemacs-buffer-width'.
-If a prefix argument ARG is provided read a new value for
-`treemacs-buffer-width' first."
+(defun treemacs-set-width (&optional arg)
+  "Select a new value for `treemacs-width'.
+With a prefix ARG simply reset the width of the treemacs window."
   (interactive "P")
-  (let ((window-size-fixed nil))
-    (when arg
-      (setq treemacs-width
-            (->> treemacs-width
-                 (format "New Width (current = %s): ")
-                 (read-number))))
-    (treemacs--set-width treemacs-width)))
+  (unless arg
+    (setq treemacs-width
+          (->> treemacs-width
+               (format "New Width (current = %s): ")
+               (read-number))))
+  (treemacs--set-width treemacs-width))
 
 (defun treemacs-yank-path-at-point ()
   "Copy the absolute path of the node at point."

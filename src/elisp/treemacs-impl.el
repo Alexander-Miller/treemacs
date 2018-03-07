@@ -597,7 +597,7 @@ a refresh."
            (set-window-parameter w 'no-other-window t)))))))
 
 (defun treemacs--set-width (width)
-  "Set the width of the treemacs buffer to WIDTH when it is created."
+  "Set the width of the treemacs buffer to WIDTH."
   (unless (one-window-p)
     (let ((window-size-fixed)
           (w (max width window-min-width)))
