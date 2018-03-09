@@ -693,7 +693,7 @@ Delete all elements whose car is ‘string=’ to KEY from ALIST."
 
 (defun treemacs--parent (path)
   "Parent of PATH, or PATH itself if PATH is the root directory."
-  (if (f-root? path)
+  (if (string= "/" path)
       path
     (-> path
         (file-name-directory)

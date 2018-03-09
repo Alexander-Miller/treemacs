@@ -229,10 +229,10 @@
     (should-error (treemacs--parent nil)))
 
   (ert-deftest parent::fails-on-empty-path ()
-    (should-error (treemacs--parent "")))
+    (should-not (treemacs--parent "")))
 
   (ert-deftest parent::fails-on-invalid-path ()
-    (should-error (treemacs--parent "ABC")))
+    (should-not (treemacs--parent "ABC")))
 
   (ert-deftest parent::returns-parent ()
     (should (equal "/home/A" (treemacs--parent "/home/A/B"))))
