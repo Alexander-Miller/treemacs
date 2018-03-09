@@ -60,15 +60,6 @@ If no treemacs buffer exists call `treemacs-projectile'."
      (treemacs-projectile))
     (_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility)))))
 
-(defun treemacs-projectile-create-header (root)
-  "Try to use the projectile project name for ROOT as treemacs' header.
-If not projectile name was found call `treemacs--create-header' for ROOT instead."
-  (-if-let (project-name (condition-case nil
-                             (projectile-project-root)
-                           (error nil)))
-      (format "*%s*" (funcall projectile-project-name-function project-name))
-    (treemacs--create-header root)))
-
 (provide 'treemacs-projectile)
 
 ;;; treemacs-projectile.el ends here
