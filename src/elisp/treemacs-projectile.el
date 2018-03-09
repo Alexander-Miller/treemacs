@@ -30,16 +30,16 @@
 
 ;;;###autoload
 (defun treemacs-projectile (&optional arg)
-  "Open treemacs for the current projectile project.
-If not in a project do nothing. If a prefix argument ARG is given select
-the project from among `projectile-known-projects'."
+  "Add the current projectile project to the treemacs workspace.
+If not in a project do nothing. With a prefix ARG select a project from
+`projectile-known-projects'."
   (interactive "P")
   (cond
    (arg
     (treemacs--init (completing-read "Project: " projectile-known-projects)))
    ((projectile-project-p)
     (treemacs--init (projectile-project-root)))
-   (t (treemacs-log "You're not in a project."))))
+   (t (treemacs-log "You are not in a project."))))
 
 ;;;###autoload
 (defun treemacs-projectile-toggle ()

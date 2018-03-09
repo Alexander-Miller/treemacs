@@ -62,11 +62,13 @@
   (cl-defstruct (treemacs-shadow-node (:conc-name treemacs-shadow-node->))
     key parent children position closed refresh-flag))
 
-(defun treemacs--reset-index (root)
-  "Reset the node index and reinitialize it at ROOT."
-  (setq treemacs-shadow-index (make-hash-table :size 300 :test #'equal))
-  (-let [node (make-treemacs-shadow-node :key root :position (point-min))]
-    (ht-set! treemacs-shadow-index root node)))
+(defsubst treemacs--insert-shadow-node (node)
+  "Insert NODE into the shadow index."
+  (ht-set! treemacs-shadow-index (treemacs-shadow-node->key node) node))
+
+(defun treemacs--reset-index ()
+  "Reset the node index and reinitialize it at TODO."
+  (setq treemacs-shadow-index (make-hash-table :size 300 :test #'equal)))
 
 (defun treemacs-shadow-node->print (node)
   "Pretty print NODE.

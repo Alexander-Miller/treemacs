@@ -604,18 +604,10 @@ treemacs node is pointing to a valid buffer position."
   (hl-line-highlight)
   (treemacs--evade-image))
 
-(defun treemacs-add-project (path name)
-  "Add a new project for at given PATH with given display NAME."
-  (interactive "DDirectory:\nMName: ")
-  (cl-assert (eq major-mode 'treemacs-mode))
-  (-let [project (make-treemacs-project :name name :path path)]
-    (treemacs-with-writable-buffer
-     (goto-char (point-max))
-     (if (treemacs-current-button)
-         (insert "\n\n")
-       (insert "\n"))
-     (treemacs--add-root-element project)
-     (push project treemacs--projects))))
+(defun treemacs-add-project (path)
+  "Add a new project for at given PATH."
+  (interactive "DDirectory: ")
+  (treemacs-add-project-at path))
 
 (defun treemacs-remove-project ()
   "Remove the project at point."
@@ -631,7 +623,7 @@ treemacs node is pointing to a valid buffer position."
        (unless (treemacs-project->is-last? project)
          (kill-whole-line))
        (delete-trailing-whitespace)))
-    (setq treemacs--projects (delete project treemacs--projects))
+    (treemacs--remove-project-from-current-workspace project)
     (treemacs-on-collapse (treemacs-project->path project) t)
     (goto-char (treemacs-project->position (treemacs-project-at-point)))
     (recenter)

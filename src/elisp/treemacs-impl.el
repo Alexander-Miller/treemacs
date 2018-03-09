@@ -91,7 +91,11 @@
 
 (treemacs-import-functions-from "treemacs-projects"
   make-treemacs-project
-  treemacs-project->is-expanded?)
+  treemacs-current-workspace
+  treemacs-workspace->projects
+  treemacs-add-project-at
+  treemacs-project->is-expanded?
+  treemacs-project->position)
 
 (declare-function treemacs-mode "treemacs-mode")
 
@@ -401,41 +405,13 @@ buffer."
       (treemacs--setup-buffer))
     (unless (eq major-mode 'treemacs-mode)
       (treemacs-mode))
-    (treemacs--buffer-teardown (treemacs--unslash (f-long root)))
     (treemacs--check-window-system)
-    (treemacs--build-tree (treemacs--unslash (f-long root)))
+    (treemacs-add-project-at root)
     ;; no warnings since follow mode is known to be defined
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
         (treemacs--follow)))))
-
-(defun treemacs--build-tree (root)
-  "Build the file tree starting at the given ROOT."
-  (treemacs--invalidate-position-cache)
-  (treemacs--forget-last-highlight)
-  (treemacs--forget-previously-follow-tag-btn)
-  (treemacs--stop-filewatch-for-current-buffer)
-  (treemacs--cancel-refresh-timer)
-  (treemacs-with-writable-buffer
-   (delete-region (point-min) (point-max))
-   (setq default-directory (f-full root))
-   (save-excursion
-     ;; TODO
-     (-let [project (make-treemacs-project
-                     :name (file-name-nondirectory root)
-                     :path root
-                     :position (point-marker))]
-       (setq treemacs--projects (list project))
-       (treemacs--add-root-element project)))
-   (goto-char 0)
-   (forward-line 1)
-   (treemacs--evade-image)
-   ;; watch must start here and not in `treemacs--init': uproot calls build-tree, but not
-   ;; init since init runs teardown. we want to run filewatch on the new root, so the watch *must*
-   ;; be started here
-   ;; same goes for reopening
-   (treemacs--start-watching root)))
 
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
@@ -751,7 +727,7 @@ filewatch mode can refresh multiple buffers at once."
        ;; (run-hook-with-args
        ;;  'treemacs-pre-refresh-hook
        ;;  root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
-       (dolist (it treemacs--projects)
+       (dolist (it (treemacs-workspace->projects (treemacs-current-workspace)))
          (when (treemacs-project->is-expanded? it)
            (-let [root-btn (treemacs-project->position it)]
              (goto-char root-btn)

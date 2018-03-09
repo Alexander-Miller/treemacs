@@ -21,35 +21,80 @@
 ;;; Code:
 
 (require 'dash)
+(require 'ht)
 (require 'treemacs-impl)
+(require 'treemacs-structure)
 (eval-and-compile
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
-(defvar-local treemacs--projects nil)
+(treemacs-import-functions-from "treemacs-branch-creation"
+  treemacs--add-root-element)
 
-(defsubst treemacs-project->name (project)
-  "Get the name of PROJECT."
-  (aref project 1))
+(-defstruct treemacs-project name path)
 
-(defsubst treemacs-project->path (project)
-  "Get the path of PROJECT."
-  (aref project 2))
+(-defstruct treemacs-workspace name projects)
+
+(defvar-local treemacs--project-positions (make-hash-table :test #'equal :size 20))
+
+(defvar treemacs-current-workspace (make-treemacs-workspace :name "Default Workspace"))
+
+(defsubst treemacs-current-workspace ()
+  "Get the current workspace."
+  treemacs-current-workspace)
+
+(defsubst treemacs--add-project-to-current-workspace (project)
+  "Add PROJECT to the current workspace."
+  (setf (treemacs-workspace->projects treemacs-current-workspace)
+        (push project (treemacs-workspace->projects treemacs-current-workspace))))
+
+(defsubst treemacs--remove-project-from-current-workspace (project)
+  "Add PROJECT to the current workspace."
+  (setf (treemacs-workspace->projects treemacs-current-workspace)
+        (delete project (treemacs-workspace->projects treemacs-current-workspace))))
+
+(defsubst treemacs--set-project-position (project position)
+  "Insert PROJECT's POSITION into `treemacs--project-positions'."
+  (ht-set! treemacs--project-positions project position))
 
 (defsubst treemacs-project->position (project)
-  "Get the order number of PROJECT."
-  (aref project 3))
+  "Return the position of PROJECT in the current buffer."
+  (ht-get treemacs--project-positions project))
 
 (defsubst treemacs-project->is-expanded? (project)
-  "Return non-nil if PROJECT is expanded."
+  "Return non-nil if PROJECT is expanded in the current buffer."
   (eq 'root-node-open (button-get (treemacs-project->position project) :state)))
 
 (defsubst treemacs-project->is-last? (project)
   "Return t when PROJECT's root node is the last in the view."
-  (null (next-single-char-property-change (button-end (treemacs-project->position project)) :project)))
+  (-> project
+      (treemacs-project->position)
+      (button-end)
+      (next-single-property-change :project)
+      (null)))
 
-(with-no-warnings
-  (cl-defstruct (treemacs-project (:conc-name treemacs-project->))
-    name path position))
+(defun treemacs-add-project-at (path)
+  "Add project at PATH to the current workspace."
+  ;; TODO validate path
+  (setq path (treemacs--unslash (f-long path)))
+  (-let*- [(name (read-string "Project Name: " (f-filename path)))
+           (project (make-treemacs-project :name name :path path))
+           (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null)))]
+    (treemacs--add-project-to-current-workspace project)
+    (treemacs-run-in-every-buffer
+     (treemacs-with-writable-buffer
+      (if empty-workspace?
+          (progn
+            (goto-char (point-min))
+            (treemacs--reset-index))
+        (goto-char (point-max))
+        (if (treemacs-current-button)
+            (insert "\n\n")
+          (insert "\n")))
+      (treemacs--add-root-element project)
+      (treemacs--add-project-to-current-workspace project)
+      (treemacs--insert-shadow-node (make-treemacs-shadow-node
+                              :key path :position (treemacs-project->position project)))))))
 
 (defsubst treemacs-project-at-point ()
   "Get the `cl-struct-treemacs-project' for the (nearest) project at point."
