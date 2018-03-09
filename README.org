@@ -31,7 +31,6 @@
    - [[#variables][Variables]]
    - [[#faces][Faces]]
    - [[#evil-compatibility][Evil compatibility]]
-   - [[#custom-header-function][Custom header function]]
    - [[#custom-icons][Custom Icons]]
       - [[#directory-icons][Directory Icons]]
       - [[#tag-icons][Tag Icons]]
@@ -211,8 +210,7 @@ properly otherwise. It'll also enable navigation  navigation with j/k instead of
 
 *** treemacs-projectile
 Introduces projectile-centric counterparts for treemacs-launching commands, namely ~treemacs-projectile~
-and ~treemacs-projectile-toggle~. Also adds ~treemacs-create-header-projectile~ to be used as a value
-for ~treemacs-header-function~.
+and ~treemacs-projectile-toggle~.
 
 * Installation
 
@@ -285,7 +283,6 @@ You can find an exhaustive overview of all functions, their keybinds and functio
     :defer t
     :ensure t
     :config
-    (setq treemacs-header-function #'treemacs-projectile-create-header)
     :bind (:map global-map
                 ("M-m fP" . treemacs-projectile)
                 ("M-m fp" . treemacs-projectile-toggle)))
@@ -344,18 +341,6 @@ Treemacs defines and uses the following faces:
 ** Evil compatibility
 To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions
 or offer any configuration options, making sure it is loaded is sufficient.
-
-** Custom header function
-
-The function which creates the header in treemacs is easily replaced (see the entry for ~treemacs-header-function~ in the
-section about [[#variables][configuration variables]] for details). To use your own custom header you just need to define a function that
-formats the header as you wish and then tell treemacs to use it:
-
-#+BEGIN_SRC emacs-lisp
-  (defun treemacs-header-with-brackets (current-root)
-    (format "<%s>" (file-name-nondirectory current-root)))
-  (setq treemacs-header-function #'treemacs-header-with-brackets)
-#+END_SRC
 
 ** Custom Icons
 
