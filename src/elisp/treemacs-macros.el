@@ -315,6 +315,23 @@ it on the same line."
          (with-current-buffer --buffer--
            ,@body)))))
 
+(defmacro -defstruct (name &rest properties)
+  "Define a struct with NAME and PROPERTIES.
+Delegates to `cl-defstruct', creating a struct with a 'NAME->' :conc-name and
+foregoing typechecking for its properties for the hope of performance."
+  (-let [prefix (concat (symbol-name name) "->")]
+    `(progn
+       (cl-defstruct (,name (:conc-name ,(intern prefix)))
+         ,@properties)
+       ,@(--map
+          (-let*- [(prop-name (symbol-name (nth it properties)))
+                   (func-name (intern (concat prefix prop-name)))]
+            `(progn
+               (fset ',func-name
+                     (lambda (obj) ,(format "Get the %s property of OBJ." prop-name) (aref obj ,(1+ it))))
+               (gv-define-setter ,func-name (val obj) `(aset ,obj ,(1+ ,it) ,val))))
+          (number-sequence 0 (1- (length properties)))))))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here

@@ -394,7 +394,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
 
 PROJECT: `cl-struct-treemacs-project'"
   (insert treemacs-icon-root)
-  (setf (treemacs-project->position project) (point-marker))
+  (treemacs--set-project-position project (point-marker))
   (insert
    (propertize (treemacs-project->name project)
                'button '(t)
