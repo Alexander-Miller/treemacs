@@ -27,7 +27,7 @@
 (require 'treemacs-faces)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
-(require 'treemacs-persist)
+(require 'treemacs-persistence)
 (eval-and-compile (require 'treemacs-macros))
 
 (declare-function treemacs-refresh "treemacs")
