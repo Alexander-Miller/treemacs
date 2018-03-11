@@ -32,7 +32,6 @@
 (require 'bookmark)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
-(require 'treemacs-structure)
 (require 'treemacs-visuals)
 (require 'treemacs-branch-creation)
 (require 'treemacs-impl)
@@ -46,6 +45,7 @@
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-async)
 (require 'treemacs-compatibility)
+(require 'treemacs-projects)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -68,7 +68,7 @@ If no treemacs buffer exists call `treemacs'."
     [`exists
      (treemacs--select-not-visible)]
     [`none
-     (treemacs)]
+     (treemacs--init)]
     [_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility))]))
 
 ;;;###autoload

@@ -607,7 +607,7 @@ treemacs node is pointing to a valid buffer position."
 (defun treemacs-add-project (path)
   "Add a new project for at given PATH."
   (interactive "DDirectory: ")
-  (treemacs-add-project-at path))
+  (treemacs-add-project-at (f-long path)))
 
 (defun treemacs-remove-project ()
   "Remove the project at point."

@@ -397,22 +397,31 @@ buffer."
         (push btn ret)))
     (nreverse ret)))
 
-(defun treemacs--init (root)
-  "Initialize and build treemacs buffer for ROOT."
-  (-let [origin-buffer (current-buffer)]
-    (if (treemacs--is-visible?)
-        (treemacs--select-visible)
-      (treemacs--setup-buffer))
-    (unless (eq major-mode 'treemacs-mode)
-      (treemacs-mode))
-    (treemacs--check-window-system)
-    (treemacs-add-project-at root)
-    ;; no warnings since follow mode is known to be defined
-    (with-no-warnings (setq treemacs--ready-to-follow t))
-    (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
-      (with-current-buffer origin-buffer
-        (treemacs--follow)))))
-
+(defun treemacs--init (&optional root)
+  "Initialize a treemacs buffer from the current workspace.
+Add a project for ROOT if it's non-nil."
+  (-pcase (treemacs--current-visibility)
+    [`visible (treemacs--select-visible)]
+    [`exists (treemacs--select-not-visible)]
+    [`none
+     (treemacs--setup-buffer)
+     (treemacs-mode)
+     (treemacs--reset-index)
+     (treemacs-with-writable-buffer
+      (-let*- [(projects (treemacs-workspace->projects (treemacs-current-workspace)))
+               (last-index (1- (length projects)))]
+        (--each projects
+          (treemacs--add-root-element it)
+          (unless (= it-index last-index)
+            (insert "\n\n")))))
+     (goto-char 2) ])
+  (when root (treemacs-add-project-at (f-long root)))
+  (with-no-warnings (setq treemacs--ready-to-follow t))
+  ;; TODO
+  ;; (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
+  ;;   (with-current-buffer origin-buffer
+  ;;     (treemacs--follow)))
+  )
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
   ;; stop watch must come first since we need a reference to the killed buffer
@@ -629,30 +638,16 @@ Valid states are 'visible, 'exists and 'none."
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
   (treemacs--forget-last-highlight)
+  (treemacs--check-window-system)
   (-> (selected-window)
       (frame-root-window)
       (split-window nil treemacs-position)
       (select-window))
   (let ((buf (treemacs--get-framelocal-buffer)))
-    (switch-to-buffer buf)
-    (bury-buffer buf))
+    (switch-to-buffer buf))
   (set-window-dedicated-p (selected-window) t)
   (let ((window-size-fixed))
     (treemacs--set-width treemacs-width)))
-
-;; (defun str-assq-delete-all (key alist)
-;;   "Same as `assq-delete-all', but use `string=' instead of `eq'.
-;; Delete all elements whose car is ‘string=’ to KEY from ALIST."
-;;   (while (and (consp (car alist))
-;;               (string= (car (car alist)) key))
-;;     (setq alist (cdr alist)))
-;;   (let ((tail alist) tail-cdr)
-;;     (while (setq tail-cdr (cdr tail))
-;;       (if (and (consp (car tail-cdr))
-;;                (string= (car (car tail-cdr)) key))
-;;           (setcdr tail (cdr tail-cdr))
-;;         (setq tail tail-cdr))))
-;;   alist)
 
 (defun treemacs--parent (path)
   "Parent of PATH, or PATH itself if PATH is the root directory."
