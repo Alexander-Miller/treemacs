@@ -32,7 +32,7 @@
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-mouse-interface)
 (require 'treemacs-customization)
-(require 'treemacs-projects)
+(require 'treemacs-workspaces)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))

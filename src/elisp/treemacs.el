@@ -45,7 +45,7 @@
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-async)
 (require 'treemacs-compatibility)
-(require 'treemacs-projects)
+(require 'treemacs-workspaces)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))

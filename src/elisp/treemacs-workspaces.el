@@ -140,6 +140,6 @@ If BUFFER is nil use the current buffer."
               project (button-get btn :project)))
       project)))
 
-(provide 'treemacs-projects)
+(provide 'treemacs-workspaces)
 
-;;; treemacs-projects.el ends here
+;;; treemacs-workspaces.el ends here
