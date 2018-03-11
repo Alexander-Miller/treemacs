@@ -23,6 +23,7 @@
 (require 'dash)
 (require 'ht)
 (require 'treemacs-impl)
+(require 'treemacs-visuals)
 (require 'treemacs-structure)
 (eval-and-compile
   (require 'cl-lib)
@@ -37,7 +38,26 @@
 
 (defvar-local treemacs--project-positions (make-hash-table :test #'equal :size 20))
 
+(defvar-local treemacs--project-of-buffer nil
+  "The `cl-struct-treemacs-project' that the current buffer falls under, if any.")
+
 (defvar treemacs-current-workspace (make-treemacs-workspace :name "Default Workspace"))
+
+(defun treemacs--find-project-for-buffer (&optional buffer)
+  "Return the project for BUFFER in the current workspace.
+If BUFFER is nil use the current buffer."
+  (with-current-buffer (or buffer (current-buffer))
+    (unless treemacs--project-of-buffer
+      (when (buffer-file-name)
+        (setq treemacs--project-of-buffer
+              (--first (treemacs--is-path-in-dir? (buffer-file-name) (treemacs-project->path it))
+                       (treemacs-workspace->projects treemacs-current-workspace)))))
+    treemacs--project-of-buffer))
+
+(defun treemacs--find-project-for-path (path)
+  "Return the project for PATH in the current workspace."
+  (--first (treemacs--is-path-in-dir? path (treemacs-project->path it))
+           (treemacs-workspace->projects treemacs-current-workspace)))
 
 (defsubst treemacs-current-workspace ()
   "Get the current workspace."
@@ -77,25 +97,28 @@
 
 (defun treemacs-add-project-at (path)
   "Add project at PATH to the current workspace."
-  ;; TODO validate path
-  (setq path (treemacs--unslash (f-long path)))
-  (-let*- [(name (read-string "Project Name: " (f-filename path)))
-           (project (make-treemacs-project :name name :path path))
-           (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null)))]
-    (treemacs--add-project-to-current-workspace project)
-    (treemacs-run-in-every-buffer
-     (treemacs-with-writable-buffer
-      (if empty-workspace?
-          (progn
-            (goto-char (point-min))
-            (treemacs--reset-index))
-        (goto-char (point-max))
-        (if (treemacs-current-button)
-            (insert "\n\n")
-          (insert "\n")))
-      (treemacs--add-root-element project)
-      (treemacs--insert-shadow-node (make-treemacs-shadow-node
-                              :key path :position (treemacs-project->position project)))))))
+  (if (treemacs--find-project-for-path path)
+      ;; TODO also move to project node
+      (treemacs-pulse-on-success
+          (format "Project under %s already exists."
+                  (propertize path 'face 'font-lock-string-face)))
+    (-let*- [(name (read-string "Project Name: " (f-filename path)))
+             (project (make-treemacs-project :name name :path path))
+             (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null)))]
+      (treemacs--add-project-to-current-workspace project)
+      (treemacs-run-in-every-buffer
+       (treemacs-with-writable-buffer
+        (if empty-workspace?
+            (progn
+              (goto-char (point-min))
+              (treemacs--reset-index))
+          (goto-char (point-max))
+          (if (treemacs-current-button)
+              (insert "\n\n")
+            (insert "\n")))
+        (treemacs--add-root-element project)
+        (treemacs--insert-shadow-node (make-treemacs-shadow-node
+                                :key path :position (treemacs-project->position project))))))))
 
 (defsubst treemacs-project-at-point ()
   "Get the `cl-struct-treemacs-project' for the (nearest) project at point."
