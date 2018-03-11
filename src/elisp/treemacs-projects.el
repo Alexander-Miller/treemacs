@@ -46,7 +46,9 @@
 (defsubst treemacs--add-project-to-current-workspace (project)
   "Add PROJECT to the current workspace."
   (setf (treemacs-workspace->projects treemacs-current-workspace)
-        (push project (treemacs-workspace->projects treemacs-current-workspace))))
+        ;; reversing around to get the order right - new project goes to the *bottom* of the list
+        (-let [reversed (nreverse (treemacs-workspace->projects treemacs-current-workspace))]
+          (nreverse (push project reversed)))))
 
 (defsubst treemacs--remove-project-from-current-workspace (project)
   "Add PROJECT to the current workspace."
@@ -92,7 +94,6 @@
             (insert "\n\n")
           (insert "\n")))
       (treemacs--add-root-element project)
-      (treemacs--add-project-to-current-workspace project)
       (treemacs--insert-shadow-node (make-treemacs-shadow-node
                               :key path :position (treemacs-project->position project)))))))
 
