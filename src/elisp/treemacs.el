@@ -57,7 +57,8 @@
   "If a treemacs buffer exists and is visible hide it.
 If a treemacs buffer exists, but is not visible bring it to the foreground
 and select it.
-If no treemacs buffer exists call `treemacs'."
+If no treemacs buffer exists and the workspace is empty call
+`treemacs', otherwise display the current workspace."
   (interactive)
   (-pcase (treemacs--current-visibility)
     [`visible

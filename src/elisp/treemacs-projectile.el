@@ -46,19 +46,22 @@ If not in a project do nothing. With a prefix ARG select a project from
   "If a treemacs buffer exists and is visible hide it.
 If a treemacs buffer exists, but is not visible bring it to the foreground
 and select it.
-If no treemacs buffer exists call `treemacs-projectile'."
+If no treemacs buffer exists and the workspace is empty call
+`treemacs-projectile', otherwise display the current workspace."
   (interactive)
-  (pcase (treemacs--current-visibility)
-    ('visible
+  (-pcase (treemacs--current-visibility)
+    [`visible
      (treemacs--select-visible)
      (if (one-window-p)
          (switch-to-buffer (other-buffer))
-       (bury-buffer)))
-    ('exists
-     (treemacs--select-not-visible))
-    ('none
-     (treemacs-projectile))
-    (_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility)))))
+       (bury-buffer))]
+    [`exists
+     (treemacs--select-not-visible)]
+    [`none
+     (if (treemacs-workspace->is-empty?)
+         (treemacs)
+       (treemacs--init))]
+    [_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility))]))
 
 (provide 'treemacs-projectile)
 
