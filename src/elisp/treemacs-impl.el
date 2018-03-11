@@ -89,7 +89,7 @@
   treemacs--on-rename
   treemacs--invalidate-position-cache)
 
-(treemacs-import-functions-from "treemacs-projects"
+(treemacs-import-functions-from "treemacs-workspaces"
   make-treemacs-project
   treemacs-current-workspace
   treemacs-workspace->projects

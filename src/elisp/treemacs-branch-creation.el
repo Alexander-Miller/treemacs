@@ -30,7 +30,7 @@
 (require 'treemacs-async)
 (require 'treemacs-customization)
 (require 'treemacs-structure)
-(require 'treemacs-projects)
+(require 'treemacs-workspaces)
 (eval-and-compile (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs-filewatch-mode"
