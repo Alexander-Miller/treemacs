@@ -50,6 +50,14 @@ is a marker pointing to POS."
   "Sort F1 and F2 alphabetically desc."
   (string-lessp f1 f2))
 
+(defsubst treemacs--sort-alphabetic-case-insensitive-asc (f1 f2)
+  "Sort F1 and F2 case insensitive alphabetically asc."
+  (string-lessp (downcase f2) (downcase f1)))
+
+(defsubst treemacs--sort-alphabetic-case-insensitive-desc (f1 f2)
+  "Sort F1 and F2 case insensitive alphabetically desc."
+  (string-lessp (downcase f1) (downcase f2)))
+
 (defsubst treemacs--sort-size-asc (f1 f2)
   "Sort F1 and F2 by size asc."
   (>= (nth 7 (file-attributes f1))
@@ -97,13 +105,15 @@ DEFAULT: Face"
   "Get the content of DIR, separated into sublists of first dirs, then files."
   (let* ((sort-func
           (-pcase treemacs-sorting
-            [`alphabetic-asc  #'treemacs--sort-alphabetic-asc]
+            [`alphabetic-asc #'treemacs--sort-alphabetic-asc]
             [`alphabetic-desc #'treemacs--sort-alphabetic-desc]
-            [`size-asc        #'treemacs--sort-size-asc]
-            [`size-desc       #'treemacs--sort-size-desc]
-            [`mod-time-asc    #'treemacs--sort-mod-time-asc]
-            [`mod-time-desc   #'treemacs--sort-mod-time-desc]
-            [_                (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting)]))
+            [`alphabetic-case-insensitive-asc  #'treemacs--sort-alphabetic-case-insensitive-asc]
+            [`alphabetic-case-insensitive-desc #'treemacs--sort-alphabetic-case-insensitive-desc]
+            [`size-asc #'treemacs--sort-size-asc]
+            [`size-desc #'treemacs--sort-size-desc]
+            [`mod-time-asc #'treemacs--sort-mod-time-asc]
+            [`mod-time-desc #'treemacs--sort-mod-time-desc]
+            [_ (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting)]))
          (entries (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown)))
          (dirs-files (-separate #'file-directory-p entries)))
     (list (sort (cl-first dirs-files) sort-func)
