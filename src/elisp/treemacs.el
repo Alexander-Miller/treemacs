@@ -40,7 +40,7 @@
 (require 'treemacs-mode)
 (require 'treemacs-interface)
 (require 'treemacs-mouse-interface)
-(require 'treemacs-persist)
+(require 'treemacs-persistence)
 (require 'treemacs-tags)
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-async)

@@ -45,6 +45,6 @@
 (unless (featurep 'treemacs)
   (treemacs--restore))
 
-(provide 'treemacs-persist)
+(provide 'treemacs-persistence)
 
-;;; treemacs-persist.el ends here
+;;; treemacs-persistence.el ends here
