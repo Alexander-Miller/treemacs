@@ -68,19 +68,21 @@ If no treemacs buffer exists call `treemacs'."
     [`exists
      (treemacs--select-not-visible)]
     [`none
-     (treemacs--init)]
+     (if (treemacs-workspace->is-empty?)
+         (treemacs)
+       (treemacs--init))]
     [_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility))]))
 
 ;;;###autoload
 (defun treemacs (&optional arg)
-  "Open treemacs with current buffer's directory as root.
-If the current buffer's `default-directory' is nil, use $HOME as fallback.
-If a prefix argument ARG is given manually select the root directory."
+  "Add a project with the current buffer's file as root.
+If a prefix argument ARG is given or if the current buffer has no file manually
+select the root directory."
   (interactive "P")
-  (treemacs--init (cond
-            (arg (read-directory-name "Treemacs root: "))
-            (default-directory default-directory)
-            (t (getenv "HOME")))))
+  (treemacs--init
+   (if (or arg (null (buffer-file-name)))
+       (read-directory-name "Project root: ")
+     (buffer-file-name))))
 
 ;;;###autoload
 (defun treemacs-bookmark (&optional arg)

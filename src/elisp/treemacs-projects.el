@@ -63,6 +63,10 @@ If BUFFER is nil use the current buffer."
   "Get the current workspace."
   treemacs-current-workspace)
 
+(defsubst treemacs-workspace->is-empty? ()
+  "Return t when there are no projects in the current workspace."
+  (null (treemacs-workspace->projects treemacs-current-workspace)))
+
 (defsubst treemacs--add-project-to-current-workspace (project)
   "Add PROJECT to the current workspace."
   (setf (treemacs-workspace->projects treemacs-current-workspace)
