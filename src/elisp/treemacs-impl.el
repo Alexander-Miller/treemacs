@@ -713,6 +713,8 @@ Retursns a cons cell of a descriptive string name and the sorting symbol."
   (declare (side-effect-free t))
   (let* ((sort-names '(("Sort Alphabetically Ascending" . alphabetic-asc)
                        ("Sort Alphabetically Descending" . alphabetic-desc)
+                       ("Sort Case Insensitive Alphabetically Ascending" . alphabetic-case-insensitive-asc)
+                       ("Sort Case Insensitive Alphabetically Descending" . alphabetic-case-insensitive-desc)
                        ("Sort by Size Ascending" . size-asc)
                        ("Sort by Size Descending" . size-desc)
                        ("Sort by Modification Date Ascending" . mod-time-asc)
