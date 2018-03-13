@@ -43,16 +43,14 @@
 
 (defvar treemacs-current-workspace (make-treemacs-workspace :name "Default Workspace"))
 
-(defun treemacs--find-project-for-buffer (&optional buffer)
-  "Return the project for BUFFER in the current workspace.
-If BUFFER is nil use the current buffer."
-  (with-current-buffer (or buffer (current-buffer))
-    (unless treemacs--project-of-buffer
-      (when (buffer-file-name)
-        (setq treemacs--project-of-buffer
-              (--first (treemacs--is-path-in-dir? (buffer-file-name) (treemacs-project->path it))
-                       (treemacs-workspace->projects treemacs-current-workspace)))))
-    treemacs--project-of-buffer))
+(defun treemacs--find-project-for-buffer ()
+  "In the current workspace find the project current buffer's file falls under."
+  (unless treemacs--project-of-buffer
+    (when (buffer-file-name)
+      (setq treemacs--project-of-buffer
+            (--first (treemacs--is-path-in-dir? (buffer-file-name) (treemacs-project->path it))
+                     (treemacs-workspace->projects treemacs-current-workspace)))))
+  treemacs--project-of-buffer)
 
 (defun treemacs--find-project-for-path (path)
   "Return the project for PATH in the current workspace."
