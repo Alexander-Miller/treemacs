@@ -178,7 +178,7 @@ TREEMACS-WINDOW: Window
 BUFFER-FILE: Path
 PROJECT: `cl-struct-treemacs-project'"
   (let* ((tag-path (treemacs--find-index-pos (point) flat-index))
-         (file-states '(file-node-open file-node-closed))
+         (file-states '(file-node-open file-node-closed root-node-open root-node-closed))
          (btn))
     (when tag-path
       (treemacs-without-following
@@ -194,7 +194,7 @@ PROJECT: `cl-struct-treemacs-project'"
                (when (and treemacs--previously-followed-tag-btn
                           (not (eq treemacs--previously-followed-tag-btn btn)))
                  (save-excursion
-                   (goto-char (button-start treemacs--previously-followed-tag-btn))
+                   (goto-char treemacs--previously-followed-tag-btn)
                    (when  (and (string= (button-get (treemacs-current-button) :path)
                                         (button-get treemacs--previously-followed-tag-btn :path))
                                (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn :state)))
@@ -226,15 +226,11 @@ PROJECT: `cl-struct-treemacs-project'"
   (let* ((treemacs-window (treemacs--is-visible?))
          (buffer (current-buffer))
          (buffer-file (when buffer (buffer-file-name)))
-         (root (when treemacs-window
-                 (treemacs-without-following
-                  (with-selected-window treemacs-window (treemacs--current-root))))))
-    (when (and treemacs-window
-               buffer-file
-               (when root (treemacs--is-path-in-dir? buffer-file root)))
+         (project (treemacs--find-project-for-buffer)))
+    (when (and treemacs-window buffer-file project)
       (condition-case e
           (-when-let (index (treemacs--flatten&sort-imenu-index))
-            (treemacs--do-follow-tag index treemacs-window buffer-file))
+            (treemacs--do-follow-tag index treemacs-window buffer-file project))
         (error (treemacs-log "Encountered error while following tag at point: %s" e))))))
 
 (defsubst treemacs--setup-tag-follow-mode ()
