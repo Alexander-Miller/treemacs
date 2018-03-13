@@ -250,7 +250,7 @@ to it will instead show a blank."
   (electric-indent-local-mode -1)
   (visual-line-mode -1)
   (font-lock-mode -1)
-  (jit-lock-mode -1)
+  (jit-lock-mode nil)
   (hl-line-mode t)
 
   ;; needs to run manually the first time treemacs is loaded, since the hook is only added *after*
