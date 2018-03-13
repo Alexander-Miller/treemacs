@@ -160,31 +160,28 @@ containing directory as root. Will do nothing if the current buffer is not
 visiting a file or Emacs cannot find any tags for the current file."
   (interactive)
   (cl-block body
-    (let* ((buffer (current-buffer))
-           (buffer-file (when buffer (buffer-file-name buffer)))
-           (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
-           (treemacs-window))
+    (-let*- [(buffer (current-buffer))
+             (buffer-file (when buffer (buffer-file-name buffer)))
+             (project (treemacs--find-project-for-buffer))
+             (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
+             (treemacs-window nil)]
       (unless buffer-file
-        (treemacs-log "Nothing to find - current buffer is not visiting a file.")
+        (treemacs-pulse-on-failure "Current buffer is not visiting a file.")
         (cl-return-from body))
       (unless index
-        (treemacs-log "Nothing to find - current buffer has no tags.")
+        (treemacs-pulse-on-failure "Current buffer has no tags.")
+        (cl-return-from body))
+      (unless project
+        (treemacs-pulse-on-failure (format "%s does not fall under any project in the workspace."
+                                    (propertize buffer-file 'face 'font-lock-string-face)))
         (cl-return-from body))
       (save-selected-window
         (-pcase (treemacs--current-visibility)
-          [`none
-           (treemacs-toggle)]
-          [visibility
-           (if (eq 'exists visibility)
-               (treemacs--select-not-visible)
-             (treemacs--select-visible))
-           (unless (treemacs--is-path-in-dir? buffer-file (treemacs--current-root))
-             (if (y-or-n-p "Change the root to find current tag? ")
-                 (treemacs--init (f-dirname buffer-file))
-               (treemacs-log "Root not changed, tag not followed.")
-               (cl-return-from body)))])
+          [`visible (treemacs--select-visible)]
+          [`exists (treemacs--select-not-visible)]
+          [`none (treemacs--init)])
         (setq treemacs-window (selected-window)))
-      (treemacs--do-follow-tag index treemacs-window buffer-file))))
+      (treemacs--do-follow-tag index treemacs-window buffer-file project))))
 
 ;;;###autoload
 (defun treemacs-select-window ()

@@ -170,12 +170,13 @@ END: Integer"
      ((< pos2 point)
       (treemacs--binary-index-search point list index end)))))
 
-(defsubst treemacs--do-follow-tag (flat-index treemacs-window buffer-file)
+(defsubst treemacs--do-follow-tag (flat-index treemacs-window buffer-file project)
   "Actual tag-follow implementation, run once the necessary data is gathered.
 
 FLAT-INDEX: Sorted list of tag paths
 TREEMACS-WINDOW: Window
-BUFFER-FILE: Path"
+BUFFER-FILE: Path
+PROJECT: `cl-struct-treemacs-project'"
   (let* ((tag-path (treemacs--find-index-pos (point) flat-index))
          (file-states '(file-node-open file-node-closed))
          (btn))
@@ -183,7 +184,6 @@ BUFFER-FILE: Path"
       (treemacs-without-following
        (with-selected-window treemacs-window
          (setq btn (treemacs-current-button))
-         ;; current button might not be there when point is on the header
          (if btn
              (progn
                ;; first move to the nearest file when we're on a tag
@@ -201,10 +201,10 @@ BUFFER-FILE: Path"
                      (treemacs--collapse-tags-for-file treemacs--previously-followed-tag-btn))))
                ;; when that doesnt work move manually to the correct file
                (unless (string-equal buffer-file (button-get btn :path))
-                 (treemacs--do-follow buffer-file)
+                 (treemacs--do-follow buffer-file project)
                  (setq btn (treemacs-current-button))))
            ;; also move manually when point is on the header
-           (treemacs--do-follow buffer-file)
+           (treemacs--do-follow buffer-file project)
            (setq btn (treemacs-current-button)))
          (goto-char (button-start btn))
          (setq treemacs--previously-followed-tag-btn btn)
