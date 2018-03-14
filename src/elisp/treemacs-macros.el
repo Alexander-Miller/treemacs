@@ -341,7 +341,7 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
        (when (equal (button-get child-btn :parent) ,btn)
          (if ,@predicate
              (cl-return-from search child-btn)
-           (while (setq child-btn (treemacs--next-neighbour child-btn))
+           (while (setq child-btn (treemacs--next-neighbour-of child-btn))
              (when ,@predicate (cl-return-from search child-btn))))))))
 
 (provide 'treemacs-macros)

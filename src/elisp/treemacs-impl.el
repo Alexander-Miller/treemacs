@@ -281,7 +281,7 @@ Will also perform cleanup if the buffer is dead."
       (push (cons frame buf) treemacs--buffer-access))
     buf))
 
-(defsubst treemacs--next-neighbour (btn)
+(defsubst treemacs--next-neighbour-of (btn)
   "Get the next same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
   (-let- [(depth (button-get btn :depth))
@@ -290,7 +290,7 @@ Will also perform cleanup if the buffer is dead."
       (setq next (next-button (button-end next))))
     (when (and next (= depth (button-get next :depth))) next)))
 
-(defsubst treemacs--prev-neighbour (btn)
+(defsubst treemacs--prev-neighbour-of (btn)
   "Get the previous same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
   (-let- [(depth (button-get btn :depth))
@@ -398,7 +398,7 @@ buffer."
         (btn (next-button (button-end parent-btn) t)))
     (when (equal (1+ (button-get parent-btn :depth)) (button-get btn :depth))
       (setq ret (cons btn ret))
-      (while (setq btn (treemacs--next-neighbour btn))
+      (while (setq btn (treemacs--next-neighbour-of btn))
         (push btn ret)))
     (nreverse ret)))
 
