@@ -59,7 +59,7 @@ If no treemacs buffer exists and the workspace is empty call
      (treemacs--select-not-visible)]
     [`none
      (if (treemacs-workspace->is-empty?)
-         (treemacs)
+         (treemacs-projectile (--if-let (projectile-project-root) nil t))
        (treemacs--init))]
     [_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility))]))
 
