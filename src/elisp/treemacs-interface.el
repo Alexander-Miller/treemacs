@@ -136,13 +136,13 @@ If there is no parent to go up to call `treemacs-uproot' instead."
 (defun treemacs-next-neighbour ()
   "Select next node at the same depth as currently selected node, if possible."
   (interactive)
-  (-when-let- [next (treemacs--next-neighbour (treemacs-current-button))]
+  (-when-let- [next (treemacs--next-neighbour-of (treemacs-current-button))]
     (goto-char next)))
 
 (defun treemacs-previous-neighbour ()
   "Select previous node at the same depth as currently selected node, if possible."
   (interactive)
-  (-when-let- [prev (treemacs--prev-neighbour (treemacs-current-button))]
+  (-when-let- [prev (treemacs--prev-neighbour-of (treemacs-current-button))]
     (goto-char prev)))
 
 (defun treemacs-visit-node-vertical-split (&optional arg)
