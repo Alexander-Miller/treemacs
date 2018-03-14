@@ -594,14 +594,16 @@ treemacs node is pointing to a valid buffer position."
   (treemacs-save-position
     (treemacs-with-writable-buffer
      (-let*- [(project (treemacs-project-at-point))
-              (pos (treemacs-project->position project))]
+              (project-btn (treemacs-project->position project))
+              (state (button-get project-btn :state))]
        (setf (treemacs-project->name project) name)
-       (goto-char (button-end pos))
+       (goto-char (button-end project-btn))
        (delete-region (point-at-bol) (point-at-eol))
        (treemacs--add-root-element project)
        (treemacs--forget-last-highlight)
-       (treemacs--collapse-root-node (treemacs-project->position project))
-       (treemacs--expand-root-node (treemacs-project->position project)))))
+       (when (eq state 'root-node-open)
+         (treemacs--collapse-root-node (treemacs-project->position project))
+         (treemacs--expand-root-node (treemacs-project->position project))))))
   (hl-line-highlight)
   (treemacs--evade-image))
 
