@@ -73,9 +73,14 @@
           (nreverse (push project reversed)))))
 
 (defsubst treemacs--remove-project-from-current-workspace (project)
-  "Add PROJECT to the current workspace."
+  "Remove PROJECT from the current workspace."
   (setf (treemacs-workspace->projects treemacs-current-workspace)
-        (delete project (treemacs-workspace->projects treemacs-current-workspace))))
+        (delete project (treemacs-workspace->projects treemacs-current-workspace)))
+  ;; also reset the cached buffers' projects
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (when (equal treemacs--project-of-buffer project)
+        (setq treemacs--project-of-buffer nil)))))
 
 (defsubst treemacs--set-project-position (project position)
   "Insert PROJECT's POSITION into `treemacs--project-positions'."
