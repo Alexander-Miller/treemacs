@@ -405,29 +405,28 @@ buffer."
 (defun treemacs--init (&optional root)
   "Initialize a treemacs buffer from the current workspace.
 Add a project for ROOT if it's non-nil."
-  (setq root (treemacs--canonical-path root))
-  (-pcase (treemacs--current-visibility)
-    [`visible (treemacs--select-visible)]
-    [`exists (treemacs--select-not-visible)]
-    [`none
-     (treemacs--setup-buffer)
-     (treemacs-mode)
-     (treemacs--reset-index)
-     (treemacs-with-writable-buffer
-      (-let*- [(projects (treemacs-workspace->projects (treemacs-current-workspace)))
-               (last-index (1- (length projects)))]
-        (--each projects
-          (treemacs--add-root-element it)
-          (unless (= it-index last-index)
-            (insert "\n\n")))))
-     (goto-char 2) ])
-  (when root (treemacs-add-project-at (f-long root)))
-  (with-no-warnings (setq treemacs--ready-to-follow t))
-  ;; TODO
-  ;; (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
-  ;;   (with-current-buffer origin-buffer
-  ;;     (treemacs--follow)))
-  )
+  (-let [origin-buffer (current-buffer)]
+    (-pcase (treemacs--current-visibility)
+      [`visible (treemacs--select-visible)]
+      [`exists (treemacs--select-not-visible)]
+      [`none
+       (treemacs--setup-buffer)
+       (treemacs-mode)
+       (treemacs--reset-index)
+       (treemacs-with-writable-buffer
+        (-let*- [(projects (treemacs-workspace->projects (treemacs-current-workspace)))
+                 (last-index (1- (length projects)))]
+          (--each projects
+            (treemacs--add-root-element it)
+            (unless (= it-index last-index)
+              (insert "\n\n")))))
+       (goto-char 2) ])
+    (when root (treemacs-add-project-at (treemacs--canonical-path root)))
+    (with-no-warnings (setq treemacs--ready-to-follow t))
+    (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
+      (with-current-buffer origin-buffer
+        (treemacs--follow)))))
+
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
   ;; stop watch must come first since we need a reference to the killed buffer
