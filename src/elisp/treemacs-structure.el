@@ -67,7 +67,7 @@
   (ht-set! treemacs-shadow-index (treemacs-shadow-node->key node) node))
 
 (defun treemacs--reset-index ()
-  "Reset the node index and reinitialize it at TODO."
+  "Reset the shadow index and."
   (setq treemacs-shadow-index (make-hash-table :size 300 :test #'equal)))
 
 (defun treemacs-shadow-node->print (node)
