@@ -340,6 +340,11 @@ Simply collapses and re-expands the button (if it has not been closed)."
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
 
+(defun treemacs--canonical-path (path)
+  "The canonical version of PATH for being handled by treemacs.
+In practice this means expand PATH and remove its final slash."
+  (-> path (f-long) (treemacs--unslash)))
+
 (defun treemacs-is-file-git-ignored? (file git-info)
   "Determined if FILE is ignored by git by means of GIT-INFO."
   (eq ?! (ht-get git-info file)))
@@ -400,6 +405,7 @@ buffer."
 (defun treemacs--init (&optional root)
   "Initialize a treemacs buffer from the current workspace.
 Add a project for ROOT if it's non-nil."
+  (setq root (treemacs--canonical-path root))
   (-pcase (treemacs--current-visibility)
     [`visible (treemacs--select-visible)]
     [`exists (treemacs--select-not-visible)]
@@ -432,13 +438,6 @@ Add a project for ROOT if it's non-nil."
   (unless treemacs--buffer-access
     ;; TODO make local maybe
     (remove-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)))
-
-(defun treemacs--buffer-teardown (root)
-  "Cleanup to be run when an existing treemacs buffer is re-initialized at ROOT."
-  (treemacs--reset-index root)
-  (treemacs--stop-filewatch-for-current-buffer)
-  (treemacs--cancel-refresh-timer)
-  (treemacs--forget-last-highlight))
 
 (defun treemacs--push-button (btn &optional recursive)
   "Execute the appropriate action given the state of the pushed BTN.
