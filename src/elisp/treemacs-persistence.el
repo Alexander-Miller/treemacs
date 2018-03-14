@@ -36,7 +36,7 @@
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs--persist-file'."
   (condition-case e
-      (-let [workspace (-> treemacs--persist-file (f-read 'utf-8) (read) (car))]
+      (-when-let- [workspace (-> treemacs--persist-file (f-read 'utf-8) (read) (car))]
         (dolist (project (treemacs-workspace->projects workspace))
           (unless (-> project (treemacs-project->path) (f-exists?))
             (treemacs-log (format "Project at %s does not exist and was removed from the workspace."
