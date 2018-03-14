@@ -48,7 +48,7 @@
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
 
-(unless (featurep 'treemacs)
+(unless (or noninteractive (featurep 'treemacs))
   (treemacs--restore))
 
 (provide 'treemacs-persistence)
