@@ -294,9 +294,9 @@ A delete action must always be confirmed. Directories are deleted recursively."
   (interactive)
   (-if-let (btn (treemacs-current-button))
       (if (not (memq (button-get btn :state) '(file-node-open file-node-closed dir-node-open dir-node-closed)))
-          (treemacs-log "Only files and directories can be deleted.")
-        (let* ((path      (button-get btn :path))
-               (file-name (f-filename path)))
+          (treemacs-pulse-on-failure "Only files and directories can be deleted.")
+        (-let*- [(path (button-get btn :path))
+                 (file-name (f-filename path))]
           (when
               (cond
                ((f-file? path)
@@ -308,7 +308,8 @@ A delete action must always be confirmed. Directories are deleted recursively."
                   (treemacs--without-filewatch (f-delete path t))
                   t))
                (t (progn
-                    (treemacs-log "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
+                    (treemacs-pulse-on-failure
+                        "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
                     nil)))
             (treemacs--on-file-deletion path)
             (treemacs-without-messages (treemacs-refresh)))))
