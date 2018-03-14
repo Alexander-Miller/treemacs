@@ -81,9 +81,10 @@ If a prefix argument ARG is given or if the current buffer has no file manually
 select the root directory."
   (interactive "P")
   (treemacs--init
-   (if (or arg (null (buffer-file-name)))
-       (read-directory-name "Project root: ")
-     (buffer-file-name))))
+   (-let [root (if (or arg (null (buffer-file-name)))
+                   (read-directory-name "Project root: ")
+                 (buffer-file-name))]
+     (if (f-dir? root) root (f-parent root)))))
 
 ;;;###autoload
 (defun treemacs-bookmark (&optional arg)
