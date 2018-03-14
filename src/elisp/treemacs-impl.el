@@ -95,7 +95,11 @@
   treemacs-workspace->projects
   treemacs-add-project-at
   treemacs-project->is-expanded?
-  treemacs-project->position)
+  treemacs-project->position
+  treemacs--find-project-for-path)
+
+(treemacs-import-functions-from "treemacs-visuals"
+  treemacs-pulse-on-failure)
 
 (declare-function treemacs-mode "treemacs-mode")
 
@@ -222,16 +226,11 @@ Returns nil when point is on the header."
   (-when-let (b (treemacs-current-button))
     (button-get b prop)))
 
-(defsubst treemacs--current-root ()
-  "Return the current root directory.
-Requires and assumes to be called inside the treemacs buffer."
-  (treemacs--unslash (f-long default-directory)))
-
 (defsubst treemacs-parent-of (btn)
   "Return the parent path of BTN."
   (--if-let (button-get btn :parent)
       (button-get it :path)
-    (treemacs--current-root)))
+    (treemacs--parent (button-get btn :path))))
 
 (defsubst treemacs--reject-ignored-files (file)
   "Return t if FILE is *not* an ignored file.
@@ -385,7 +384,7 @@ That is, directories (and their descendants) that are in the reopen cache, but
 are not being shown on account of `treemacs-show-hidden-files' being nil."
   (if treemacs-show-hidden-files
       dirs
-    (let ((root (treemacs--current-root)))
+    (-let [root (treemacs--find-project-for-path (car dirs))]
       (--filter (not (--any (s-matches? treemacs-dotfiles-regex it)
                             (f-split (substring it (length root)))))
                 dirs))))
@@ -493,31 +492,31 @@ Use PROMPT to ask for a location and CREATION-FUNC to create a new dir/file.
 PROMPT: String
 CREATION-FUNC: `f-touch' | `f-mkdir'"
   (interactive)
-  (let ((btn (treemacs-current-button))
-        (curr-path)
+  (let ((curr-path)
         (location)
         (name))
     (cl-block body
-      (if (null btn)
-          (f-slash (treemacs--current-root))
-        (let ((path (treemacs--nearest-path btn)))
-          (setq curr-path (f-slash (if (f-dir? path)
-                                       path
-                                     (f-dirname path))))))
+      (-let [path (--if-let (treemacs-current-button)
+                      (treemacs--nearest-path it)
+                    (-> "~" (f-expand) (f-slash)))]
+        (setq curr-path (f-slash (if (f-dir? path)
+                                     path
+                                   (f-dirname path)))))
       (setq location (read-directory-name "Create in: " curr-path))
       (when (not (f-directory? location))
         (cl-return-from body
-          (treemacs-log "%s is not a directory."
-                         (propertize location 'face 'font-lock-string-face))))
+          (treemacs-pulse-on-failure "%s is not a directory."
+                 (propertize location 'face 'font-lock-string-face))))
       (setq name (read-string prompt))
-      (let ((new-file (f-join location name)))
+      (-let [new-file (f-join location name)]
         (when (f-exists? new-file)
           (cl-return-from body
-            (treemacs-log "%s already exists."
-                           (propertize  'face 'font-lock-string-face))))
+            (treemacs-pulse-on-failure "%s already exists."
+              (propertize  'face 'font-lock-string-face))))
         (treemacs--without-filewatch (funcall creation-func new-file))
         (treemacs-without-messages (treemacs-refresh))
-        (treemacs--do-follow (f-long new-file))
+        (--when-let (treemacs--find-project-for-path new-file)
+          (treemacs--do-follow (f-long new-file) it))
         (recenter)
         (treemacs-pulse-on-success)))))
 
