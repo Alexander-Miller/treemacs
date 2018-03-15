@@ -40,8 +40,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     ;; 7th element is the clicked image
     (when (->> event (cadr) (nth 7))
       (treemacs-do-for-button-state
-       :on-file-node-closed (treemacs--expand-tags-for-file btn)
-       :on-file-node-open   (treemacs--collapse-tags-for-file btn)
+       :on-file-node-closed (treemacs--expand-file-node btn)
+       :on-file-node-open   (treemacs--collapse-file-node btn)
        :on-tag-node-closed  (treemacs--expand-tag-node btn)
        :on-tag-node-open    (treemacs--collapse-tag-node btn)
        :no-error            t))

@@ -320,7 +320,7 @@ set to PARENT."
         (delete-trailing-whitespace))
       ,post-close-action)))
 
-(defun treemacs--expand-root-node (btn &optional _TODO_ARG)
+(defun treemacs--expand-root-node (btn)
   "Expand the given root BTN."
   (-let*- [(path (button-get btn :path))
            (git-future (treemacs--git-status-process-function path))
@@ -374,8 +374,7 @@ RECURSIVE: Bool"
            (--each (treemacs--get-children-of btn)
              (when (eq 'dir-node-closed (button-get it :state))
                (goto-char (button-start it))
-               (treemacs--expand-dir-node
-                it :git-future git-future :recursive t)))))))))
+               (treemacs--expand-dir-node it :git-future git-future :recursive t)))))))))
 
 (defun treemacs--collapse-dir-node (btn &optional recursive)
   "Close node given by BTN.

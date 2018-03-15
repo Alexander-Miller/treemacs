@@ -198,7 +198,7 @@ PROJECT: `cl-struct-treemacs-project'"
                    (when  (and (string= (button-get (treemacs-current-button) :path)
                                         (button-get treemacs--previously-followed-tag-btn :path))
                                (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn :state)))
-                     (treemacs--collapse-tags-for-file treemacs--previously-followed-tag-btn))))
+                     (treemacs--collapse-file-node treemacs--previously-followed-tag-btn))))
                ;; when that doesnt work move manually to the correct file
                (unless (string-equal buffer-file (button-get btn :path))
                  (treemacs--do-follow buffer-file project)

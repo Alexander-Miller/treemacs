@@ -185,7 +185,7 @@ DEPTH: Int"
                :depth depth
                :index (cdr node))))
 
-(defun treemacs--expand-tags-for-file (btn &optional recursive)
+(defun treemacs--expand-file-node (btn &optional recursive)
   "Open tag items for file BTN.
 Recursively open all tag below BTN when RECURSIVE is non-nil."
   (-let [path (button-get btn :path)]
@@ -215,7 +215,7 @@ Recursively open all tag below BTN when RECURSIVE is non-nil."
                                    (treemacs--expand-tag-node it t))))))
       (treemacs-pulse-on-failure "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
 
-(defun treemacs--collapse-tags-for-file (btn &optional recursive)
+(defun treemacs--collapse-file-node (btn &optional recursive)
   "Close node given by BTN.
 Remove all open tag entries under BTN when RECURSIVE."
   (treemacs--button-close
@@ -360,7 +360,7 @@ case point will be left at the next highest node available."
     (-when-let (file-node (treemacs--goto-button-at file))
       (when (eq 'file-node-closed (button-get file-node :state))
         (goto-char (button-start file-node))
-        (treemacs--expand-tags-for-file file-node))
+        (treemacs--expand-file-node file-node))
       (dolist (tag-path-item path)
         (-if-let (tag-path-node (--first
                                  (string= (treemacs--get-label-of it) tag-path-item)
