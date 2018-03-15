@@ -95,6 +95,7 @@
   treemacs-workspace->projects
   treemacs-add-project-at
   treemacs-project->is-expanded?
+  treemacs-project->refresh
   treemacs-project->position
   treemacs--find-project-for-path)
 
