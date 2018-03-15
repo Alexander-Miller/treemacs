@@ -30,6 +30,8 @@
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs-branch-creation"
+  treemacs--collapse-root-node
+  treemacs--expand-root-node
   treemacs--add-root-element)
 
 (-defstruct treemacs-project name path)
@@ -93,6 +95,15 @@
 (defsubst treemacs-project->is-expanded? (project)
   "Return non-nil if PROJECT is expanded in the current buffer."
   (eq 'root-node-open (button-get (treemacs-project->position project) :state)))
+
+(defsubst treemacs-project->refresh (project)
+  "Refresh PROJECT in the current buffer."
+  (when (treemacs-project->is-expanded? project)
+    (-let [root-btn (treemacs-project->position project)]
+      (goto-char root-btn)
+      (treemacs--forget-last-highlight)
+      (treemacs--collapse-root-node root-btn)
+      (treemacs--expand-root-node root-btn))))
 
 (defsubst treemacs-project->is-last? (project)
   "Return t when PROJECT's root node is the last in the view."

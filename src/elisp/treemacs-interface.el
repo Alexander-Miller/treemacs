@@ -38,7 +38,6 @@
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs"
-  treemacs-refresh
   treemacs-toggle)
 
 (defconst treemacs-valid-button-states
@@ -381,7 +380,7 @@ itself, using the root directory when point is on the header line."
   "Toggle the hiding and displaying of dotfiles."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
-  (-each (-map #'cdr treemacs--buffer-access) #'treemacs--do-refresh)
+  (--each (-map #'cdr treemacs--buffer-access) (treemacs--do-refresh it 'all))
   (treemacs-log (concat "Dotfiles will now be "
                          (if treemacs-show-hidden-files
                              "displayed." "hidden."))))
@@ -631,6 +630,14 @@ treemacs node is pointing to a valid buffer position."
     (goto-char (treemacs-project->position (treemacs-project-at-point)))
     (recenter)
     (hl-line-highlight)))
+
+(defun treemacs-refresh ()
+  "Refresh the project at point."
+  (interactive)
+  (--if-let (treemacs-current-button)
+      (treemacs--do-refresh (current-buffer)
+                     (treemacs--find-project-for-path (treemacs--nearest-path it)))
+    (treemacs-log "There is nothing to refresh.")))
 
 (provide 'treemacs-interface)
 
