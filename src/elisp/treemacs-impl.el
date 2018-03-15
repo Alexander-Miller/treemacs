@@ -708,10 +708,11 @@ through the buffer list and kill buffer if PATH is a prefix."
                                (f-filename path)))
              (-each dired-buffers-for-path #'kill-buffer))))))
 
-(defun treemacs--do-refresh (buffer)
-  "Execute the refresh process for BUFFER.
+(defun treemacs--do-refresh (buffer project)
+  "Execute the refresh process for BUFFER and PROJECT in that buffer.
 Specifically extracted with the buffer to refresh being supplied so that
-filewatch mode can refresh multiple buffers at once."
+filewatch mode can refresh multiple buffers at once.
+Will refresh every project when PROJECT is 'all."
   (with-current-buffer buffer
     (treemacs-save-position
      (progn
@@ -719,13 +720,9 @@ filewatch mode can refresh multiple buffers at once."
        ;; (run-hook-with-args
        ;;  'treemacs-pre-refresh-hook
        ;;  root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
-       (dolist (it (treemacs-workspace->projects (treemacs-current-workspace)))
-         (when (treemacs-project->is-expanded? it)
-           (-let [root-btn (treemacs-project->position it)]
-             (goto-char root-btn)
-             (treemacs--forget-last-highlight)
-             (treemacs--collapse-root-node root-btn)
-             (treemacs--expand-root-node root-btn)))))
+       (if (eq 'all project)
+           (-each (treemacs-workspace->projects (treemacs-current-workspace)) #'treemacs-project->refresh)
+         (treemacs-project->refresh project)))
 
      ;; (run-hook-with-args
      ;;  'treemacs-post-refresh-hook

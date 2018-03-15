@@ -120,14 +120,6 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
           (treemacs-RET-action)))))
 
 ;;;###autoload
-(defun treemacs-refresh ()
-  "Refresh and rebuild treemacs buffer."
-  (interactive)
-  (-if-let (b (treemacs-buffer-exists?))
-      (treemacs--do-refresh b)
-    (treemacs-log "There is nothing to refresh.")))
-
-;;;###autoload
 (defun treemacs-find-file ()
   "Find and focus the current file in the treemacs window.
 Will show/create a treemacs buffers if it is not visible/does not exist.
