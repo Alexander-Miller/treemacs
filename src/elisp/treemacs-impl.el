@@ -38,8 +38,8 @@
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs-tags"
-  treemacs--expand-tags-for-file
-  treemacs--collapse-tags-for-file
+  treemacs--expand-file-node
+  treemacs--collapse-file-node
   treemacs--expand-tag-node
   treemacs--collapse-tag-node
   treemacs--goto-tag
@@ -444,8 +444,8 @@ Optionally do so in a RECURSIVE fashion."
     [`root-node-closed (treemacs--expand-root-node btn)]
     [`dir-node-open    (treemacs--collapse-dir-node btn recursive)]
     [`dir-node-closed  (treemacs--expand-dir-node btn :recursive recursive)]
-    [`file-node-open   (treemacs--collapse-tags-for-file btn recursive)]
-    [`file-node-closed (treemacs--expand-tags-for-file btn recursive)]
+    [`file-node-open   (treemacs--collapse-file-node btn recursive)]
+    [`file-node-closed (treemacs--expand-file-node btn recursive)]
     [`tag-node-open    (treemacs--collapse-tag-node btn recursive)]
     [`tag-node-closed  (treemacs--expand-tag-node btn recursive)]
     [`tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
@@ -456,9 +456,9 @@ Optionally do so in a RECURSIVE fashion."
 GIT-INFO is passed through from the previous branch build."
   (-pcase (button-get btn :state)
     [`dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info)]
-    [`file-node-closed (treemacs--expand-tags-for-file btn)]
-    [`tag-node-closed  (treemacs--expand-tag-node btn :no-add t)]
-    [`root-node-closed (treemacs--expand-root-node btn :no-add t)]
+    [`file-node-closed (treemacs--expand-file-node btn)]
+    [`tag-node-closed  (treemacs--expand-tag-node btn)]
+    [`root-node-closed (treemacs--expand-root-node btn)]
     [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
                               (button-get btn :path) other)]))
 
