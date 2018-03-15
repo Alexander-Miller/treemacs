@@ -330,26 +330,27 @@ Buffers visiting the renamed file or visiting a file inside a renamed directory
 and windows showing them will be reloaded. The list of recent files will
 likewise be updated."
   (interactive)
-  (cl-block nil
+  (cl-block body
     (-let [btn (treemacs-current-button)]
       (unless btn
-        (cl-return
+        (cl-return-from body
          (treemacs-pulse-on-failure "Found nothing to rename here.")))
       (-let*- [(old-path (button-get btn :path))
-               (new-path)
-               (new-name)
-               (dir)]
+               (project (treemacs--find-project-for-path old-path))
+               (new-path nil)
+               (new-name nil)
+               (dir nil)]
         (unless old-path
-          (cl-return
-           (treemacs-pulse-on-failure "Found nothing to rename here.")))
+          (cl-return-from body
+            (treemacs-pulse-on-failure "Found nothing to rename here.")))
         (unless (file-exists-p old-path)
-          (cl-return
+          (cl-return-from body
            (treemacs-pulse-on-failure "The file to be renamed does not exist.")))
         (setq new-name (read-string "New name: ")
               dir      (f-dirname old-path)
               new-path (f-join dir new-name))
         (when (file-exists-p new-path)
-          (cl-return
+          (cl-return-from body
            (treemacs-pulse-on-failure "A file named %s already exists."
              (propertize new-name 'face font-lock-string-face))))
         (treemacs--without-filewatch (rename-file old-path new-path))
@@ -357,15 +358,12 @@ likewise be updated."
         (-let [treemacs-silent-refresh t]
           (treemacs-run-in-every-buffer
            (treemacs--on-rename old-path new-path)
-           (when (treemacs--is-path-in-dir? new-path (treemacs--current-root))
-             (treemacs--do-refresh (current-buffer)))))
+           (treemacs--do-refresh (current-buffer) project)))
         (treemacs--reload-buffers-after-rename old-path new-path)
-        (treemacs--goto-button-at new-path)
-        (treemacs-pulse-on-success)
-        (cl-return
-         (treemacs-pulse-on-success "Renamed %s to %s."
-           (propertize (f-filename old-path) 'face font-lock-string-face)
-           (propertize new-name 'face font-lock-string-face)))))))
+        (treemacs--do-follow new-path project)
+        (treemacs-pulse-on-success "Renamed %s to %s."
+          (propertize (f-filename old-path) 'face font-lock-string-face)
+          (propertize new-name 'face font-lock-string-face))))))
 
 (defun treemacs-create-dir ()
   "Create a new directory.
