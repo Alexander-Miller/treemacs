@@ -360,7 +360,7 @@ likewise be updated."
            (treemacs--on-rename old-path new-path)
            (treemacs--do-refresh (current-buffer) project)))
         (treemacs--reload-buffers-after-rename old-path new-path)
-        (treemacs--do-follow new-path project)
+        (treemacs-goto-button new-path project)
         (treemacs-pulse-on-success "Renamed %s to %s."
           (propertize (f-filename old-path) 'face font-lock-string-face)
           (propertize new-name 'face font-lock-string-face))))))

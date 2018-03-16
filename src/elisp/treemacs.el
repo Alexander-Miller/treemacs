@@ -117,7 +117,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
             [`visible (treemacs--select-visible)]
             [`exists (treemacs--select-not-visible)]
             [`none (treemacs--init)])
-          (treemacs--do-follow location project)
+          (treemacs-goto-button location project)
           (treemacs-pulse-on-success)
           (when arg (treemacs-visit-node-no-split)))))))
 
@@ -142,7 +142,7 @@ Only useful when `treemacs-follow-mode' is not active."
           [`visible (treemacs--select-visible)]
           [`exists (treemacs--select-not-visible)]
           [`none (treemacs--init)])
-        (treemacs--do-follow buffer-file project)))))
+        (treemacs-goto-button buffer-file project)))))
 
 ;;;###autoload
 (defun treemacs-find-tag ()

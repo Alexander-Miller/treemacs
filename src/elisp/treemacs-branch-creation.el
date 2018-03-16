@@ -211,7 +211,7 @@ directory that the collapsing leads to. For Example:
         (treemacs--start-watching (car it))
         (dolist (step (nthcdr 2 it))
           (treemacs--start-watching step t)))
-      (let* ((b (treemacs--goto-button-at (car it)))
+      (let* ((b (treemacs-goto-button (car it)))
              (props (text-properties-at (button-start b))))
         (button-put b :path (nth (- (length it) 1) it))
         (button-put b :collapsed t)

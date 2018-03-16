@@ -357,7 +357,7 @@ exist."
 Will return the found tag node, or nil if no such node exists (anymore). In this
 case point will be left at the next highest node available."
   (-let [(tag file . path) tag-path]
-    (-when-let (file-node (treemacs--goto-button-at file))
+    (-when-let (file-node (treemacs-goto-button file))
       (when (eq 'file-node-closed (button-get file-node :state))
         (goto-char (button-start file-node))
         (treemacs--expand-file-node file-node))

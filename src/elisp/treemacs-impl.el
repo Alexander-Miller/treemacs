@@ -65,8 +65,7 @@
   treemacs--cancel-refresh-timer)
 
 (treemacs-import-functions-from "treemacs-follow-mode"
-  treemacs--follow
-  treemacs--do-follow)
+  treemacs--follow)
 
 (treemacs-import-functions-from "treemacs-visuals"
   treemacs-pulse-on-success
@@ -85,6 +84,7 @@
   treemacs-shadow-node->children
   treemacs-shadow-node->key
   treemacs-shadow-node->closed
+  treemacs-shadow-node->position
   treemacs--reset-index
   treemacs--on-rename
   treemacs--invalidate-position-cache)
@@ -95,6 +95,7 @@
   treemacs-workspace->projects
   treemacs-add-project-at
   treemacs-project->is-expanded?
+  treemacs-project->path
   treemacs-project->refresh
   treemacs-project->position
   treemacs--find-project-for-path)
@@ -330,12 +331,40 @@ being edited to trigger."
 (defsubst treemacs--refresh-dir (path)
   "Local refresh for button at PATH.
 Simply collapses and re-expands the button (if it has not been closed)."
-  (-let [btn (treemacs--goto-button-at path)]
+  (-let [btn (treemacs-goto-button path)]
     (when (memq (button-get btn :state) '(dir-node-open file-node-open))
       (goto-char (button-start btn))
       (treemacs--push-button btn)
       (goto-char (button-start btn))
       (treemacs--push-button btn))))
+
+(defsubst treemacs--follow-each-dir (btn dir-parts)
+  "BTN Follow (goto and open) every single dir in DIR-PARTS under ROOT.
+Return the button that is found or the symbol 'follow-failed' if the search
+failed."
+  (-let*- [(root (button-get btn :path))
+           (git-future (treemacs--git-status-process-function root))
+           (last-index (- (length dir-parts) 1))]
+    (goto-char btn)
+    ;; point is currently on the next closest dir to the followed file we could get
+    ;; from the shadow index, so we expand it to keep going
+    (-pcase (button-get btn :state)
+      [`dir-node-closed (treemacs--expand-dir-node btn :git-future git-future)]
+      [`root-node-closed (treemacs--expand-root-node btn)])
+    (catch 'follow-failed
+      (--each dir-parts
+        (setq root (f-join root it))
+        ;; for every manual part add it to the current root and find the first button below
+        ;; btn whose :path is the root, expand it, keep looping
+        (setq btn (first-child-btn-where btn (string= root (button-get child-btn :path))))
+        (goto-char btn)
+        (unless btn (throw 'follow-failed 'follow-failed))
+        ;; don't open dir at the very end of the list since we only want to put
+        ;; point in its line
+        (when (and (eq 'dir-node-closed (button-get btn :state))
+                   (< it-index last-index))
+          (treemacs--expand-dir-node btn :git-future git-future)))
+      btn)))
 
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
@@ -475,7 +504,7 @@ GIT-INFO is passed through from the previous branch build."
                 (-reject #'treemacs-shadow-node->closed)
                 (-map #'treemacs-shadow-node->key)
                 (treemacs--maybe-filter-dotfiles)))
-     (treemacs--reopen-node (treemacs--goto-button-at it) git-info))))
+     (treemacs--reopen-node (treemacs-goto-button it) git-info))))
 
 (defun treemacs--nearest-path (btn)
   "Return the path property of the current button (or BTN).
@@ -518,52 +547,59 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
         (treemacs--without-filewatch (funcall creation-func new-file))
         (treemacs-without-messages (treemacs-refresh))
         (--when-let (treemacs--find-project-for-path new-file)
-          (treemacs--do-follow (f-long new-file) it))
+          (treemacs-goto-button (f-long new-file) it))
         (recenter)
         (treemacs-pulse-on-success)))))
 
-(cl-defun treemacs--uncached-goto-button-at (abs-path &optional (start-from (point-min)))
-  "Move point to node identified by ABS-PATH, starting search at START.
-Also return that node.
-Unlike `treemacs--goto-button-at' this function does not make use of
-`treemacs--open-node-position-cache', which means 2 things: 1) It is
-considerably slower, and its use should thus be avoided, and 2) It can be used
-in times when the node position cache is invalidated, like the reopen phase of
-a refresh."
-  (-let- [(filename (f-filename abs-path))
-          (start (point))
-          (result nil)]
-    (goto-char start-from)
-    (cl-block search
-      (save-match-data
-        (while (search-forward filename nil t)
-          (beginning-of-line)
-          (-let*- [(btn (next-button (point) t))
-                   (btn-path (button-get btn :path))]
-            (if (or (s-equals? abs-path btn-path)
-                    ;; loosen matching for collapsed paths
-                    (and (button-get btn :collapsed)
-                         (treemacs--is-path-in-dir? btn-path abs-path)))
-                (progn (treemacs--evade-image)
-                       (cl-return-from search (setq result btn)))
-              (beginning-of-line 2)))))
-      (unless result (goto-char start))
-      result)))
+(defun treemacs-goto-button (path &optional project)
+  "Move point to button identified by PATH under PROJECT in the current buffer.
+If PROJECT is not given it will be found with `treemacs--find-project-for-path'.
+No attempt is made to verify that PATH falls under a project in the workspace.
+It is assumed that this check has already been made.
 
-(cl-defun treemacs--goto-button-at (abs-path)
-  "Move point to button identified by ABS-PATH, also return that button."
-  (-let [parent (treemacs--unslash (file-name-directory abs-path))]
-    (-if-let- [btn-pos (treemacs-get-position-of parent)]
-        (treemacs--uncached-goto-button-at abs-path btn-pos)
-      (goto-char (point-min))
-      (-let [btn (next-button (point) t)]
-        (cl-block search
-          (while btn
-            (if (string= abs-path (button-get btn :path))
-                (progn
-                  (goto-char (button-start btn))
-                  (cl-return-from search btn))
-              (setq btn (next-button (button-end btn))))))))))
+PATH: Filepath
+PROJECT `cl-struct-treemacs-project'"
+  (unless project (setq project (treemacs--find-project-for-path path)))
+  (goto-char (treemacs-project->position project))
+  (-let*- [;; go back here if the search fails
+           (start (point))
+           ;; the parts of the path that we can try to go to until we arrive at the project root
+           (dir-parts (->> project (treemacs-project->path) (length) (substring path) (f-split) (cdr) (nreverse)))
+           ;; the path we try to quickly move to because it's already open and thus in the shadow-index
+           (goto-path (treemacs--parent path))
+           ;; if we try mode than this many times to grab a path location for the shadow index it means
+           ;; the file we want to move to is under a *closed* project node
+           (counter (length dir-parts))
+           ;; manual as in to be expanded manually after we moved to the next closest node we can find
+           ;; in the shadow index
+           (manual-parts nil)
+           (shadow-node nil)]
+    ;; try to move as close as possible to the followed file, starting with its immediate parent
+    ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
+    ;; all the while collecting the parts of the path that beed manual expanding
+    (while (and (> counter 0)
+                (or (null shadow-node)
+                    ;; shadow node might exist, but one of its parents might be null
+                    (null (treemacs-shadow-node->position shadow-node))))
+      (setq shadow-node (treemacs-get-from-shadow-index goto-path)
+            goto-path (treemacs--parent goto-path)
+            counter (1- counter))
+      (push (pop dir-parts) manual-parts))
+    (-let*- [(btn (if (= 0 counter)
+                      (treemacs-project->position project)
+                    (treemacs-shadow-node->position shadow-node)))
+             ;; do the rest manually - at least the actual file to move to is still left in manual-parts
+             (search-result (treemacs--follow-each-dir btn manual-parts))]
+      (if (eq 'follow-failed search-result)
+          (goto-char start)
+        (treemacs--evade-image)
+        (hl-line-highlight)
+        (set-window-point (get-buffer-window) (point))
+        (when treemacs-recenter-after-file-follow
+          (treemacs-without-following
+           (with-selected-window (get-buffer-window)
+             (treemacs--maybe-recenter))))
+        search-result))))
 
 (defun treemacs--on-window-config-change ()
   "Collects all tasks that need to run on a window config change."
