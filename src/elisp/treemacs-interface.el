@@ -633,8 +633,11 @@ treemacs node is pointing to a valid buffer position."
   "Refresh the project at point."
   (interactive)
   (--if-let (treemacs-current-button)
-      (treemacs--do-refresh (current-buffer)
-                     (treemacs--find-project-for-path (treemacs--nearest-path it)))
+      (progn
+        (treemacs--do-refresh (current-buffer)
+                       (treemacs--find-project-for-path (treemacs--nearest-path it)))
+        (unless (pos-visible-in-window-p)
+          (recenter)))
     (treemacs-log "There is nothing to refresh.")))
 
 (provide 'treemacs-interface)
