@@ -42,11 +42,6 @@ if the node is 'foo/bar/baz', the face is used for 'foo/bar/'."
   "Face used by treemacs for its root nodes."
   :group 'treemacs-faces)
 
-(defface treemacs-header-face
-  '((t :inherit font-lock-constant-face :underline t :size 1.4))
-  "Face used by treemacs for its header."
-  :group 'treemacs-faces)
-
 (defface treemacs-term-node-face
   '((t :inherit font-lock-string-face))
   "Face used by treemacs in the terminal for directory node symbols."
