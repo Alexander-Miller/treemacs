@@ -203,7 +203,7 @@ PROJECT: `cl-struct-treemacs-project'"
                (unless (string-equal buffer-file (button-get btn :path))
                  (treemacs-goto-button buffer-file project)
                  (setq btn (treemacs-current-button))))
-           ;; also move manually when point is on the header
+           ;; also move manually when there is no button at point
            (treemacs-goto-button buffer-file project)
            (setq btn (treemacs-current-button)))
          (goto-char (button-start btn))
