@@ -54,7 +54,7 @@
                      (treemacs-workspace->projects treemacs-current-workspace)))))
   treemacs--project-of-buffer)
 
-(defun treemacs--find-project-for-path (path)
+(defsubst treemacs--find-project-for-path (path)
   "Return the project for PATH in the current workspace."
   (--first (treemacs--is-path-in-dir? path (treemacs-project->path it))
            (treemacs-workspace->projects treemacs-current-workspace)))
