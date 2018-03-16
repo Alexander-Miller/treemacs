@@ -174,7 +174,8 @@ Returns nil when point is on the header."
 
 (defsubst treemacs--is-path-in-dir? (path dir)
   "Is PATH in directory DIR?"
-  (s-starts-with? (f-slash dir) path))
+  (or (string= path dir)
+      (s-starts-with? (f-slash dir) path)))
 
 (defsubst treemacs--replace-recentf-entry (old-file new-file)
   "Replace OLD-FILE with NEW-FILE in the recent file list."
