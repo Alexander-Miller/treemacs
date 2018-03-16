@@ -153,7 +153,7 @@ via `assq'.")
 
 (defsubst treemacs-current-button ()
   "Get the button in the current line.
-Returns nil when point is on the header."
+Returns nil when point is between projects."
   (if (get-text-property (point-at-bol) 'button)
       (button-at (point-at-bol))
     (let ((p (next-single-property-change (point-at-bol) 'button nil (point-at-eol))))
@@ -225,7 +225,7 @@ Returns the buffer if it does exist."
 
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point.
-Returns nil when point is on the header."
+Returns nil when there is no button at point."
   (-when-let (b (treemacs-current-button))
     (button-get b prop)))
 

@@ -320,7 +320,7 @@ A delete action must always be confirmed. Directories are deleted recursively."
 Enter first the directory to create the new file in, then the new file's name.
 The preselection for what directory to create in is based on the \"nearest\"
 path to point - the containing directory for tags and files or the directory
-itself, using the root directory when point is on the header line."
+itself, using $HOME when there is no path at or near point to grab."
   (interactive)
   (treemacs--create-file/dir "File name: " #'f-touch))
 
@@ -370,7 +370,7 @@ likewise be updated."
 Enter first the directory to create the new dir in, then the new dir's name.
 The preselection for what directory to create in is based on the \"nearest\"
 path to point - the containing directory for tags and files or the directory
-itself, using the root directory when point is on the header line."
+itself, using $HOME when there is no path at or near pooint to grab."
   (interactive)
   (treemacs--create-file/dir "Directory name: " #'f-mkdir))
 
