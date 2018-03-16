@@ -332,7 +332,6 @@ Treemacs defines and uses the following faces:
 | treemacs-directory-face           | font-lock-function-name-face                    | Face used for directories.                                                   |
 | treemacs-directory-collapsed-face | treemacs-directory-face                         | Face used for collapsed part of directories.                                 |
 | treemacs-file-face                | default                                         | Face used for files.                                                         |
-| treemacs-header-face              | font-lock-constant-face (underlined & size 1.4) | Face used for the treemacs header.                                           |
 | treemacs-term-node-face           | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
 | treemacs-git-*-face               | various font lock faces                         | Faces used by treemacs for various git states.                               |
 | treemacs-on-success-pulse-face    | :fg #11111 :bg #669966                          | Pulse face used when pulsing on a successful action.                         |
