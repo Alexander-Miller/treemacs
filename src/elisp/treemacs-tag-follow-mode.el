@@ -201,10 +201,10 @@ PROJECT: `cl-struct-treemacs-project'"
                      (treemacs--collapse-file-node treemacs--previously-followed-tag-btn))))
                ;; when that doesnt work move manually to the correct file
                (unless (string-equal buffer-file (button-get btn :path))
-                 (treemacs--do-follow buffer-file project)
+                 (treemacs-goto-button buffer-file project)
                  (setq btn (treemacs-current-button))))
            ;; also move manually when point is on the header
-           (treemacs--do-follow buffer-file project)
+           (treemacs-goto-button buffer-file project)
            (setq btn (treemacs-current-button)))
          (goto-char (button-start btn))
          (setq treemacs--previously-followed-tag-btn btn)

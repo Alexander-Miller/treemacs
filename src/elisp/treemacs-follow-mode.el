@@ -38,77 +38,6 @@ Must be set to nil when no following should be triggered, e.g. when the
 treemacs buffer is being rebuilt or during treemacs' own window selection
 functions.")
 
-(cl-defun treemacs--do-follow (followed-file project)
-  "In the treemacs buffer move point to FOLLOWED-FILE under PROJECT.
-
-FOLLOWED-FILE: Filepath
-PROJECT: `cl-struct-treemacs-project'"
-  (goto-char (treemacs-project->position project))
-  (-let*- [;; go back here if the search fails
-           (start (point))
-           ;; the parts of the path that we can try to go to until we arrive at the project root
-           (dir-parts (->> project (treemacs-project->path) (length) (substring followed-file) (f-split) (cdr) (nreverse)))
-           ;; the path we try to quickly move to because it's already open and thus in the shadow-index
-           (goto-path (treemacs--parent followed-file))
-           ;; if we try mode than this many times to grab a path location for the shadow index it means
-           ;; the file we want to move to is under a *closed* project node
-           (counter (length dir-parts))
-           ;; manual as in to be expanded manually after we moved to the next closest node we can find
-           ;; in the shadow index
-           (manual-parts nil)
-           ;; (root (treemacs-project->path project))
-           (shadow-node nil)]
-    ;; try to move as close as possible to the followed file, starting with its immediate parent
-    ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
-    ;; all the while collecting the parts of the path that beed manual expanding
-    (while (and (> counter 0)
-                (or (null shadow-node)
-                    ;; shadow node might exist, but one of its parents might be null
-                    (null (treemacs-shadow-node->position shadow-node))))
-      (setq shadow-node (treemacs-get-from-shadow-index goto-path)
-            goto-path (treemacs--parent goto-path)
-            counter (1- counter))
-      (push (pop dir-parts) manual-parts))
-    (-let*- [(btn (if (= 0 counter)
-                      (treemacs-project->position project)
-                    (treemacs-shadow-node->position shadow-node)))
-             ;; do the rest manually - at least the actual file to move to is still left in manual-parts
-             (search-result (treemacs--follow-each-dir btn manual-parts))]
-      (if (eq 'follow-failed search-result)
-          (goto-char start)
-        (treemacs--evade-image)
-        (hl-line-highlight)
-        (set-window-point (get-buffer-window) (point))
-        (when treemacs-recenter-after-file-follow
-          (treemacs-without-following
-           (with-selected-window (get-buffer-window)
-             (treemacs--maybe-recenter))))))))
-
-(defun treemacs--follow-each-dir (btn dir-parts)
-  "BTN Follow (goto and open) every single dir in DIR-PARTS under ROOT."
-  (-let*- [(root (button-get btn :path))
-           (git-future (treemacs--git-status-process-function root))
-           (last-index (- (length dir-parts) 1))]
-    (goto-char btn)
-    ;; point is currently on the next closest dir to the followed file we could get
-    ;; from the shadow index, so we expand it to keep going
-    (-pcase (button-get btn :state)
-      [`dir-node-closed (treemacs--expand-dir-node btn :git-future git-future)]
-      [`root-node-closed (treemacs--expand-root-node btn)])
-    (catch 'follow-failed
-      (--each dir-parts
-        (setq root (f-join root it))
-        ;; for every manual part add it to the current root and find the first button below
-        ;; btn whose :path is the root, expand it, keep looping
-        (setq btn (first-child-btn-where btn (string= root (button-get child-btn :path))))
-        (goto-char btn)
-        (unless btn (throw 'follow-failed 'follow-failed))
-        ;; don't open dir at the very end of the list since we only want to put
-        ;; point in its line
-        (when (and (eq 'dir-node-closed (button-get btn :state))
-                   (< it-index last-index))
-          (treemacs--expand-dir-node btn :git-future git-future))))))
-
 (defun treemacs--follow ()
   "Move point to the current file in the treemacs buffer.
 Expand directories if needed. Do nothing if current file does not exist in the
@@ -131,7 +60,7 @@ not visible."
                                       (treemacs--nearest-path it)
                                     (treemacs-project->path project-for-file))]
                (unless (string= selected-file current-file)
-                 (treemacs--do-follow current-file project-for-file))))))))))
+                 (treemacs-goto-button current-file project-for-file))))))))))
 
 ;; this is only to stop the compiler from complaining about unknown functions
 (with-eval-after-load 'which-key
