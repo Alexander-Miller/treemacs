@@ -443,6 +443,7 @@ Add a project for ROOT if it's non-nil."
        (treemacs--setup-buffer)
        (treemacs-mode)
        (treemacs--reset-index)
+       (treemacs--reset-project-positions)
        (treemacs-with-writable-buffer
         (-let*- [(projects (treemacs-workspace->projects (treemacs-current-workspace)))
                  (last-index (1- (length projects)))]

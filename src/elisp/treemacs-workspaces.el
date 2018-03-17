@@ -38,7 +38,7 @@
 
 (-defstruct treemacs-workspace name projects)
 
-(defvar-local treemacs--project-positions (make-hash-table :test #'equal :size 20))
+(defvar-local treemacs--project-positions nil)
 
 (defvar-local treemacs--project-of-buffer nil
   "The `cl-struct-treemacs-project' that the current buffer falls under, if any.")
@@ -83,6 +83,10 @@
     (with-current-buffer buffer
       (when (equal treemacs--project-of-buffer project)
         (setq treemacs--project-of-buffer nil)))))
+
+(defsubst treemacs--reset-project-positions ()
+  "Reset `treemacs--project-positions'."
+  (setq treemacs--project-positions (make-hash-table :test #'equal :size 20)))
 
 (defsubst treemacs--set-project-position (project position)
   "Insert PROJECT's POSITION into `treemacs--project-positions'."
