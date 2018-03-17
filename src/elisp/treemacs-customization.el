@@ -380,12 +380,12 @@ new file."
   :group 'treemacs-configuration)
 
 (defcustom treemacs-pre-refresh-hook nil
-  "Hooks to run right before the refresh process kicks off.
-During the refresh process the entire treemacs buffer is torn down and repainted
-in full. This hook runs *before* that happens. It runs with treemacs as the
-`current-buffer' receives as its arguments all the information that treemacs
+  "Hooks to run right before the refresh process for a project kicks off.
+During the refresh the project is effectively collapsed and then expanded again.
+This hook runs *before* that happens. It runs with treemacs as the
+`current-buffer' and receives as its arguments all the information that treemacs
 collects for its refresh process:
- * The current view's root directory.
+ * The project being refreshed (might be 'all)
  * The current line number.
  * The current button. Might be nil if point is on the header line.
  * The current button's state. See also `treemacs-valid-button-states'. Is nil
@@ -400,13 +400,13 @@ collects for its refresh process:
 
 (defcustom treemacs-post-refresh-hook nil
   "Hooks to run right before the refresh process is finished off.
-During the refresh process the entire treemacs buffer is torn down and repainted
-in full. This hook runs *after* that has happened. It runs with treemacs as the
-`current-buffer' receives as its arguments all the information that treemacs
+During the refresh the project is effectively collapsed and then expanded again.
+This hook runs *after* that has happened. It runs with treemacs as the
+`current-buffer' and receives as its arguments all the information that treemacs
 collects for its refresh process. Note that these values were collected at the
 start of the refresh, and may now be longer valid (for example the current
 button's position will be wrong, even if it wasn't deleted outright):
- * The current view's root directory.
+ * The project being refreshed (might be 'all)
  * The current line number.
  * The current button. Might be nil if point was on the header line.
  * The current button's state. See also `treemacs-valid-button-states'. Is nil

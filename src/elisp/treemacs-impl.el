@@ -755,16 +755,18 @@ Will refresh every project when PROJECT is 'all."
     (treemacs-save-position
      (progn
        (treemacs--cancel-refresh-timer)
-       ;; (run-hook-with-args
-       ;;  'treemacs-pre-refresh-hook
-       ;;  root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+       (run-hook-with-args
+        'treemacs-pre-refresh-hook
+        project curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+
        (if (eq 'all project)
            (-each (treemacs-workspace->projects (treemacs-current-workspace)) #'treemacs-project->refresh)
          (treemacs-project->refresh project)))
 
-     ;; (run-hook-with-args
-     ;;  'treemacs-post-refresh-hook
-     ;;  root curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+     (run-hook-with-args
+      'treemacs-post-refresh-hook
+      project curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+
      (unless treemacs-silent-refresh
        (treemacs-log "Refresh complete.")))))
 
