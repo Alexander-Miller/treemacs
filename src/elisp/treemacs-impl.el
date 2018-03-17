@@ -545,8 +545,8 @@ CREATION-FUNC: `f-touch' | `f-mkdir'"
             (treemacs-pulse-on-failure "%s already exists."
               (propertize  'face 'font-lock-string-face))))
         (treemacs--without-filewatch (funcall creation-func new-file))
-        (treemacs-without-messages (treemacs-refresh))
         (--when-let (treemacs--find-project-for-path new-file)
+          (treemacs-without-messages (treemacs--do-refresh (current-buffer) it))
           (treemacs-goto-button (f-long new-file) it))
         (recenter)
         (treemacs-pulse-on-success)))))
