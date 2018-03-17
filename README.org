@@ -82,7 +82,7 @@ If you don't care about reading the full readme here's a list of some bare bones
  * If you use evil don't forget to also install ~treemacs-evil~
  * If you use projectile you can install ~treemacs-projectile~ to allow treemacs to interact with projects.
  * Treemacs doesn't bind any global keys, you need to use whatever fits you best. A full install setup for
-   spacemacs can be found [[#installation][below]]. Otherwise just bind ~treemacs~ and ~treemacs-toggle~.
+   spacemacs can be found [[#installation][below]]. Otherwise just add a keybind for ~treemacs~.
  * For navigation use n/p (j/k when evil), M-n/M-p to move to same-height neighbour u to go to parent, h to
    move up a dir, l to move root to selected dir
  * There's half a dozen different ways to open nodes, all bound under o as prefix. Pick your favourite.
@@ -91,7 +91,7 @@ If you don't care about reading the full readme here's a list of some bare bones
 * Detailed Feature List
 ** Frame Locality
 Treemacs buffers have a limited scope they are visible in: the frames they are created in. A treemacs buffer, once created,
-lives alongside and inside its frame, and is also destroyed with that frame. Calling a function like ~treemacs-toggle~ while
+lives alongside and inside its frame, and is also destroyed with that frame. Calling a function like ~treemacs~ while
 inside a new frame will create a new buffer for it, reguardless how many other treemacs buffers already exist.
 
 This allows to use treemacs to work on multiple projects inside the same emacs session.
@@ -222,8 +222,8 @@ below, and customize it as needed (remove ~treemacs-evil~ if you don't use it, c
 example code uses keys based on the spacemacs layer).
 
 Either way keep in mind that treemacs has /no default keybinds/ for its globally callable initialization functions.
-Each user is supposed to select keybinds for functions like ~treemacs~, ~treemacs-toggle~ and their projectile
-counterparts based on whatever they find convenient.
+Each user is supposed to select keybinds for functions like ~treemacs~  and its projectile counterpart based on whatever
+they find convenient.
 
 You can find an exhaustive overview of all functions, their keybinds and functions you need to bind yourself [[#keymap][below]].
 
@@ -270,11 +270,9 @@ You can find an exhaustive overview of all functions, their keybinds and functio
          (treemacs-git-mode 'simple))))
     :bind
     (:map global-map
-          ([f8]         . treemacs-toggle)
           ("M-0"        . treemacs-select-window)
           ("C-c 1"      . treemacs-delete-other-windows)
-          ("M-m ft"     . treemacs-toggle)
-          ("M-m fT"     . treemacs)
+          ("M-m ft"     . treemacs)
           ("M-m fB"     . treemacs-bookmark)
           ("M-m f C-t"  . treemacs-find-file)
           ("M-m f M-t"  . treemacs-find-tag)))
@@ -327,15 +325,15 @@ Treemacs offers the following configuration options:
 ** Faces
 
 Treemacs defines and uses the following faces:
-| Face                              | Inherits from                                   | Description                                                                  |
-|-----------------------------------+-------------------------------------------------+------------------------------------------------------------------------------|
-| treemacs-directory-face           | font-lock-function-name-face                    | Face used for directories.                                                   |
-| treemacs-directory-collapsed-face | treemacs-directory-face                         | Face used for collapsed part of directories.                                 |
-| treemacs-file-face                | default                                         | Face used for files.                                                         |
-| treemacs-term-node-face           | font-lock-string-face                           | Face for directory node symbols used by treemacs when it runs in a terminal. |
-| treemacs-git-*-face               | various font lock faces                         | Faces used by treemacs for various git states.                               |
-| treemacs-on-success-pulse-face    | :fg #11111 :bg #669966                          | Pulse face used when pulsing on a successful action.                         |
-| treemacs-on-failure-puse-face     | :fg #111111 :bg ab3737                          | Pulse face used when pulsing on a failed action.                             |
+| Face                              | Inherits from                | Description                                                                  |
+|-----------------------------------+------------------------------+------------------------------------------------------------------------------|
+| treemacs-directory-face           | font-lock-function-name-face | Face used for directories.                                                   |
+| treemacs-directory-collapsed-face | treemacs-directory-face      | Face used for collapsed part of directories.                                 |
+| treemacs-file-face                | default                      | Face used for files.                                                         |
+| treemacs-term-node-face           | font-lock-string-face        | Face for directory node symbols used by treemacs when it runs in a terminal. |
+| treemacs-git-*-face               | various font lock faces      | Faces used by treemacs for various git states.                               |
+| treemacs-on-success-pulse-face    | :fg #11111 :bg #669966       | Pulse face used when pulsing on a successful action.                         |
+| treemacs-on-failure-puse-face     | :fg #111111 :bg ab3737       | Pulse face used when pulsing on a failed action.                             |
 
 ** Evil compatibility
 To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions
@@ -469,11 +467,10 @@ the treemacs window and might therefore need their own global binding.
 | treemacs                      | Open treemacs with current buffer's directory as root. If the current buffer is not visiting any files use $HOME as fallback. If a prefix argument is given manually select the root directory.      |
 | treemacs-projectile           | Open treemacs for the current projectile project. If not in a project do nothing. If a prefix argument is given select the project from among ~projectile-known-projects~.                           |
 | treemacs-bookmark             | Open treemacs with the location of a bookmark as root.                                                                                                                                               |
-| treemacs-toggle               | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs.            |
 | treemacs-toggle-projectile    | If a treemacs buffer exists and is visible hide it. If a treemacs buffer exists, but is not visible bring it to the foreground and select it. If no treemacs buffer exists call treemacs-projectile. |
 | treemacs-find-file            | Find and move point to PATH (or the current file) in the treemacs buffer. Expand folders if needed.                                                                                                  |
 | treemacs-find-tag             | Find and move point to the tag at point in the treemacs view. Expand folders if or as to change root if needed. Create treemacs buffer if none exists.                                               |
-| treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs-toggle~ if it is not.                                                                                                                    |
+| treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs~ if it is not.                                                                                                                   |
 | treemacs-delete-other-windows | Same as ~delete-other-windows~, but will not delete the treemacs window.                                                                                                                             |
 
 ** Default keymap

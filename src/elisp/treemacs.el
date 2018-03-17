@@ -53,38 +53,16 @@
 (defconst treemacs-version "1.18.1")
 
 ;;;###autoload
-(defun treemacs-toggle ()
-  "If a treemacs buffer exists and is visible hide it.
-If a treemacs buffer exists, but is not visible bring it to the foreground
-and select it.
-If no treemacs buffer exists and the workspace is empty call
-`treemacs', otherwise display the current workspace."
+(defun treemacs ()
+  "Initialize or toggle treemacs.
+* If the treemacs window is visible hide it.
+* If a treemacs buffer exists, but is not visible show it.
+* If no treemacs buffer exists for the current frame create and show it.
+* If the workspace is empty additionally ask for the root path of the first
+  project to add."
   (interactive)
-  (-pcase (treemacs--current-visibility)
-    [`visible
-     (treemacs--select-visible)
-     (if (one-window-p)
-         (switch-to-buffer (other-buffer))
-       (bury-buffer))]
-    [`exists
-     (treemacs--select-not-visible)]
-    [`none
-     (if (treemacs-workspace->is-empty?)
-         (treemacs)
-       (treemacs--init))]
-    [_ (error "[Treemacs] Invalid visibility value: %s" (treemacs--current-visibility))]))
-
-;;;###autoload
-(defun treemacs (&optional arg)
-  "Add a project with the current buffer's file as root.
-If a prefix argument ARG is given or if the current buffer has no file manually
-select the root directory."
-  (interactive "P")
-  (treemacs--init
-   (-let [root (if (or arg (null (buffer-file-name)))
-                   (read-directory-name "Project root: ")
-                 (buffer-file-name))]
-     (if (f-dir? root) root (f-parent root)))))
+  (treemacs--init (when (treemacs-workspace->is-empty?)
+             (read-directory-name "Project root: "))))
 
 ;;;###autoload
 (defun treemacs-bookmark (&optional arg)
@@ -181,12 +159,12 @@ visiting a file or Emacs cannot find any tags for the current file."
 ;;;###autoload
 (defun treemacs-select-window ()
   "Select the treemacs window if it is visible.
-Call `treemacs-toggle' if it is not."
+Call `treemacs' if it is not."
   (interactive)
   (force-mode-line-update)
-  (-if-let (w (treemacs--is-visible?))
-      (select-window w t)
-    (treemacs-toggle)))
+  (--if-let (treemacs--is-visible?)
+      (select-window it t)
+    (treemacs)))
 
 (provide 'treemacs)
 

@@ -37,9 +37,6 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
-(treemacs-import-functions-from "treemacs"
-  treemacs-toggle)
-
 (defconst treemacs-valid-button-states
   '(root-node-open
     root-node-closed
