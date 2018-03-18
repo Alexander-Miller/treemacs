@@ -91,6 +91,7 @@
 
 (treemacs-import-functions-from "treemacs-workspaces"
   make-treemacs-project
+  treemacs--reset-project-positions
   treemacs-current-workspace
   treemacs-workspace->projects
   treemacs-add-project-at
