@@ -119,11 +119,12 @@
 
 (defun treemacs-add-project-at (path)
   "Add project at PATH to the current workspace."
-  (if (treemacs--find-project-for-path path)
-      ;; TODO also move to project node
-      (treemacs-pulse-on-success
-          (format "Project under %s already exists."
-                  (propertize path 'face 'font-lock-string-face)))
+  (--if-let (treemacs--find-project-for-path path)
+      (progn
+        (goto-char (treemacs-project->position it))
+        (treemacs-pulse-on-success
+            (format "Project for %s already exists."
+                    (propertize path 'face 'font-lock-string-face))))
     (-let*- [(name (read-string "Project Name: " (f-filename path)))
              (project (make-treemacs-project :name name :path path))
              (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null)))]
