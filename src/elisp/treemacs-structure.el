@@ -218,15 +218,14 @@ is node marked its children will be recursively investigated instead."
 If the root is marked simply reset all refresh flags and run `treemacs-refresh'
 instead."
   (-let [projects (treemacs-workspace->projects (treemacs-current-workspace))]
-    (treemacs-run-in-every-buffer
-     (dolist (project projects)
-       (-let [root-node (-> project (treemacs-project->path) (treemacs-get-from-shadow-index))]
-         (if (treemacs-shadow-node->refresh-flag root-node)
-             (progn
-               (treemacs--do-for-all-child-nodes root-node #'treemacs-shadow-node->reset-refresh-flag)
-               (treemacs--do-refresh (current-buffer) project))
-           (dolist (root-child (treemacs-shadow-node->children root-node))
-             (treemacs--recursive-refresh-descent root-child))))))))
+    (dolist (project projects)
+      (-let [root-node (-> project (treemacs-project->path) (treemacs-get-from-shadow-index))]
+        (if (treemacs-shadow-node->refresh-flag root-node)
+            (progn
+              (treemacs--do-for-all-child-nodes root-node #'treemacs-shadow-node->reset-refresh-flag)
+              (treemacs--do-refresh (current-buffer) project))
+          (dolist (root-child (treemacs-shadow-node->children root-node))
+            (treemacs--recursive-refresh-descent root-child)))))))
 
 (provide 'treemacs-structure)
 
