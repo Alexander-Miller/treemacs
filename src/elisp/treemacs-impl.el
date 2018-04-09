@@ -353,18 +353,40 @@ failed."
       [`dir-node-closed (treemacs--expand-dir-node btn :git-future git-future)]
       [`root-node-closed (treemacs--expand-root-node btn)])
     (catch 'follow-failed
-      (--each dir-parts
-        (setq root (f-join root it))
-        ;; for every manual part add it to the current root and find the first button below
-        ;; btn whose :path is the root, expand it, keep looping
-        (setq btn (first-child-btn-where btn (string= root (button-get child-btn :path))))
-        (goto-char btn)
-        (unless btn (throw 'follow-failed 'follow-failed))
-        ;; don't open dir at the very end of the list since we only want to put
-        ;; point in its line
-        (when (and (eq 'dir-node-closed (button-get btn :state))
-                   (< it-index last-index))
-          (treemacs--expand-dir-node btn :git-future git-future)))
+      (-let- [(index 0)
+              (dir-part nil)]
+        (while dir-parts
+          (setq dir-part (pop dir-parts)
+                root (f-join root dir-part))
+          ;; for every manual part add it to the current root and find the first button below
+          ;; btn whose :path is the root, expand it, keep looping
+          (setq btn (first-child-btn-where btn
+                      (-if-let- [collapse-count (button-get child-btn :collapsed)]
+                          ;; button has collapsed path, so a direct comparison is impossble
+                          ;; for example we are following [root app src model file] but the path
+                          ;; is collapsed as app/src/model. normally we would check if the button's
+                          ;; path is root/app, but that obviously won't work. since two path elements
+                          ;; are appended to the original path the button's :collapsed property has
+                          ;; a value of 2, so we append the next two elemnts of dir-parts and make
+                          ;; the comparison then
+                          (when (>= (length dir-parts) collapse-count)
+                            (-let [coll-root root]
+                              (dotimes (n collapse-count) ;; TODO reduce fjoin use
+                                (setq coll-root (f-join coll-root (nth n dir-parts))))
+                              (when (string= coll-root (button-get child-btn :path))
+                                (setq root coll-root
+                                      ;; when we have a hit the collapsed dirs must not be iterated over
+                                      dir-parts (nthcdr (1+ collapse-count) dir-parts))
+                                child-btn)))
+                        (string= root (button-get child-btn :path)))))
+          (goto-char btn)
+          (unless btn (throw 'follow-failed 'follow-failed))
+          ;; don't open dir at the very end of the list since we only want to put
+          ;; point in its line
+          (when (and (eq 'dir-node-closed (button-get btn :state))
+                     (< index last-index))
+            (treemacs--expand-dir-node btn :git-future git-future))
+          (setq index (1+ index))))
       btn)))
 
 ;;;;;;;;;;;;;;;
