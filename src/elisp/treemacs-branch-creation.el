@@ -214,7 +214,9 @@ directory that the collapsing leads to. For Example:
       (let* ((b (treemacs-goto-button (car it)))
              (props (text-properties-at (button-start b))))
         (button-put b :path (nth (- (length it) 1) it))
-        (button-put b :collapsed t)
+        ;; number of direcoties that have been appended to the original path
+        ;; value is used in `treemacs--follow-each-dir'
+        (button-put b :collapsed (- (length it) 2))
         (end-of-line)
         (let* ((beg (point))
                (dir (cadr it))
@@ -365,10 +367,12 @@ RECURSIVE: Bool"
        :new-state 'dir-node-open
        :new-icon treemacs-icon-open
        :open-action
-       (treemacs--create-branch abs-path (1+ (button-get btn :depth)) git-future collapse-future btn)
+       (progn
+         ;; do on-expand first so buttons that need collapsing can quickly find their parent
+         (treemacs-on-expand abs-path btn (treemacs-parent-of btn))
+         (treemacs--create-branch abs-path (1+ (button-get btn :depth)) git-future collapse-future btn))
        :post-open-action
        (progn
-         (treemacs-on-expand abs-path btn (treemacs-parent-of btn))
          (treemacs--start-watching abs-path)
          (when recursive
            (--each (treemacs--get-children-of btn)
