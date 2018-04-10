@@ -498,7 +498,7 @@ By default Treemacs's keymap looks as follows:
 | cd      | treemacs-create-dir                         | Create a directory.                                                                                                                    |
 | R       | treemacs-rename                             | Rename the currently selected node. Reload buffers visiting renamed files or files in renamed directories.                             |
 | u       | treemacs-goto-parent-node                   | Select parent of selected node, if possible. If not call ~treemacs-uprooot~                                                            |
-| q       | treemacs-toggle                             | Hide/show an existing treemacs window.                                                                                                 |
+| q       | bury-buffer                                 | Hide the treemacs buffer.                                                                         |
 | Q       | treemacs-kill-buffer                        | Kill the treemacs buffer.                                                                                                              |
 | ov      | treemacs-visit-node-vertical-split          | Open current file or tag by vertically splitting next-window. Stay in current window with a prefix argument.                           |
 | oh      | treemacs-visit-node-horizontal-split        | Open current file or tag by horizontally splitting next-window. Stay in current window with a prefix argument.                         |
