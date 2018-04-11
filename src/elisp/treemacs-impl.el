@@ -375,6 +375,7 @@ failed."
                                 (setq coll-root (f-join coll-root (nth n dir-parts))))
                               (when (string= coll-root (button-get child-btn :path))
                                 (setq root coll-root
+                                      index (+ index collapse-count)
                                       ;; when we have a hit the collapsed dirs must not be iterated over
                                       dir-parts (nthcdr (1+ collapse-count) dir-parts))
                                 child-btn)))
