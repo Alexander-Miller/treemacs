@@ -20,6 +20,7 @@
 ;;; Code:
 
 (require 'treemacs)
+(require 'org)
 (require 'filenotify)
 (require 'ert)
 (require 'el-mock)
@@ -30,44 +31,51 @@
 ;; `treemacs--maybe-filter-dotfiles'
 (progn
   (ert-deftest filter-dotfiles::do-nothing-when-dotfiles-are-shown ()
-    (let ((treemacs-show-hidden-files t)
-          (default-directory "/home/")
-          (input '("/home/.A" "/home/B/C" "/home/.A/B" "/home/.A/.B/.C")))
-      (should (equal input (treemacs--maybe-filter-dotfiles input)))))
+    (with-mock
+      (stub treemacs--find-project-for-path => "/home/")
+      (let ((treemacs-show-hidden-files t)
+            (input '("/home/.A" "/home/B/C" "/home/.A/B" "/home/.A/.B/.C")))
+        (should (equal input (treemacs--maybe-filter-dotfiles input))))))
 
   (ert-deftest filter-dotfiles::do-nothing-for-nulls ()
-    (let ((treemacs-show-hidden-files nil)
-          (default-directory "/home/"))
-      (should (null (treemacs--maybe-filter-dotfiles nil)))))
+    (with-mock
+      (stub treemacs--find-project-for-path => "/home/")
+      (-let [treemacs-show-hidden-files nil]
+        (should (null (treemacs--maybe-filter-dotfiles nil))))))
 
   (ert-deftest filter-dotfiles::do-nothing-for-empty-input ()
-    (let ((treemacs-show-hidden-files nil)
-          (default-directory "/home/"))
-      (should (null (treemacs--maybe-filter-dotfiles '())))))
+    (with-mock
+      (stub treemacs--find-project-for-path => "/home/")
+      (-let [treemacs-show-hidden-files nil]
+        (should (null (treemacs--maybe-filter-dotfiles '()))))))
 
   (ert-deftest filter-dotfiles::filter-single-dotfile ()
-    (let ((treemacs-show-hidden-files nil)
-          (default-directory "/home/")
-          (input '("/home/A/B/C/D/.d")))
-      (should (null (treemacs--maybe-filter-dotfiles input)))))
+    (with-mock
+      (stub treemacs--find-project-for-path => "/home/")
+      (let ((treemacs-show-hidden-files nil)
+            (input '("/home/A/B/C/D/.d")))
+        (should (null (treemacs--maybe-filter-dotfiles input))))))
 
   (ert-deftest filter-dotfiles::filter-dotfile-based-on-parent ()
-    (let ((treemacs-show-hidden-files nil)
-          (default-directory "/home/")
-          (input '("/home/A/B/C/.D/d")))
-      (should (null (treemacs--maybe-filter-dotfiles input)))))
+    (with-mock
+      (stub treemacs--find-project-for-path => "/home/")
+      (let ((treemacs-show-hidden-files nil)
+            (input '("/home/A/B/C/.D/d")))
+        (should (null (treemacs--maybe-filter-dotfiles input))))))
 
   (ert-deftest filter-dotfiles::dont-filter-dotfile-above-root ()
-    (let ((treemacs-show-hidden-files nil)
-          (default-directory "/home/.A/B")
-          (input '("/home/.A/B/C/d")))
-      (should (equal input (treemacs--maybe-filter-dotfiles input)))))
+    (with-mock
+      (stub treemacs--find-project-for-path => "/home/.A/B")
+      (let ((treemacs-show-hidden-files nil)
+            (input '("/home/.A/B/C/d")))
+        (should (equal input (treemacs--maybe-filter-dotfiles input))))))
 
   (ert-deftest filter-dotfiles::filter-long-input ()
-    (let ((treemacs-show-hidden-files nil)
-          (default-directory "/home/.A/B")
-          (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
-      (should (equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E") (treemacs--maybe-filter-dotfiles input))))))
+    (with-mock
+      (stub treemacs--find-project-for-path => "/home/.A/B")
+      (let ((treemacs-show-hidden-files nil)
+            (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
+        (should (equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E") (treemacs--maybe-filter-dotfiles input)))))))
 
 ;; `treemacs--is-path-in-dir?'
 (progn
@@ -201,27 +209,6 @@
 
     (ert-deftest reject-ignored-and-dotfiles::accepts-abs-file ()
       (should (treemacs--reject-ignored-and-dotfiles "foo.el")))))
-
-;; `str-assq-delete-all'
-(progn
-  (ert-deftest str-assq-delete::does-nothing-for-nil-key-and-list ()
-    (should-not (str-assq-delete-all nil nil)))
-
-  (ert-deftest str-assq-delete::does-nothing-for-nil-key ()
-    (let ((input '(("A" . 1))))
-      (should (equal input (str-assq-delete-all nil input)))))
-
-  (ert-deftest str-assq-delete::does-nothing-for-nil-list ()
-    (should-not (str-assq-delete-all "A" nil)))
-
-  (ert-deftest str-assq-delete::returns-same-list-when-nothing-to-delete ()
-    (let ((input '(("A" . 1) ("B" . 2))))
-      (should (eq input (str-assq-delete-all "X" input)))))
-
-  (ert-deftest str-assq-delete::deletes-every-fitting-item ()
-    (let ((input '(("X" . 1) ("A" . 2) ("X" . 3) ("B" . 4) ("X" . 5))))
-      (should (equal '(("A" . 2) ("B" . 4))
-                     (str-assq-delete-all "X" input))))))
 
 ;; `treemacs--parent'
 (progn
@@ -606,12 +593,12 @@
 
 ;; `treemacs-on-expand'
 (progn
-  (ert-deftest on-expand::fails-on-nil-arguments ()
+  (ert-deftest on-expand::does-nothing-on-nil-arguments ()
     (with-temp-buffer
       (setq treemacs-shadow-index (ht))
-      (should-error (treemacs-on-expand "A" 1 nil))
-      (should-error (treemacs-on-expand "A" nil "B"))
-      (should-error (treemacs-on-expand nil 1 "B"))))
+      (should-not (treemacs-on-expand "A" 1 nil))
+      (should-not (treemacs-on-expand "A" nil "B"))
+      (should-not (treemacs-on-expand nil 1 "B"))))
 
   (ert-deftest on-expand::correctly-expands-new-node ()
     (with-temp-buffer
@@ -828,103 +815,144 @@
 (ert-deftest treemacs::sys-test ()
   (save-window-excursion
     (save-match-data
-      (let ((test-buffer (get-buffer-create "*Treemacs Sys Test*"))
-            (imenu-auto-rescan t)
-            (org-imenu-depth 10)
-            (treemacs-collapse-dirs 3))
-        (if noninteractive
-            (message "Sys Test not run in batch mode.")
+      (let* ((imenu-auto-rescan t)
+             (org-imenu-depth 10)
+             (treemacs-collapse-dirs 3)
+             (project (make-treemacs-project :name "Test Project" :path (concat treemacs-dir "/test")))
+             (treemacs-current-workspace (make-treemacs-workspace :name "Test Workspace" :projects (list project))))
+        (unless noninteractive
           (unwind-protect
               (progn
-                (switch-to-buffer test-buffer)
-                (setq-local default-directory (f-join treemacs-dir "test"))
                 (delete-other-windows)
-                (-when-let (b (treemacs-buffer-exists?)) (kill-buffer b))
+                (--when-let (treemacs-buffer-exists?) (kill-buffer it))
 
+                (switch-to-buffer "*scratch*")
+
+                ;; init with a workspace with a single project and make sure the root node looks right
                 (call-interactively 'treemacs)
-
                 (should (treemacs-buffer-exists?))
+                (should (string= "Test Project" (treemacs--get-label-of (treemacs-current-button))))
 
-                (call-interactively 'treemacs-uproot)
+                ;; add another project, expand both and jump between them
+                (-let [unread-command-events (listify-key-sequence (kbd "RET"))]
+                  (treemacs-add-project (concat treemacs-dir "/src")))
+                (should (string= "src" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-previous-project)
+                (should (string= "Test Project" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-TAB-action)
+                (call-interactively #'treemacs-next-project)
+                (call-interactively #'treemacs-TAB-action)
+                (should (string= "src" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-previous-project)
+                (should (string= "src" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-previous-project)
+                (should (string= "Test Project" (treemacs--get-label-of (treemacs-current-button))))
 
-                (should (equal "test"
-                               (treemacs--get-label-of
-                                (treemacs-current-button))))
+                ;; Test Project <- point is here
+                ;; ├── testdir1/testdir2
+                ;; │   ├── testfile.el
+                ;; │   └── testfile.org
+                ;; ├── test-helper.el
+                ;; ├── treemacs-test.el
 
-                (with-current-buffer (treemacs-buffer-exists?)
-                  (treemacs--do-follow (f-join default-directory "test/testdir1/testdir2/testfile.org")))
-                (should (equal "testfile.org"
-                               (treemacs--get-label-of (treemacs-current-button))))
+                ;; Expand everything
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-TAB-action)
+                (should (string= "testdir1/testdir2" (treemacs--get-label-of (treemacs-current-button))))
+                (should (= 1 (treemacs--prop-at-point :collapsed)))
 
-                (call-interactively 'treemacs-goto-parent-node)
-                (should (equal "testdir1/testdir2"
-                               (treemacs--get-label-of (treemacs-current-button))))
+                ;; try goto-parent and -neighbour
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-next-line)
+                (should (string= "testfile.org" (treemacs--get-label-of (treemacs-current-button))))
 
-                (call-interactively 'treemacs-change-root)
-                (should (equal "testfile.el"
-                               (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-goto-parent-node)
+                (should (string= "testdir1/testdir2" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-next-neighbour)
+                (should (string= "test-helper.el" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-next-neighbour)
+                (should (string= "treemacs-test.el" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-previous-neighbour)
+                (call-interactively #'treemacs-previous-neighbour)
+                (should (string= "testdir1/testdir2" (treemacs--get-label-of (treemacs-current-button))))
 
-                (call-interactively 'treemacs-TAB-action)
+                ;; test tags
+                (treemacs-goto-button (concat treemacs-dir "/test/testdir1/testdir2/testfile.el"))
+                (should (string= "testfile.el" (treemacs--get-label-of (treemacs-current-button))))
 
+                (call-interactively #'treemacs-TAB-action)
                 (should (equal '("Variables" "Functions")
                                (-map #'treemacs--get-label-of
                                      (treemacs--get-children-of (treemacs-current-button)))))
 
-                (call-interactively 'treemacs-next-line)
-                (call-interactively 'treemacs-TAB-action)
-                (call-interactively 'treemacs-next-neighbour)
-                (call-interactively 'treemacs-TAB-action)
-
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-next-line)
+                (should (string= "Functions" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-TAB-action)
                 (should (equal '("fn1" "fn2")
                                (-map #'treemacs--get-label-of
                                      (treemacs--get-children-of (treemacs-current-button)))))
 
-                (call-interactively 'treemacs-next-line)
-                (call-interactively 'treemacs-visit-node-no-split)
+                ;; open a tag
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-visit-node-no-split)
+                (should (string= "testfile.el" (f-filename buffer-file-name)))
+                (should (string= "(defun fn1 ())\n" (thing-at-point 'line t)))
+                (should (= 2 (length (window-list))))
+                (kill-buffer (current-buffer))
 
-                (should (equal "testfile.el" (f-filename buffer-file-name)))
-                (should (equal "(defun fn1 ())\n" (thing-at-point 'line t)))
-                (should (equal 2 (length (window-list))))
-
+                ;; go back
                 (call-interactively 'treemacs-select-window)
-                (call-interactively 'treemacs-goto-parent-node)
-                (call-interactively 'treemacs-goto-parent-node)
-                (call-interactively 'treemacs-next-neighbour)
-                (call-interactively 'treemacs-TAB-action)
+                (should (eq major-mode 'treemacs-mode))
 
-                (should (equal '("Foo" "Bar")
-                               (-map #'treemacs--get-label-of
-                                     (treemacs--get-children-of (treemacs-current-button)))))
-                (should (equal "testfile.org"
-                               (treemacs--get-label-of (treemacs-current-button))))
-                (call-interactively 'treemacs-next-line)
+                ;; now try reopening of tags with org
+                (call-interactively #'treemacs-goto-parent-node)
+                (call-interactively #'treemacs-goto-parent-node)
+                (call-interactively #'treemacs-next-neighbour)
+                (should (string= "testfile.org" (treemacs--get-label-of (treemacs-current-button))))
 
-                (should (equal "Foo"
-                               (treemacs--get-label-of (treemacs-current-button))))
-                (call-interactively 'treemacs-push-button)
-                (call-interactively 'treemacs-next-line)
-                (should (equal "Foo2"
-                               (treemacs--get-label-of (treemacs-current-button))))
+                ;; expand all
+                (treemacs-TAB-action t)
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-next-line)
+                (should (string= "Foo3" (treemacs--get-label-of (treemacs-current-button))))
 
-                (call-interactively 'treemacs-push-button)
+                ;; go up again and check everything's reopened
+                (call-interactively #'treemacs-goto-parent-node)
+                (call-interactively #'treemacs-goto-parent-node)
+                (call-interactively #'treemacs-goto-parent-node)
+                (should (string= "testfile.org" (treemacs--get-label-of (treemacs-current-button))))
+                (call-interactively #'treemacs-TAB-action)
+                (call-interactively #'treemacs-TAB-action)
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-next-line)
+                (call-interactively #'treemacs-next-line)
+                (should (string= "Foo3" (treemacs--get-label-of (treemacs-current-button))))
 
-                (call-interactively 'treemacs-next-line)
+                ;; try goto with splitting too
+                (call-interactively #'treemacs-visit-node-vertical-split)
+                (should (eq major-mode 'org-mode))
+                (should (= 3 (length (window-list))))
+                (org-reveal)
+                (should (string= "*** Foo3\n" (thing-at-point 'line)))
+                (kill-buffer (current-buffer))
+                (call-interactively #'treemacs-select-window)
+                (should (string= "Foo3" (treemacs--get-label-of (treemacs-current-button))))
 
-                (should (equal "Foo3" (treemacs--get-label-of (treemacs-current-button))))
-
-                (funcall #'treemacs-visit-node-vertical-split t)
-                (should (and (equal major-mode 'treemacs-mode)
-                             (equal 3 (length (window-list)))
-                             (equal 1 (length (--filter (with-current-buffer (window-buffer it)
-                                                          (equal major-mode 'org-mode))
-                                                        (window-list))))))
-
-                (dotimes (_ 3) (call-interactively 'treemacs-goto-parent-node))
-                (dotimes (_ 2) (call-interactively 'treemacs-TAB-action))
-                (dotimes (_ 3) (call-interactively 'treemacs-next-line))
-                (should (equal "Foo3" (treemacs--get-label-of (treemacs-current-button)))))
-
-            (kill-buffer test-buffer)))))))
+                ;; finally try moving to the current tag
+                (call-interactively #'treemacs-previous-project)
+                (should (string= "Test Project" (treemacs--get-label-of (treemacs-current-button))))
+                (treemacs-TAB-action t)
+                (other-window 1)
+                (find-file (concat treemacs-dir "/test/testdir1/testdir2/testfile.el"))
+                (goto-char (point-min))
+                (call-interactively #'treemacs-find-tag)
+                (call-interactively #'treemacs-select-window)
+                (should (string= "FOO" (treemacs--get-label-of (treemacs-current-button)))))
+            (--when-let (treemacs-buffer-exists?) (kill-buffer it))))))))
 
 (provide 'treemacs-test)
 
