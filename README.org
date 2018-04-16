@@ -255,9 +255,6 @@ You can find an exhaustive overview of all functions, their keybinds and functio
       (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
     (progn
-      (use-package treemacs-evil
-        :ensure t
-        :demand t)
       (setq treemacs-collapse-dirs              (if (executable-find "python") 3 0)
             treemacs-file-event-delay           5000
             treemacs-follow-after-init          t
@@ -294,13 +291,16 @@ You can find an exhaustive overview of all functions, their keybinds and functio
           ("M-m f C-t"  . treemacs-find-file)
           ("M-m f M-t"  . treemacs-find-tag)))
 
+  (use-package treemacs-evil
+        :after treemacs
+        :ensure t
+        :demand t)
+
   (use-package treemacs-projectile
+    :after treemacs
     :defer t
     :ensure t
-    :config
-    :bind (:map global-map
-                ("M-m fP" . treemacs-projectile)
-                ("M-m fp" . treemacs-projectile-toggle)))
+    :config)
 #+END_SRC
 
 * Configuration
