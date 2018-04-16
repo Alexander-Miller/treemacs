@@ -63,19 +63,6 @@ A COUNT argument, moves COUNT lines up."
   (forward-line (- count))
   (treemacs--evade-image))
 
-(defun treemacs-push-button (&optional arg)
-  "Push the button in the current line.
-For directories, files and tag sections expand/close the button.
-For tags go to the tag definition via `treemacs-visit-node-no-split'.
-
-With a prefix ARG expanding and closing of nodes is recursive."
-  (interactive "P")
-  (save-excursion
-    (-when-let (b (treemacs-current-button))
-      (treemacs--push-button b arg)))
-  (treemacs--evade-image))
-(make-obsolete 'treemacs-push-button 'treemacs-toggle-node "Treemacs v1.18")
-
 (defun treemacs-toggle-node (&optional arg)
   "Expand or close the current node.
 If a prefix ARG is provided the open/close process is done recursively. When
@@ -110,16 +97,6 @@ This function's exact configuration is stored in `treemacs-TAB-actions-config'."
   (-when-let (state (treemacs--prop-at-point :state))
     (funcall (cdr (assq state treemacs-TAB-actions-config)) arg)
     (treemacs--evade-image)))
-
-(defun treemacs-click-mouse1 (event)
-  "Do the same as `treemacs-toggle-node' when mouse1 clicking on a line.
-Must be bound to a mouse click, or EVENT will not be supplied."
-  (interactive "e")
-  (when (eq 'mouse-1 (elt event 0))
-    (goto-char (posn-point (cadr event)))
-    (beginning-of-line)
-    (treemacs-toggle-node)))
-(make-obsolete 'treemacs-click-mouse1 #'treemacs-leftclick-action "Treemacs v1.18")
 
 (defun treemacs-goto-parent-node ()
   "Select parent of selected node, if possible.
@@ -247,14 +224,6 @@ First deletes the previous entry with key STATE from
 `treemacs-TAB-actions-config' and then inserts the new tuple."
   (setq treemacs-TAB-actions-config (assq-delete-all state treemacs-TAB-actions-config))
   (push (cons state action) treemacs-TAB-actions-config))
-
-(defun treemacs-xdg-open ()
-  "Open current file, using the `xdg-open' shell command."
-  (interactive)
-  (-when-let (path (treemacs--prop-at-point :path))
-    (when (f-exists? path)
-      (call-process-shell-command (format "xdg-open \"%s\" &" path)))))
-(make-obsolete 'treemacs-xdg-open #'treemacs-visit-node-in-external-application "Treemacs v1.11.2")
 
 (defun treemacs-visit-node-in-external-application ()
   "Open current file according to its mime type in an external application.
@@ -424,20 +393,6 @@ With a prefix ARG simply reset the width of the treemacs window."
       (unless (or (eq it w)
                   (->> it (window-buffer) (buffer-name) (s-starts-with? treemacs--buffer-name-prefix)))
         (delete-window it)))))
-
-(defun treemacs-push-button-select-sort (&optional arg)
-  "Same as `treemacs-toggle-node', but the sorting function is chosen manually.
-The sort setting is active for only a single push, its effect will be undone on
-the next refresh.
-Prefix argument ARG has the same effect as in `treemacs-toggle-node' - causing
-the open/close process to work recursively."
-  (interactive)
-  (let* ((sort-options '(alphabetic-desc alphabetic-asc size-asc size-desc mod-time-asc mod-time-desc))
-         (treemacs-sorting (intern (completing-read "Sorting: " sort-options))))
-    (treemacs-toggle-node arg)))
-(make-obsolete 'treemacs-push-button-select-sort
-               #'treemacs-resort
-               "Treemacs v1.12")
 
 (defun treemacs-temp-resort-root (&optional sort-method)
   "Temporarily resort the entire treemacs buffer.
