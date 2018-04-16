@@ -110,7 +110,14 @@ in the file system and its display name. This is the info that you need to provi
 your workspace. In the future it should be possible to switch between various workspaces and use different workspaces
 for different frames' buffers, but as of now there exists only the global default workspace.
 
-Workspace administration consits of 3 options: adding, deleting and renaming projects. See also the [[Keymap][keybinds below]].
+This design approach has various advantages and disadvantages. It is now no longer possible to "free roam" in the file
+system with treemacs, i.e. you can no longer arbitrarily switch the single file tree's root to the directory at point or
+the current root's parent. Another restriction is that the same part of the file system may not appear more than once as
+part of the workspace. For example it is not possible to add both /Foo and /Foo/Bar as projects, since internally
+treemacs heavily relies on every node having a unique natural key in its absolute path. Nonetheless the pros certainly
+outweigh the cons, as a multiroot setup allows to work on multiple projects with any combination concern/buffer
+separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for concurrent display not
+only of the file system, but e.g. the currently open buffers.
 
 ** Frame Locality
 Treemacs buffers have a limited scope they are visible in: the frames they are created in. A treemacs buffer, once
