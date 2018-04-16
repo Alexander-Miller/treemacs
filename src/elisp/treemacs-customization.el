@@ -165,19 +165,6 @@ the python3 binary."
   :type 'regexp
   :group 'treemacs-configuration)
 
-(defcustom treemacs-change-root-without-asking nil
-  "When t don't ask to change the root when calling `treemacs-find-file'."
-  :type 'boolean
-  :group 'treemacs-configuration)
-
-(defcustom treemacs-never-persist nil
-  "When t treemacs will never persist its state.
-By default treemacs' state is written to disk in `treemacs--persist-file' if it
-detects a session saving mechanism like desktop save mode so it can be restored
-on the next launch."
-  :type 'boolean
-  :group 'treemacs-configuration)
-
 (defcustom treemacs-sorting 'alphabetic-desc
   "Indicates how treemacs will sort its files and directories.
 Files will still always be shown after directories.
@@ -421,7 +408,7 @@ button's position will be wrong, even if it wasn't deleted outright):
 
 (defcustom treemacs-pulse-on-success t
   "When non-nil treemacs will pulse the current line as a success indicator.
-This applies to actions like `treemacs-yank-path-at-point'."
+This applies to actions like `treemacs-copy-path-at-point'."
   :type 'boolean
   :group 'treemacs-configuration)
 

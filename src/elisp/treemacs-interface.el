@@ -400,19 +400,21 @@ With a prefix ARG simply reset the width of the treemacs window."
                (read-number))))
   (treemacs--set-width treemacs-width))
 
-(defun treemacs-yank-path-at-point ()
+(defun treemacs-copy-path-at-point ()
   "Copy the absolute path of the node at point."
   (interactive)
   (--if-let (-some-> (treemacs--prop-at-point :path) (f-full) (kill-new))
-        (treemacs-pulse-on-success "Yanked path: %s" (propertize it 'face 'font-lock-string-face))
+        (treemacs-pulse-on-success "Copied path: %s" (propertize it 'face 'font-lock-string-face))
     (treemacs-pulse-on-failure  "There is nothing to copy here")))
 
-(defun treemacs-yank-root ()
+(defun treemacs-copy-project-root ()
   "Copy the absolute path of the current treemacs root."
   (interactive)
-  (--if-let (-> default-directory (f-full) (kill-new))
-      (treemacs-log "Yanked root: %s" (propertize it 'face 'font-lock-string-face))
-    (treemacs-pulse-on-failure "Failed to yank root")))
+  (--if-let (treemacs-current-button)
+      (-let [path (-> it (treemacs--nearest-path) (treemacs--find-project-for-path) (treemacs-project->path))]
+        (kill-new path)
+        (treemacs-log "Copied project root: %s" (propertize path 'face 'font-lock-string-face)))
+    (treemacs-pulse-on-failure "There is no project to copy from here.")))
 
 (defun treemacs-delete-other-windows ()
   "Same as `delete-other-windows', but will not delete the treemacs window."

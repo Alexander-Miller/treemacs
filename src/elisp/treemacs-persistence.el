@@ -24,7 +24,7 @@
 (require 'treemacs-workspaces)
 
 (defconst treemacs--persist-file (f-join user-emacs-directory ".cache" "treemacs-persist")
-  "File treemacs uses to persist its current state.")
+  "File treemacs uses to persist its state.")
 
 (defun treemacs--persist ()
   "Persist treemacs' state in `treemacs--persist-file'."

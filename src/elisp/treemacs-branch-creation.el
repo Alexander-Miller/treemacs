@@ -301,8 +301,6 @@ set to PARENT."
                                              (treemacs--get-button-face (concat root "/" it) git-info 'treemacs-git-unmodified-face))
                                  file-strings)))
       (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process))
-      ;; reopen here only since create-branch is called both when opening a node and
-      ;; building the entire tree
       (treemacs--reopen-at root git-info))))
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
