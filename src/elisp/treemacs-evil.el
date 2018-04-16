@@ -62,8 +62,8 @@
 (define-key evil-treemacs-state-map (kbd "?")   #'treemacs-helpful-hydra)
 (define-key evil-treemacs-state-map (kbd "RET") #'treemacs-RET-action)
 
-(evil-define-key 'treemacs treemacs-mode-map (kbd "yr")     #'treemacs-yank-root)
-(evil-define-key 'treemacs treemacs-mode-map (kbd "yy")     #'treemacs-yank-path-at-point)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "yr")     #'treemacs-copy-project-root)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "yy")     #'treemacs-copy-path-at-point)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "gr")     #'treemacs-refresh)
 (evil-define-key 'treemacs treemacs-mode-map [down-mouse-1] #'ignore)
 

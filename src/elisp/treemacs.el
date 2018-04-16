@@ -89,7 +89,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
         (cl-block body
           (unless project
             (cl-return-from body
-              (treemacs-pulse-on-failure "Bookmark at %s does not under any project in the workspace."
+              (treemacs-pulse-on-failure "Bookmark at %s does not fall under any project in the workspace."
                 (propertize location 'face 'font-lock-string-face))))
           (-pcase (treemacs--current-visibility)
             [`visible (treemacs--select-visible)]
