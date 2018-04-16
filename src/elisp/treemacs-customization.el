@@ -142,12 +142,6 @@ A treemacs buffer is built when after calling `treemacs-init' or
   :type 'plist
   :group 'treemacs-configuration)
 
-(defcustom treemacs-git-integration (when (executable-find "git") t)
-  "When t use different faces for files' different git states."
-  :type 'boolean
-  :group 'treemacs-configuration)
-(make-obsolete-variable 'treemacs-git-integration 'treemacs-git-mode "Treemacs v1.15")
-
 (defcustom treemacs-python-executable (executable-find "python")
   "The python executable used by treemacs.
 An asynchronous python process is used in two optional feaures:
@@ -333,13 +327,6 @@ Valid values are
   :type 'number
   :group 'treemacs-configuration)
 
-(defcustom treemacs-winum-number 10
-  "Window number treemacs will always assume when winum.el is used.
-Set to nil to disable the static number assignment."
-  :type 'number
-  :group 'treemacs-configuration)
-(make-obsolete-variable 'treemacs-winum-number "Treemacs is ignored by winum since v1.16.1" "v1.16.1")
-
 (defcustom treemacs-no-png-images nil
   "When non-nil treemacs will use TUI string icons even when running in a GUI."
   :type 'boolean
@@ -415,7 +402,7 @@ This applies to actions like `treemacs-copy-path-at-point'."
 (defcustom treemacs-pulse-on-failure t
   "When non-nil treemacs will pulse the current line as a failure indicator.
 This applies to actions like treemacs not finding any tags it can show when
-`treemacs-push-button' is called on a file node."
+`treemacs-toggle-node' is called on a file node."
   :type 'boolean
   :group 'treemacs-configuration)
 
