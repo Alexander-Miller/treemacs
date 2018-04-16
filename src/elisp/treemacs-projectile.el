@@ -29,17 +29,15 @@
 (require 'projectile)
 
 ;;;###autoload
-(defun treemacs-projectile (&optional arg)
-  "Add the current projectile project to the treemacs workspace.
-If not in a project do nothing. With a prefix ARG select a project from
-`projectile-known-projects'."
-  (interactive "P")
-  (cond
-   (arg
-    (treemacs--init (completing-read "Project: " projectile-known-projects)))
-   ((projectile-project-p)
-    (treemacs--init (projectile-project-root)))
-   (t (treemacs-log "You are not in a project."))))
+(defun treemacs-projectile ()
+  "Add of one `projectile-known-projects' to the treemacs workspace."
+  (interactive)
+  (if (and (bound-and-true-p projectile-known-projects)
+           (listp projectile-known-projects))
+      (treemacs--init (completing-read "Project: " projectile-known-projects))
+    (treemacs-pulse-on-failure "It looks like projectile does not know any projects.")))
+
+(define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
 
 (provide 'treemacs-projectile)
 
