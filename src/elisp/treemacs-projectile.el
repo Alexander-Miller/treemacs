@@ -37,6 +37,19 @@
       (treemacs--init (completing-read "Project: " projectile-known-projects))
     (treemacs-pulse-on-failure "It looks like projectile does not know any projects.")))
 
+;; Redefine `treemacs' so we preselect the current project root when the workspace is empty
+;;;###autoload
+(defun treemacs ()
+  "Initialize or toggle treemacs.
+* If the treemacs window is visible hide it.
+* If a treemacs buffer exists, but is not visible show it.
+* If no treemacs buffer exists for the current frame create and show it.
+* If the workspace is empty additionally ask for the root path of the first
+  project to add."
+  (interactive)
+  (treemacs--init (when (treemacs-workspace->is-empty?)
+                    (read-directory-name "Project root: " (projectile-project-root)))))
+
 (define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
 
 (provide 'treemacs-projectile)
