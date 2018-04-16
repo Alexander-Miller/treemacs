@@ -436,6 +436,27 @@
                             (("m2") "Members" "Classes"))
                           (with-no-warnings (treemacs--flatten-imenu-index input))))))))
 
+;; `treemacs--find-project-for-path'
+(progn
+  (ert-deftest project-for-path::returns-nil-on-nil-input ()
+    (-let*- [(project (make-treemacs-project :path "/A"))
+             (treemacs-current-workspace (make-treemacs-workspace :projects (list project)))]
+      (should-not (treemacs--find-project-for-path nil))))
+
+  (ert-deftest project-for-path::returns-nil-on-empty-workspace ()
+    (-let [treemacs-current-workspace (make-treemacs-workspace :projects nil)]
+      (should-not (treemacs--find-project-for-path "/A"))))
+
+  (ert-deftest project-for-path::returns-nil-when-path-does-not-fit ()
+    (-let*- [(project (make-treemacs-project :path "/A/B"))
+             (treemacs-current-workspace (make-treemacs-workspace :projects (list project)))]
+      (should-not (treemacs--find-project-for-path "/A/C"))))
+
+  (ert-deftest project-for-path::returns-project-when-path-fits ()
+    (-let*- [(project (make-treemacs-project :path "/A/B"))
+             (treemacs-current-workspace (make-treemacs-workspace :projects (list project)))]
+      (should (equal project (treemacs--find-project-for-path "/A/B/C"))))))
+
 ;; `treemacs--find-index-pos'
 (progn
   (ert-deftest find-index::error-in-nil-point ()
