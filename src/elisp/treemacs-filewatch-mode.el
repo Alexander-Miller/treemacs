@@ -135,6 +135,23 @@ An event counts as relevant when
                   (not treemacs-git-mode))
              (--any? (funcall it (f-filename dir) dir) treemacs-ignored-file-predicates)))))
 
+(defsubst treemacs--set-refresh-flags (path)
+  "Set refresh flags for PATH in the shadow index of every buffer.
+Also start the refresh timer if it's not started already."
+  (when (with-no-warnings treemacs-filewatch-mode)
+    (unless (file-directory-p path)
+      (setq path (treemacs--parent path)))
+    (when (ht-get treemacs--collapsed-filewatch-index path)
+      (ht-remove! treemacs--collapsed-filewatch-index path)
+      (treemacs--stop-watching path))
+    (treemacs-run-in-every-buffer
+     (--when-let (treemacs-get-from-shadow-index path)
+       (setf (treemacs-shadow-node->refresh-flag it) t))
+     (unless treemacs--refresh-timer
+       (setq treemacs--refresh-timer
+             (run-at-time (format "%s millisecond" treemacs-file-event-delay) nil
+                          #'treemacs--process-file-events))))))
+
 (defun treemacs--filewatch-callback (event)
   "Add EVENT to the list of file change events.
 Do nothing if this event's file is irrelevant as per
@@ -144,20 +161,14 @@ file from caches if it has been deleted instead of waiting for file processing."
   (when (treemacs--is-event-relevant? event)
     (when (eq 'deleted (cadr event))
       (treemacs--on-file-deletion (cl-third event) t))
-    (when (with-no-warnings treemacs-filewatch-mode)
-      (-let [changed-dir (cl-caddr event)]
-        (unless (f-directory? changed-dir)
-          (setq changed-dir (treemacs--parent changed-dir)))
-        (when (ht-get treemacs--collapsed-filewatch-index changed-dir)
-          (ht-remove! treemacs--collapsed-filewatch-index changed-dir)
-          (treemacs--stop-watching changed-dir))
-        (treemacs-run-in-every-buffer
-         (--when-let (treemacs-get-from-shadow-index changed-dir)
-           (setf (treemacs-shadow-node->refresh-flag it) t))
-         (unless treemacs--refresh-timer
-           (setq treemacs--refresh-timer
-                 (run-at-time (format "%s millisecond" treemacs-file-event-delay) nil
-                              #'treemacs--process-file-events))))))))
+    (if (eq 'renamed (cadr event))
+        (-let- [(old-name (cl-caddr event))
+                (new-name (cl-cadddr event))]
+          (treemacs-run-in-every-buffer
+           (treemacs--on-rename old-name new-name))
+          (treemacs--set-refresh-flags old-name)
+          (treemacs--set-refresh-flags new-name))
+      (treemacs--set-refresh-flags (cl-caddr event)))))
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected.
