@@ -47,17 +47,17 @@
 
 (defun treemacs--git-status-process-extended (path)
   "Start an extended python-parsed git status process for files under PATH."
-  (when (with-no-warnings treemacs-git-mode)
-    (-when-let- [git-root (vc-call-backend 'Git 'root path)]
-      (-let*- [(default-directory (f-canonical path))
-               (future (pfuture-new
-                        treemacs-python-executable
-                        "-O"
-                        "-S"
-                        treemacs--git-status.py
-                        (f-long git-root)
-                        path))]
-        future))))
+  (-when-let- [git-root (vc-call-backend 'Git 'root path)]
+    (-let*- [(file-name-handler-alist nil)
+             (git-root (expand-file-name git-root))
+             (default-directory git-root)
+             (future (pfuture-new
+                      treemacs-python-executable
+                      "-O"
+                      "-S"
+                      treemacs--git-status.py
+                      git-root))]
+      future)))
 
 (defun treemacs--parse-git-status-extended (git-future)
   "Parse the git status derived from the output of GIT-FUTURE.
