@@ -68,6 +68,7 @@ to it will instead show a blank."
              (column-nodes       (propertize "Opening Nodes" 'face 'treemacs-help-column-face))
              (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))
              (column-toggles     (propertize "Toggles " 'face 'treemacs-help-column-face))
+             (column-projects    (propertize "Projects" 'face 'treemacs-help-column-face))
              (column-misc        (propertize "Misc." 'face 'treemacs-help-column-face))
              (key-next-line      (treemacs--find-keybind #'treemacs-next-line))
              (key-prev-line      (treemacs--find-keybind #'treemacs-previous-line))
@@ -100,30 +101,33 @@ to it will instead show a blank."
              (key-bookmark       (treemacs--find-keybind #'treemacs-add-bookmark))
              (key-down-next-w    (treemacs--find-keybind #'treemacs-next-line-other-window))
              (key-up-next-w      (treemacs--find-keybind #'treemacs-previous-line-other-window))
+             (key-add-project    (treemacs--find-keybind #'treemacs-add-project))
+             (key-remove-project (treemacs--find-keybind #'treemacs-remove-project))
+             (key-rename-project (treemacs--find-keybind #'treemacs-rename-project))
              (hydra-str
               (format
                "
 %s
-%s              │ %s              │ %s    │ %s              │ %s
-―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-%s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode    │ %s refresh
-%s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode │ %s (re)set width
-%s next neighbour   │ %s open no split       │ %s rename      │ %s git mode       │ %s copy path
-%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles  │ %s copy root
-%s goto parent      │ %s open vertical       │                    │ %s resizability   │ %s re-sort
-%s down next window │ %s open ace            │                    │                       │ %s bookmark
-%s up next window   │ %s open ace horizontal │                    │                       │
-                        │ %s open ace vertical   │                    │                       │
-                        │ %s open externally     │                    │                       │
+%s              │ %s              │ %s    │ %s              │ %s              │ %s
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+%s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode    │ %s add project    │ %s refresh
+%s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode │ %s remove project │ %s (re)set width
+%s next neighbour   │ %s open no split       │ %s rename      │ %s git mode       │ %s rename project │ %s copy path
+%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles  │                       │ %s copy root
+%s goto parent      │ %s open vertical       │                    │ %s resizability   │                       │ %s re-sort
+%s down next window │ %s open ace            │                    │                       │                       │ %s bookmark
+%s up next window   │ %s open ace horizontal │                    │                       │                       │
+                        │ %s open ace vertical   │                    │                       │                       │
+                        │ %s open externally     │                    │                       │                       │
 "
                title
-               column-nav               column-nodes          column-files           column-toggles          column-misc
-               (car key-next-line)      (car key-tab)         (car key-create-file)  (car key-follow-mode)   (car key-refresh)
-               (car key-prev-line)      (car key-ret)         (car key-create-dir)   (car key-fwatch-mode)   (car key-set-width)
-               (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-copy-path)
-               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles) (car key-copy-root)
+               column-nav               column-nodes          column-files           column-toggles          column-projects          column-misc
+               (car key-next-line)      (car key-tab)         (car key-create-file)  (car key-follow-mode)   (car key-add-project)    (car key-refresh)
+               (car key-prev-line)      (car key-ret)         (car key-create-dir)   (car key-fwatch-mode)   (car key-remove-project) (car key-set-width)
+               (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-rename-project) (car key-copy-path)
+               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles)                          (car key-copy-root)
                (car key-goto-parent)    (car key-open-vert)   (car key-toggle-width) (car key-resort)
-               (car key-down-next-w)    (car key-open-ace)                                                   (car key-bookmark)
+               (car key-down-next-w)    (car key-open-ace)                                                                            (car key-bookmark)
                (car key-up-next-w)      (car key-open-ace-h)
                (car key-open-ext)       (car key-open-ace-v)
                )))
@@ -161,6 +165,9 @@ to it will instead show a blank."
               (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
               (,(cdr key-resort)         #'treemacs-resort)
               (,(cdr key-bookmark)       #'treemacs-add-bookmark)
+              (,(cdr key-add-project)    #'treemacs-add-project)
+              (,(cdr key-remove-project) #'treemacs-remove-project)
+              (,(cdr key-rename-project) #'treemacs-rename-project)
               ("?" nil "Exit"))))
         (treemacs--helpful-hydra/body))
     (treemacs-log "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
