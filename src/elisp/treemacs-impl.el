@@ -591,7 +591,7 @@ PROJECT `cl-struct-treemacs-project'"
            ;; the parts of the path that we can try to go to until we arrive at the project root
            (dir-parts (->> project (treemacs-project->path) (length) (substring path) (f-split) (cdr) (nreverse)))
            ;; the path we try to quickly move to because it's already open and thus in the shadow-index
-           (goto-path (treemacs--parent path))
+           (goto-path (if dir-parts (treemacs--parent path) path))
            ;; if we try mode than this many times to grab a path location for the shadow index it means
            ;; the file we want to move to is under a *closed* project node
            (counter (length dir-parts))
@@ -614,7 +614,7 @@ PROJECT `cl-struct-treemacs-project'"
                       (treemacs-project->position project)
                     (treemacs-shadow-node->position shadow-node)))
              ;; do the rest manually - at least the actual file to move to is still left in manual-parts
-             (search-result (treemacs--follow-each-dir btn manual-parts))]
+             (search-result (if manual-parts (treemacs--follow-each-dir btn manual-parts) btn))]
       (if (eq 'follow-failed search-result)
           (goto-char start)
         (treemacs--evade-image)
