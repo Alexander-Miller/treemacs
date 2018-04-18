@@ -545,6 +545,7 @@ treemacs node is pointing to a valid buffer position."
   (treemacs-save-position
     (treemacs-with-writable-buffer
      (-let*- [(project (treemacs-project-at-point))
+              (old-name (treemacs-project->name project))
               (project-btn (treemacs-project->position project))
               (state (button-get project-btn :state))]
        (setf (treemacs-project->name project) name)
@@ -554,7 +555,10 @@ treemacs node is pointing to a valid buffer position."
        (treemacs--forget-last-highlight)
        (when (eq state 'root-node-open)
          (treemacs--collapse-root-node (treemacs-project->position project))
-         (treemacs--expand-root-node (treemacs-project->position project))))))
+         (treemacs--expand-root-node (treemacs-project->position project)))
+       (treemacs-pulse-on-success "Renamed project %s to %s."
+         (propertize old-name 'face 'font-lock-type-face)
+         (propertize name 'face 'font-lock-type-face) ))))
   (hl-line-highlight)
   (treemacs--evade-image))
 
@@ -581,7 +585,9 @@ treemacs node is pointing to a valid buffer position."
     (treemacs-on-collapse (treemacs-project->path project) t)
     (goto-char (treemacs-project->position (treemacs-project-at-point)))
     (recenter)
-    (hl-line-highlight)))
+    (hl-line-highlight)
+    (treemacs-pulse-on-success "Removed project %s from the workspace."
+      (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))
 
 (defun treemacs-refresh ()
   "Refresh the project at point."
