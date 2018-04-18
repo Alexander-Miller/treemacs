@@ -141,7 +141,9 @@
             (insert "\n")))
         (treemacs--add-root-element project)
         (treemacs--insert-shadow-node (make-treemacs-shadow-node
-                                :key path :position (treemacs-project->position project))))))))
+                                :key path :position (treemacs-project->position project)))))
+      (treemacs-pulse-on-success "Added project %s to the workspace."
+        (propertize name 'face 'font-lock-type-face)))))
 
 (defsubst treemacs-project-at-point ()
   "Get the `cl-struct-treemacs-project' for the (nearest) project at point."
