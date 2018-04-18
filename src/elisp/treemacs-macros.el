@@ -303,8 +303,7 @@ it on the same line."
       ;; when the buffer is refreshed without the window being selected
       (-when-let- [w (get-buffer-window (buffer-name) t)]
         (set-window-point w (point)))
-      ,@final-form
-      (hl-line-highlight))))
+      ,@final-form)))
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer."
