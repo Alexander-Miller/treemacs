@@ -60,7 +60,9 @@ not visible."
                                       (treemacs--nearest-path it)
                                     (treemacs-project->path project-for-file))]
                (unless (string= selected-file current-file)
-                 (treemacs-goto-button current-file project-for-file))))))))))
+                 (treemacs-goto-button current-file project-for-file)
+                 (when treemacs-recenter-after-file-follow
+                   (treemacs--maybe-recenter)))))))))))
 
 ;; this is only to stop the compiler from complaining about unknown functions
 (with-eval-after-load 'which-key
