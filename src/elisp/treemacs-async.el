@@ -41,7 +41,7 @@
 
 (defvar treemacs--git-status-process-function)
 (defvar treemacs--git-status-parse-function)
-(when load-file-name
+(only-during-treemacs-init
   (fset 'treemacs--git-status-process-function #'ignore)
   (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
 
@@ -192,7 +192,7 @@ Use either ARG as git integration value of read it interactively."
   (fset 'treemacs--git-status-process-function #'ignore)
   (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
 
-(when load-file-name
+(only-during-treemacs-init
   (-pcase (cons (not (null (executable-find "git")))
                 (not (null (executable-find "python3"))))
     [`(t . t)

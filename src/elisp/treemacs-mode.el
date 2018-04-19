@@ -225,7 +225,8 @@ to it will instead show a blank."
       map)
     "Keymap for `treemacs-mode'."))
 
-(treemacs--create-icons)
+(only-during-treemacs-init
+ (treemacs--create-icons))
 
 (defun treemacs--setup-mode-line ()
   "Create either a simple modeline, or integrate into spaceline."
