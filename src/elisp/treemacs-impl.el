@@ -203,7 +203,7 @@ Returns the buffer if it does exist."
   (let ((b (cdr (assoc (selected-frame) treemacs--buffer-access))))
     (when (buffer-live-p b) b)))
 
-(defsubst treemacs--select-visible ()
+(defsubst treemacs--select-visible-window ()
   "Switch to treemacs buffer, given that it is currently visible."
   (->> treemacs--buffer-access
        (assoc (selected-frame))
@@ -211,7 +211,7 @@ Returns the buffer if it does exist."
        (get-buffer-window)
        (select-window)))
 
-(defsubst treemacs--select-not-visible ()
+(defsubst treemacs--select-not-visible-window ()
   "Switch to treemacs buffer, given that it not visible."
   (treemacs--setup-buffer))
 
@@ -461,8 +461,8 @@ buffer."
 Add a project for ROOT if it's non-nil."
   (-let [origin-buffer (current-buffer)]
     (-pcase (treemacs--current-visibility)
-      [`visible (treemacs--select-visible)]
-      [`exists (treemacs--select-not-visible)]
+      [`visible (treemacs--select-visible-window)]
+      [`exists (treemacs--select-not-visible-window)]
       [`none
        (treemacs--setup-buffer)
        (treemacs-mode)

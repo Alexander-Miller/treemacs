@@ -61,8 +61,16 @@
 * If the workspace is empty additionally ask for the root path of the first
   project to add."
   (interactive)
-  (treemacs--init (when (treemacs-workspace->is-empty?)
-             (read-directory-name "Project root: "))))
+  (-pcase (treemacs--current-visibility)
+    [`visible
+     (save-selected-window
+       (treemacs-select-window)
+       (bury-buffer))]
+    [`exists
+     (treemacs-select-window)]
+    [`none
+     (treemacs--init (when (treemacs-workspace->is-empty?)
+                (read-directory-name "Project root: ")))]))
 
 ;;;###autoload
 (defun treemacs-bookmark (&optional arg)
@@ -92,8 +100,8 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
               (treemacs-pulse-on-failure "Bookmark at %s does not fall under any project in the workspace."
                 (propertize location 'face 'font-lock-string-face))))
           (-pcase (treemacs--current-visibility)
-            [`visible (treemacs--select-visible)]
-            [`exists (treemacs--select-not-visible)]
+            [`visible (treemacs--select-visible-window)]
+            [`exists (treemacs--select-not-visible-window)]
             [`none (treemacs--init)])
           (treemacs-goto-button location project)
           (treemacs-pulse-on-success)
@@ -117,8 +125,8 @@ Only useful when `treemacs-follow-mode' is not active."
         (cl-return-from body))
       (save-selected-window
         (-pcase (treemacs--current-visibility)
-          [`visible (treemacs--select-visible)]
-          [`exists (treemacs--select-not-visible)]
+          [`visible (treemacs--select-visible-window)]
+          [`exists (treemacs--select-not-visible-window)]
           [`none (treemacs--init)])
         (treemacs-goto-button buffer-file project)))))
 
@@ -150,8 +158,8 @@ visiting a file or Emacs cannot find any tags for the current file."
         (cl-return-from body))
       (save-selected-window
         (-pcase (treemacs--current-visibility)
-          [`visible (treemacs--select-visible)]
-          [`exists (treemacs--select-not-visible)]
+          [`visible (treemacs--select-visible-window)]
+          [`exists (treemacs--select-not-visible-window)]
           [`none (treemacs--init)])
         (setq treemacs-window (selected-window)))
       (treemacs--do-follow-tag index treemacs-window buffer-file project))))
@@ -163,8 +171,8 @@ Call `treemacs' if it is not."
   (interactive)
   (force-mode-line-update)
   (--if-let (treemacs--is-visible?)
-      (select-window it t)
-    (treemacs)))
+      (treemacs--select-visible-window)
+    (treemacs--select-not-visible-window)))
 
 (provide 'treemacs)
 
