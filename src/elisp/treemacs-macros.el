@@ -343,6 +343,13 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
            (while (setq child-btn (treemacs--next-neighbour-of child-btn))
              (when ,@predicate (cl-return-from search child-btn))))))))
 
+(defmacro only-during-treemacs-init (&rest body)
+  "Run BODY only when treemacs has not yet been loaded.
+Specifically only run it when (featurep 'treemacs) returns nil."
+  (declare (debug t))
+  `(unless (featurep 'treemacs)
+     ,@body))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here
