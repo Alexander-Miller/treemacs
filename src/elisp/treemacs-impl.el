@@ -620,10 +620,6 @@ PROJECT `cl-struct-treemacs-project'"
         (treemacs--evade-image)
         (hl-line-highlight)
         (set-window-point (get-buffer-window) (point))
-        (when treemacs-recenter-after-file-follow
-          (treemacs-without-following
-           (with-selected-window (get-buffer-window)
-             (treemacs--maybe-recenter))))
         search-result))))
 
 (defun treemacs--on-window-config-change ()
