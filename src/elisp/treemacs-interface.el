@@ -539,16 +539,18 @@ treemacs node is pointing to a valid buffer position."
         (treemacs-pulse-on-failure "There is no previous project to move to.")
       (goto-char pos))))
 
-(defun treemacs-rename-project (name)
-  "Give the (nearest) project at point a new NAME."
-  (interactive "MNew name: ")
+(defun treemacs-rename-project ()
+  "Give the (nearest) project at point a new name."
+  (interactive)
   (treemacs-save-position
     (treemacs-with-writable-buffer
      (-let*- [(project (treemacs-project-at-point))
               (old-name (treemacs-project->name project))
               (project-btn (treemacs-project->position project))
-              (state (button-get project-btn :state))]
+              (state (button-get project-btn :state))
+              (name (read-string "New name: " (treemacs-project->name project)))]
        (setf (treemacs-project->name project) name)
+       ;after renaming, delete and redisplay the project
        (goto-char (button-end project-btn))
        (delete-region (point-at-bol) (point-at-eol))
        (treemacs--add-root-element project)
