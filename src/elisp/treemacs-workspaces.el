@@ -146,15 +146,9 @@
         (propertize name 'face 'font-lock-type-face)))))
 
 (defsubst treemacs-project-at-point ()
-  "Get the `cl-struct-treemacs-project' for the (nearest) project at point."
-  (-let [btn (treemacs-current-button)]
-    ;; if we're not on a button now look for the next best or previous best button
-    (unless btn
-      (--if-let (next-button (point))
-          (setq btn it)
-        (--if-let (previous-button (point))
-            (setq btn it)
-          (error "[Treemacs] It looks like the treemacs buffer is empty. That shouldn't happen!"))))
+  "Get the `cl-struct-treemacs-project' for the (nearest) project at point.
+Return nil when `treemacs-current-button' is nil."
+  (-when-let- [btn (treemacs-current-button)]
     (-let [project (button-get btn :project)]
       (while (not project)
         (setq btn (button-get btn :parent)

@@ -540,27 +540,29 @@ treemacs node is pointing to a valid buffer position."
       (goto-char pos))))
 
 (defun treemacs-rename-project ()
-  "Give the (nearest) project at point a new name."
+  "Give the project at point a new name."
   (interactive)
   (treemacs-save-position
-    (treemacs-with-writable-buffer
-     (-let*- [(project (treemacs-project-at-point))
-              (old-name (treemacs-project->name project))
-              (project-btn (treemacs-project->position project))
-              (state (button-get project-btn :state))
-              (name (read-string "New name: " (treemacs-project->name project)))]
-       (setf (treemacs-project->name project) name)
-       ;after renaming, delete and redisplay the project
-       (goto-char (button-end project-btn))
-       (delete-region (point-at-bol) (point-at-eol))
-       (treemacs--add-root-element project)
-       (treemacs--forget-last-highlight)
-       (when (eq state 'root-node-open)
-         (treemacs--collapse-root-node (treemacs-project->position project))
-         (treemacs--expand-root-node (treemacs-project->position project)))
-       (treemacs-pulse-on-success "Renamed project %s to %s."
-         (propertize old-name 'face 'font-lock-type-face)
-         (propertize name 'face 'font-lock-type-face) ))))
+   (treemacs-with-writable-buffer
+    (-unless-let [project (treemacs-project-at-point)]
+        (treemacs-pulse-on-failure "There is no project here.")
+      (-let*- [(project (treemacs-project-at-point))
+               (old-name (treemacs-project->name project))
+               (project-btn (treemacs-project->position project))
+               (state (button-get project-btn :state))
+               (new-name (read-string "New name: " (treemacs-project->name project)))]
+        (setf (treemacs-project->name project) new-name)
+        ;; after renaming, delete and redisplay the project
+        (goto-char (button-end project-btn))
+        (delete-region (point-at-bol) (point-at-eol))
+        (treemacs--add-root-element project)
+        (treemacs--forget-last-highlight)
+        (when (eq state 'root-node-open)
+          (treemacs--collapse-root-node (treemacs-project->position project))
+          (treemacs--expand-root-node (treemacs-project->position project)))
+        (treemacs-pulse-on-success "Renamed project %s to %s."
+          (propertize old-name 'face 'font-lock-type-face)
+          (propertize new-name 'face 'font-lock-type-face))))))
   (hl-line-highlight)
   (treemacs--evade-image))
 
@@ -572,7 +574,8 @@ treemacs node is pointing to a valid buffer position."
 (defun treemacs-remove-project ()
   "Remove the project at point."
   (interactive)
-  (-let [project (treemacs-project-at-point)]
+  (-unless-let [project (treemacs-project-at-point)]
+      (treemacs-pulse-on-failure "There is no project here.")
     (treemacs-with-writable-buffer
      (-let [project-btn (treemacs-project->position project)]
        (goto-char project-btn)
@@ -582,14 +585,14 @@ treemacs node is pointing to a valid buffer position."
        (treemacs--forget-last-highlight)
        (unless (treemacs-project->is-last? project)
          (kill-whole-line))
-       (delete-trailing-whitespace)))
-    (treemacs--remove-project-from-current-workspace project)
-    (treemacs-on-collapse (treemacs-project->path project) t)
-    (goto-char (treemacs-project->position (treemacs-project-at-point)))
-    (recenter)
-    (hl-line-highlight)
-    (treemacs-pulse-on-success "Removed project %s from the workspace."
-      (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))
+       (delete-trailing-whitespace))
+     (treemacs--remove-project-from-current-workspace project)
+     (treemacs-on-collapse (treemacs-project->path project) t)
+     (goto-char (treemacs-project->position (treemacs-project-at-point)))
+     (recenter)
+     (hl-line-highlight)
+     (treemacs-pulse-on-success "Removed project %s from the workspace."
+       (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))))
 
 (defun treemacs-refresh ()
   "Refresh the project at point."

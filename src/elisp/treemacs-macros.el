@@ -88,13 +88,21 @@ Delegates VAR-VAL, THEN and ELSE to `-if-let'."
   (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
     `(-if-let ,var-val-lst ,then ,@else)))
 
+(defmacro -unless-let (var-val &rest forms)
+  "Same as `-if-let-', but the negative case is handled in the first form.
+Delegates VAR-VAL the FORMS forms to `-if-let-'."
+  (declare (debug ((vector sexp form) body))
+           (indent 2))
+  (let ((then (cdr forms))
+        (else (car forms)))
+    `(-if-let- ,var-val (progn ,@then) ,else)))
+
 (defmacro treemacs--with-current-button (error-msg &rest body)
   "Execute an action with the current button bound to 'current-btn'.
 Log ERROR-MSG if no button is selected, otherwise run BODY."
   (declare (debug (form body)))
   `(-if-let- [current-btn (treemacs-current-button)]
-       (progn
-         ,@body)
+       (progn ,@body)
      (treemacs-pulse-on-failure ,error-msg)))
 
 (defmacro -when-let- (var-val &rest body)
