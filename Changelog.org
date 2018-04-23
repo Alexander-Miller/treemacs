@@ -1,0 +1,50 @@
+# -*- fill-column: 100 -*-
+#+STARTUP: content
+
+* Changelog
+** v2
+ * Start keeping changelog and retroactively fill it.
+ * Major refactoring to allow display of multiple projects in a workspace.
+ * Full removal of functions and variables previously declared obsolete.
+ * New java icon.
+ * New kotlin icon.
+ * New vue.js icon.
+ * New case-sensitive option for ~treemacs-sorting~.
+ * Many bugfixes & performance improvements.
+** v1.18
+ - New golang icon.
+ - Refactor left-click mouse interface to behave like a graphical application would.
+ - Make TAB & RET particularly configurable.
+ - Improved imenu-expression for more accurate tags in elisp.
+ - Introduce smarter recenter with (tag-)follow-mode with ~treemacs-follow-recenter-distance~.
+ - Bug fixes.
+** v1.17
+ - Added license.
+ - Bug fixes and internal refactoring.
+** V1.16
+ - Use pulse.el for visual feedback.
+ - Add ~treemacs-next/previous-line-other-window~.
+ - Bug fixes.
+** v1.15
+ - New yaml icon.
+ - Added ~treemacs-recenter-after-tag/file-follow~.
+ - Added ~treemacs-tag-follow-cleanup~.
+ - Added ~treemacs-git-mode~.
+ - Added ~treemacs-bookmark~.
+ - Bug fixes.
+** v1.14
+ - Added ~treemacs-pre-file-insert-predicates~.
+ - Added ~treemacs-directory-collapsed-face~.
+ - Added ~treemacs-pre/post-refresh-hook~.
+ - Bug fixes.
+** v1.13
+ - Make treemacs buffers unique for every frame.
+ - Make all icons customizable.
+ - Make treemacs buffers invisible in the buffer list.
+ - Bug fixes.
+** v1.12
+ - New hy icon.
+ - Added ~treemacs-tag-follow-mode~.
+ - Added ~treemacs-find-tag~.
+ - Added ~treemacs-resort~.
+ - Bug fixes.
