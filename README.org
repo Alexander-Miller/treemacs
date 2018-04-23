@@ -588,9 +588,11 @@ guidelines that should be met (excepions confirm the rule):
  - There must not be any compiler warnings.
  - The test suite must pass.
 
-Treemacs comes with a makefile that simplifies compiling and testing the codebase. It contains the following 3 targets:
+Treemacs uses cask to setup a local testing environment and a makefile that simplifies compiling and testing the
+codebase. First run ~cask install~ to locally pull treemacs' dependencies. Then you can use the following 3 makefile
+targets:
 
- - make compile :: Compiles the code base and treats compiler warnings as errors.
+ - make compile :: Compiles the code base (and treats compiler warnings as errors).
  - make clean :: Removes the generated .elc files.
  - make test :: Runs the testsuite, once in a graphical environment and once in the terminal.
 
