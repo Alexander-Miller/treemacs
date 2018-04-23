@@ -36,14 +36,15 @@
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs--persist-file'."
   (condition-case e
-      (-when-let- [workspace (-> treemacs--persist-file (f-read 'utf-8) (read) (car))]
-        (dolist (project (treemacs-workspace->projects workspace))
-          (unless (-> project (treemacs-project->path) (f-exists?))
-            (treemacs-log (format "Project at %s does not exist and was removed from the workspace."
-                           (propertize (treemacs-project->path project) 'face 'font-lock-string-face)))
-            (setf (treemacs-workspace->projects workspace)
-                  (delete project (treemacs-workspace->projects workspace)))))
-        (setq treemacs-current-workspace workspace))
+      (when (f-exists? treemacs--persist-file)
+        (-when-let- [workspace (-> treemacs--persist-file (f-read 'utf-8) (read) (car))]
+          (dolist (project (treemacs-workspace->projects workspace))
+            (unless (-> project (treemacs-project->path) (f-exists?))
+              (treemacs-log (format "Project at %s does not exist and was removed from the workspace."
+                             (propertize (treemacs-project->path project) 'face 'font-lock-string-face)))
+              (setf (treemacs-workspace->projects workspace)
+                    (delete project (treemacs-workspace->projects workspace)))))
+          (setq treemacs-current-workspace workspace)))
     (error (treemacs-log "Error '%s' when loading the persisted workspace." e))))
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
