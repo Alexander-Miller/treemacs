@@ -588,8 +588,10 @@ treemacs node is pointing to a valid buffer position."
        (delete-trailing-whitespace))
      (treemacs--remove-project-from-current-workspace project)
      (treemacs-on-collapse (treemacs-project->path project) t)
-     (goto-char (treemacs-project->position (treemacs-project-at-point)))
+     (-let [treemacs-pulse-on-failure nil]
+       (unless (treemacs-next-project) (treemacs-previous-project)))
      (recenter)
+     (treemacs--evade-image)
      (hl-line-highlight)
      (treemacs-pulse-on-success "Removed project %s from the workspace."
        (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))))
