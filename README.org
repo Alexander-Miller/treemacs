@@ -299,15 +299,12 @@ You can find an exhaustive overview of all functions, their keybinds and functio
           ("M-m f M-t"  . treemacs-find-tag)))
 
   (use-package treemacs-evil
-        :after treemacs
-        :ensure t
-        :demand t)
+    :after treemacs
+    :ensure t)
 
   (use-package treemacs-projectile
     :after treemacs
-    :defer t
-    :ensure t
-    :config)
+    :ensure t)
 #+END_SRC
 
 * Configuration
