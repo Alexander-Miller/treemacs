@@ -218,13 +218,16 @@ based on the given state actions.
 If it isn't it will log NO-MATCH-EXPLANATION, if it is it selects WINDOW (or
 `next-window' if none is given) and splits it with SPLIT-FUNCTION if given.
 DIR-ACTION, FILE-ACTION, and TAG-ACTION are inserted into a `pcase' statement
-matching the buttons state.
+matching the buttons state. Project root nodes are treated the same common
+directory nodes.
 If ENSURE-WINDOW-SPLIT is t treemacs will vertically split the window if
 treemacs is the only window to make sure a buffer is opened next to it, not
 under or below it."
   (declare (debug (&rest [sexp form])))
   (let ((valid-states (list)))
     (when dir-action
+      (push 'root-node-open valid-states)
+      (push 'root-node-closed valid-states)
       (push 'dir-node-open valid-states)
       (push 'dir-node-closed valid-states))
     (when file-action
@@ -250,7 +253,7 @@ under or below it."
               ;; Return the result of the action
               (prog1 (pcase state
                        ,@(when dir-action
-                           `(((or `dir-node-open `dir-node-closed)
+                           `(((or `dir-node-open `dir-node-closed `root-node-open `root-node-closed)
                               ,dir-action)))
                        ,@(when file-action
                            `(((or `file-node-open `file-node-closed)
