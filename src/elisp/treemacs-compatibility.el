@@ -63,7 +63,7 @@ width of the new window when the treemacs window is visible."
         (progn
           (when w (set-window-parameter w 'window-side treemacs-position))
           (apply original-split-function args))
-      (when w (set-window-parameter w 'window-side treemacs-position)))))
+      (when w (set-window-parameter w 'window-side nil)))))
 (advice-add 'split-window-right :around #'treemacs--split-window-advice)
 
 (provide 'treemacs-compatibility)
