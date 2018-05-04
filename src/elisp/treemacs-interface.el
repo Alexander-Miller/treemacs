@@ -542,15 +542,14 @@ treemacs node is pointing to a valid buffer position."
 (defun treemacs-rename-project ()
   "Give the project at point a new name."
   (interactive)
-  (treemacs-save-position
-   (treemacs-with-writable-buffer
-    (-unless-let [project (treemacs-project-at-point)]
-        (treemacs-pulse-on-failure "There is no project here.")
-      (-let*- [(project (treemacs-project-at-point))
-               (old-name (treemacs-project->name project))
-               (project-btn (treemacs-project->position project))
-               (state (button-get project-btn :state))
-               (new-name (read-string "New name: " (treemacs-project->name project)))]
+  (treemacs-with-writable-buffer
+   (-unless-let [project (treemacs-project-at-point)]
+       (treemacs-pulse-on-failure "There is no project here.")
+     (-let*- [(old-name (treemacs-project->name project))
+              (project-btn (treemacs-project->position project))
+              (state (button-get project-btn :state))
+              (new-name (read-string "New name: " (treemacs-project->name project)))]
+       (treemacs-save-position
         (setf (treemacs-project->name project) new-name)
         ;; after renaming, delete and redisplay the project
         (goto-char (button-end project-btn))
