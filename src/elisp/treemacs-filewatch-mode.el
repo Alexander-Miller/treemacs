@@ -170,18 +170,26 @@ file from caches if it has been deleted instead of waiting for file processing."
           (treemacs--set-refresh-flags new-name))
       (treemacs--set-refresh-flags (cl-caddr event)))))
 
+(defsubst treemacs--do-process-file-events ()
+  "Dumb helper function.
+Extract only so `treemacs--process-file-events' can decide when to call
+`save-excursion' without code duplication."
+  (treemacs-run-in-every-buffer
+   (treemacs-save-position
+    (treemacs--recursive-refresh)
+    (hl-line-highlight))))
+
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected.
 Stop watching deleted dirs and refresh all the buffers that need updating."
   (setq treemacs--refresh-timer nil)
   (treemacs-without-following
-   ;; need to save excursion here because an update when the treemacs window is not visible
-   ;; will actually move point in the current buffer
-   (save-excursion
-     (treemacs-run-in-every-buffer
-      (treemacs-save-position
-       (treemacs--recursive-refresh)
-       (hl-line-highlight))))))
+   (if (eq major-mode 'treemacs-mode)
+       (treemacs--do-process-file-events)
+     ;; need to save excursion here because an update when the treemacs window is not visible
+     ;; will actually move point in the current buffer
+     (save-excursion
+       (treemacs--do-process-file-events)))))
 
 (defun treemacs--stop-filewatch-for-current-buffer ()
   "Called when a treemacs buffer is torn down/killed.
