@@ -29,6 +29,9 @@
 (defun treemacs--persist ()
   "Persist treemacs' state in `treemacs--persist-file'."
   (unless noninteractive
+    (unless (f-exists? treemacs--persist-file)
+      (f-mkdir user-emacs-directory ".cache")
+      (f-touch treemacs--persist-file))
     (condition-case e
         (-> treemacs-current-workspace
             (list)
