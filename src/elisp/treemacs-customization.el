@@ -225,7 +225,7 @@ The difference between this and `treemacs-ignored-file-predicates' is that the
 functions in this list will be called on files just before they would be
 rendered, when the files' git status information is now available. This for
 example allows to make files ignored by git invisible.
-As such the functions in this list are expected to have a different signture:
+The functions in this list are therefore expected to have a different signature:
 They must take two arguments - a file's absolute path and a hashtable that maps
 files to their git status. The files' paths are the table's keys, its values are
 characters (and not strings) indicating the file's git condition. The chars map
