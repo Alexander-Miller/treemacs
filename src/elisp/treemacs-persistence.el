@@ -29,10 +29,12 @@
 (defun treemacs--persist ()
   "Persist treemacs' state in `treemacs--persist-file'."
   (unless noninteractive
-    (-> treemacs-current-workspace
-        (list)
-        (pp-to-string)
-        (f-write 'utf-8 treemacs--persist-file))))
+    (condition-case e
+        (-> treemacs-current-workspace
+            (list)
+            (pp-to-string)
+            (f-write 'utf-8 treemacs--persist-file))
+      (error (treemacs-log "Error '%s' when persisting workspace." e)))))
 
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs--persist-file'."
