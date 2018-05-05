@@ -65,7 +65,7 @@
     [`visible
      (save-selected-window
        (treemacs-select-window)
-       (bury-buffer))]
+       (delete-window))]
     [`exists
      (treemacs-select-window)]
     [`none
