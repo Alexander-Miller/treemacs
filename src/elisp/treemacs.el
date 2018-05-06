@@ -170,9 +170,11 @@ visiting a file or Emacs cannot find any tags for the current file."
 Call `treemacs' if it is not."
   (interactive)
   (force-mode-line-update)
-  (--if-let (treemacs--is-visible?)
-      (treemacs--select-visible-window)
-    (treemacs--select-not-visible-window)))
+  (-pcase (treemacs--current-visibility)
+    [`visible (treemacs--select-visible-window)]
+    [`exists (treemacs--select-not-visible-window)]
+    [`none (treemacs--init)])
+)
 
 (provide 'treemacs)
 
