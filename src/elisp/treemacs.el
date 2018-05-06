@@ -167,12 +167,18 @@ visiting a file or Emacs cannot find any tags for the current file."
 ;;;###autoload
 (defun treemacs-select-window ()
   "Select the treemacs window if it is visible.
-Call `treemacs' if it is not."
+Bring it to the foreground if it is not visible.
+Initialize a new treemacs buffer as calling `treemacs' would if there is no
+treemacs buffer for this frame."
   (interactive)
-  (force-mode-line-update)
-  (--if-let (treemacs--is-visible?)
-      (treemacs--select-visible-window)
-    (treemacs--select-not-visible-window)))
+  (-pcase (treemacs--current-visibility)
+    [`visible
+     (treemacs--select-visible-window)]
+    [`exists
+     (treemacs--select-not-visible-window)]
+    [`none
+     (treemacs--init (when (treemacs-workspace->is-empty?)
+                (read-directory-name "Project root: ")))]))
 
 (provide 'treemacs)
 
