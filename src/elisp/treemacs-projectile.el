@@ -30,7 +30,7 @@
 
 ;;;###autoload
 (defun treemacs-projectile ()
-  "Add of one `projectile-known-projects' to the treemacs workspace."
+  "Add one of `projectile-known-projects' to the treemacs workspace."
   (interactive)
   (if (and (bound-and-true-p projectile-known-projects)
            (listp projectile-known-projects))
