@@ -47,8 +47,14 @@
 * If the workspace is empty additionally ask for the root path of the first
   project to add."
   (interactive)
-  (treemacs--init (when (treemacs-workspace->is-empty?)
-                    (read-directory-name "Project root: " (projectile-project-root)))))
+  (-pcase (treemacs--current-visibility)
+    [`visible
+     (delete-window (treemacs--is-visible?))]
+    [`exists
+     (treemacs-select-window)]
+    [`none
+     (treemacs--init (when (treemacs-workspace->is-empty?)
+                (read-directory-name "Project root: " (projectile-project-root))))]))
 
 (define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
 
