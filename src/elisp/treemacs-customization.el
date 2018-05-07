@@ -460,9 +460,19 @@ Note that this does *not* take `scroll-margin' into account."
       ,(concat prefix (rx "defface") name)
       2)))
   "The value for `imenu-generic-expression' treemacs uses in elisp buffers.
-More discriminating that the default as it distinguishes between functions,
+More discriminating than the default as it distinguishes between functions,
 inline functions, macros, faces, variables, customizations and types."
   :type 'alist
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-project-follow-cleanup nil
+  "When non-nil `treemacs-follow-mode' will close projects it is leaving.
+This means that treemacs will make sure that only the currently followed project
+is expanded while all others will remain collapsed.
+
+Setting this to t might lead to noticeable slowdowns, at least when `treemacs-git-mode'
+is enabled, since constantly expanding an entire project is farily expensive."
+  :type 'boolean
   :group 'treemacs-configuration)
 
 (provide 'treemacs-customization)
