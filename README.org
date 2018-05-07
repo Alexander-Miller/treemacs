@@ -243,13 +243,11 @@ Treemacs is included in spacemacs (for now only on the dev branch). If you are u
 spacemacs you can simply add treemacs to ~dotspacemacs-configuration-layers~ to replace the default neotree. Check ~SPC
 h SPC treemacs~ for details. Otherwise you will need to add treemacs to ~dotspacemacs-additional-packages~.
 
-Treemacs is also available from MELPA. If you just want to quickly start using it grab the ~use-package~ example below,
-and customize it as needed (remove ~treemacs-evil~ if you don't use it, customize the keybinds as needed, the example
-code uses keys based on the spacemacs layer).
+Treemacs is also available on MELPA. If you just want to quickly start using it grab the ~use-package~ example below,
+and customize it as needed (remove ~treemacs-evil~ if you don't use it, customize the keybinds to you taste, etc).
 
-Either way keep in mind that treemacs has /no default keybinds/ for its globally callable initialization functions.
-Each user is supposed to select keybinds for functions like ~treemacs~  and its projectile counterpart based on whatever
-they find convenient.
+Either way keep in mind that treemacs has /no default keybinds/ for its globally callable initialization functions. Each
+user is supposed to select keybinds for functions like ~treemacs-find-file~ based on whatever they find convenient.
 
 You can find an exhaustive overview of all functions, their keybinds and functions you need to bind yourself [[Keymap][below]].
 
@@ -291,19 +289,19 @@ You can find an exhaustive overview of all functions, their keybinds and functio
          (treemacs-git-mode 'simple))))
     :bind
     (:map global-map
-          ("M-0"        . treemacs-select-window)
-          ("C-c 1"      . treemacs-delete-other-windows)
-          ("M-m ft"     . treemacs)
-          ("M-m fB"     . treemacs-bookmark)
-          ("M-m f C-t"  . treemacs-find-file)
-          ("M-m f M-t"  . treemacs-find-tag)))
+          ("M-0"       . treemacs-select-window)
+          ("C-x t 1"   . treemacs-delete-other-windows)
+          ("C-x t t"   . treemacs)
+          ("C-x t B"   . treemacs-bookmark)
+          ("C-x t C-t" . treemacs-find-file)
+          ("C-x t M-t" . treemacs-find-tag)))
 
   (use-package treemacs-evil
-    :after treemacs
+    :after treemacs evil
     :ensure t)
 
   (use-package treemacs-projectile
-    :after treemacs
+    :after treemacs projectile
     :ensure t)
 #+END_SRC
 
