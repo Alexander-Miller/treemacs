@@ -380,8 +380,8 @@ failed."
                                       dir-parts (nthcdr (1+ collapse-count) dir-parts))
                                 child-btn)))
                         (string= root (button-get child-btn :path)))))
-          (goto-char btn)
           (unless btn (throw 'follow-failed 'follow-failed))
+          (goto-char btn)
           ;; don't open dir at the very end of the list since we only want to put
           ;; point in its line
           (when (and (eq 'dir-node-closed (button-get btn :state))
