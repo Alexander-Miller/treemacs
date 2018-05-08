@@ -240,6 +240,16 @@ to it will instead show a blank."
         (setq mode-line-format '("%e" (:eval (spaceline-ml-treemacs)))))
     (setq mode-line-format '(" Treemacs "))))
 
+(defun treemacs--set-default-directory ()
+  "Set the default directory to the nearest directory of the current node.
+If there is no node at point use \"/\" instead.
+
+Used as a post command hook."
+  (--if-let (treemacs-current-button)
+      (-let [path (treemacs--nearest-path it)]
+        (setq default-directory (if (file-directory-p path) path (file-name-directory path))))
+    "/"))
+
 ;;;###autoload
 (define-derived-mode treemacs-mode special-mode "Treemacs"
   "A major mode for displaying the file system in a tree layout."
@@ -269,6 +279,7 @@ to it will instead show a blank."
   (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
   ;; (add-hook 'after-make-frame-functions #'treemacs--remove-treemacs-window-in-new-frames)
   (add-to-list 'delete-frame-functions #'treemacs--on-frame-kill)
+  (add-hook 'post-command-hook #'treemacs--set-default-directory nil t)
 
   (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))
