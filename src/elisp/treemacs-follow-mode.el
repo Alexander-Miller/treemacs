@@ -61,16 +61,16 @@ not visible."
                                       (treemacs--nearest-path it)
                                     (treemacs-project->path project-for-file))]
                (unless (string= selected-file current-file)
-                 (when treemacs-project-follow-cleanup
-                   (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
-                     (unless (or (not (treemacs-project->is-expanded? project))
-                                 (eq project project-for-file))
-                       (-when-let- [project-pos (treemacs-project->position project)]
-                         (goto-char project-pos)
-                         (treemacs--collapse-root-node project-pos)))))
-                 (treemacs-goto-button current-file project-for-file)
-                 (when treemacs-recenter-after-file-follow
-                   (treemacs--maybe-recenter)))))))))))
+                 (when (treemacs-goto-button current-file project-for-file)
+                   (when treemacs-project-follow-cleanup
+                     (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
+                       (unless (or (not (treemacs-project->is-expanded? project))
+                                   (eq project project-for-file))
+                         (-when-let- [project-pos (treemacs-project->position project)]
+                           (goto-char project-pos)
+                           (treemacs--collapse-root-node project-pos)))))
+                   (when treemacs-recenter-after-file-follow
+                     (treemacs--maybe-recenter))))))))))))
 
 ;; this is only to stop the compiler from complaining about unknown functions
 (with-eval-after-load 'which-key

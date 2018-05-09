@@ -616,7 +616,8 @@ PROJECT `cl-struct-treemacs-project'"
              ;; do the rest manually - at least the actual file to move to is still left in manual-parts
              (search-result (if manual-parts (treemacs--follow-each-dir btn manual-parts) btn))]
       (if (eq 'follow-failed search-result)
-          (goto-char start)
+          (prog1 nil
+            (goto-char start))
         (treemacs--evade-image)
         (hl-line-highlight)
         (set-window-point (get-buffer-window) (point))
