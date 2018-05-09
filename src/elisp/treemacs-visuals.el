@@ -206,6 +206,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (treemacs--setup-icon treemacs-icon-dart       "dart.png"       "dart")
     (treemacs--setup-icon treemacs-icon-java       "java.png"       "java")
     (treemacs--setup-icon treemacs-icon-kotlin     "kotlin.png"     "kt")
+    (treemacs--setup-icon treemacs-icon-scala      "scala.png"      "scala")
     (treemacs--setup-icon treemacs-icon-go         "go.png"         "go")
     (treemacs--setup-icon treemacs-icon-js         "js.png"         "js" "jsx")
     (treemacs--setup-icon treemacs-icon-hy         "hy.png"         "hy")
