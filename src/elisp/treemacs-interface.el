@@ -147,7 +147,8 @@ Stay in current window with a prefix argument ARG."
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 (defun treemacs-visit-node-no-split (&optional arg)
-  "Open current file or tag within `next-window'.
+  "Open current file or tag within the window the file is already opened in.
+If the file/tag is no visible opened in any window use `next-window' instead.
 Stay in current window with a prefix argument ARG."
   (interactive "P")
   (treemacs--execute-button-action
@@ -156,6 +157,7 @@ Stay in current window with a prefix argument ARG."
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :ensure-window-split t
+   :window  (-some-> btn (treemacs--nearest-path) (get-file-buffer) (get-buffer-window))
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
 (defun treemacs-visit-node-ace (&optional arg)
