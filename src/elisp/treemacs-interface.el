@@ -396,14 +396,17 @@ With a prefix ARG simply reset the width of the treemacs window."
 If this command is run when the treemacs window is selected `next-window' will
 also not be deleted."
   (interactive)
-  (-let- [(file-window (selected-window))
-          (treemacs-window (treemacs--is-visible?))]
-    (when (eq file-window treemacs-window)
-      (setq file-window (next-window)))
-    (--each (window-list (selected-frame))
-      (unless (or (eq it file-window)
-                  (eq it treemacs-window))
-        (delete-window it)))))
+  (save-selected-window
+    (-let [w (treemacs--is-visible?)]
+      (when (eq w (selected-window))
+        (select-window (next-window)))
+      (delete-other-windows)
+      ;; we still want to call `delete-other-windows' since it contains plenty of nontrivial code
+      ;; that we shouldn't prevent from running, so we just restore treemacs instead of preventing
+      ;; it from being deleted
+      ;; 'no-delete-other-windows could be used instead, but it's only available for emacs 26
+      (when w
+        (treemacs--select-not-visible-window)))))
 
 (defun treemacs-temp-resort-root (&optional sort-method)
   "Temporarily resort the entire treemacs buffer.
