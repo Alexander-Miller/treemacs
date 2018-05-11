@@ -392,12 +392,17 @@ With a prefix ARG simply reset the width of the treemacs window."
     (treemacs-pulse-on-failure "There is no project to copy from here.")))
 
 (defun treemacs-delete-other-windows ()
-  "Same as `delete-other-windows', but will not delete the treemacs window."
+  "Same as `delete-other-windows', but will not delete the treemacs window.
+If this command is run when the treemacs window is selected `next-window' will
+also not be deleted."
   (interactive)
-  (let ((w (selected-window)))
+  (-let- [(file-window (selected-window))
+          (treemacs-window (treemacs--is-visible?))]
+    (when (eq file-window treemacs-window)
+      (setq file-window (next-window)))
     (--each (window-list (selected-frame))
-      (unless (or (eq it w)
-                  (->> it (window-buffer) (buffer-name) (s-starts-with? treemacs--buffer-name-prefix)))
+      (unless (or (eq it file-window)
+                  (eq it treemacs-window))
         (delete-window it)))))
 
 (defun treemacs-temp-resort-root (&optional sort-method)
