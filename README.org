@@ -68,19 +68,19 @@ overview looks as follows:
  * Finding of files and tags :: Treemacs can follow along and keep in focus the currently selected file or even the tag
    at point using, either manually or automatically using either ~treemacs-follow-mode~ or ~treemacs-tag-follow-mode~.
  * Git Integration :: Treemacs can use different faces for files and directories based on their git status.
-   The git process is run asynchronously, minimizing its performanace impact.
+   The git process is run asynchronously, minimizing its performance impact.
  * [[https://github.com/deb0ch/emacs-winum][Winum]] compatibility :: treemacs will not interfere with winum's numbering layout, your first window will always remain
    your first window.
- * [[https://github.com/bbatsov/projectile][Projectile]] integration :: the ~treemacs-projectile~ package lets you quickly add your projectle projects to the
+ * [[https://github.com/bbatsov/projectile][Projectile]] integration :: the ~treemacs-projectile~ package lets you quickly add your projectile projects to the
    treemacs workspace.
  * Simple mouse interface :: Left clicks will work the same as you're used to from with graphical applications
  * Session persistence :: Treemacs automatically saves and restores your workspace.
  * Dashing good looks :: Treemacs uses (optionally resizable) png images in HD 22x22 resolution for its icons (quantity
    is, of course, another matter). When run in a terminal a simple fallback is used.
- * Tag view :: Treemacs can display files' tags. All file types that emacs can generate a (semantic) imenu index for are
+ * Tag view :: Treemacs can display files' tags. All file types that Emacs can generate a (semantic) imenu index for are
    supported.
  * Visual feedback :: When it would otherwise be difficult to see the message in the minibuffer success/failure is
-   indicated with pulse.el
+   indicated with pulse.el.
  * Ease of use :: Treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
    defaults. Installation aside there are two obligatory pieces of setup: 1) Choosing convenient keybindings to run
    treemacs and 2) If you use evil: requiring ~treemacs-evil~ to integrate treemacs with evil and enable j/k navigation.
@@ -104,7 +104,7 @@ If you don't care about reading the full readme here's a list of some bare bones
 
 * Detailed Feature List
 ** Projects and Workspaces
-If you've previously used a different explorer like neotre or nerdtree - or an earlier version of treemacs for that
+If you've previously used a different explorer like NeoTree or NerdTree - or an earlier version of treemacs for that
 matter - you are probably used to a display system wherein you see exactly a single file tree whose exact root you can
 arbitrarily change. This system makes it difficult to work on and switch between multiple projects. Treemacs used to
 (and still does) remedy that limitation by making every treemacs buffer unique to its frame, but it has now been
@@ -155,7 +155,7 @@ If you prefer to expand/collpase nodes with a single mouse click you can also us
 ** Follow-mode
 ~treemacs-follow-mode~ is a global minor mode which allows the treemacs view to always move its focus to the currently
 selected file. This is achieved by advising ~select-window~, which is a ubiquitous function, often called multiple times
-in a row when emacs is working. This means two things:
+in a row when Emacs is working. This means two things:
 
 1) ~treemacs-follow~ tries to be very specific about when it is run at all.
 
@@ -173,7 +173,7 @@ This mode runs on an idle timer - the exact duration of inactivity (in seconds) 
 
 Note that in order to move to a tag in treemacs the treemacs buffer's window needs to be temporarily selected, which
 will reset ~blink-cursor-mode~'s timer if it is enabled. This will result in the cursor blinking seemingly pausing for a
-short time and giving the appereance of the tag follow action lasting much longer than it really does.
+short time and giving the appearance of the tag follow action lasting much longer than it really does.
 
 ** Fringe-indicator-mode
 ~treemacs-fringe-indicator-mode~ is a global minor mode that displays a little icon in the fringe that moves with the cursor.
@@ -270,17 +270,17 @@ Allows to quickly add your projectile projects to the treemacs workspace by call
 ** Tramp Support
 Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
 * Installation
-Treemacs is included in spacemacs (for now only on the dev branch). If you are using the development version of
-spacemacs you can simply add treemacs to ~dotspacemacs-configuration-layers~ to replace the default neotree. Check ~SPC
+Treemacs is included in Spacemacs (for now only on the dev branch). If you are using the development version of
+Spacemacs you can simply add treemacs to ~dotspacemacs-configuration-layers~ to replace the default NeoTree. Check ~SPC
 h SPC treemacs~ for details. Otherwise you will need to add treemacs to ~dotspacemacs-additional-packages~.
 
 Treemacs is also available on MELPA. If you just want to quickly start using it grab the ~use-package~ example below,
-and customize it as needed (remove ~treemacs-evil~ if you don't use it, customize the keybinds to you taste, etc).
+and customize it as needed (remove ~treemacs-evil~ if you don't use it, customize the keybindings to you taste, etc).
 
-Either way keep in mind that treemacs has /no default keybinds/ for its globally callable initialization functions. Each
-user is supposed to select keybinds for functions like ~treemacs-find-file~ based on whatever they find convenient.
+Either way keep in mind that treemacs has /no default keybindings/ for its globally callable initialization functions. Each
+user is supposed to select keybindings for functions like ~treemacs-find-file~ based on whatever they find convenient.
 
-You can find an exhaustive overview of all functions, their keybinds and functions you need to bind yourself [[Keymap][below]].
+You can find an exhaustive overview of all functions, their keybindings and functions you need to bind yourself [[Keymap][below]].
 
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
@@ -428,7 +428,7 @@ values stored in other variables:
 | ~treemacs-icon-closed~ | ~treemacs-icon-closed-png~ | ~treemacs-icon-closed-text~ |
 
 To change the display of directory nodes you need to overwrite the values of the png/text variables. For example the
-code to use unicode icons to display directories in gui mode could look like this:
+code to use Unicode icons to display directories in gui mode could look like this:
 
 #+BEGIN_SRC emacs-lisp
   (with-eval-after-load "treemacs"
@@ -530,7 +530,7 @@ These functions are not bound to any keys by default. It's left up to users to f
 |-------------------------------+----------------------------------------------------------------------------|
 | treemacs                      | Show/Hide/Initialize treemacs.                                             |
 | treemacs-bookmark             | Find a bookmark in treemacs.                                               |
-| treemacs-find-file            | Find and focus the curent file in treemacs.                                |
+| treemacs-find-file            | Find and focus the current file in treemacs.                               |
 | treemacs-find-tag             | Find and focus the current tag in treemacs.                                |
 | treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs~ if it is not. |
 | treemacs-delete-other-windows | Same as ~delete-other-windows~, but will not delete the treemacs window.   |
@@ -591,9 +591,9 @@ By default Treemacs's keymap looks as follows:
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting to
 changes in the window configuration. The packages most likely to cause trouble for treemacs are therefore those that
-interfere with Emacs' buffer spawning and window splitting behaviour. Treemacs is included in spacemacs and I am a
-spacemacs user, therefore treemacs guarantees first-class support & compatibility for window-managing packages used in
-spacemacs, namely [[https://github.com/Bad-ptr/persp-mode.el][persp]], [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/m2ym/popwin-el][popwin]] and [[https://github.com/bmag/emacs-purpose][window-purpose]], as well as [[https://github.com/wasamasa/shackle][shackle]]. For everything else there may be
+interfere with Emacs' buffer spawning and window splitting behaviour. Treemacs is included in Spacemacs and I am a
+Spacemacs user, therefore treemacs guarantees first-class support & compatibility for window-managing packages used in
+Spacemacs, namely [[https://github.com/Bad-ptr/persp-mode.el][persp]], [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/m2ym/popwin-el][popwin]] and [[https://github.com/bmag/emacs-purpose][window-purpose]], as well as [[https://github.com/wasamasa/shackle][shackle]]. For everything else there may be
 issues and, depending on the complexity of the problem, I may decide it is not worth fixing.
 
 Aside from this there are the following known incompatibilities:
@@ -641,7 +641,7 @@ Aside from this there are the following known incompatibilities:
      (set-face-attribute 'hl-line nil :background "#333333")
    #+END_SRC
 
-   If you just want to disable the warnings you can do so by defining the varialbe ~treemacs-no-load-time-warnings~. Its
+   If you just want to disable the warnings you can do so by defining the variable ~treemacs-no-load-time-warnings~. Its
    exact value is irrelevant, all that matters is that it exists at all. Since the warnings are issues when treemacs is
    first being loaded the variable must be defined *before* treemacs is initialized. This is best achieved by adding the
    line ~(defvar treemacs-no-load-time-warnings t)~ to treemacs' use-package ~:init~ block.
@@ -653,7 +653,7 @@ Aside from this there are the following known incompatibilities:
 
 * Contributing
 Contributions are very much welcome, but should fit the general scope and style of treemacs. The following is a list of
-guidelines that should be met (excepions confirm the rule):
+guidelines that should be met (exceptions confirm the rule):
 
  - There should be one commit per feature.
  - Code must be in the right place (what with the codebase being split in many small files). If there is no right place
@@ -662,8 +662,8 @@ guidelines that should be met (excepions confirm the rule):
  - There must not be any compiler warnings.
  - The test suite must pass.
 
-Treemacs uses cask to setup a local testing environment and a makefile that simplifies compiling and testing the
-codebase. First run ~cask install~ to locally pull treemacs' dependencies. Then you can use the following 3 makefile
+Treemacs uses cask to setup a local testing environment and a Makefile that simplifies compiling and testing the
+codebase. First run ~cask install~ to locally pull treemacs' dependencies. Then you can use the following 3 Makefile
 targets:
 
  - make compile :: Compiles the code base (and treats compiler warnings as errors).
