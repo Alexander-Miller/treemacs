@@ -106,27 +106,30 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
           (when arg (treemacs-visit-node-no-split)))))))
 
 ;;;###autoload
-(defun treemacs-find-file ()
+(defun treemacs-find-file (&optional arg)
   "Find and focus the current file in the treemacs window.
+If the current buffer has visits no file or with a prefix ARG ask for the
+file instead.
 Will show/create a treemacs buffers if it is not visible/does not exist.
-Only useful when `treemacs-follow-mode' is not active."
-  (interactive)
-  (cl-block body
-    (-let*- [(buffer-file (buffer-file-name (current-buffer)))
-             (project (treemacs--find-project-for-buffer))]
-      (unless buffer-file
-        (treemacs-pulse-on-failure "Current buffer is not visiting a file.")
-        (cl-return-from body))
-      (unless project
+For the most part only useful when `treemacs-follow-mode' is not active."
+  (interactive "P")
+  (-let- [(path (unless arg (buffer-file-name (current-buffer))))
+          (manually-entered nil)]
+    (unless path
+      (setq manually-entered t
+            path (->> (--if-let (treemacs-current-button) (treemacs--nearest-path it))
+                      (read-file-name "File to find: ")
+                      (treemacs--canonical-path))))
+    (-unless-let [project (treemacs--find-project-for-path path)]
         (treemacs-pulse-on-failure (format "%s does not fall under any project in the workspace."
-                                    (propertize buffer-file 'face 'font-lock-string-face)))
-        (cl-return-from body))
+                                    (propertize path 'face 'font-lock-string-face)))
       (save-selected-window
         (-pcase (treemacs--current-visibility)
           [`visible (treemacs--select-visible-window)]
           [`exists (treemacs--select-not-visible-window)]
           [`none (treemacs--init)])
-        (treemacs-goto-button buffer-file project)))))
+        (treemacs-goto-button path project)
+        (when manually-entered (treemacs-pulse-on-success))))))
 
 ;;;###autoload
 (defun treemacs-find-tag ()
