@@ -259,24 +259,27 @@ Treemacs knows how to open files on linux, windows and macos."
         (kill-this-buffer)
       (kill-buffer-and-window))))
 
-(defun treemacs-delete ()
+(defun treemacs-delete (&optional arg)
   "Delete node at point.
-A delete action must always be confirmed. Directories are deleted recursively."
-  (interactive)
-  (-if-let (btn (treemacs-current-button))
+A delete action must always be confirmed. Directories are deleted recursively.
+By default files are deleted by moving them to the trash. With a prefix ARG they
+will instead be wiped irreversibly."
+  (interactive "P")
+  (-if-let- [btn (treemacs-current-button)]
       (if (not (memq (button-get btn :state) '(file-node-open file-node-closed dir-node-open dir-node-closed)))
           (treemacs-pulse-on-failure "Only files and directories can be deleted.")
-        (-let*- [(path (button-get btn :path))
+        (-let*- [(delete-by-moving-to-trash (not arg))
+                 (path (button-get btn :path))
                  (file-name (f-filename path))]
           (when
               (cond
                ((f-file? path)
-                (when (y-or-n-p (format "Delete %s ? " file-name))
-                  (treemacs--without-filewatch (f-delete path))
+                (when (yes-or-no-p (format "Delete %s ? " file-name))
+                  (treemacs--without-filewatch (delete-file path delete-by-moving-to-trash))
                   t))
                ((f-directory? path)
-                (when (y-or-n-p (format "Recursively delete %s ? " file-name))
-                  (treemacs--without-filewatch (f-delete path t))
+                (when (yes-or-no-p (format "Recursively delete %s ? " file-name))
+                  (treemacs--without-filewatch (delete-directory path t delete-by-moving-to-trash))
                   t))
                (t (progn
                     (treemacs-pulse-on-failure
