@@ -111,8 +111,8 @@ of how this config works and how to modify it."
     (dir-node-closed  . treemacs-toggle-node)
     (file-node-open   . treemacs-visit-node-no-split)
     (file-node-closed . treemacs-visit-node-no-split)
-    (tag-node-open    . treemacs-toggle-node)
-    (tag-node-closed  . treemacs-toggle-node)
+    (tag-node-open    . treemacs-toggle-node-prefer-tag-visit)
+    (tag-node-closed  . treemacs-toggle-node-prefer-tag-visit)
     (tag-node         . treemacs-visit-node-no-split))
   "Defines the behaviour of `treemacs-RET-action'.
 

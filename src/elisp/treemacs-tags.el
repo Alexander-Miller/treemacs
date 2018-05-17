@@ -38,6 +38,9 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
+(treemacs-import-functions-from "treemacs"
+  treemacs-select-window)
+
 (treemacs--defvar-with-default
  treemacs-icon-tag-leaf-text (propertize "• " 'face 'font-lock-constant-face))
 (treemacs--defvar-with-default
@@ -114,7 +117,7 @@ As of now this only decides which (if any) section name the top level leaves
 should be placed under."
   (declare (pure t) (side-effect-free t))
   (-pcase index-mode
-    [(or `markdown-mode `org-mode)
+    [(or `markdown-mode `org-mode `python-mode)
      index]
     [(guard (treemacs--provided-mode-derived-p index-mode `conf-mode))
      (treemacs--partition-imenu-index index "Sections")]
@@ -223,6 +226,70 @@ Remove all open tag entries under BTN when RECURSIVE."
    :new-state 'file-node-closed
    :post-close-action (treemacs-on-collapse (button-get btn :path) recursive)))
 
+(defun treemacs--visit-or-expand/collapse-tag-node (btn arg find-window)
+  "Visit tag section BTN if possible, expand or collapse it otherwise.
+Pass prefix ARG on to either visit or toggle action.
+
+FIND-WINDOW is a special provision depending on this function's invocation
+context and decides whether to find the window to display in (if the tag is
+visited instead of the node being expanded).
+
+On the one hand it can be called based on `treemacs-RET-actions-config' (or
+TAB). The functions in these configs  are expected to find the windows they need
+to display in themselves, so FIND-WINDOW must be t. On the other hand this
+function is also called from the top level vist-node functions like
+`treemacs-visit-node-vertical-split' which delegates to the
+`treemacs--execute-button-action' macro which includes the determination of
+the display window."
+  (-let*- [(path (treemacs--nearest-path btn))
+           (extension (f-ext path))]
+    (-pcase extension
+      ["py"
+       (-let*- [(first-child (car (button-get btn :index)))
+                (name (car first-child))
+                (marker (cdr first-child))]
+         ;; name of first subelement of a section node ends in "definition" means we have a function
+         ;; nested inside a function, so we move to the definition here instead of expanding
+         (if (not (s-ends-with? " definition*" name))
+             (treemacs--expand-tag-node btn arg)
+           ;; select the window as visit-no-split would
+           (when find-window
+             (--if-let (-some-> path (get-file-buffer) (get-buffer-window))
+                 (select-window it)
+               (other-window 1)))
+           (find-file path)
+           (if (buffer-live-p (marker-buffer marker))
+               (goto-char marker)
+             ;; marker is stale and we need a live child button to grab its tag path to re-call imenu, but the
+             ;; child button may not be there so we briefly expand the button to grab the first child to whose
+             ;; position we need to move
+             (-let [need-to-close-section nil]
+               (treemacs-with-button-buffer btn
+                 (when (eq 'tag-node-closed (button-get btn :state))
+                   (setq need-to-close-section t)
+                   (treemacs--expand-tag-node btn)))
+               (treemacs--call-imenu-and-goto-tag
+                (treemacs-with-button-buffer btn (treemacs--tags-path-of (next-button (button-end btn)))))
+               (when need-to-close-section
+                 (treemacs-with-button-buffer btn
+                   (treemacs--collapse-tag-node btn))))
+             (when arg (treemacs-select-window)))))]
+      ["org"
+       (-unless-let [pos (button-get btn 'org-imenu-marker)]
+           (treemacs--expand-tag-node btn arg)
+         ;; select the window as visit-no-split would
+         (when find-window
+           (--if-let (-some-> path (get-file-buffer) (get-buffer-window))
+               (select-window it)
+             (other-window 1)))
+         (find-file path)
+         (if (marker-position pos)
+             (goto-char pos)
+           (treemacs--call-imenu-and-goto-tag (treemacs-with-button-buffer btn (treemacs--tags-path-of btn)) t)))]
+      [_ (-pcase (button-get btn :state)
+           [`tag-node-open (treemacs--collapse-tag-node btn arg)]
+           [`tag-node-closed (treemacs--expand-tag-node btn arg)])])))
+
 (defun treemacs--expand-tag-node (btn &optional recursive)
   "Open tags node items for BTN.
 Open all tag section under BTN when call is RECURSIVE."
@@ -280,27 +347,37 @@ Remove all open tag entries under BTN when RECURSIVE."
      :post-close-action
      (treemacs-on-collapse (treemacs--tags-path-of btn)))))
 
-(defsubst treemacs--pos-from-marker (m)
-  "Extract the tag position stored in marker M.
-The position can be stored in M in 2 ways:
 
-* M is a marker pointing to a tag provided by imenu
-* M is an overlay pointing to a tag provided by imenu with semantic mode
-* M is a raw number pointing to a buffer position
+(defsubst treemacs--extract-position (item)
+  "Extract a tag's buffer and position stored in ITEM.
+The position can be stored in the following ways:
+
+* ITEM is a marker pointing to a tag provided by imenu.
+* ITEM is an overlay pointing to a tag provided by imenu with semantic mode.
+* ITEM is a raw number pointing to a buffer position.
+* ITEM is a cons: special case for imenu elements of an `org-mode' buffer.
+  ITEM is an imenu subtree and the position is stored as a marker in the first
+  element's 'org-imenu-marker text property.
 
 Either way the return value is a 2 element list consisting of the buffer and the
 position of the tag. They might also be nil if the pointed-to buffer does not
 exist."
-  (-pcase (type-of m)
+  (-pcase (type-of item)
     [`marker
-     (cons (marker-buffer m) (marker-position m))]
+     (cons (marker-buffer item) (marker-position item))]
     [`overlay
-     (cons (overlay-buffer m) (overlay-start m))]
+     (cons (overlay-buffer item) (overlay-start item))]
     [`integer
-     (cons nil m)]))
+     (cons nil item)]
+    [`cons
+     (-when-let- [org-marker (get-text-property 0 'org-imenu-marker (car item))]
+       (cons (marker-buffer org-marker) (marker-position org-marker)))]))
 
-(defsubst treemacs--call-imenu-and-goto-tag (tag-path)
-  "Call the imenu index of the tag at TAG-PATH and go to its position."
+(defun treemacs--call-imenu-and-goto-tag (tag-path &optional org?)
+  "Call the imenu index of the tag at TAG-PATH and go to its position.
+ORG? should be t when this function is called for an org buffer and index since
+org requires a slightly different position extraction because the position of a
+headline with subelements is saved in an 'org-imenu-marker' text property."
   (let ((file (cadr tag-path))
         (tag (car tag-path))
         (path (cddr tag-path)))
@@ -310,18 +387,19 @@ exist."
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
-            (-let [(buf . pos) (treemacs--pos-from-marker
-                                (cdr (--first
-                                      (equal (car it) tag)
-                                      index)))]
+            (-let [(buf . pos) (treemacs--extract-position
+                                (-let [item (--first
+                                             (equal (car it) tag)
+                                             index)]
+                                  (if org? item (cdr item))))]
               ;; some imenu implementations, like markdown, will only provide
               ;; a raw buffer position (an int) to move to
               (switch-to-buffer (or buf (get-file-buffer file)))
               (goto-char pos))))
       (error
        (treemacs-log "Something went wrong when finding tag '%s': %s"
-                      (propertize tag 'face 'treemacs-tags-face)
-                      e)))))
+              (propertize tag 'face 'treemacs-tags-face)
+              e)))))
 
 (defun treemacs--goto-tag (btn)
   "Go to the tag at BTN."
@@ -330,7 +408,7 @@ exist."
   ;; properties.
   (-let [(tag-buf . tag-pos)
          (treemacs-with-button-buffer btn
-           (-> btn (button-get :marker) (treemacs--pos-from-marker)))]
+           (-> btn (button-get :marker) (treemacs--extract-position)))]
     (if tag-buf
         (progn
           (switch-to-buffer tag-buf nil t)

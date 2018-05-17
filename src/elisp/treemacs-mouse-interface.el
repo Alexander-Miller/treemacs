@@ -100,7 +100,7 @@ ignore any prefix argument."
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
-            (-let [(buf . pos) (treemacs--pos-from-marker
+            (-let [(buf . pos) (treemacs--extract-position
                               (cdr (--first
                                     (equal (car it) tag)
                                     index)))]
@@ -128,7 +128,7 @@ ignore any prefix argument."
              (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
     (-let [(tag-buf . tag-pos)
            (treemacs-with-button-buffer btn
-             (-> btn (button-get :marker) (treemacs--pos-from-marker)))]
+             (-> btn (button-get :marker) (treemacs--extract-position)))]
       (if tag-buf
           (list tag-buf tag-pos)
         (-pcase treemacs-goto-tag-strategy

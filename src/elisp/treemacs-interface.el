@@ -47,7 +47,7 @@
     tag-node-open
     tag-node-closed
     tag-node)
-  "List of all valid values for treemacs buttons' state property.")
+  "List of all valid values for treemacs buttons' :state property.")
 
 (defun treemacs-next-line (&optional count)
   "Goto next line.
@@ -73,6 +73,7 @@ everything that was expanded below that node.
 
 Since tags cannot be opened or closed a goto definition action will called on
 them instead."
+  (interactive)
   (treemacs-do-for-button-state
    :on-root-node-open   (treemacs--collapse-root-node btn arg)
    :on-root-node-closed (treemacs--expand-root-node btn)
@@ -82,6 +83,32 @@ them instead."
    :on-file-node-closed (treemacs--expand-file-node btn arg)
    :on-tag-node-open    (treemacs--collapse-tag-node btn arg)
    :on-tag-node-closed  (treemacs--expand-tag-node btn arg)
+   :on-tag-node-leaf    (progn (other-window 1) (treemacs--goto-tag btn))
+   :on-nil              (treemacs-pulse-on-failure "There is nothing to do here.")))
+
+(defun treemacs-toggle-node-prefer-tag-visit (&optional arg)
+  "Same as `treemacs-toggle-node' but will visit a tag node in some conditions.
+Tag nodes, despite being expandable sections, will be visited in the following
+conditions:
+
+ * Tags belong to a .py file and the tag section's first child element's label
+   ends in \" definition*\". This indicates the section is the parent element in
+   a nested class/function definition and can be moved to.
+ * Tags belong to a .org file and the tag section element possesses a
+   'org-imenu-marker text property. This indicates that the section is a
+   headline with further org elements below it.
+
+The prefix argument ARG is treated the same way as with `treemacs-toggle-node'."
+  (interactive)
+  (treemacs-do-for-button-state
+   :on-root-node-open   (treemacs--collapse-root-node btn arg)
+   :on-root-node-closed (treemacs--expand-root-node btn)
+   :on-dir-node-open    (treemacs--collapse-dir-node btn arg)
+   :on-dir-node-closed  (treemacs--expand-dir-node btn :recursive arg)
+   :on-file-node-open   (treemacs--collapse-file-node btn arg)
+   :on-file-node-closed (treemacs--expand-file-node btn arg)
+   :on-tag-node-open    (treemacs--visit-or-expand/collapse-tag-node btn arg t)
+   :on-tag-node-closed  (treemacs--visit-or-expand/collapse-tag-node btn arg t)
    :on-tag-node-leaf    (progn (other-window 1) (treemacs--goto-tag btn))
    :on-nil              (treemacs-pulse-on-failure "There is nothing to do here.")))
 
@@ -130,6 +157,7 @@ Stay in current window with a prefix argument ARG."
    :split-function #'split-window-vertically
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
+   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -142,6 +170,7 @@ Stay in current window with a prefix argument ARG."
    :split-function #'split-window-horizontally
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
+   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -154,6 +183,7 @@ Stay in current window with a prefix argument ARG."
   (treemacs--execute-button-action
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
+   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :ensure-window-split t
@@ -168,6 +198,7 @@ Stay in current window with a prefix argument ARG."
    :window (aw-select "Select window")
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
+   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :ensure-window-split t
@@ -182,6 +213,7 @@ Stay in current window with a prefix argument ARG."
    :window (aw-select "Select window")
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
+   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -195,6 +227,7 @@ Stay in current window with a prefix argument ARG."
    :window (aw-select "Select window")
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
+   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
    :tag-action (treemacs--goto-tag btn)
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
@@ -513,7 +546,7 @@ treemacs node is pointing to a valid buffer position."
       (-let [name (read-string "Bookmark name: ")]
         (bookmark-store name `((filename . ,(button-get current-btn :path))) nil))]
      [`tag-node
-      (-let [(tag-buffer . tag-pos) (treemacs--pos-from-marker (button-get current-btn :marker))]
+      (-let [(tag-buffer . tag-pos) (treemacs--extract-position (button-get current-btn :marker))]
         (if (buffer-live-p tag-buffer)
             (bookmark-store
              (read-string "Bookmark name: ")

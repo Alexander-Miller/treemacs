@@ -210,6 +210,7 @@ state is achieved."
           window
           dir-action
           file-action
+          tag-section-action
           tag-action
           no-match-explanation)
   "Infrastructure macro for setting up actions on different button states.
@@ -217,9 +218,9 @@ Fetches the currently selected button and verifies it's in the correct state
 based on the given state actions.
 If it isn't it will log NO-MATCH-EXPLANATION, if it is it selects WINDOW (or
 `next-window' if none is given) and splits it with SPLIT-FUNCTION if given.
-DIR-ACTION, FILE-ACTION, and TAG-ACTION are inserted into a `pcase' statement
-matching the buttons state. Project root nodes are treated the same common
-directory nodes.
+DIR-ACTION, FILE-ACTION, TAG-SECTION-ACTION and TAG-ACTION are inserted into a
+`pcase' statement matching the buttons state. Project root nodes are treated the
+same common directory nodes.
 If ENSURE-WINDOW-SPLIT is t treemacs will vertically split the window if
 treemacs is the only window to make sure a buffer is opened next to it, not
 under or below it."
@@ -233,6 +234,9 @@ under or below it."
     (when file-action
       (push 'file-node-open valid-states)
       (push 'file-node-closed valid-states))
+    (when tag-section-action
+      (push 'tag-node-open valid-states)
+      (push 'tag-node-closed valid-states))
     (when tag-action
       (push 'tag-node valid-states))
     `(-when-let (btn (treemacs-current-button))
@@ -258,6 +262,9 @@ under or below it."
                        ,@(when file-action
                            `(((or `file-node-open `file-node-closed)
                               ,file-action)))
+                       ,@(when tag-section-action
+                           `(((or `tag-node-open `tag-node-closed)
+                              ,tag-section-action)))
                        ,@(when tag-action
                            `((`tag-node
                               ,tag-action)))
