@@ -498,7 +498,8 @@ By default Treemacs's keymap looks as follows:
 | M-j/M-n | treemacs-next-neighbour                     | Go to the next same-level neighbour of the current node.                                                       |
 | M-k/M-p | treemacs-previous-neighbour                 | Go to the previous same-level neighbour of the current node.                                                   |
 | u       | treemacs-goto-parent-node                   | Go to parent of node at point, if possible.                                                                    |
-| C-p a   | treemacs-add-project                        | Add a new project to the workspace.                                                                            |
+| C-p a   | treemacs-add-project                        | Select a new project to add to the treemacs workspace.                                                         |
+| C-p p   | treemacs-projectile                         | Select a projectile project to add to the workspace.                                                           |
 | C-p d   | treemacs-remove-project                     | Remove project at point from the workspace.                                                                    |
 | C-p r   | treemacs-rename-project                     | Rename project at point.                                                                                       |
 | th      | treemacs-toggle-show-dotfiles               | Toggle the hiding and displaying of dotfiles.                                                                  |
