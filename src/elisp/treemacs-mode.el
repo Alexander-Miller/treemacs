@@ -247,7 +247,8 @@ If there is no node at point use \"/\" instead.
 Used as a post command hook."
   (--if-let (treemacs-current-button)
       (-let [path (treemacs--nearest-path it)]
-        (setq default-directory (if (file-directory-p path) path (file-name-directory path))))
+        (when (file-exists-p path)
+          (setq default-directory (if (file-directory-p path) path (file-name-directory path)))))
     "/"))
 
 ;;;###autoload
