@@ -542,39 +542,38 @@ Must be called from treemacs buffer."
             path (button-get btn :path)))
     path))
 
-(defun treemacs--create-file/dir (prompt creation-func)
-  "Concrete implementation of file & dir creation.
-Use PROMPT to ask for a location and CREATION-FUNC to create a new dir/file.
-PROMPT: String
-CREATION-FUNC: `f-touch' | `f-mkdir'"
+(defun treemacs--create-file/dir (is-file?)
+  "Interactively create either a file or directory, depending on IS-FILE.
+
+IS-FILE?: Bool"
   (interactive)
-  (let ((curr-path)
-        (location)
-        (name))
+  (let ((path-to-create)
+        (curr-path (--if-let (treemacs-current-button)
+                       (treemacs--nearest-path it)
+                     (f-expand "~"))))
     (cl-block body
-      (-let [path (--if-let (treemacs-current-button)
-                      (treemacs--nearest-path it)
-                    (-> "~" (f-expand) (f-slash)))]
-        (setq curr-path (f-slash (if (f-dir? path)
-                                     path
-                                   (f-dirname path)))))
-      (setq location (read-directory-name "Create in: " curr-path))
-      (when (not (f-directory? location))
+      (setq path-to-create (read-file-name
+                            (if is-file?"Create File: " "Create Directory: ")
+                            (f-slash (if (f-dir? curr-path)
+                                         curr-path
+                                       (f-dirname curr-path)))))
+      (when (f-exists? path-to-create)
         (cl-return-from body
-          (treemacs-pulse-on-failure "%s is not a directory."
-                 (propertize location 'face 'font-lock-string-face))))
-      (setq name (read-string prompt))
-      (-let [new-file (f-join location name)]
-        (when (f-exists? new-file)
-          (cl-return-from body
-            (treemacs-pulse-on-failure "%s already exists."
-              (propertize  'face 'font-lock-string-face))))
-        (treemacs--without-filewatch (funcall creation-func new-file))
-        (--when-let (treemacs--find-project-for-path new-file)
-          (treemacs-without-messages (treemacs--do-refresh (current-buffer) it))
-          (treemacs-goto-button (f-long new-file) it))
-        (recenter)
-        (treemacs-pulse-on-success)))))
+          (treemacs-pulse-on-failure "%s already exists."
+            (propertize path-to-create 'face 'font-lock-string-face))))
+      (treemacs--without-filewatch
+       (if is-file?
+           (-let [dir (f-dirname path-to-create)]
+             (unless (f-exists? dir)
+               (make-directory dir t))
+             (f-touch path-to-create))
+         (make-directory path-to-create t)))
+      (-when-let- [project (treemacs--find-project-for-path path-to-create)]
+        (treemacs-without-messages (treemacs--do-refresh (current-buffer) project))
+        (treemacs-goto-button (treemacs--canonical-path path-to-create) project)
+        (recenter))
+      (treemacs-pulse-on-success
+          "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
 
 (defun treemacs-goto-button (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.

@@ -330,7 +330,7 @@ The preselection for what directory to create in is based on the \"nearest\"
 path to point - the containing directory for tags and files or the directory
 itself, using $HOME when there is no path at or near point to grab."
   (interactive)
-  (treemacs--create-file/dir "File name: " #'f-touch))
+  (treemacs--create-file/dir t))
 
 (cl-defun treemacs-rename ()
   "Rename the currently selected node.
@@ -380,7 +380,7 @@ The preselection for what directory to create in is based on the \"nearest\"
 path to point - the containing directory for tags and files or the directory
 itself, using $HOME when there is no path at or near pooint to grab."
   (interactive)
-  (treemacs--create-file/dir "Directory name: " #'f-mkdir))
+  (treemacs--create-file/dir nil))
 
 (defun treemacs-toggle-show-dotfiles ()
   "Toggle the hiding and displaying of dotfiles."
