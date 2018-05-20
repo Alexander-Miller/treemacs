@@ -656,6 +656,47 @@ treemacs node is pointing to a valid buffer position."
           (recenter)))
     (treemacs-log "There is nothing to refresh.")))
 
+(defun treemacs-collapse-project (&optional arg)
+  "Close the project at point.
+With a prefix ARG also forget about all the nodes opened in the project."
+  (interactive "P")
+  (-unless-let [btn (treemacs-current-button)]
+      (treemacs-pulse-on-failure "There is nothing to close here.")
+    (while (not (button-get btn :project))
+      (setq btn (button-get btn :parent)))
+    (when (eq 'root-node-open (button-get btn :state))
+      (goto-char btn)
+      (treemacs--collapse-root-node btn arg)
+      (treemacs--maybe-recenter))))
+
+(defun treemacs-collapse-all-projects (&optional arg)
+  "Collapses all projects.
+With a prefix ARG also forget about all the nodes opened in the projects."
+  (interactive "P")
+  (save-excursion
+    (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
+      (-when-let- [pos (treemacs-project->position project)]
+        (when (eq 'root-node-open (button-get pos :state))
+          (goto-char pos)
+          (treemacs--collapse-root-node pos arg)))))
+  (treemacs--maybe-recenter))
+
+(defun treemacs-collapse-other-projects (&optional arg)
+  "Collapses all projects except the project at point.
+With a prefix ARG also forget about all the nodes opened in the projects."
+  (interactive "P")
+  (save-excursion
+    (-let [curr-project (-some-> (treemacs-current-button)
+                                 (treemacs--nearest-path)
+                                 (treemacs--find-project-for-path))]
+      (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
+        (unless (eq project curr-project)
+          (-when-let- [pos (treemacs-project->position project)]
+            (when (eq 'root-node-open (button-get pos :state))
+              (goto-char pos)
+              (treemacs--collapse-root-node pos arg)))))))
+  (treemacs--maybe-recenter))
+
 (provide 'treemacs-interface)
 
 ;;; treemacs-interface.el ends here
