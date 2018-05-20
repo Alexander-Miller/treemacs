@@ -25,6 +25,7 @@
    - [[#terminal-compatibility][Terminal Compatibility]]
    - [[#tag-view][Tag View]]
       - [[#ggtags][ggtags]]
+   - [[#current-directory-awareness][Current-Directory Awareness]]
    - [[#additional-packages][Additional Packages]]
       - [[#treemacs-evil][treemacs-evil]]
       - [[#treemacs-projectile][treemacs-projectile]]
@@ -230,6 +231,10 @@ Treemacs can show the tags produced by ggtags if you switch a buffer's imenu ind
   (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
 #+END_SRC
 
+** Current-Directory Awareness
+Treemacs always sets the ~default-directory~ variable based on the (nearest) path at the current node, falling back to
+your home directory when there is no node or path at point. That means that various commands like ~find-file~,
+~magit-status~ or ~helm-projectile-ag~ will correctly act based on the current directory or project context.
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 
