@@ -617,7 +617,7 @@ treemacs node is pointing to a valid buffer position."
   (treemacs--evade-image))
 
 (defun treemacs-add-project (path)
-  "Add a new project for at given PATH."
+  "Add a new project for a given PATH."
   (interactive "DDirectory: ")
   (treemacs-add-project-at (treemacs--canonical-path path)))
 
@@ -626,25 +626,28 @@ treemacs node is pointing to a valid buffer position."
   (interactive)
   (-unless-let [project (treemacs-project-at-point)]
       (treemacs-pulse-on-failure "There is no project here.")
-    (treemacs-with-writable-buffer
-     (-let [project-btn (treemacs-project->position project)]
-       (goto-char project-btn)
-       (when (treemacs-project->is-expanded? project)
-         (treemacs--collapse-root-node project-btn t))
-       (kill-whole-line)
-       (treemacs--forget-last-highlight)
-       (unless (treemacs-project->is-last? project)
-         (kill-whole-line))
-       (delete-trailing-whitespace))
-     (treemacs--remove-project-from-current-workspace project)
-     (treemacs-on-collapse (treemacs-project->path project) t)
-     (-let [treemacs-pulse-on-failure nil]
-       (unless (treemacs-next-project) (treemacs-previous-project)))
-     (recenter)
-     (treemacs--evade-image)
-     (hl-line-highlight)
-     (treemacs-pulse-on-success "Removed project %s from the workspace."
-       (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))))
+    (treemacs-run-in-every-buffer
+     (treemacs-with-writable-buffer
+      (-let [project-btn (treemacs-project->position project)]
+        (goto-char project-btn)
+        (when (treemacs-project->is-expanded? project)
+          (treemacs--collapse-root-node project-btn t))
+        (kill-whole-line)
+        (treemacs--forget-last-highlight)
+        (unless (treemacs-project->is-last? project)
+          (kill-whole-line))
+        (delete-trailing-whitespace))
+      (treemacs--remove-project-from-current-workspace project)
+      (treemacs-on-collapse (treemacs-project->path project) t)
+      (-let [treemacs-pulse-on-failure nil]
+        (unless (treemacs-next-project) (treemacs-previous-project)))
+      (--when-let (treemacs--is-visible?)
+        (with-selected-window it
+          (recenter)))
+      (treemacs--evade-image)
+      (hl-line-highlight)
+      (treemacs-pulse-on-success "Removed project %s from the workspace."
+        (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))))
 
 (defun treemacs-refresh ()
   "Refresh the project at point."
