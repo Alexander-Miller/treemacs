@@ -226,6 +226,8 @@ to it will instead show a blank."
       (define-key map (kbd "<backtab>") #'treemacs-collapse-all-projects)
       (define-key map (kbd "C-j")       #'treemacs-next-project)
       (define-key map (kbd "C-k")       #'treemacs-previous-project)
+      (define-key map (kbd "h")         #'treemacs-root-up)
+      (define-key map (kbd "l")         #'treemacs-root-down)
       map)
     "Keymap for `treemacs-mode'."))
 

@@ -117,15 +117,16 @@
       (next-single-property-change :project)
       (null)))
 
-(defun treemacs-add-project-at (path)
-  "Add project at PATH to the current workspace."
+(defun treemacs-add-project-at (path &optional name)
+  "Add project at PATH to the current workspace.
+NAME is provided during ad-hoc navigation only."
   (--if-let (treemacs--find-project-for-path path)
       (progn
         (goto-char (treemacs-project->position it))
         (treemacs-pulse-on-success
             (format "Project for %s already exists."
                     (propertize path 'face 'font-lock-string-face))))
-    (-let*- [(name (read-string "Project Name: " (f-filename path)))
+    (-let*- [(name (or name (read-string "Project Name: " (f-filename path))))
              (project (make-treemacs-project :name name :path path))
              (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null)))]
       (treemacs--add-project-to-current-workspace project)

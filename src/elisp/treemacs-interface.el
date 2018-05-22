@@ -22,6 +22,7 @@
 
 (require 'hl-line)
 (require 'bookmark)
+(require 'button)
 (require 'f)
 (require 's)
 (require 'dash)
@@ -696,6 +697,50 @@ With a prefix ARG also forget about all the nodes opened in the projects."
               (goto-char pos)
               (treemacs--collapse-root-node pos arg)))))))
   (treemacs--maybe-recenter))
+
+(defun treemacs-root-up ()
+  "Switch treemacs' root directory to current root's parent, if possible."
+  (interactive)
+  (cl-block body
+    (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
+      (cl-return-from body
+        (treemacs-pulse-on-failure "Ad-hoc navigation is only possible when there is but a single project in the workspace.")))
+    (-let [btn (treemacs-current-button)]
+      (unless btn
+        (setq btn (previous-button (point))))
+      (-let*- [(project (-> btn (treemacs--nearest-path) (treemacs--find-project-for-path)))
+               (root (treemacs-project->path project))
+               (new-root (treemacs--parent root))
+               (treemacs--no-messages t)
+               (treemacs-pulse-on-success nil)]
+        (unless (string= root new-root)
+          (treemacs-remove-project)
+          (treemacs-add-project-at new-root (file-name-nondirectory new-root))
+          (treemacs-goto-button new-root)
+          (treemacs-toggle-node))))))
+
+(defun treemacs-root-down ()
+  "Use currently selected directory as new root.
+Do nothing for other node types."
+  (interactive)
+  (cl-block body
+    (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
+      (cl-return-from body
+        (treemacs-pulse-on-failure "Ad-hoc navigation is only possible when there is but a single project in the workspace.")))
+    (-unless-let [btn (treemacs-current-button)]
+        (treemacs-pulse-on-failure
+            "There is no directory to move into here.")
+      (-pcase (button-get btn :state)
+        [(or `dir-node-open `dir-node-closed)
+         (-let- [(new-root (button-get btn :path))
+                 (treemacs--no-messages t)
+                 (treemacs-pulse-on-success nil)]
+           (treemacs-remove-project)
+           (treemacs-add-project-at new-root (file-name-nondirectory new-root))
+           (treemacs-goto-button new-root)
+           (treemacs-toggle-node))]
+        [_
+         (treemacs-pulse-on-failure "Button at point is not a directory.")]))))
 
 (provide 'treemacs-interface)
 
