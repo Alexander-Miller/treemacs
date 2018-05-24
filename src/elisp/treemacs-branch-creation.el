@@ -407,8 +407,13 @@ PROJECT: `cl-struct-treemacs-project'"
                :depth 0)))
 
 (defun treemacs--check-window-system ()
-  "Check if this treemacs instance is running in a GUI or TUI.
-If it's running in a TUI use terminal switch to simple text icons."
+  "Check if the current treemacs buffer should use TUI icons.
+If it's running in a TUI switch to simple text icons.
+
+TUI icons will be used if
+ * `treemacs--image-creation-impossible' is t,
+ * `treemacs-no-png-images' is it
+ * or if the current frame is a TUI frame"
   (-let [no-images (or treemacs--image-creation-impossible
                        treemacs-no-png-images
                        (not (window-system)))]

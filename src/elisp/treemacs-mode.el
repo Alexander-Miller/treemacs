@@ -288,6 +288,7 @@ Used as a post command hook."
   (add-to-list 'delete-frame-functions #'treemacs--on-frame-kill)
   (add-hook 'post-command-hook #'treemacs--set-default-directory nil t)
 
+  (treemacs--check-window-system)
   (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))
 

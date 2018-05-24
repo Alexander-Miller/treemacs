@@ -328,7 +328,8 @@ Valid values are
   :group 'treemacs-configuration)
 
 (defcustom treemacs-no-png-images nil
-  "When non-nil treemacs will use TUI string icons even when running in a GUI."
+  "When non-nil treemacs will use TUI string icons even when running in a GUI.
+The change will apply the next time a treemacs buffer is created."
   :type 'boolean
   :group 'treemacs-configuration)
 
