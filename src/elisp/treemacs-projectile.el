@@ -56,6 +56,22 @@
      (treemacs--init (when (treemacs-workspace->is-empty?)
                 (read-directory-name "Project root: " (projectile-project-root))))]))
 
+;;;###autoload
+(defun treemacs-select-window ()
+  "Select the treemacs window if it is visible.
+Bring it to the foreground if it is not visible.
+Initialize a new treemacs buffer as calling `treemacs' would if there is no
+treemacs buffer for this frame."
+  (interactive)
+  (-pcase (treemacs--current-visibility)
+    [`visible
+     (treemacs--select-visible-window)]
+    [`exists
+     (treemacs--select-not-visible-window)]
+    [`none
+     (treemacs--init (when (treemacs-workspace->is-empty?)
+                       (read-directory-name "Project root: " (projectile-project-root))))]))
+
 (define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
 
 (provide 'treemacs-projectile)

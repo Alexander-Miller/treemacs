@@ -23,8 +23,7 @@
 
 ;;; Code:
 
-;; noerror to be removed with release of emacs26
-(require 'xref nil t)
+(require 'xref)
 (require 'imenu)
 (require 'dash)
 (require 'f)
