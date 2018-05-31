@@ -94,6 +94,7 @@
   treemacs--reset-project-positions
   treemacs-current-workspace
   treemacs-workspace->projects
+  treemacs-workspace->is-empty?
   treemacs-add-project-at
   treemacs-project->is-expanded?
   treemacs-project->path
@@ -719,6 +720,14 @@ It needs to be moved aside in a way that works for all indent depths and
   (beginning-of-line)
   (when (get-text-property (point) 'display)
     (forward-char 1)))
+
+(defun treemacs--read-first-project-path ()
+  "Read the first project on init with an empty workspace.
+This function is extracted here specifically so that treemacs-projectile can
+overwrite it so as to present the project root instead of the current dir as the
+first choice."
+  (when (treemacs-workspace->is-empty?)
+    (read-directory-name "Project root: ")))
 
 (defun treemacs--sort-value-selection ()
   "Interactive selection for a new `treemacs-sorting' value.
