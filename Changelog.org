@@ -2,6 +2,17 @@
 #+STARTUP: content
 
 * Changelog
+** v2.1
+ - Add ~treemacs-show-changelog~ command,
+ - Add ~treemacs-project-follow-cleanup~ option.
+ - ~default-directory~ will not be set based on the (nearest) path at point.
+ - New scala and sbt icon.
+ - Delete files by moving them to the trash by default.
+ - Much improved file & directory creation interface.
+ - Add commands to close all/current/other projects.
+ - Reintroduces free navigation with h & l when there's only 1 project in the workspace.
+ - ~treemacs-find-file~ can now ask for the file to be found.
+ - Various bug fixes.
 ** v2
  * Start keeping changelog and retroactively fill it.
  * Major refactoring to allow display of multiple projects in a workspace.

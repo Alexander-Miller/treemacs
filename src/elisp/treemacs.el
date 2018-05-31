@@ -50,7 +50,7 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
-(defconst treemacs-version "2.0")
+(defconst treemacs-version "2.1")
 
 ;;;###autoload
 (defun treemacs ()
