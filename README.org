@@ -489,6 +489,7 @@ These functions are not bound to any keys by default. It's left up to users to f
 | treemacs-find-tag             | Find and focus the current tag in treemacs.                                |
 | treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs~ if it is not. |
 | treemacs-delete-other-windows | Same as ~delete-other-windows~, but will not delete the treemacs window.   |
+| treemacs-show-changelog       | Opens a buffer showing the changelog.                                      |
 
 ** Default keymap
 By default Treemacs's keymap looks as follows:

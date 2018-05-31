@@ -173,6 +173,14 @@ treemacs buffer for this frame."
     ['exists  (treemacs--select-not-visible-window)]
     ['none    (treemacs--init (treemacs--read-first-project-path))]))
 
+;;;###autoload
+(defun treemacs-show-changelog ()
+  "Show the changelog of treemacs."
+  (interactive)
+  (-> "Changelog.org"
+      (locate-file (list treemacs-dir))
+      (find-file-existing)))
+
 (provide 'treemacs)
 
 ;;; treemacs.el ends here
