@@ -418,6 +418,7 @@ TUI icons will be used if
                        treemacs-no-png-images
                        (not (window-system)))]
     (with-no-warnings
+      (setq-local treemacs-icon-root            (if no-images treemacs-icon-root-text treemacs-icon-root-png))
       (setq-local treemacs-icon-open            (if no-images treemacs-icon-open-text treemacs-icon-open-png))
       (setq-local treemacs-icon-closed          (if no-images treemacs-icon-closed-text treemacs-icon-closed-png))
       (setq-local treemacs-icon-fallback        (if no-images treemacs-icon-fallback-text treemacs-icon-text))

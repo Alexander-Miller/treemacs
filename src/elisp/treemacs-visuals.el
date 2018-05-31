@@ -54,6 +54,8 @@
  treemacs-icon-open-text (propertize "- " 'face 'treemacs-term-node-face))
 (treemacs--defvar-with-default
  treemacs-icon-fallback-text (propertize "  " 'face 'font-lock-keyword-face))
+(treemacs--defvar-with-default
+ treemacs-icon-root-text "")
 
 (defvar treemacs--icons nil
   "Stash of all created icons.
@@ -128,7 +130,7 @@ argument."
   (when (eq major-mode 'treemacs-mode)
     (condition-case e
         (-when-let (btn (treemacs-current-button))
-          (let* ((pos (- (button-start btn) 2))
+          (let* ((pos (max (point-at-bol) (- (button-start btn) 2)))
                  (img-selected (get-text-property pos 'img-selected)))
             (treemacs-with-writable-buffer
              (when treemacs--last-highlight
@@ -164,6 +166,7 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (if treemacs--image-creation-impossible
       (setq treemacs-icon-closed   treemacs-icon-closed-text
             treemacs-icon-open     treemacs-icon-open-text
+            treemacs-icon-root     treemacs-icon-root-text
             treemacs-icon-fallback treemacs-icon-fallback-text)
 
     (setq treemacs-icons-hash (make-hash-table :test #'equal))
@@ -175,6 +178,9 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
      (cons 'treemacs-icon-open-png (treemacs--setup-icon treemacs-icon-open-png "dir_open.png"))
      treemacs--defaults-icons)
     (push
+     (cons 'treemacs-icon-root-png (treemacs--setup-icon treemacs-icon-root-png "root.png"))
+     treemacs--defaults-icons)
+    (push
      (cons 'treemacs-icon-fallback treemacs-icon-fallback)
      treemacs--defaults-icons)
 
@@ -182,9 +188,9 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (with-no-warnings
       (setq treemacs-icon-closed   treemacs-icon-closed-png
             treemacs-icon-open     treemacs-icon-open-png
+            treemacs-icon-root     treemacs-icon-root-png
             treemacs-icon-fallback treemacs-icon-text))
 
-    (treemacs--setup-icon treemacs-icon-root       "root.png")
     (treemacs--setup-icon treemacs-icon-yaml       "yaml.png"       "yml" "yaml")
     (treemacs--setup-icon treemacs-icon-shell      "shell.png"      "sh" "zsh" "fish")
     (treemacs--setup-icon treemacs-icon-pdf        "pdf.png"        "pdf")
@@ -234,17 +240,19 @@ inserted into `treemacs-icons-hash'."
   (interactive)
   ;; no warnings since the variables are known to exist
   (with-no-warnings
-    (setq treemacs-icon-open-png             (cdr (assq 'treemacs-icon-open-png             treemacs--defaults-icons))
-          treemacs-icon-open-text            (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
-          treemacs-icon-fallback             (cdr (assq 'treemacs-icon-fallback             treemacs--defaults-icons))
-          treemacs-icon-closed-png           (cdr (assq 'treemacs-icon-closed-png           treemacs--defaults-icons))
-          treemacs-icon-closed-text          (cdr (assq 'treemacs-icon-open-text            treemacs--defaults-icons))
-          treemacs-icon-tag-node-open-png    (cdr (assq 'treemacs-icon-tag-node-open-png    treemacs--defaults-icons))
-          treemacs-icon-tag-node-open-text   (cdr (assq 'treemacs-icon-tag-node-open-text   treemacs--defaults-icons))
-          treemacs-icon-tag-node-closed-png  (cdr (assq 'treemacs-icon-tag-node-closed-png  treemacs--defaults-icons))
-          treemacs-icon-tag-node-closed-text (cdr (assq 'treemacs-icon-tag-node-closed-text treemacs--defaults-icons))
-          treemacs-icon-tag-leaf-png         (cdr (assq 'treemacs-icon-tag-leaf-png         treemacs--defaults-icons))
-          treemacs-icon-tag-leaf-text        (cdr (assq 'treemacs-icon-tag-leaf-text        treemacs--defaults-icons))))
+    (setq treemacs-icon-open-png             (alist-get 'treemacs-icon-open-png             treemacs--defaults-icons)
+          treemacs-icon-open-text            (alist-get 'treemacs-icon-open-text            treemacs--defaults-icons)
+          treemacs-icon-fallback             (alist-get 'treemacs-icon-fallback             treemacs--defaults-icons)
+          treemacs-icon-closed-png           (alist-get 'treemacs-icon-closed-png           treemacs--defaults-icons)
+          treemacs-icon-closed-text          (alist-get 'treemacs-icon-open-text            treemacs--defaults-icons)
+          treemacs-icon-root-png             (alist-get 'treemacs-icon-root-png             treemacs--defaults-icons)
+          treemacs-icon-root-text            (alist-get 'treemacs-icon-root-text            treemacs--defaults-icons)
+          treemacs-icon-tag-node-open-png    (alist-get 'treemacs-icon-tag-node-open-png    treemacs--defaults-icons)
+          treemacs-icon-tag-node-open-text   (alist-get 'treemacs-icon-tag-node-open-text   treemacs--defaults-icons)
+          treemacs-icon-tag-node-closed-png  (alist-get 'treemacs-icon-tag-node-closed-png  treemacs--defaults-icons)
+          treemacs-icon-tag-node-closed-text (alist-get 'treemacs-icon-tag-node-closed-text treemacs--defaults-icons)
+          treemacs-icon-tag-leaf-png         (alist-get 'treemacs-icon-tag-leaf-png         treemacs--defaults-icons)
+          treemacs-icon-tag-leaf-text        (alist-get 'treemacs-icon-tag-leaf-text        treemacs--defaults-icons)))
   (treemacs--create-icons)
   (when (fboundp 'clear-image-cache)
     (clear-image-cache)))
