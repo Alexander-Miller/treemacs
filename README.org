@@ -553,6 +553,17 @@ Aside from this there are the following known incompatibilities:
    part of ~special-mode-hook~, since this is the mode ~treemacs-mode~ is derived from.
 
 * FAQ
+ * How do I keep treemacs from showing files that are ignored by git?
+
+   Short answer:
+
+   #+BEGIN_SRC emacs-lisp
+     (add-to-list 'treemacs-pre-file-insert-predicates #'treemacs-is-file-git-ignored?)
+   #+END_SRC
+
+   A slightly longer explanation about how you can hook into the render process can be found in the documentation string
+   of ~treemacs-pre-file-insert-predicates~.
+
  * Why am I seeing no file icons and only +/- for directories?
 
    Treemacs will permanently fall back on its simple TUI icons if it detects that the emacs instance it is run in cannot
