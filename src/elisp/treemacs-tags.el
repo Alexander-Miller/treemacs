@@ -116,9 +116,9 @@ As of now this only decides which (if any) section name the top level leaves
 should be placed under."
   (declare (pure t) (side-effect-free t))
   (-pcase index-mode
-    [(or `markdown-mode `org-mode `python-mode)
+    [(or 'markdown-mode 'org-mode 'python-mode)
      index]
-    [(guard (treemacs--provided-mode-derived-p index-mode `conf-mode))
+    [(guard (treemacs--provided-mode-derived-p index-mode 'conf-mode))
      (treemacs--partition-imenu-index index "Sections")]
     [_
      (treemacs--partition-imenu-index index "Functions")]))
@@ -286,8 +286,8 @@ the display window."
              (goto-char pos)
            (treemacs--call-imenu-and-goto-tag (treemacs-with-button-buffer btn (treemacs--tags-path-of btn)) t)))]
       [_ (-pcase (button-get btn :state)
-           [`tag-node-open (treemacs--collapse-tag-node btn arg)]
-           [`tag-node-closed (treemacs--expand-tag-node btn arg)])])))
+           ['tag-node-open   (treemacs--collapse-tag-node btn arg)]
+           ['tag-node-closed (treemacs--expand-tag-node btn arg)])])))
 
 (defun treemacs--expand-tag-node (btn &optional recursive)
   "Open tags node items for BTN.
@@ -312,8 +312,8 @@ Open all tag section under BTN when call is RECURSIVE."
                           (treemacs--tags-path-of btn) btn
                           (-let [parent (button-get btn :parent)]
                             (-pcase (button-get parent :state)
-                              [`file-node-open (button-get parent :path)]
-                              [`tag-node-open  (treemacs--tags-path-of parent)]
+                              ['file-node-open (button-get parent :path)]
+                              ['tag-node-open  (treemacs--tags-path-of parent)]
                               [other (error "Impossible state of parent: %s" other)])))
                          (if recursive
                              (--each (treemacs--get-children-of btn)
@@ -362,13 +362,13 @@ Either way the return value is a 2 element list consisting of the buffer and the
 position of the tag. They might also be nil if the pointed-to buffer does not
 exist."
   (-pcase (type-of item)
-    [`marker
+    ['marker
      (cons (marker-buffer item) (marker-position item))]
-    [`overlay
+    ['overlay
      (cons (overlay-buffer item) (overlay-start item))]
-    [`integer
+    ['integer
      (cons nil item)]
-    [`cons
+    ['cons
      (-when-let- [org-marker (get-text-property 0 'org-imenu-marker (car item))]
        (cons (marker-buffer org-marker) (marker-position org-marker)))]))
 
@@ -413,17 +413,17 @@ headline with subelements is saved in an 'org-imenu-marker' text property."
           (switch-to-buffer tag-buf nil t)
           (goto-char tag-pos))
       (-pcase treemacs-goto-tag-strategy
-        [`refetch-index
+        ['refetch-index
          (treemacs--call-imenu-and-goto-tag
           (with-current-buffer (marker-buffer btn)
             (treemacs--tags-path-of btn)))]
-        [`call-xref
+        ['call-xref
          ;; for emacs24
          (with-no-warnings
            (xref-find-definitions
             (treemacs-with-button-buffer btn
               (treemacs--get-label-of btn))))]
-        [`issue-warning
+        ['issue-warning
          (treemacs-pulse-on-failure
           "Tag '%s' is located in a buffer that does not exist."
           (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]

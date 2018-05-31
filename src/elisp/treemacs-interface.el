@@ -272,12 +272,12 @@ Treemacs knows how to open files on linux, windows and macos."
   ;; code adapted from ranger.el
   (-if-let- [path (treemacs--prop-at-point :path)]
       (-pcase system-type
-       [`windows-nt
+       ['windows-nt
         (declare-function w32-shell-execute "w32fns.c")
         (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" path t t))]
-       [`darwin
+       ['darwin
         (shell-command (format "open \"%s\"" path))]
-       [`gnu/linux
+       ['gnu/linux
         (let ((process-connection-type nil))
           (start-process "" nil "xdg-open" path))]
        [_ (treemacs-pulse-on-failure "Don't know how to open files on %s."
@@ -471,19 +471,19 @@ without the need to call `treemacs-resort' with a prefix arg."
           (treemacs-sorting sort-method))
     (-if-let (btn (treemacs-current-button))
              (-pcase (button-get btn :state)
-               [`dir-node-closed
+               ['dir-node-closed
                 (treemacs--expand-dir-node btn)
                 (treemacs-log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                                (propertize sort-name 'face 'font-lock-type-face))]
-               [`dir-node-open
+               ['dir-node-open
                 (treemacs--collapse-dir-node btn)
                 (goto-char (button-start btn))
                 (treemacs--expand-dir-node btn)
                 (treemacs-log "Resorted %s with sort method '%s'."
                                (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                                (propertize sort-name 'face 'font-lock-type-face))]
-               [(or `file-node-open `file-node-closed `tag-node-open `tag-node-closed `tag-node)
+               [(or 'file-node-open 'file-node-closed 'tag-node-open 'tag-node-closed 'tag-node)
                 (let* ((parent (button-get btn :parent)))
                   (while (and parent
                               (not (-some-> parent (button-get :path) (f-directory?))))
@@ -543,10 +543,10 @@ treemacs node is pointing to a valid buffer position."
   (treemacs--with-current-button
    "There is nothing to bookmark here."
    (-pcase (button-get current-btn :state)
-     [(or `file-node-open `file-node-closed `dir-node-open `dir-node-closed)
+     [(or 'file-node-open 'file-node-closed 'dir-node-open 'dir-node-closed)
       (-let [name (read-string "Bookmark name: ")]
         (bookmark-store name `((filename . ,(button-get current-btn :path))) nil))]
-     [`tag-node
+     ['tag-node
       (-let [(tag-buffer . tag-pos) (treemacs--extract-position (button-get current-btn :marker))]
         (if (buffer-live-p tag-buffer)
             (bookmark-store
@@ -555,7 +555,7 @@ treemacs node is pointing to a valid buffer position."
                (position . ,tag-pos))
              nil)
           (treemacs-log "Tag info can not be saved because it is not pointing to a live buffer.")))]
-     [(or `tag-node-open `tag-node-closed)
+     [(or 'tag-node-open 'tag-node-closed)
       (treemacs-pulse-on-failure "There is nothing to bookmark here.")])))
 
 (defun treemacs-next-line-other-window (&optional count)
@@ -734,7 +734,7 @@ Do nothing for other node types."
         (treemacs-pulse-on-failure
             "There is no directory to move into here.")
       (-pcase (button-get btn :state)
-        [(or `dir-node-open `dir-node-closed)
+        [(or 'dir-node-open 'dir-node-closed)
          (-let- [(new-root (button-get btn :path))
                  (treemacs--no-messages t)
                  (treemacs-pulse-on-success nil)]

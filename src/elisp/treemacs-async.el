@@ -177,10 +177,10 @@ Use either ARG as git integration value of read it interactively."
                          (intern))))
   (setq treemacs-git-mode arg)
   (-pcase treemacs-git-mode
-    [`extended
+    ['extended
      (fset 'treemacs--git-status-process-function #'treemacs--git-status-process-extended)
      (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-extended)]
-    [`simple
+    ['simple
      (fset 'treemacs--git-status-process-function #'treemacs--git-status-process-simple)
      (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-simple)]
     [_

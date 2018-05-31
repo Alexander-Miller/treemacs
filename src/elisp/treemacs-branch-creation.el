@@ -98,14 +98,14 @@ DEFAULT: Face"
   "Get the content of DIR, separated into sublists of first dirs, then files."
   (let* ((sort-func
           (-pcase treemacs-sorting
-            [`alphabetic-asc #'treemacs--sort-alphabetic-asc]
-            [`alphabetic-desc #'treemacs--sort-alphabetic-desc]
-            [`alphabetic-case-insensitive-asc  #'treemacs--sort-alphabetic-case-insensitive-asc]
-            [`alphabetic-case-insensitive-desc #'treemacs--sort-alphabetic-case-insensitive-desc]
-            [`size-asc #'treemacs--sort-size-asc]
-            [`size-desc #'treemacs--sort-size-desc]
-            [`mod-time-asc #'treemacs--sort-mod-time-asc]
-            [`mod-time-desc #'treemacs--sort-mod-time-desc]
+            ['alphabetic-asc #'treemacs--sort-alphabetic-asc]
+            ['alphabetic-desc #'treemacs--sort-alphabetic-desc]
+            ['alphabetic-case-insensitive-asc  #'treemacs--sort-alphabetic-case-insensitive-asc]
+            ['alphabetic-case-insensitive-desc #'treemacs--sort-alphabetic-case-insensitive-desc]
+            ['size-asc #'treemacs--sort-size-asc]
+            ['size-desc #'treemacs--sort-size-desc]
+            ['mod-time-asc #'treemacs--sort-mod-time-asc]
+            ['mod-time-desc #'treemacs--sort-mod-time-desc]
             [_ (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting)]))
          ;; `directory-files' is much faster in a temp buffer for whatever reason
          (entries (with-temp-buffer (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown))))

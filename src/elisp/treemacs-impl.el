@@ -350,8 +350,8 @@ failed."
     ;; point is currently on the next closest dir to the followed file we could get
     ;; from the shadow index, so we expand it to keep going
     (-pcase (button-get btn :state)
-      [`dir-node-closed (treemacs--expand-dir-node btn :git-future git-future)]
-      [`root-node-closed (treemacs--expand-root-node btn)])
+      ['dir-node-closed (treemacs--expand-dir-node btn :git-future git-future)]
+      ['root-node-closed (treemacs--expand-root-node btn)])
     (catch 'follow-failed
       (-let- [(index 0)
               (dir-part nil)]
@@ -461,9 +461,9 @@ buffer."
 Add a project for ROOT if it's non-nil."
   (-let [origin-buffer (current-buffer)]
     (-pcase (treemacs--current-visibility)
-      [`visible (treemacs--select-visible-window)]
-      [`exists (treemacs--select-not-visible-window)]
-      [`none
+      ['visible (treemacs--select-visible-window)]
+      ['exists (treemacs--select-not-visible-window)]
+      ['none
        (treemacs--setup-buffer)
        (treemacs-mode)
        (treemacs--reset-index)
@@ -497,24 +497,24 @@ Add a project for ROOT if it's non-nil."
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
   (-pcase (button-get btn :state)
-    [`root-node-closed (treemacs--expand-root-node btn)]
-    [`dir-node-open    (treemacs--collapse-dir-node btn recursive)]
-    [`dir-node-closed  (treemacs--expand-dir-node btn :recursive recursive)]
-    [`file-node-open   (treemacs--collapse-file-node btn recursive)]
-    [`file-node-closed (treemacs--expand-file-node btn recursive)]
-    [`tag-node-open    (treemacs--collapse-tag-node btn recursive)]
-    [`tag-node-closed  (treemacs--expand-tag-node btn recursive)]
-    [`tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
+    ['root-node-closed (treemacs--expand-root-node btn)]
+    ['dir-node-open    (treemacs--collapse-dir-node btn recursive)]
+    ['dir-node-closed  (treemacs--expand-dir-node btn :recursive recursive)]
+    ['file-node-open   (treemacs--collapse-file-node btn recursive)]
+    ['file-node-closed (treemacs--expand-file-node btn recursive)]
+    ['tag-node-open    (treemacs--collapse-tag-node btn recursive)]
+    ['tag-node-closed  (treemacs--expand-tag-node btn recursive)]
+    ['tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
     [_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn :state))]))
 
 (defun treemacs--reopen-node (btn git-info)
   "Reopen file BTN.
 GIT-INFO is passed through from the previous branch build."
   (-pcase (button-get btn :state)
-    [`dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info)]
-    [`file-node-closed (treemacs--expand-file-node btn)]
-    [`tag-node-closed  (treemacs--expand-tag-node btn)]
-    [`root-node-closed (treemacs--expand-root-node btn)]
+    ['dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info)]
+    ['file-node-closed (treemacs--expand-file-node btn)]
+    ['tag-node-closed  (treemacs--expand-tag-node btn)]
+    ['root-node-closed (treemacs--expand-root-node btn)]
     [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
                               (button-get btn :path) other)]))
 

@@ -132,19 +132,19 @@ ignore any prefix argument."
       (if tag-buf
           (list tag-buf tag-pos)
         (-pcase treemacs-goto-tag-strategy
-          [`refetch-index
+          ['refetch-index
            (let (file tag-path)
              (with-current-buffer (marker-buffer btn)
                (setq file (treemacs--nearest-path btn)
                      tag-path (treemacs--tags-path-of btn)))
              (treemacs--imenu-tag-noselect file tag-path))]
-          [`call-xref
+          ['call-xref
            (let ((xref (xref-definition
                         (treemacs-with-button-buffer btn
                           (treemacs--get-label-of btn)))))
              (when xref
                (list (xref-item-buffer xref) (xref-item-position xref))))]
-          [`issue-warning
+          ['issue-warning
            (treemacs-log "Tag '%s' is located in a buffer that does not exist."
                           (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
           [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)])))))
