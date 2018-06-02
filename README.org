@@ -612,6 +612,7 @@ targets:
 
  - make compile :: Compiles the code base (and treats compiler warnings as errors).
  - make clean :: Removes the generated .elc files.
+ - make lint :: Runs first ~compile~ then ~clean~, even if the former fails.
  - make test :: Runs the testsuite, once in a graphical environment and once in the terminal.
 
 Finally if you want to just add an icon you can take [[https://github.com/Alexander-Miller/treemacs/commit/94df3e36af865dab2c76b549b1a61f418e3bf5be][this commit]] as an example.

@@ -1,10 +1,12 @@
 EMACS ?= emacs
+MAKEFLAGS += k
+
+.PHONY: test compile clean lint
 
 compile:
 	cask exec $(EMACS) -Q -batch \
 	-L ./src/elisp \
-	--eval '(setq byte-compile-error-on-warn t)' \
-	-f batch-byte-compile ./src/elisp/*.el
+	-f batch-byte-compile ./src/elisp/*.el; \
 
 test:
 	cask exec ert-runner --verbose --reporter ert --win && \
@@ -13,4 +15,4 @@ test:
 clean:
 	rm -f ./src/elisp/*.elc
 
-.PHONY: test
+lint: compile clean
