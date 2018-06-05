@@ -42,6 +42,7 @@
   treemacs--collapse-file-node
   treemacs--expand-tag-node
   treemacs--collapse-tag-node
+  treemacs--extract-position
   treemacs--goto-tag
   treemacs--tags-path-of
   treemacs--goto-tag-button-at)
@@ -143,6 +144,9 @@ Not used directly, but as part of `treemacs-without-messages'.")
 
 (defvar-local treemacs--width-is-locked t
   "Keeps track of whether the width of the treemacs window is locked.")
+
+(defvar treemacs--pre-peek-state nil
+  "List of window, buffer to restore and buffer to kill treemacs used for peeking.")
 
 (defvar treemacs--defaults-icons nil
   "Stores the default values of the directory and tag icons.
@@ -803,7 +807,7 @@ Will refresh every project when PROJECT is 'all."
   "Potentially recenter after following a file or tag.
 The answer depends on the distance between `point' and the window top/bottom
 being smaller than `treemacs-follow-recenter-distance'."
-  (interactive);;
+  (interactive)
   (-let*- [(current-line (float (count-lines (window-start) (point))))
            (all-lines (float (window-height)))
            (distance-from-top (/ current-line all-lines))
@@ -811,6 +815,41 @@ being smaller than `treemacs-follow-recenter-distance'."
     (when (or (> treemacs-follow-recenter-distance distance-from-top)
               (> treemacs-follow-recenter-distance distance-from-bottom))
       (recenter))))
+
+(defun treemacs--setup-peek-buffer (btn &optional goto-tag?)
+  "Setup the peek buffer and window for BTN.
+Additionally also navigate to BTN's tag if GOTO-TAG is t.
+
+BTN: Button
+GOTO-TAG: Bool"
+  (-let- [(path (if goto-tag?
+                    (treemacs-with-button-buffer btn
+                      (treemacs--nearest-path btn))
+                  (treemacs-safe-button-get btn :path)))
+          (buffer-to-restore (current-buffer))
+          (buffer-to-kill nil)]
+    (-if-let- [buffer (get-file-buffer path)]
+        (switch-to-buffer buffer)
+      (find-file path)
+      (setq buffer-to-kill (current-buffer)))
+    (when goto-tag?
+      (treemacs--goto-tag btn))
+    (unless treemacs--pre-peek-state
+      (setq treemacs--pre-peek-state `(,(selected-window) ,buffer-to-restore ,buffer-to-kill)))
+    (add-hook 'post-command-hook #'treemacs--restore-peeked-window)))
+
+(defun treemacs--restore-peeked-window ()
+  "Revert the buffer displayed in the peek window before it was used for peeking."
+  (unless (memq this-command '(treemacs-peek treemacs-next-line-other-window treemacs-previous-line-other-window))
+    (remove-hook 'post-command-hook #'treemacs--restore-peeked-window)
+    (treemacs-without-following
+      (when treemacs--pre-peek-state
+        (-let [(window buffer-to-restore buffer-to-kill) treemacs--pre-peek-state]
+          (setq treemacs--pre-peek-state nil)
+          (when (buffer-live-p buffer-to-kill)
+            (kill-buffer buffer-to-kill))
+          (with-selected-window window
+            (switch-to-buffer buffer-to-restore)))))))
 
 (provide 'treemacs-impl)
 

@@ -358,9 +358,8 @@ The position can be stored in the following ways:
   ITEM is an imenu subtree and the position is stored as a marker in the first
   element's 'org-imenu-marker text property.
 
-Either way the return value is a 2 element list consisting of the buffer and the
-position of the tag. They might also be nil if the pointed-to buffer does not
-exist."
+Either way the return value is a const consisting of the buffer and the position
+of the tag. They might also be nil if the pointed-to buffer does not exist."
   (-pcase (type-of item)
     ['marker
      (cons (marker-buffer item) (marker-position item))]

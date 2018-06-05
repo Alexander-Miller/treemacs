@@ -200,6 +200,7 @@ to it will instead show a blank."
       (define-key map (kbd "oah")       #'treemacs-visit-node-ace-horizontal-split)
       (define-key map (kbd "oav")       #'treemacs-visit-node-ace-vertical-split)
       (define-key map (kbd "ox")        #'treemacs-visit-node-in-external-application)
+      (define-key map (kbd "P")         #'treemacs-peek)
       (define-key map (kbd "n")         #'treemacs-next-line)
       (define-key map (kbd "p")         #'treemacs-previous-line)
       (define-key map (kbd "M-N")       #'treemacs-next-line-other-window)

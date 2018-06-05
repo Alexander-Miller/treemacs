@@ -532,6 +532,7 @@ By default Treemacs's keymap looks as follows:
 | oah           | treemacs-visit-node-ace-horizontal-split    | Open current file or tag by horizontally splitting a window selected by ace-window.                            |
 | oav           | treemacs-visit-node-ace-vertical-split      | Open current file or tag by vertically splitting a window selected by ace-window.                              |
 | ox            | treemacs-visit-node-in-external-application | Open current file according to its mime type in an external application. Linux, Windows and Mac are supported. |
+| P             | treemacs-peek                               | Peek at the file (or tag) at point without fully opening it.                                                   |
 | yy            | treemacs-copy-path-at-point                 | Copy the absolute path of the node at point.                                                                   |
 | yr            | treemacs-copy-project-root                  | Copy the absolute path of the project root for the node at point.                                              |
 | s             | treemacs-resort                             | Set a new value for ~treemacs-sorting~.                                                                        |

@@ -701,6 +701,24 @@ With a prefix ARG also forget about all the nodes opened in the projects."
               (treemacs--collapse-root-node pos arg)))))))
   (treemacs--maybe-recenter))
 
+(defun treemacs-peek ()
+  "Peek at the content of the node at point.
+This will display the file (or tag) at point in `next-window' much like
+`treemacs-visit-node-no-split' would. The difference that the file is not
+really (or rather permanently) opened - any command other than `treemacs-peek',
+`treemacs-next-line-other-window' and `treemacs-previous-line-other-window' will
+cause it to be closed again and the previously shown buffer to be restored. The
+buffer visiting the peeked file will also be killed again, unless it was already
+open before eing used for peeking."
+  (interactive)
+  (treemacs--execute-button-action
+   :save-window t
+   :ensure-window-split t
+   :window (-some-> btn (treemacs--nearest-path) (get-file-buffer) (get-buffer-window))
+   :no-match-explanation "Only files and tags are peekable."
+   :file-action (treemacs--setup-peek-buffer btn)
+   :tag-action (treemacs--setup-peek-buffer btn t)))
+
 (defun treemacs-root-up ()
   "Switch treemacs' root directory to current root's parent, if possible."
   (interactive)
