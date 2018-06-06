@@ -217,7 +217,8 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
     (treemacs--setup-icon treemacs-icon-go         "go.png"         "go")
     (treemacs--setup-icon treemacs-icon-js         "js.png"         "js" "jsx")
     (treemacs--setup-icon treemacs-icon-hy         "hy.png"         "hy")
-    (treemacs--setup-icon treemacs-icon-json       "json.png"       "json")))
+    (treemacs--setup-icon treemacs-icon-json       "json.png"       "json")
+    (treemacs--setup-icon treemacs-icon-julia      "julia.png"      "jl")))
 
 (defun treemacs-define-custom-icon (icon &rest file-extensions)
   "Define a custom ICON to use for FILE-EXTENSIONS.
