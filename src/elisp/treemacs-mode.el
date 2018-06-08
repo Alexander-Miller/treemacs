@@ -92,6 +92,7 @@ to it will instead show a blank."
              (key-rename         (treemacs--find-keybind #'treemacs-rename))
              (key-delete         (treemacs--find-keybind #'treemacs-delete))
              (key-follow-mode    (treemacs--find-keybind #'treemacs-follow-mode))
+             (key-fringe-mode    (treemacs--find-keybind #'treemacs-fringe-indicator-mode))
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
              (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
              (key-show-dotfiles  (treemacs--find-keybind #'treemacs-toggle-show-dotfiles))
@@ -111,17 +112,17 @@ to it will instead show a blank."
               (format
                "
 %s
-%s              │ %s              │ %s    │ %s              │ %s              │ %s
+%s              │ %s              │ %s    │ %s                │ %s              │ %s
 ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-%s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode    │ %s add project    │ %s refresh
-%s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode │ %s remove project │ %s (re)set width
-%s next neighbour   │ %s open no split       │ %s rename      │ %s git mode       │ %s rename project │ %s copy path
-%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles  │                       │ %s copy root
-%s goto parent      │ %s open vertical       │                    │ %s resizability   │                       │ %s re-sort
-%s down next window │ %s open ace            │                    │                       │                       │ %s bookmark
-%s up next window   │ %s open ace horizontal │                    │                       │                       │
-                        │ %s open ace vertical   │                    │                       │                       │
-                        │ %s open externally     │                    │                       │                       │
+%s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode      │ %s add project    │ %s refresh
+%s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode   │ %s remove project │ %s (re)set width
+%s next neighbour   │ %s open no split       │ %s rename      │ %s git mode         │ %s rename project │ %s copy path
+%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                       │ %s copy root
+%s goto parent      │ %s open vertical       │                    │ %s resizability     │                       │ %s re-sort
+%s down next window │ %s open ace            │                    │ %s fringe indicator │                       │ %s bookmark
+%s up next window   │ %s open ace horizontal │                    │                         │                       │
+                        │ %s open ace vertical   │                    │                         │                       │
+                        │ %s open externally     │                    │                         │                       │
 "
                title
                column-nav               column-nodes          column-files           column-toggles          column-projects          column-misc
@@ -129,8 +130,8 @@ to it will instead show a blank."
                (car key-prev-line)      (car key-ret)         (car key-create-dir)   (car key-fwatch-mode)   (car key-remove-project) (car key-set-width)
                (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-rename-project) (car key-copy-path)
                (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles)                          (car key-copy-root)
-               (car key-goto-parent)    (car key-open-vert)   (car key-toggle-width) (car key-resort)
-               (car key-down-next-w)    (car key-open-ace)                                                                            (car key-bookmark)
+               (car key-goto-parent)    (car key-open-vert)                          (car key-toggle-width)                           (car key-resort)
+               (car key-down-next-w)    (car key-open-ace)                           (car key-fringe-mode)                            (car key-bookmark)
                (car key-up-next-w)      (car key-open-ace-h)
                (car key-open-ext)       (car key-open-ace-v)
                )))
@@ -160,6 +161,7 @@ to it will instead show a blank."
               (,(cdr key-follow-mode)    #'treemacs-follow-mode)
               (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
               (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
+              (,(cdr key-fringe-mode)    #'treemacs-fringe-indicator-mode)
               (,(cdr key-refresh)        #'treemacs-refresh)
               (,(cdr key-set-width)      #'treemacs-set-width)
               (,(cdr key-copy-path)      #'treemacs-copy-path-at-point)
@@ -214,6 +216,7 @@ to it will instead show a blank."
       (define-key map (kbd "M-p")       #'treemacs-previous-neighbour)
       (define-key map (kbd "th")        #'treemacs-toggle-show-dotfiles)
       (define-key map (kbd "tw")        #'treemacs-toggle-fixed-width)
+      (define-key map (kbd "tv")        #'treemacs-fringe-indicator-mode)
       (define-key map (kbd "tg")        #'treemacs-git-mode)
       (define-key map (kbd "tf")        #'treemacs-follow-mode)
       (define-key map (kbd "ta")        #'treemacs-filewatch-mode)

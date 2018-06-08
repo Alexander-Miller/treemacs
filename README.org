@@ -14,36 +14,37 @@
 - [[#quick-feature-overview][Quick Feature Overview]]
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
-   - [[#projects-and-workspaces][Projects and Workspaces]]
-   - [[#frame-locality][Frame Locality]]
-   - [[#mouse-interface][Mouse Interface]]
-   - [[#follow-mode][Follow-mode]]
-   - [[#tag-follow-mode][Tag-follow-mode]]
-   - [[#git-mode][Git-mode]]
-   - [[#filewatch-mode][Filewatch-mode]]
-   - [[#session-persistence][Session Persistence]]
-   - [[#terminal-compatibility][Terminal Compatibility]]
-   - [[#tag-view][Tag View]]
-      - [[#ggtags][ggtags]]
-   - [[#current-directory-awareness][Current-Directory Awareness]]
-   - [[#additional-packages][Additional Packages]]
-      - [[#treemacs-evil][treemacs-evil]]
-      - [[#treemacs-projectile][treemacs-projectile]]
+  - [[#projects-and-workspaces][Projects and Workspaces]]
+  - [[#frame-locality][Frame Locality]]
+  - [[#mouse-interface][Mouse Interface]]
+  - [[#follow-mode][Follow-mode]]
+  - [[#tag-follow-mode][Tag-follow-mode]]
+  - [[#fringe-indicator-mode][Fringe-indicator-mode]]
+  - [[#git-mode][Git-mode]]
+  - [[#filewatch-mode][Filewatch-mode]]
+  - [[#session-persistence][Session Persistence]]
+  - [[#terminal-compatibility][Terminal Compatibility]]
+  - [[#tag-view][Tag View]]
+    - [[#ggtags][ggtags]]
+  - [[#current-directory-awareness][Current-Directory Awareness]]
+  - [[#additional-packages][Additional Packages]]
+    - [[#treemacs-evil][treemacs-evil]]
+    - [[#treemacs-projectile][treemacs-projectile]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
-   - [[#variables][Variables]]
-   - [[#faces][Faces]]
-   - [[#evil-compatibility][Evil compatibility]]
-   - [[#custom-icons][Custom Icons]]
-      - [[#directory-icons][Directory Icons]]
-      - [[#tag-icons][Tag Icons]]
-      - [[#file-icons][File Icons]]
-      - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
-      - [[#gui-vs-tui][GUI vs TUI]]
-      - [[#indent-guide][Indent guide]]
+  - [[#variables][Variables]]
+  - [[#faces][Faces]]
+  - [[#evil-compatibility][Evil compatibility]]
+  - [[#custom-icons][Custom Icons]]
+    - [[#directory-icons][Directory Icons]]
+    - [[#tag-icons][Tag Icons]]
+    - [[#file-icons][File Icons]]
+    - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
+    - [[#gui-vs-tui][GUI vs TUI]]
+    - [[#indent-guide][Indent guide]]
 - [[#keymap][Keymap]]
-   - [[#unbound-functions][Unbound functions]]
-   - [[#default-keymap][Default keymap]]
+  - [[#unbound-functions][Unbound functions]]
+  - [[#default-keymap][Default keymap]]
 - [[#compatibility][Compatibility]]
 - [[#faq][FAQ]]
 - [[#contributing][Contributing]]
@@ -159,6 +160,9 @@ Note that in order to move to a tag in treemacs the treemacs buffer's window nee
 will reset ~blink-cursor-mode~'s timer if it is enabled. This will result in the cursor blinking seemingly pausing for a
 short time and giving the appereance of the tag follow action lasting much longer than it really does.
 
+** Fringe-indicator-mode
+~treemacs-fringe-indicator-mode~ is a global minor mode that displays a little icon in the fringe that moves with the cursor.
+It can make the selected line more visible if ~hl-line-mode~ doesn't stand out with your theme.
 ** Git-mode
 ~treemacs-git-mode~ is a global minor mode which enables treemacs to check for files' and directories' git status
 information and highlight them accordingly (see also the ~treemacs-git-...~ faces). The mode is available in 2 variants:
@@ -293,6 +297,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
 
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t)
+      (treemacs-fringe-indicator-mode t)
       (pcase (cons (not (null (executable-find "git")))
                    (not (null (executable-find "python3"))))
         (`(t . t)
@@ -353,6 +358,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-elisp-imenu-expression     | [too large to list]                         | The imenu expression treemacs uses in elisp buffers.                                                                                                                                       |
 | treemacs-persist-file               | "~/.emacs.d/.cache/treemacs-persist"        | Path to the file treemacs uses to persist its state.                                                                                                                                       |
 | treemacs-space-between-root-nodes   | t                                           | When non-nil treemacs will separate root nodes with an empty line.                                                                                                                         |
+| treemacs--fringe-indicator-bitmap   | [vertical bar]                              | The fringe bitmap used by the fringe-indicator minor mode.                                                                                                                                 |
 
 ** Faces
 Treemacs defines and uses the following faces:
@@ -525,6 +531,7 @@ By default Treemacs's keymap looks as follows:
 | tw            | treemacs-toggle-fixed-width                 | Toggle whether the treemacs window should have a fixed width. See also treemacs-width.                         |
 | tf            | treemacs-follow-mode                        | Toggle ~treemacs-follow-mode~.                                                                                 |
 | ta            | treemacs-filewatch-mode                     | Toggle ~treemacs-filewatch-mode~.                                                                              |
+| tv            | treemacs-fringe-indicator-mode              | Toggle ~treemacs-fringe-indicator-mode~.                                                                       |
 | w             | treemacs-set-width                          | Set a new value for the width of the treemacs window.                                                          |
 | RET           | treemacs-RET-action                         | Run the action defined in ~treemacs-RET-actions-config~ for the current node.                                  |
 | TAB           | treemacs-TAB-action                         | Run the action defined in ~treemacs-TAB-actions-config~ for the current node.                                  |
