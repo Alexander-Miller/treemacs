@@ -130,6 +130,8 @@ This functionality can also be manually invoked with `treemacs-find-file'."
       (treemacs--setup-follow-mode)
     (treemacs--tear-down-follow-mode)))
 
+(only-during-treemacs-init (treemacs-follow-mode))
+
 (provide 'treemacs-follow-mode)
 
 ;;; treemacs-follow-mode.el ends here
