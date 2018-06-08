@@ -264,6 +264,8 @@ turn off all existing file watch processes and outstanding refresh actions."
   (fset 'treemacs--start-watching (lambda (_x &optional _y) (ignore)))
   (fset 'treemacs--stop-watching (lambda (_x &optional _y) (ignore))))
 
+(only-during-treemacs-init (treemacs-filewatch-mode))
+
 (provide 'treemacs-filewatch-mode)
 
 ;;; treemacs-filewatch-mode.el ends here
