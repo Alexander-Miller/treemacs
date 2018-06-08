@@ -46,6 +46,7 @@
 (require 'treemacs-async)
 (require 'treemacs-compatibility)
 (require 'treemacs-workspaces)
+(require 'treemacs-fringe-indicator)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
