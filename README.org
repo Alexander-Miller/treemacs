@@ -209,8 +209,8 @@ Treemacs' sessions - your workspace and the projects it contains - are saved whe
 treemacs is first loaded. This persistence process is fully automatic and independant, and should therefore be fully
 compatible with ~desktop-save-mode~.
 
-The persisted state is saved under ~user-emacs-directory/.cache/treemacs-persist~. The exact file location
-is saved in the variable ~treemacs--persist-file~.
+The persisted state is saved under ~user-emacs-directory/.cache/treemacs-persist~ by default. The exact file location
+is saved in the variable ~treemacs-persist-file~.
 
 ** Terminal Compatibility
 When run in a terminal treemacs will fall back to a much simpler rendering system, foregoing its usual png icons and
@@ -275,6 +275,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
             treemacs-is-never-other-window      nil
             treemacs-no-png-images              nil
             treemacs-project-follow-cleanup     nil
+            treemacs-persist-file               (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
             treemacs-recenter-after-file-follow nil
             treemacs-recenter-after-tag-follow  nil
             treemacs-show-hidden-files          t
@@ -345,6 +346,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-pulse-on-success           | t                                           | When non-nil treemacs will pulse the current line as a success indicator, e.g. when creating a file.                                                                                       |
 | treemacs-pulse-on-failure           | t                                           | When non-nil treemacs will pulse the current line as a failure indicator, e.g. when failing to find a file's tags.                                                                         |
 | treemacs-elisp-imenu-expression     | [too large to list]                         | The imenu expression treemacs uses in elisp buffers.                                                                                                                                       |
+| treemacs-persist-file               | "~/.emacs.d/.cache/treemacs-persist"        | Path to the file treemacs uses to persist its state.                                                                                                                                       |
 
 ** Faces
 Treemacs defines and uses the following faces:

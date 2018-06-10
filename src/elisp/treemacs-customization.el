@@ -20,6 +20,8 @@
 
 ;;; Code:
 
+(require 'f)
+
 ;; defined here since, with the exception of the main file that cannot be required
 ;; elsewhere, this is the first unit to be loaded
 (defconst treemacs--image-creation-impossible
@@ -474,6 +476,12 @@ is expanded while all others will remain collapsed.
 Setting this to t might lead to noticeable slowdowns, at least when `treemacs-git-mode'
 is enabled, since constantly expanding an entire project is farily expensive."
   :type 'boolean
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-persist-file
+  (f-join user-emacs-directory ".cache" "treemacs-persist")
+  "Path to the file treemacs uses to persist its state."
+  :type 'string
   :group 'treemacs-configuration)
 
 (provide 'treemacs-customization)
