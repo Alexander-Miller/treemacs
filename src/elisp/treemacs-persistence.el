@@ -22,29 +22,27 @@
 
 (require 'f)
 (require 'treemacs-workspaces)
-
-(defconst treemacs--persist-file (f-join user-emacs-directory ".cache" "treemacs-persist")
-  "File treemacs uses to persist its state.")
+(require 'treemacs-customization)
 
 (defun treemacs--persist ()
-  "Persist treemacs' state in `treemacs--persist-file'."
+  "Persist treemacs' state in `treemacs-persist-file'."
   (unless noninteractive
-    (unless (f-exists? treemacs--persist-file)
-      (f-mkdir user-emacs-directory ".cache")
-      (f-touch treemacs--persist-file))
+    (unless (f-exists? treemacs-persist-file)
+      (f-mkdir (f-dirname treemacs-persist-file))
+      (f-touch treemacs-persist-file))
     (condition-case e
         (-> treemacs-current-workspace
             (list)
             (pp-to-string)
-            (f-write 'utf-8 treemacs--persist-file))
+            (f-write 'utf-8 treemacs-persist-file))
       (error (treemacs-log "Error '%s' when persisting workspace." e)))))
 
 (defun treemacs--restore ()
-  "Restore treemacs' state from `treemacs--persist-file'."
+  "Restore treemacs' state from `treemacs-persist-file'."
   (unless noninteractive
     (condition-case e
-        (when (f-exists? treemacs--persist-file)
-          (-when-let- [workspace (-> treemacs--persist-file (f-read 'utf-8) (read) (car))]
+        (when (f-exists? treemacs-persist-file)
+          (-when-let- [workspace (-> treemacs-persist-file (f-read 'utf-8) (read) (car))]
             (dolist (project (treemacs-workspace->projects workspace))
               (unless (-> project (treemacs-project->path) (f-exists?))
                 (treemacs-log (format "Project at %s does not exist and was removed from the workspace."
