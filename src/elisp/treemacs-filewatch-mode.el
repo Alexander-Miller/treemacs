@@ -139,8 +139,6 @@ An event counts as relevant when
   "Set refresh flags for PATH in the shadow index of every buffer.
 Also start the refresh timer if it's not started already."
   (when (with-no-warnings treemacs-filewatch-mode)
-    (unless (file-directory-p path)
-      (setq path (treemacs--parent path)))
     (when (ht-get treemacs--collapsed-filewatch-index path)
       (ht-remove! treemacs--collapsed-filewatch-index path)
       (treemacs--stop-watching path))
@@ -159,16 +157,17 @@ Do nothing if this event's file is irrelevant as per
 events if it has not been started already. Also immediately remove the changed
 file from caches if it has been deleted instead of waiting for file processing."
   (when (treemacs--is-event-relevant? event)
-    (when (eq 'deleted (cadr event))
-      (treemacs--on-file-deletion (cl-third event) t))
-    (if (eq 'renamed (cadr event))
-        (-let- [(old-name (cl-caddr event))
-                (new-name (cl-cadddr event))]
-          (treemacs-run-in-every-buffer
-           (treemacs--on-rename old-name new-name))
-          (treemacs--set-refresh-flags old-name)
-          (treemacs--set-refresh-flags new-name))
-      (treemacs--set-refresh-flags (cl-caddr event)))))
+    (-let [(_ event-type path) event]
+      (when (eq 'deleted event-type)
+        (treemacs--on-file-deletion (cl-third event) t))
+      (if (eq 'renamed event-type)
+          (-let- [(old-name path)
+                  (new-name (cl-fourth event))]
+            (treemacs-run-in-every-buffer
+             (treemacs--on-rename old-name new-name))
+            (treemacs--set-refresh-flags old-name)
+            (treemacs--set-refresh-flags new-name))
+        (treemacs--set-refresh-flags (treemacs--parent path))))))
 
 (defsubst treemacs--do-process-file-events ()
   "Dumb helper function.
