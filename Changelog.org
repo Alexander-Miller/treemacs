@@ -2,6 +2,10 @@
 #+STARTUP: content
 
 * Changelog
+** current master
+ - Added ~treemacs-space-between-projects~.
+ - Added ~treemacs-peek~ command.
+ - Bug fixes.
 ** v2.1
  - Add ~treemacs-show-changelog~ command,
  - Add ~treemacs-project-follow-cleanup~ option.

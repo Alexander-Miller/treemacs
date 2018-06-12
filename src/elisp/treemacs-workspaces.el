@@ -138,7 +138,9 @@ NAME is provided during ad-hoc navigation only."
               (treemacs--reset-index))
           (goto-char (point-max))
           (if (treemacs-current-button)
-              (insert "\n\n")
+              (progn
+                (insert "\n")
+                (when treemacs-space-between-root-nodes (insert "\n")))
             (insert "\n")))
         (treemacs--add-root-element project)
         (treemacs--insert-shadow-node (make-treemacs-shadow-node

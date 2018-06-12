@@ -282,6 +282,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
             treemacs-silent-filewatch           nil
             treemacs-silent-refresh             nil
             treemacs-sorting                    'alphabetic-desc
+            treemacs-space-between-root-nodes   t
             treemacs-tag-follow-cleanup         t
             treemacs-tag-follow-delay           1.5
             treemacs-width                      35)
@@ -347,6 +348,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-pulse-on-failure           | t                                           | When non-nil treemacs will pulse the current line as a failure indicator, e.g. when failing to find a file's tags.                                                                         |
 | treemacs-elisp-imenu-expression     | [too large to list]                         | The imenu expression treemacs uses in elisp buffers.                                                                                                                                       |
 | treemacs-persist-file               | "~/.emacs.d/.cache/treemacs-persist"        | Path to the file treemacs uses to persist its state.                                                                                                                                       |
+| treemacs-space-between-root-nodes   | t                                           | When non-nil treemacs will separate root nodes with an empty line.                                                                                                                         |
 
 ** Faces
 Treemacs defines and uses the following faces:

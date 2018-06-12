@@ -479,8 +479,10 @@ Add a project for ROOT if it's non-nil."
           (--each projects
             (treemacs--add-root-element it)
             (unless (= it-index last-index)
-              (insert "\n\n")))))
-       (goto-char 2) ])
+              (insert "\n")
+              (when treemacs-space-between-root-nodes
+                (insert "\n"))))))
+       (goto-char 2)])
     (when root (treemacs-add-project-at (treemacs--canonical-path root)))
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))

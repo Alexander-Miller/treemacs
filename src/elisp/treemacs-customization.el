@@ -481,7 +481,12 @@ is enabled, since constantly expanding an entire project is farily expensive."
 (defcustom treemacs-persist-file
   (f-join user-emacs-directory ".cache" "treemacs-persist")
   "Path to the file treemacs uses to persist its state."
-  :type 'string
+  :group 'treemacs-configuration
+  :type 'string)
+
+(defcustom treemacs-space-between-root-nodes t
+  "When non-nil treemacs will separate root nodes with an empty line."
+  :type 'boolean
   :group 'treemacs-configuration)
 
 (provide 'treemacs-customization)
