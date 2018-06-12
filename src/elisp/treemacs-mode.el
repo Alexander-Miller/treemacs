@@ -237,15 +237,19 @@ to it will instead show a blank."
 
 (defun treemacs--setup-mode-line ()
   "Create either a simple modeline, or integrate into spaceline."
-  (if (fboundp 'spaceline-install)
-      (progn
-        (spaceline-install
-         "treemacs" '((workspace-number
-                       :face highlight-face)
-                      major-mode)
-         nil)
-        (setq mode-line-format '("%e" (:eval (spaceline-ml-treemacs)))))
-    (setq mode-line-format '(" Treemacs "))))
+  (setq mode-line-format
+        (cond ((fboundp 'spaceline-install)
+               (spaceline-install
+                "treemacs" '((workspace-number
+                              :face highlight-face)
+                             major-mode)
+                nil)
+               '("%e" (:eval (spaceline-ml-treemacs))))
+              ((memq 'moody-mode-line-buffer-identification
+                     (default-value 'mode-line-format))
+               '(:eval (moody-tab " Treemacs " 10 'down)))
+              (t
+               '(" Treemacs ")))))
 
 (defun treemacs--set-default-directory ()
   "Set the default directory to the nearest directory of the current node.
