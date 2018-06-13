@@ -30,7 +30,10 @@
 (require 'treemacs-persistence)
 (eval-and-compile (require 'treemacs-macros))
 
-(declare-function treemacs-refresh "treemacs")
+(treemacs-import-functions-from  "treemacs"
+  treemacs-refresh
+  treemacs-version)
+
 (declare-function treemacs--helpful-hydra/body "treemacs-mode")
 
 (defun treemacs--find-keybind (func)
@@ -63,7 +66,7 @@ to it will instead show a blank."
   (-if-let (b (treemacs-buffer-exists?))
       (with-current-buffer b
         (let*
-            ((title              (propertize "Treemacs Helpful Hydra" 'face 'treemacs-help-title-face))
+            ((title              (format (propertize "Treemacs v%s Helpful Hydra" 'face 'treemacs-help-title-face) (treemacs-version)))
              (column-nav         (propertize "Navigation" 'face 'treemacs-help-column-face))
              (column-nodes       (propertize "Opening Nodes" 'face 'treemacs-help-column-face))
              (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))

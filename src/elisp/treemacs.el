@@ -50,7 +50,14 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
-(defconst treemacs-version "2.1.1")
+;;;###autoload
+(defun treemacs-version ()
+  "Return `treemacs-version'."
+  (interactive)
+  (-let [v "2.1.1"]
+    (when (called-interactively-p 'interactive)
+      (treemacs-log "v%s" v))
+    v))
 
 ;;;###autoload
 (defun treemacs ()
