@@ -205,6 +205,8 @@ to it will instead show a blank."
       (define-key map (kbd "p")         #'treemacs-previous-line)
       (define-key map (kbd "M-N")       #'treemacs-next-line-other-window)
       (define-key map (kbd "M-P")       #'treemacs-previous-line-other-window)
+      (define-key map (kbd "<prior>")   #'treemacs-previous-page-other-window)
+      (define-key map (kbd "<next>")    #'treemacs-next-page-other-window)
       (define-key map (kbd "M-n")       #'treemacs-next-neighbour)
       (define-key map (kbd "M-p")       #'treemacs-previous-neighbour)
       (define-key map (kbd "th")        #'treemacs-toggle-show-dotfiles)

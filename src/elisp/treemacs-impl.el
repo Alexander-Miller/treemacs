@@ -842,7 +842,9 @@ GOTO-TAG: Bool"
 
 (defun treemacs--restore-peeked-window ()
   "Revert the buffer displayed in the peek window before it was used for peeking."
-  (unless (memq this-command '(treemacs-peek treemacs-next-line-other-window treemacs-previous-line-other-window))
+  (unless (memq this-command
+                '(treemacs-peek treemacs-next-line-other-window treemacs-previous-line-other-window
+                         treemacs-next-page-other-window treemacs-previous-page-other-window))
     (remove-hook 'post-command-hook #'treemacs--restore-peeked-window)
     (treemacs-without-following
       (when treemacs--pre-peek-state

@@ -505,6 +505,8 @@ By default Treemacs's keymap looks as follows:
 | k/p           | treemacs-previous-line                      | Go to the previous line.                                                                                       |
 | M-J/N         | treemacs-next-line-other-window             | Go to the next line in ~next-window~.                                                                          |
 | M-K/P         | treemacs-previous-line-other-window         | Go to the previous line in ~next-window~..                                                                     |
+| <PgUp>        | treemacs-next-page-other-window             | Go to the next page in ~next-window~.                                                                          |
+| <PgDn>        | treemacs-previous-page-other-window         | Go to the previous page in ~next-window~..                                                                     |
 | M-j/M-n       | treemacs-next-neighbour                     | Go to the next same-level neighbour of the current node.                                                       |
 | M-k/M-p       | treemacs-previous-neighbour                 | Go to the previous same-level neighbour of the current node.                                                   |
 | u             | treemacs-goto-parent-node                   | Go to parent of node at point, if possible.                                                                    |

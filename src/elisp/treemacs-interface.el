@@ -569,8 +569,30 @@ treemacs node is pointing to a valid buffer position."
   "Scroll backward COUNT lines in `next-window'."
   (interactive "p")
   (treemacs-without-following
-   (with-selected-window (other-window-for-scrolling)
+   (with-selected-window (next-window)
      (scroll-down-line count))))
+
+(defun treemacs-next-page-other-window (&optional count)
+  "Scroll forward COUNT pages in `next-window'.
+For slower scrolling see `treemacs-next-line-other-window'"
+  (interactive "p")
+  (treemacs-without-following
+   (with-selected-window (next-window)
+     (condition-case _
+         (dotimes (_ (or count 1))
+           (scroll-up nil))
+       (end-of-buffer (goto-char (point-max)))))))
+
+(defun treemacs-previous-page-other-window (&optional count)
+  "Scroll baclward COUNT pages in `next-window'.
+For slower scrolling see `treemacs-previous-line-other-window'"
+  (interactive "p")
+  (treemacs-without-following
+   (with-selected-window (next-window)
+     (condition-case _
+         (dotimes (_ (or count 1))
+           (scroll-down nil))
+       (beginning-of-buffer (goto-char (point-min)))))))
 
 (defun treemacs-next-project ()
   "Move to the next project root node."
@@ -706,7 +728,8 @@ With a prefix ARG also forget about all the nodes opened in the projects."
 This will display the file (or tag) at point in `next-window' much like
 `treemacs-visit-node-no-split' would. The difference that the file is not
 really (or rather permanently) opened - any command other than `treemacs-peek',
-`treemacs-next-line-other-window' and `treemacs-previous-line-other-window' will
+`treemacs-next-line-other-window', `treemacs-previous-line-other-window',
+`treemacs-next-page-other-window' or `treemacs-previous-page-other-window' will
 cause it to be closed again and the previously shown buffer to be restored. The
 buffer visiting the peeked file will also be killed again, unless it was already
 open before eing used for peeking."
