@@ -161,9 +161,9 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
       (beginning-of-line)
       ,@(when new-icon
           `((treemacs--button-symbol-switch ,new-icon)))
+      (end-of-line)
       ,@(if immediate-insert
             `((progn
-                (end-of-line)
                 (insert (apply #'concat ,open-action))))
           `(,open-action))
       ,post-open-action)))
@@ -253,6 +253,10 @@ set to PARENT."
              :depth depth
              :node-name node
              :node-action (treemacs--create-file-button-strings node prefix parent depth)))
+
+      (--when-let (file-truename (button-get parent :path))
+        (setq root it))
+
       ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
       ;; so there are two possibilities: either the future given to this function is a pfuture object
       ;; that needs to complete and be parsed or it's an already finished git status hash table
@@ -356,9 +360,9 @@ RECURSIVE: Bool"
   (if (not (f-readable? (button-get btn :path)))
       (treemacs-pulse-on-failure
        "Directory %s is not readable." (propertize (button-get btn :path) 'face 'font-lock-string-face))
-    (let* ((abs-path (button-get btn :path))
-           (git-future (or git-future (treemacs--git-status-process-function abs-path)))
-           (collapse-future (treemacs--collapsed-dirs-process abs-path)))
+    (let* ((path (button-get btn :path))
+           (git-future (or git-future (treemacs--git-status-process-function (file-truename path))))
+           (collapse-future (treemacs--collapsed-dirs-process path)))
       (treemacs--button-open
        :immediate-insert nil
        :button btn
@@ -367,11 +371,11 @@ RECURSIVE: Bool"
        :open-action
        (progn
          ;; do on-expand first so buttons that need collapsing can quickly find their parent
-         (treemacs-on-expand abs-path btn (treemacs-parent-of btn))
-         (treemacs--create-branch abs-path (1+ (button-get btn :depth)) git-future collapse-future btn))
+         (treemacs-on-expand path btn (treemacs-parent-of btn))
+         (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn))
        :post-open-action
        (progn
-         (treemacs--start-watching abs-path)
+         (treemacs--start-watching path)
          (when recursive
            (--each (treemacs--get-children-of btn)
              (when (eq 'dir-node-closed (button-get it :state))
