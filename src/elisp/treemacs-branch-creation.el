@@ -361,7 +361,9 @@ RECURSIVE: Bool"
       (treemacs-pulse-on-failure
        "Directory %s is not readable." (propertize (button-get btn :path) 'face 'font-lock-string-face))
     (let* ((path (button-get btn :path))
-           (git-future (or git-future (treemacs--git-status-process-function (file-truename path))))
+           (git-future (if (file-symlink-p path)
+                           (treemacs--git-status-process-function (file-truename path))
+                         (or git-future (treemacs--git-status-process-function (file-truename path)))))
            (collapse-future (treemacs--collapsed-dirs-process path)))
       (treemacs--button-open
        :immediate-insert nil
