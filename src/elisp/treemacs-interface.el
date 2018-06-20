@@ -127,8 +127,7 @@ This function's exact configuration is stored in `treemacs-TAB-actions-config'."
     (treemacs--evade-image)))
 
 (defun treemacs-goto-parent-node ()
-  "Select parent of selected node, if possible.
-If there is no parent to go up to call `treemacs-uproot' instead."
+  "Select parent of selected node, if possible."
   (interactive)
   (--if-let (-some-> (treemacs-current-button) (button-get :parent))
       (goto-char it)
