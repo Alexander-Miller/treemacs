@@ -755,11 +755,14 @@ open before eing used for peeking."
       (-let*- [(project (-> btn (treemacs--nearest-path) (treemacs--find-project-for-path)))
                (root (treemacs-project->path project))
                (new-root (treemacs--parent root))
+               (new-name (if (f-root? new-root)
+                             "/"
+                           (file-name-nondirectory new-root)))
                (treemacs--no-messages t)
                (treemacs-pulse-on-success nil)]
         (unless (string= root new-root)
           (treemacs-remove-project)
-          (treemacs-add-project-at new-root (file-name-nondirectory new-root))
+          (treemacs-add-project-at new-root new-name)
           (treemacs-goto-button new-root)
           (treemacs-toggle-node))))))
 
