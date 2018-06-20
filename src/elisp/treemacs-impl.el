@@ -594,8 +594,10 @@ PROJECT `cl-struct-treemacs-project'"
   (goto-char (treemacs-project->position project))
   (-let*- [;; go back here if the search fails
            (start (point))
+           ;; the path we're moving to minus the project root
+           (path-minus-root (->> project (treemacs-project->path) (length) (substring path)))
            ;; the parts of the path that we can try to go to until we arrive at the project root
-           (dir-parts (->> project (treemacs-project->path) (length) (substring path) (f-split) (cdr) (nreverse)))
+           (dir-parts (nreverse (s-split (f-path-separator) path-minus-root 'omit-nulls)))
            ;; the path we try to quickly move to because it's already open and thus in the shadow-index
            (goto-path (if dir-parts (treemacs--parent path) path))
            ;; if we try mode than this many times to grab a path location for the shadow index it means
