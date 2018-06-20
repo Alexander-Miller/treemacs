@@ -50,7 +50,7 @@
   (-when-let- [git-root (vc-call-backend 'Git 'root path)]
     (-let*- [(file-name-handler-alist nil)
              (git-root (expand-file-name git-root))
-             (default-directory git-root)
+             (default-directory path)
              (future (pfuture-new
                       treemacs-python-executable
                       "-O"
