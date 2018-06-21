@@ -127,6 +127,7 @@ DEPTH indicates how deep in the filetree the current button is."
                'help-echo nil
                :state 'dir-node-closed
                :path path
+               :symlink (file-symlink-p path)
                :parent parent
                :depth depth)))
 
@@ -195,11 +196,13 @@ Go to each dir button, expand its label with the collapsed dirs, set its new
 path and give it a special parent-patX property so opening it will add the
 correct cache entries.
 
-DIRS: List of Collapse Paths. Each Collapse Path is a list of 1) The original,
-full and uncollapsed path, 2) the extra text that must be appended in the view,
-3) a series of intermediate steps which are the result of appending the
-collapsed path elements onto the original, ending in 4) the full path to the
-directory that the collapsing leads to. For Example:
+DIRS: List of Collapse Paths. Each Collapse Path is a list of
+ 1) The original,full and uncollapsed path,
+ 2) the extra text that must be appended in the view,
+ 3) a series of intermediate steps which are the result of appending the
+    collapsed path elements onto the original, ending in
+ 4) the full path to the
+    directory that the collapsing leads to. For Example:
 \(\"/home/a/Documents/git/treemacs/.cask\"
  \"/26.0/elpa\"
  \"/home/a/Documents/git/treemacs/.cask/26.0\"
@@ -212,8 +215,14 @@ directory that the collapsing leads to. For Example:
         (dolist (step (nthcdr 2 it))
           (treemacs--start-watching step t)))
       (let* ((b (treemacs-goto-button (car it)))
-             (props (text-properties-at (button-start b))))
-        (button-put b :path (nth (- (length it) 1) it))
+             (props (text-properties-at (button-start b)))
+             (new-path (nth (- (length it) 1) it)))
+        (button-put b :path new-path)
+        ;; if the collapsed path leads to a symlinked directory the button needs to be marked as a symlink
+        ;; so `treemacs--expand-dir-node' will know to start a new git future under its true-name
+        (button-put b :symlink (or (button-get b :symlink)
+                                   (--first (file-symlink-p it)
+                                            (cdr it))))
         ;; number of direcoties that have been appended to the original path
         ;; value is used in `treemacs--follow-each-dir'
         (button-put b :collapsed (- (length it) 2))
@@ -361,7 +370,7 @@ RECURSIVE: Bool"
       (treemacs-pulse-on-failure
        "Directory %s is not readable." (propertize (button-get btn :path) 'face 'font-lock-string-face))
     (let* ((path (button-get btn :path))
-           (git-future (if (file-symlink-p path)
+           (git-future (if (button-get btn :symlink)
                            (treemacs--git-status-process-function (file-truename path))
                          (or git-future (treemacs--git-status-process-function (file-truename path)))))
            (collapse-future (treemacs--collapsed-dirs-process path)))
