@@ -622,19 +622,19 @@ For slower scrolling see `treemacs-previous-line-other-window'"
               (state (button-get project-btn :state))
               (new-name (read-string "New name: " (treemacs-project->name project)))]
        (treemacs-save-position
-        (setf (treemacs-project->name project) new-name)
-        ;; after renaming, delete and redisplay the project
-        (goto-char (button-end project-btn))
-        (delete-region (point-at-bol) (point-at-eol))
-        (treemacs--add-root-element project)
-        (treemacs--forget-last-highlight)
-        (when (eq state 'root-node-open)
-          (treemacs--collapse-root-node (treemacs-project->position project))
-          (treemacs--expand-root-node (treemacs-project->position project)))
+        (progn
+          (setf (treemacs-project->name project) new-name)
+          (treemacs--forget-last-highlight)
+          ;; after renaming, delete and redisplay the project
+          (goto-char (button-end project-btn))
+          (delete-region (point-at-bol) (point-at-eol))
+          (treemacs--add-root-element project)
+          (when (eq state 'root-node-open)
+            (treemacs--collapse-root-node (treemacs-project->position project))
+            (treemacs--expand-root-node (treemacs-project->position project))))
         (treemacs-pulse-on-success "Renamed project %s to %s."
           (propertize old-name 'face 'font-lock-type-face)
           (propertize new-name 'face 'font-lock-type-face))))))
-  (hl-line-highlight)
   (treemacs--evade-image))
 
 (defun treemacs-add-project (path)
