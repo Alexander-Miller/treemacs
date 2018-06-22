@@ -276,7 +276,7 @@ inserted into `treemacs-icons-hash'."
    ;; the reason this is called is because it updates the buffer local variables
    ;; `treemacs-icon-open', `treemacs-icon-closed', etc.
    (treemacs--check-window-system)
-   (treemacs--do-refresh (current-buffer))))
+   (treemacs--do-refresh (current-buffer) 'all)))
 
 ;;;###autoload
 (defun treemacs-resize-icons (size)
