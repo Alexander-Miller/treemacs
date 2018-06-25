@@ -479,23 +479,32 @@ is enabled, since constantly expanding an entire project is farily expensive."
 (defcustom treemacs--fringe-indicator-bitmap
   (if (fboundp 'define-fringe-bitmap)
       (define-fringe-bitmap 'treemacs--fringe-indicator-bitmap
-        (vector #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000
-                #b00110000))
+        (vector #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111
+                #b00000111))
     'vertical-bar)
   "The fringe bitmap used by the fringe-indicator minor mode."
   :type 'fringe-bitmap

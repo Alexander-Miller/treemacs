@@ -110,7 +110,7 @@ if the node is 'foo/bar/baz', the face is used for 'foo/bar/'."
   :group 'treemacs-faces)
 
 (defface treemacs-fringe-indicator-face
-  `((t :foreground ,(face-attribute 'cursor :foreground nil t)))
+  `((t :foreground ,(face-background 'cursor nil t)))
   "Face for the fringe indicator."
   :group 'treemacs-faces)
 
