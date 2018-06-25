@@ -410,11 +410,14 @@ Note that this does *not* take `scroll-margin' into account."
   :group 'treemacs-configuration)
 
 (defcustom treemacs-elisp-imenu-expression
-  (let ((name (rx (1+ whitespace) (group-n 2 symbol-start (1+ (or (syntax word) (syntax symbol))) symbol-end)))
+  (let ((name (rx (1+ whitespace) (? "'") (group-n 2 symbol-start (1+ (or (syntax word) (syntax symbol))) symbol-end)))
         (prefix (rx bol (0+ (syntax whitespace)) "(")))
     `(("Functions"
       ,(concat prefix (rx (? "cl-") (or "defgeneric" "defmethod" "defun" "defadvice")) name)
       2)
+      ("Dependencies"
+       ,(concat prefix "require" name)
+       2)
      ("Inline Functions"
       ,(concat prefix (rx (? "cl-") "defsubst") name)
       2)
