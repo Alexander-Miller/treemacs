@@ -336,7 +336,8 @@ set to PARENT."
 (defun treemacs--expand-root-node (btn)
   "Expand the given root BTN."
   (-let*- [(path (button-get btn :path))
-           (git-future (treemacs--git-status-process-function path))
+           (git-path (if (button-get btn :symlink) (file-truename path) path))
+           (git-future (treemacs--git-status-process-function git-path))
            (collapse-future (treemacs--collapsed-dirs-process path))]
     (treemacs--button-open
      :immediate-insert nil
@@ -417,6 +418,7 @@ PROJECT: `cl-struct-treemacs-project'"
                'category 'default-button
                'face 'treemacs-root-face
                :project project
+               :symlink (file-symlink-p (treemacs-project->path project))
                :state 'root-node-closed
                :path (treemacs-project->path project)
                :depth 0)))
