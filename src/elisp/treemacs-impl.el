@@ -151,6 +151,12 @@ Not used directly, but as part of `treemacs-without-messages'.")
 ;; Substitutions ;;
 ;;;;;;;;;;;;;;;;;;;
 
+(defsubst treemacs--nearest-parent-directory (path)
+  "Return the parent of PATH is it's a file, or PATH if it is a directory."
+  (if (file-directory-p path)
+      path
+    (treemacs--parent path)))
+
 (defsubst treemacs-current-button ()
   "Get the button in the current line.
 Returns nil when point is between projects."
