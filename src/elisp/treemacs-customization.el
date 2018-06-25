@@ -22,17 +22,6 @@
 
 (require 'f)
 
-;; defined here since, with the exception of the main file that cannot be required
-;; elsewhere, this is the first unit to be loaded
-(defconst treemacs--image-creation-impossible
-  (condition-case e
-      (progn (create-image "" 'xpm) nil)
-    (error e))
-  "This variable is a non-nil error value when Emacs is unable to create images.
-In this scenario (usually caused by running Emacs without a graphical
-environment) treemacs will not create any of its icons and will be forced to
-perpetually use its simple string icon fallack.")
-
 (defgroup treemacs nil
   "A major mode for displaying the file system in a tree layout."
   :group 'files
@@ -137,11 +126,6 @@ To keep the alist clean changes should not be made directly, but with
 A treemacs buffer is built when after calling `treemacs-init' or
 `treemacs-projectle-init'. This will ignore `treemacs-follow-mode'."
   :type 'boolean
-  :group 'treemacs-configuration)
-
-(defcustom treemacs-icons-hash (make-hash-table :test 'equal)
-  "Hash table containing a mapping of icons onto file extensions."
-  :type 'plist
   :group 'treemacs-configuration)
 
 (defcustom treemacs-python-executable (executable-find "python")

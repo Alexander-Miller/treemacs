@@ -54,7 +54,6 @@
   treemacs--add-root-element
   treemacs--expand-root-node
   treemacs--collapse-root-node
-  treemacs--check-window-system
   treemacs--expand-dir-node
   treemacs--collapse-dir-node
   treemacs--create-branch)
@@ -148,11 +147,6 @@ Not used directly, but as part of `treemacs-without-messages'.")
 (defvar treemacs--pre-peek-state nil
   "List of window, buffer to restore and buffer to kill treemacs used for peeking.")
 
-(defvar treemacs--defaults-icons nil
-  "Stores the default values of the directory and tag icons.
-Maps icons' names as symbols to their values, so that they can be queried
-via `assq'.")
-
 ;;;;;;;;;;;;;;;;;;;
 ;; Substitutions ;;
 ;;;;;;;;;;;;;;;;;;;
@@ -222,12 +216,10 @@ Returns the buffer if it does exist."
 
 (defsubst treemacs--button-symbol-switch (new-sym)
   "Replace icon in current line with NEW-SYM."
-  (let* ((b   (next-button (point-at-bol) t))
-         (pos (- (button-start b) 2)))
-    (save-excursion
-      (goto-char pos)
-      (delete-char 2)
-      (insert new-sym))))
+  (save-excursion
+    (goto-char (- (button-start (next-button (point-at-bol) t)) 2))
+    (insert new-sym)
+    (delete-char 2)))
 
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point.

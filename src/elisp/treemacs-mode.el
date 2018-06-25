@@ -26,7 +26,7 @@
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-impl)
-(require 'treemacs-visuals)
+(require 'treemacs-icons)
 (require 'treemacs-persistence)
 (eval-and-compile (require 'treemacs-macros))
 
@@ -240,9 +240,6 @@ to it will instead show a blank."
       map)
     "Keymap for `treemacs-mode'."))
 
-(only-during-treemacs-init
- (treemacs--create-icons))
-
 (defun treemacs--setup-mode-line ()
   "Create either a simple modeline, or integrate into spaceline."
   (setq mode-line-format
@@ -301,7 +298,7 @@ Used as a post command hook."
   (add-to-list 'delete-frame-functions #'treemacs--on-frame-kill)
   (add-hook 'post-command-hook #'treemacs--set-default-directory nil t)
 
-  (treemacs--check-window-system)
+  (treemacs--adjust-icons-to-window-system)
   (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))
 

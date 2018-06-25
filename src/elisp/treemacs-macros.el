@@ -32,13 +32,6 @@ Creates a list of `declare-function' statements."
   (let ((imports (--map (list 'declare-function it file) functions)))
     `(progn ,@imports)))
 
-(defmacro treemacs--defvar-with-default (var val)
-  "Define a VAR with value VAL.
-Remember the value in `treemacs--defaults-icons'."
-  `(progn
-     (defvar ,var ,val)
-     (push (cons ',var ,val) treemacs--defaults-icons)))
-
 (defmacro treemacs-log (msg &rest args)
   "Write a log statement given format string MSG and ARGS."
   `(unless treemacs--no-messages

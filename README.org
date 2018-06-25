@@ -14,37 +14,38 @@
 - [[#quick-feature-overview][Quick Feature Overview]]
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
-  - [[#projects-and-workspaces][Projects and Workspaces]]
-  - [[#frame-locality][Frame Locality]]
-  - [[#mouse-interface][Mouse Interface]]
-  - [[#follow-mode][Follow-mode]]
-  - [[#tag-follow-mode][Tag-follow-mode]]
-  - [[#fringe-indicator-mode][Fringe-indicator-mode]]
-  - [[#git-mode][Git-mode]]
-  - [[#filewatch-mode][Filewatch-mode]]
-  - [[#session-persistence][Session Persistence]]
-  - [[#terminal-compatibility][Terminal Compatibility]]
-  - [[#tag-view][Tag View]]
-    - [[#ggtags][ggtags]]
-  - [[#current-directory-awareness][Current-Directory Awareness]]
-  - [[#additional-packages][Additional Packages]]
-    - [[#treemacs-evil][treemacs-evil]]
-    - [[#treemacs-projectile][treemacs-projectile]]
+   - [[#projects-and-workspaces][Projects and Workspaces]]
+   - [[#frame-locality][Frame Locality]]
+   - [[#mouse-interface][Mouse Interface]]
+   - [[#follow-mode][Follow-mode]]
+   - [[#tag-follow-mode][Tag-follow-mode]]
+   - [[#fringe-indicator-mode][Fringe-indicator-mode]]
+   - [[#git-mode][Git-mode]]
+   - [[#filewatch-mode][Filewatch-mode]]
+   - [[#session-persistence][Session Persistence]]
+   - [[#terminal-compatibility][Terminal Compatibility]]
+   - [[#tag-view][Tag View]]
+      - [[#ggtags][ggtags]]
+   - [[#current-directory-awareness][Current-Directory Awareness]]
+   - [[#additional-packages][Additional Packages]]
+      - [[#treemacs-evil][treemacs-evil]]
+      - [[#treemacs-projectile][treemacs-projectile]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
-  - [[#variables][Variables]]
-  - [[#faces][Faces]]
-  - [[#evil-compatibility][Evil compatibility]]
-  - [[#custom-icons][Custom Icons]]
-    - [[#directory-icons][Directory Icons]]
-    - [[#tag-icons][Tag Icons]]
-    - [[#file-icons][File Icons]]
-    - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
-    - [[#gui-vs-tui][GUI vs TUI]]
-    - [[#indent-guide][Indent guide]]
+   - [[#variables][Variables]]
+   - [[#faces][Faces]]
+   - [[#evil-compatibility][Evil compatibility]]
+   - [[#custom-icons][Custom Icons]]
+      - [[#directory-icons][Directory Icons]]
+      - [[#tag-icons][Tag Icons]]
+      - [[#file-icons][File Icons]]
+      - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
+      - [[#gui-vs-tui][GUI vs TUI]]
+      - [[#resizing-icons][Resizing Icons]]
+      - [[#indent-guide][Indent guide]]
 - [[#keymap][Keymap]]
-  - [[#unbound-functions][Unbound functions]]
-  - [[#default-keymap][Default keymap]]
+   - [[#unbound-functions][Unbound functions]]
+   - [[#default-keymap][Default keymap]]
 - [[#compatibility][Compatibility]]
 - [[#faq][FAQ]]
 - [[#contributing][Contributing]]
@@ -72,8 +73,8 @@ overview looks as follows:
    treemacs workspace.
  * Simple mouse interface :: Left clicks will work the same as you're used to from with graphical applications
  * Session persistence :: Treemacs automatically saves and restores your workspace.
- * Dashing good looks :: Treemacs uses genuine png images in HD 22x22 resolution for its icons (quantity is, of course,
-   another matter). When run in a terminal a simple fallback is used.
+ * Dashing good looks :: Treemacs uses (optionally resizable) png images in HD 22x22 resolution for its icons (quantity
+   is, of course, another matter). When run in a terminal a simple fallback is used.
  * Tag view :: Treemacs can display files' tags. All file types that emacs can generate a (semantic) imenu index for are
    supported.
  * Visual feedback :: When it would otherwise be difficult to see the message in the minibuffer success/failure is
@@ -482,6 +483,9 @@ files with ~auto-mode-alist~ would look like this:
 *** GUI vs TUI
 It is possible to force treemacs to use the simple TUI icons in GUI mode by setting ~treemacs-no-png-images~ to t.
 
+*** Resizing Icons
+If your emacs has been compiled with imagemagick support you can arbitrarily change the size of treemacs' icons by
+(interactively) calling ~treemacs-resize-icons~.
 *** Indent guide
 Not really part of the icons, but a useful visual feature nonetheless: An indent guide like effect can be created by
 selecting appropriate values for ~treemacs-indentation~ and ~treemacs-indentation-string~:
@@ -633,7 +637,8 @@ targets:
  - make lint :: Runs first ~compile~ then ~clean~, even if the former fails.
  - make test :: Runs the testsuite, once in a graphical environment and once in the terminal.
 
-Finally if you want to just add an icon you can take [[https://github.com/Alexander-Miller/treemacs/commit/94df3e36af865dab2c76b549b1a61f418e3bf5be][this commit]] as an example.
+Finally if you want to just add an icon you can take [[https://github.com/Alexander-Miller/treemacs/commit/94df3e36af865dab2c76b549b1a61f418e3bf5be][this commit]] as an example (though the icons have since been moved
+into their own module in ~treemacs-icons.el~).
 
 * Working With The Code Base
 

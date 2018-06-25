@@ -26,7 +26,7 @@
 (require 'ht)
 (require 'cl-lib)
 (require 'treemacs-impl)
-(require 'treemacs-visuals)
+(require 'treemacs-icons)
 (require 'treemacs-async)
 (require 'treemacs-customization)
 (require 'treemacs-structure)
@@ -420,27 +420,6 @@ PROJECT: `cl-struct-treemacs-project'"
                :state 'root-node-closed
                :path (treemacs-project->path project)
                :depth 0)))
-
-(defun treemacs--check-window-system ()
-  "Check if the current treemacs buffer should use TUI icons.
-If it's running in a TUI switch to simple text icons.
-
-TUI icons will be used if
- * `treemacs--image-creation-impossible' is t,
- * `treemacs-no-png-images' is it
- * or if the current frame is a TUI frame"
-  (-let [no-images (or treemacs--image-creation-impossible
-                       treemacs-no-png-images
-                       (not (window-system)))]
-    (with-no-warnings
-      (setq-local treemacs-icon-root            (if no-images treemacs-icon-root-text treemacs-icon-root-png))
-      (setq-local treemacs-icon-open            (if no-images treemacs-icon-open-text treemacs-icon-open-png))
-      (setq-local treemacs-icon-closed          (if no-images treemacs-icon-closed-text treemacs-icon-closed-png))
-      (setq-local treemacs-icon-fallback        (if no-images treemacs-icon-fallback-text treemacs-icon-text))
-      (setq-local treemacs-icons-hash           (if no-images (ht) (default-value 'treemacs-icons-hash)))
-      (setq-local treemacs-icon-tag-node-open   (if no-images treemacs-icon-tag-node-open-text treemacs-icon-tag-node-open-png))
-      (setq-local treemacs-icon-tag-node-closed (if no-images treemacs-icon-tag-node-closed-text treemacs-icon-tag-node-closed-png))
-      (setq-local treemacs-icon-tag-leaf        (if no-images treemacs-icon-tag-leaf-text treemacs-icon-tag-leaf-png)))))
 
 (provide 'treemacs-branch-creation)
 

@@ -33,38 +33,13 @@
 (require 'treemacs-faces)
 (require 'treemacs-visuals)
 (require 'treemacs-structure)
+(require 'treemacs-icons)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs"
   treemacs-select-window)
-
-(treemacs--defvar-with-default
- treemacs-icon-tag-leaf-text (propertize "• " 'face 'font-lock-constant-face))
-(treemacs--defvar-with-default
- treemacs-icon-tag-node-closed-text (propertize "▸ " 'face 'font-lock-string-face))
-(treemacs--defvar-with-default
- treemacs-icon-tag-node-open-text (propertize"▾ " 'face 'font-lock-string-face))
-
-(defvar treemacs-icon-tag-leaf)
-(defvar treemacs-icon-tag-node-closed)
-(defvar treemacs-icon-tag-node-open)
-
-(if treemacs--image-creation-impossible
-    (setq treemacs-icon-tag-leaf        treemacs-icon-tag-leaf-text
-          treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-text
-          treemacs-icon-tag-node-open   treemacs-icon-tag-node-open-text)
-
-  (treemacs--defvar-with-default
-   treemacs-icon-tag-leaf-png (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-leaf.xpm") 'xpm nil :ascent 'center)) " "))
-  (treemacs--defvar-with-default
-   treemacs-icon-tag-node-closed-png (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-closed.xpm") 'xpm nil :ascent 'center)) " "))
-  (treemacs--defvar-with-default
-   treemacs-icon-tag-node-open-png (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-open.xpm") 'xpm nil :ascent 'center)) " "))
-  (setq treemacs-icon-tag-leaf        treemacs-icon-tag-leaf-png
-        treemacs-icon-tag-node-closed treemacs-icon-tag-node-closed-png
-        treemacs-icon-tag-node-open   treemacs-icon-tag-node-open-png))
 
 (defsubst treemacs--tags-path-of (btn)
   "Return the path of tag labels leading to BTN.
