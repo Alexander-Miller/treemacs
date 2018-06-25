@@ -4,6 +4,7 @@ env:
   global:
     - CURL="curl -fsSkL --retry 9 --retry-delay 9"
   matrix:
+    - EMACS_VERSION=25.2
     - EMACS_VERSION=25.3
     - EMACS_VERSION=26.1
 # matrix:
