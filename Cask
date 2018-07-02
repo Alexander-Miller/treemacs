@@ -13,5 +13,7 @@
  (depends-on "hydra")
  (depends-on "evil")
  (depends-on "projectile")
+ (depends-on "magit")
+ (depends-on "with-editor")
  (depends-on "el-mock")
  (depends-on "ert-runner"))
