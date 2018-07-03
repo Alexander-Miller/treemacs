@@ -38,7 +38,7 @@ if the node is 'foo/bar/baz', the face is used for 'foo/bar/'."
   :group 'treemacs-faces)
 
 (defface treemacs-root-face
-  '((t :inherit font-lock-constant-face :underline t :height 1.2))
+  '((t :inherit font-lock-constant-face :underline t :bold t :height 1.2))
   "Face used by treemacs for its root nodes."
   :group 'treemacs-faces)
 
