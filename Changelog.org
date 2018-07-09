@@ -2,6 +2,8 @@
 #+STARTUP: content
 
 * Changelog
+** Current master
+ - Added ~treemacs-single-click-expand-action~ for single leftclick node expansion.
 ** 2.2
  - Reduced minimum required emacs version to 25.2.
  - Integrated symlinks with git-mode (symlinks will always be resolved).

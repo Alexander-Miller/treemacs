@@ -64,6 +64,33 @@ Must be bound to a mouse click, or EVENT will not be supplied."
       (funcall (cdr (assoc state treemacs-doubleclick-actions-config))))
     (treemacs--evade-image)))
 
+(defun treemacs-single-click-expand-action (event)
+  "A modified single-leftclick action that expands the clicked nodes.
+Can be bound to [mouse-1] if you prefer to expand nodes with a single click
+instead of a double click.
+
+Clicking on icons will expand a file's tags, just like
+`treemacs-leftclick-action'."
+  (interactive "e")
+  (when (eq 'mouse-1 (elt event 0))
+    (unless (eq major-mode 'treemacs-mode)
+      ;; no when-let - the window must exist or this function would not be called
+      (select-window (treemacs--is-visible?)))
+    (goto-char (posn-point (cadr event)))
+    (when (region-active-p)
+      (keyboard-quit))
+    ;; 7th element is the clicked image
+    (if (->> event (cadr) (nth 7))
+      (treemacs-do-for-button-state
+       :on-file-node-closed (treemacs--expand-file-node btn)
+       :on-file-node-open   (treemacs--collapse-file-node btn)
+       :on-tag-node-closed  (treemacs--expand-tag-node btn)
+       :on-tag-node-open    (treemacs--collapse-tag-node btn)
+       :no-error            t)
+      (-when-let (state (treemacs--prop-at-point :state))
+        (funcall (cdr (assoc state treemacs-doubleclick-actions-config)))))
+    (treemacs--evade-image)))
+
 (defun treemacs-define-doubleclick-action (state action)
   "Define the behaviour of `treemacs-doubleclick-action'.
 Determines that a button with a given STATE should lead to the execution of

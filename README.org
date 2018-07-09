@@ -138,6 +138,12 @@ double click expands or collapses a directory or tag section node and visits a f
 
 Additionally tag sections can be expanded or collapsed by a single click on the file/tag section icon.
 
+If you prefer to expand/collpase nodes with a single mouse click you can also use ~treemacs-single-click-expand-action~:
+
+#+BEGIN_SRC emacs-lisp
+  (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action)
+#+END_SRC
+
 ** Follow-mode
 ~treemacs-follow-mode~ is a global minor mode which allows the treemacs view to always move its focus to the currently
 selected file. This is achieved by advising ~select-window~, which is a ubiquitous function, often called multiple times
