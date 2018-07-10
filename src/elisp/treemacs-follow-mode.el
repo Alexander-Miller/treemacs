@@ -30,7 +30,6 @@
 (require 'treemacs-async)
 (require 'treemacs-impl)
 (eval-and-compile
-  (require 'cl-lib)
   (require 'treemacs-macros))
 
 (defvar treemacs--ready-to-follow nil

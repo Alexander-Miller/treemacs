@@ -26,7 +26,6 @@
 (require 'treemacs-visuals)
 (require 'treemacs-structure)
 (eval-and-compile
-  (require 'cl-lib)
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs-branch-creation"

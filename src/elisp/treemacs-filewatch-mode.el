@@ -32,7 +32,6 @@
 (require 'treemacs-structure)
 (require 'treemacs-tags)
 (eval-and-compile
-  (require 'cl-lib)
   (require 'treemacs-macros))
 
 (defvar treemacs--collapsed-filewatch-index (make-hash-table :size 100 :test #'equal)
