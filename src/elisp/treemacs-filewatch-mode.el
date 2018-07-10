@@ -99,25 +99,23 @@ removed from the filewatch hashes.
 PATH: Filepath
 ALL: Bool"
   (let (to-remove)
-    (ht-each
-     (lambda (watched-path watch-info)
-       (when (or (string= path watched-path)
-                 (treemacs--is-path-in-dir? watched-path path))
-         (-let- [(watching-buffers (car watch-info))
-                 (watch-descr (cdr watch-info))]
-           (if all
-               (progn
-                 (file-notify-rm-watch watch-descr)
-                 (ht-remove! treemacs--collapsed-filewatch-index watched-path)
-                 (push watched-path to-remove))
-             (when (memq (current-buffer) watching-buffers)
-               (if (= 1 (length watching-buffers))
-                   (progn
-                     (file-notify-rm-watch watch-descr)
-                     (ht-remove! treemacs--collapsed-filewatch-index watched-path)
-                     (push watched-path to-remove))
-                 (setcar watch-info (delq (current-buffer) watching-buffers))))))))
-     treemacs--filewatch-index)
+    (treemacs-maphash treemacs--filewatch-index (watched-path watch-info)
+      (when (or (string= path watched-path)
+                (treemacs--is-path-in-dir? watched-path path))
+        (-let- [(watching-buffers (car watch-info))
+                (watch-descr (cdr watch-info))]
+          (if all
+              (progn
+                (file-notify-rm-watch watch-descr)
+                (ht-remove! treemacs--collapsed-filewatch-index watched-path)
+                (push watched-path to-remove))
+            (when (memq (current-buffer) watching-buffers)
+              (if (= 1 (length watching-buffers))
+                  (progn
+                    (file-notify-rm-watch watch-descr)
+                    (ht-remove! treemacs--collapsed-filewatch-index watched-path)
+                    (push watched-path to-remove))
+                (setcar watch-info (delq (current-buffer) watching-buffers))))))))
     (dolist (it to-remove)
       (ht-remove! treemacs--filewatch-index it))))
 
@@ -195,17 +193,15 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
 Will stop file watch on every path watched by this buffer."
   (let ((buffer (treemacs-buffer-exists?))
         (to-remove))
-    (ht-each
-     (lambda (watched-path watch-info)
-       (-let [(watching-buffers . watch-descr) watch-info]
-         (when (memq buffer watching-buffers)
-           (if (= 1 (length watching-buffers))
-               (progn
-                 (file-notify-rm-watch watch-descr)
-                 (ht-remove! treemacs--collapsed-filewatch-index watched-path)
-                 (push watched-path to-remove))
-             (setcar watch-info (delq buffer watching-buffers))))))
-     treemacs--filewatch-index)
+    (treemacs-maphash treemacs--filewatch-index (watched-path watch-info)
+      (-let [(watching-buffers . watch-descr) watch-info]
+        (when (memq buffer watching-buffers)
+          (if (= 1 (length watching-buffers))
+              (progn
+                (file-notify-rm-watch watch-descr)
+                (ht-remove! treemacs--collapsed-filewatch-index watched-path)
+                (push watched-path to-remove))
+            (setcar watch-info (delq buffer watching-buffers))))))
     (dolist (it to-remove)
       (ht-remove! treemacs--filewatch-index it))))
 
@@ -216,13 +212,10 @@ Reset the refresh flags of every buffer.
 
 Called when filewatch mode is disabled."
   (treemacs-run-in-every-buffer
-   (ht-each
-    (lambda (_ node) (treemacs-shadow-node->reset-refresh-flag node))
-    treemacs-shadow-index))
-  (ht-each
-   (lambda (_ watch-info)
-     (file-notify-rm-watch (cdr watch-info)))
-   treemacs--filewatch-index)
+   (treemacs-maphash treemacs-shadow-index (_ node)
+     (treemacs-shadow-node->reset-refresh-flag node)))
+  (treemacs-maphash treemacs--filewatch-index (_ watch-info)
+    (file-notify-rm-watch (cdr watch-info)))
   (ht-clear! treemacs--filewatch-index)
   (ht-clear! treemacs--collapsed-filewatch-index))
 

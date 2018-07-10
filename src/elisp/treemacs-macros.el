@@ -24,6 +24,7 @@
 
 (require 'dash)
 (require 'pcase)
+(require 'cl-lib)
 
 (defmacro treemacs-import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS.
@@ -361,14 +362,16 @@ Specifically only run it when (featurep 'treemacs) returns nil."
   `(unless (featurep 'treemacs)
      ,@body))
 
-(defmacro treemacs-maphash (table &rest body)
+(defmacro treemacs-maphash (table names &rest body)
   "Iterate over entries of TABLE in BODY.
-Entry variables will bound as `key' and `value' in BODY."
-  (declare (debug (sexp body))
-           (indent 1))
-  `(maphash
-    (lambda (key value) ,@body)
-    ,table))
+Entry variables will bound based on NAMES which is a list of two elements."
+  (declare (debug (sexp sexp body))
+           (indent 2))
+  (let ((key-name (cl-first names))
+        (val-name (cl-second names)))
+    `(maphash
+      (lambda (,key-name ,val-name) ,@body)
+      ,table)))
 
 (provide 'treemacs-macros)
 

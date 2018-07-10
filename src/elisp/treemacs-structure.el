@@ -196,9 +196,8 @@ NODE and its children from the index."
 
 (defun treemacs--invalidate-position-cache ()
   "Invalidate the position of all nodes in the index."
-  (ht-each
-   (lambda (_ node) (treemacs-shadow-node->invalidate-pos node))
-   treemacs-shadow-index))
+  (treemacs-maphash treemacs-shadow-index (_ node)
+    (treemacs-shadow-node->invalidate-pos node)))
 
 (defun treemacs--recursive-refresh-descent (node)
   "The recursive descent implementation of `treemacs--recursive-refresh'.
