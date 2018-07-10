@@ -308,6 +308,12 @@ Valid values are
                  (const right))
   :group 'treemacs-configuration)
 
+(defcustom treemacs-deferred-git-apply-delay 0.5
+  "Delay in seconds of idle time before git fontification is applied.
+This is only relevant when using the deferred variant of git-mode."
+  :type 'number
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-tag-follow-delay 1.5
   "Delay in seconds of inactivity for `treemacs-tag-follow-mode' to trigger."
   :type 'number

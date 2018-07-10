@@ -55,8 +55,7 @@
   treemacs--expand-root-node
   treemacs--collapse-root-node
   treemacs--expand-dir-node
-  treemacs--collapse-dir-node
-  treemacs--create-branch)
+  treemacs--collapse-dir-node)
 
 (treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching

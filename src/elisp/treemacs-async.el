@@ -65,7 +65,7 @@ The real parsing and formatting is done by the python process. All that's really
 left to do is pick up the cons list and put it in a hash table.
 
 GIT-FUTURE: Pfuture"
-  (-let [git-info-hash (make-hash-table :test #'equal :size 300)]
+  (-let [git-info-hash (make-hash-table :test #'equal :size 1000)]
     (when git-future
       (pfuture-await-to-finish git-future)
       (when (= 0 (process-exit-status git-future))
@@ -148,23 +148,34 @@ newline."
 (define-minor-mode treemacs-git-mode
   "Toggle `treemacs-git-mode'.
 When enabled treemacs will check files' git status and highlight them
-accordingly. This git integration is available in 2 variants: simple and
-extended.
+accordingly. This git integration is available in 3 variants: simple, extended
+and deferred.
+
 The simple variant will start a git status process whose output is parsed in
 elisp. This version is simpler and slightly faster, but incomplete - it will
 highlight only files, not directories.
+
 The extended variant requires a non-trivial amount of parsing to be done, which
 is achieved with python (specifically python3). It is slightly slower, but
 complete - both files and directories will be highlighted according to their
 git status.
-Both versions run asynchronously and are optimized for not doing more work than
+
+The deferred variant is the same is extended, except the tasks of rendering
+nodes and highlighting them are separated. The former happens immediately, the
+latter after `treemacs-deferred-git-apply-delay' seconds of idle time. This may
+be faster (if not in truth then at least in appereance) as the git process is
+given a much greater amount of time to finish. The downside is that the effect
+of nodes changing their colors may be somewhat jarring, though this effect is
+largely mitigated due to the use of a caching layer.
+
+All versions run asynchronously and are optimized for not doing more work than
 is necessary, so their performance cost should, for the most part, be the
 constant time needed to fork a subprocess."
   :init-value nil
   :global t
   :lighter nil
   (if treemacs-git-mode
-      (if (memq arg '(simple extended))
+      (if (memq arg '(simple extended deferred))
           (treemacs--setup-git-mode arg)
         (call-interactively 'treemacs--setup-git-mode))
     (treemacs--tear-down-git-mode)))
@@ -172,12 +183,12 @@ constant time needed to fork a subprocess."
 (defun treemacs--setup-git-mode (&optional arg)
   "Set up `treemacs-git-mode'.
 Use either ARG as git integration value of read it interactively."
-  (interactive (list (-> (completing-read "Git Integration: " '("Simple" "Extended"))
+  (interactive (list (-> (completing-read "Git Integration: " '("Simple" "Extended" "Deferred"))
                          (downcase)
                          (intern))))
   (setq treemacs-git-mode arg)
   (-pcase treemacs-git-mode
-    ['extended
+    [(or 'extended 'deferred)
      (fset 'treemacs--git-status-process-function #'treemacs--git-status-process-extended)
      (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-extended)]
     ['simple
@@ -196,7 +207,7 @@ Use either ARG as git integration value of read it interactively."
   (-pcase (cons (not (null (executable-find "git")))
                 (not (null (executable-find "python3"))))
     [`(t . t)
-     (treemacs-git-mode 'extended)]
+     (treemacs-git-mode 'deferred)]
     [`(t . _)
      (treemacs-git-mode 'simple)]))
 

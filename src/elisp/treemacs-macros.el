@@ -361,6 +361,15 @@ Specifically only run it when (featurep 'treemacs) returns nil."
   `(unless (featurep 'treemacs)
      ,@body))
 
+(defmacro treemacs-maphash (table &rest body)
+  "Iterate over entries of TABLE in BODY.
+Entry variables will bound as `key' and `value' in BODY."
+  (declare (debug (sexp body))
+           (indent 1))
+  `(maphash
+    (lambda (key value) ,@body)
+    ,table))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here

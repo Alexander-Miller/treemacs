@@ -172,23 +172,28 @@ short time and giving the appereance of the tag follow action lasting much longe
 It can make the selected line more visible if ~hl-line-mode~ doesn't stand out with your theme.
 ** Git-mode
 ~treemacs-git-mode~ is a global minor mode which enables treemacs to check for files' and directories' git status
-information and highlight them accordingly (see also the ~treemacs-git-...~ faces). The mode is available in 2 variants:
-~simple~ and ~extended~:
+information and highlight them accordingly (see also the ~treemacs-git-...~ faces). The mode is available in 3 variants:
+~simple~, ~extended~ and ~deferred~:
 
  * The simple variant starts a git status process and parses its output in elisp. The parsing is kept quick and simple,
    so some info is missed: this version includes git status information only for files, but not directories.
  * The extended variant highlights both files and directories. This greatly increases the complexity and length of the
    parsing process, and is therefore done in an asynchronous python process for the sake of performance. The extended
    variant requires python3 to work.
+ * The deferred variant is the same is extended, except the tasks of rendering nodes and highlighting them are
+   separated. The former happens immediately, the latter after ~treemacs-deferred-git-apply-delay~ seconds of idle time.
+   This may be faster (if not in truth then at least in appereance) as the git process is given a much greater amount of
+   time to finish. The downside is that the effect of nodes changing their colors may be somewhat jarring, though this
+   effect is largely mitigated due to the use of a caching layer.
 
-When called interactively ~treemacs-git-mode~ will ask for the variant to use. In lisp code an appropriate symbol can be
-directly passed to the minor mode function:
+ When called interactively ~treemacs-git-mode~ will ask for the variant to use. In lisp code an appropriate symbol can
+ be directly passed to the minor mode function:
 
 #+BEGIN_SRC emacs-lisp
-  (treemacs-git-mode 'extended)
+  (treemacs-git-mode 'deferred)
 #+END_SRC
 
-Both versions use an asynchronous git process and are optimized to not do more work than necessary, so their performance
+All versions use an asynchronous git process and are optimized to not do more work than necessary, so their performance
 cost should, for the most part, be the constant amount of time it takes to fork a subprocess.
 
 ** Filewatch-mode
@@ -277,6 +282,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
     :config
     (progn
       (setq treemacs-collapse-dirs              (if (executable-find "python") 3 0)
+            treemacs-deferred-git-apply-delay   0.5
             treemacs-file-event-delay           5000
             treemacs-follow-after-init          t
             treemacs-follow-recenter-distance   0.1
@@ -366,6 +372,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-persist-file               | "~/.emacs.d/.cache/treemacs-persist"        | Path to the file treemacs uses to persist its state.                                                                                                                                       |
 | treemacs-space-between-root-nodes   | t                                           | When non-nil treemacs will separate root nodes with an empty line.                                                                                                                         |
 | treemacs--fringe-indicator-bitmap   | [vertical bar]                              | The fringe bitmap used by the fringe-indicator minor mode.                                                                                                                                 |
+| treemacs-deferred-git-apply-delay   | 0.5                                         | Seconds of idle time for git highlighting to apply when using the deferred ~treemacs-git-mode~.                                                                                            |
 
 ** Faces
 Treemacs defines and uses the following faces:

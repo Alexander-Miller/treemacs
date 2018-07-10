@@ -31,11 +31,28 @@
 (require 'treemacs-customization)
 (require 'treemacs-structure)
 (require 'treemacs-workspaces)
-(eval-and-compile (require 'treemacs-macros))
+(eval-and-compile
+  (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
   treemacs--stop-watching)
+
+(defvar treemacs--git-cache-max-size 60
+  "Maximum size for `treemacs--git-cache'.
+If it does reach that size it will be cut back to 30 entries.")
+
+(defvar treemacs--git-cache (make-hash-table :size treemacs--git-cache-max-size :test #'equal)
+  "Stores the results of previous git status calls for directories.
+Its effective type is HashMap<FilePath, HashMap<FilePath, Char>>.
+
+These cached results are used as a standin during immediate rendering when
+`treemacs-git-mode' is set to be deferred, so as to minimize the effect of large
+face changes, epsecially when a full project is refreshed.
+
+Since this table is a global value that can effectively grow indefinitely its
+value is limited by `treemacs--git-cache-max-size'.")
+
 
 (defsubst treemacs--button-at (pos)
   "Return the button at position POS in the current buffer, or nil.
@@ -266,25 +283,37 @@ set to PARENT."
       (--when-let (file-truename (button-get parent :path))
         (setq root it))
 
-      ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
-      ;; so there are two possibilities: either the future given to this function is a pfuture object
-      ;; that needs to complete and be parsed or it's an already finished git status hash table
-      (if (ht? git-future)
-          (setq git-info git-future)
-        (setq git-info (treemacs--git-status-parse-function git-future)))
-      ;; list contains prefixes and dirs, so every second item is a directory that needs a git face
       (end-of-line)
 
       ;; the files list contains 3 item tuples: the prefix the icon and the filename
       ;; direcories are different, since dirs do not  have different icons the icon is part if the prefix
       ;; therefore when filtering or propertizing the files and dirs only every 3rd or 2nd item must be looked at
 
+      ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
+      ;; so there are two possibilities: either the future given to this function is a pfuture object
+      ;; that needs to complete and be parsed or it's an already finished git status hash table
+      ;; additionally when git mode is deferred we don't parse the git output right here, it is instead done later
+      ;; by means of an idle timer. The git info used is instead fetched from `treemacs--git-cache', which is
+      ;; based on previous invocations
+      ;; if git-mode is disabled there is nothing to do - in this case the git status parse function will always
+      ;; produce an empty hash table
+      (-pcase treemacs-git-mode
+        [(or 'simple 'extended)
+         (setq git-info (if (ht? git-future)
+                            (setq git-info git-future)
+                          (setq git-info (treemacs--git-status-parse-function git-future))))]
+        ['deferred
+          (setq git-info (or (ht-get treemacs--git-cache root) (ht)))
+          (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state parent git-future (current-buffer))]
+        [_
+         (setq git-info (ht))])
+
       (when treemacs-pre-file-insert-predicates
         (-let [result nil]
           (while file-strings
             (-let*- [(prefix (car file-strings))
                      (icon (cadr file-strings))
-                     (filename (cl-caddr file-strings))
+                     (filename (cl-third file-strings))
                      (filepath (concat root "/" filename))]
               (unless (--any? (funcall it filepath git-info) treemacs-pre-file-insert-predicates)
                 (setq result (cons filename (cons icon (cons prefix result))))))
@@ -300,21 +329,72 @@ set to PARENT."
             (setq dir-strings (cddr dir-strings)))
           (setq dir-strings (nreverse result))))
 
-      (insert (apply #'concat
-                     (--map-when (= 0 (% (+ 1 it-index) 2))
-                                 (propertize it 'face
-                                             (treemacs--get-button-face (concat root "/" it) git-info 'treemacs-directory-face))
-                                 dir-strings)))
+      (insert
+       (apply #'concat
+              (--map-when (= 0 (% (+ 1 it-index) 2))
+                          (propertize it 'face
+                                      (treemacs--get-button-face
+                                       (concat root "/" it) git-info 'treemacs-directory-face))
+                          dir-strings)))
 
       (end-of-line)
 
-      (insert (apply #'concat
-                     (--map-when (= 0 (% (+ 1 it-index) 3))
-                                 (propertize it 'face
-                                             (treemacs--get-button-face (concat root "/" it) git-info 'treemacs-git-unmodified-face))
-                                 file-strings)))
+      (insert
+       (apply #'concat
+              (--map-when (= 0 (% (+ 1 it-index) 3))
+                          (propertize it 'face
+                                      (treemacs--get-button-face
+                                       (concat root "/" it) git-info 'treemacs-git-unmodified-face))
+                          file-strings)))
+
       (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process))
       (treemacs--reopen-at root git-info))))
+
+(defun treemacs--apply-deferred-git-state (parent-btn git-future buffer)
+  "Apply the git fontification for direct children of PARENT-BTN.
+GIT-FUTURE is parsed the same way as in `treemacs--create-branch'. Additionally
+since this function is run on an idle timer the BUFFER to work on must be passed
+as well since the user may since select a different buffer, window or frame.
+
+PARENT-BTN: Button
+GIT-FUTURE: Pfuture|HashMap
+BUFFER: Buffer"
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      ;; cut the cache down to size if it grows too large
+      (when (> (ht-size treemacs--git-cache) treemacs--git-cache-max-size)
+        (run-with-idle-timer 2 nil #'treemacs--resize-git-cache))
+      (-let [parent-path (button-get parent-btn :path)]
+        ;; the node may have been closed or deleted by now
+        (when (and (treemacs-get-from-shadow-index parent-path)
+                   (memq (button-get parent-btn :state) '(dir-node-open root-node-open)))
+          (-let- [(depth (1+ (button-get parent-btn :depth)))
+                  (git-info (if (ht? git-future)
+                                git-future
+                              (treemacs--git-status-parse-function git-future)))
+                  (btn parent-btn)]
+            (ht-set! treemacs--git-cache parent-path git-info)
+            (treemacs-with-writable-buffer
+             ;; the depth check ensures that we only iterate over the nodes that are below parent-btn
+             ;; and stop when we've moved on to nodes that are above or belong to the next project
+             (while (and (setq btn (next-button btn))
+                         (>= (button-get btn :depth) depth))
+               (-let [path (button-get btn :path)]
+                 (when (= depth (button-get btn :depth))
+                   (button-put btn 'face
+                               (treemacs--get-button-face path git-info (button-get btn 'face)))))))))))))
+
+(defun treemacs--resize-git-cache ()
+  "Cuts `treemacs--git-cache' back down to size.
+Specifically its size will be reduced to half of `treemacs--git-cache-max-size'."
+  (cl-block body
+    (let* ((size (ht-size treemacs--git-cache))
+           (count (- size (/ treemacs--git-cache-max-size 2))))
+      (treemacs-maphash treemacs--git-cache
+        (ignore value) ;; quit the compiler
+        (ht-remove! treemacs--git-cache key)
+        (when (>= 0 (cl-decf count))
+          (cl-return-from body))))))
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
   "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
