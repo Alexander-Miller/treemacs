@@ -142,6 +142,7 @@ DEPTH indicates how deep in the filetree the current button is."
                'button '(t)
                'category 'default-button
                'help-echo nil
+               'keymap nil
                :state 'dir-node-closed
                :path path
                :symlink (file-symlink-p path)
@@ -162,6 +163,7 @@ DEPTH indicates how deep in the filetree the current button is."
                'button '(t)
                'category 'default-button
                'help-echo nil
+               'keymap nil
                :state 'file-node-closed
                :path path
                :parent parent
