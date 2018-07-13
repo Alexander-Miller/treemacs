@@ -143,6 +143,7 @@ DEPTH indicates how deep in the filetree the current button is."
                'category 'default-button
                'help-echo nil
                'keymap nil
+               :default-face 'treemacs-directory-face
                :state 'dir-node-closed
                :path path
                :symlink (file-symlink-p path)
@@ -164,6 +165,7 @@ DEPTH indicates how deep in the filetree the current button is."
                'category 'default-button
                'help-echo nil
                'keymap nil
+               :default-face 'treemacs-git-unmodified-face
                :state 'file-node-closed
                :path path
                :parent parent
@@ -380,7 +382,7 @@ BUFFER: Buffer"
                (-let [path (button-get btn :path)]
                  (when (= depth (button-get btn :depth))
                    (button-put btn 'face
-                               (treemacs--get-button-face path git-info (button-get btn 'face)))))))))))))
+                               (treemacs--get-button-face path git-info (button-get btn :default-face)))))))))))))
 
 (defun treemacs--resize-git-cache ()
   "Cuts `treemacs--git-cache' back down to size.
