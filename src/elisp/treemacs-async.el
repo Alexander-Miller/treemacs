@@ -203,6 +203,17 @@ Use either ARG as git integration value of read it interactively."
   (fset 'treemacs--git-status-process-function #'ignore)
   (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
 
+(defsubst treemacs--get-or-parse-git-result (future)
+  "Get the parsed git result of FUTURE.
+Parse and set it if it hasn't been done yet.
+
+FUTURE: Pfuture process"
+  (--if-let (process-get future 'git-table)
+      it
+    (-let [result (treemacs--git-status-parse-function future)]
+      (process-put future 'git-table result)
+      result)))
+
 (only-during-treemacs-init
   (-pcase (cons (not (null (executable-find "git")))
                 (not (null (executable-find "python3"))))

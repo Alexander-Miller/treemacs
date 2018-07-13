@@ -301,9 +301,7 @@ set to PARENT."
       ;; produce an empty hash table
       (-pcase treemacs-git-mode
         [(or 'simple 'extended)
-         (setq git-info (if (ht? git-future)
-                            (setq git-info git-future)
-                          (setq git-info (treemacs--git-status-parse-function git-future))))]
+         (setq git-info (treemacs--get-or-parse-git-result git-future))]
         ['deferred
           (setq git-info (or (ht-get treemacs--git-cache root) (ht)))
           (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state parent git-future (current-buffer))]
@@ -350,7 +348,7 @@ set to PARENT."
                           file-strings)))
 
       (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process))
-      (treemacs--reopen-at root git-info))))
+      (treemacs--reopen-at root git-future))))
 
 (defun treemacs--apply-deferred-git-state (parent-btn git-future buffer)
   "Apply the git fontification for direct children of PARENT-BTN.
@@ -371,9 +369,7 @@ BUFFER: Buffer"
         (when (and (treemacs-get-from-shadow-index parent-path)
                    (memq (button-get parent-btn :state) '(dir-node-open root-node-open)))
           (-let- [(depth (1+ (button-get parent-btn :depth)))
-                  (git-info (if (ht? git-future)
-                                git-future
-                              (treemacs--git-status-parse-function git-future)))
+                  (git-info (treemacs--get-or-parse-git-result git-future))
                   (btn parent-btn)]
             (ht-set! treemacs--git-cache parent-path git-info)
             (treemacs-with-writable-buffer
