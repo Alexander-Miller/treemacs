@@ -39,11 +39,15 @@
       (f-join treemacs-dir "treemacs-git-status.py")
     (f-join treemacs-dir "src/scripts/treemacs-git-status.py")))
 
-(defvar treemacs--git-status-process-function)
-(defvar treemacs--git-status-parse-function)
-(only-during-treemacs-init
-  (fset 'treemacs--git-status-process-function #'ignore)
-  (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
+(defun treemacs--git-status-process-function (path)
+  "Dummy with PATH.
+Real implementation will be `fset' based on `treemacs-git-mode' value."
+  (ignore path))
+
+(defun treemacs--git-status-parse-function (_future)
+  "Dummy with FUTURE.
+Real implementation will be `fset' based on `treemacs-git-mode' value."
+  (ht))
 
 (defun treemacs--git-status-process-extended (path)
   "Start an extended python-parsed git status process for files under PATH."
