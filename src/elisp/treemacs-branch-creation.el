@@ -361,7 +361,7 @@ as well since the user may since select a different buffer, window or frame.
 PARENT-BTN: Button
 GIT-FUTURE: Pfuture|HashMap
 BUFFER: Buffer"
-  (when (buffer-live-p buffer)
+  (when (and (buffer-live-p buffer) git-future)
     (with-current-buffer buffer
       ;; cut the cache down to size if it grows too large
       (when (> (ht-size treemacs--git-cache) treemacs--git-cache-max-size)
