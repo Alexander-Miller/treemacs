@@ -30,6 +30,7 @@
    - [[#additional-packages][Additional Packages]]
       - [[#treemacs-evil][treemacs-evil]]
       - [[#treemacs-projectile][treemacs-projectile]]
+   - [[#tramp-support][Tramp Support]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
    - [[#variables][Variables]]
@@ -259,6 +260,8 @@ Must be installed and loaded if you use evil. The keybindings and the cursor wil
 also enable navigation with j/k instead of n/p.
 *** treemacs-projectile
 Allows to quickly add your projectile projects to the treemacs workspace by calling ~treemacs-projectile~.
+** Tramp Support
+Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
 * Installation
 Treemacs is included in spacemacs (for now only on the dev branch). If you are using the development version of
 spacemacs you can simply add treemacs to ~dotspacemacs-configuration-layers~ to replace the default neotree. Check ~SPC
