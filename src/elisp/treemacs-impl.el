@@ -20,10 +20,6 @@
 
 ;;; Code:
 
-;;;;;;;;;;;;;;;;;;
-;; Requirements ;;
-;;;;;;;;;;;;;;;;;;
-
 (require 'hl-line)
 (require 'dash)
 (require 's)
@@ -106,10 +102,6 @@
 
 (declare-function treemacs-mode "treemacs-mode")
 
-;;;;;;;;;;;;;;;;;;
-;; Private vars ;;
-;;;;;;;;;;;;;;;;;;
-
 (defvar treemacs--buffer-access nil
   "Alist mapping treemacs buffers to frames.")
 
@@ -145,10 +137,6 @@ Not used directly, but as part of `treemacs-without-messages'.")
 
 (defvar treemacs--pre-peek-state nil
   "List of window, buffer to restore and buffer to kill treemacs used for peeking.")
-
-;;;;;;;;;;;;;;;;;;;
-;; Substitutions ;;
-;;;;;;;;;;;;;;;;;;;
 
 (defsubst treemacs--nearest-parent-directory (path)
   "Return the parent of PATH is it's a file, or PATH if it is a directory."
@@ -343,12 +331,13 @@ Simply collapses and re-expands the button (if it has not been closed)."
       (treemacs--push-button btn))))
 
 (defsubst treemacs--follow-each-dir (btn dir-parts)
-  "BTN Follow (goto and open) every single dir in DIR-PARTS under ROOT.
-Return the button that is found or the symbol 'follow-failed' if the search
+  "Starting at BTN follow (goto and open) every single dir in DIR-PARTS.
+Return the button that is found or the symbol `follow-failed' if the search
 failed."
-  (-let*- [(root (button-get btn :path))
-           (git-future (treemacs--git-status-process-function root))
-           (last-index (- (length dir-parts) 1))]
+  (let* ((root       (button-get btn :path))
+         (git-future (treemacs--git-status-process-function root))
+         (last-index (- (length dir-parts) 1))
+         (depth      (button-get btn :depth)))
     (goto-char btn)
     ;; point is currently on the next closest dir to the followed file we could get
     ;; from the shadow index, so we expand it to keep going
@@ -358,31 +347,42 @@ failed."
     (catch 'follow-failed
       (-let- [(index 0)
               (dir-part nil)]
+        ;; for every item in dir-parts append it to the already found path for a new
+        ;; 'root' to follow, so for root = /x/ and dir-parts = [src, config, foo.el]
+        ;; consecutively try to move to /x/src, /x/src/confg and finally /x/src/config/foo.el
         (while dir-parts
           (setq dir-part (pop dir-parts)
-                root (f-join root dir-part))
-          ;; for every manual part add it to the current root and find the first button below
-          ;; btn whose :path is the root, expand it, keep looping
-          (setq btn (first-child-btn-where btn
-                      (-if-let- [collapse-count (button-get child-btn :collapsed)]
-                          ;; button has collapsed path, so a direct comparison is impossble
-                          ;; for example we are following [root app src model file] but the path
-                          ;; is collapsed as app/src/model. normally we would check if the button's
-                          ;; path is root/app, but that obviously won't work. since two path elements
-                          ;; are appended to the original path the button's :collapsed property has
-                          ;; a value of 2, so we append the next two elemnts of dir-parts and make
-                          ;; the comparison then
-                          (when (>= (length dir-parts) collapse-count)
-                            (-let [coll-root root]
-                              (dotimes (n collapse-count) ;; TODO reduce fjoin use
-                                (setq coll-root (f-join coll-root (nth n dir-parts))))
-                              (when (string= coll-root (button-get child-btn :path))
-                                (setq root coll-root
-                                      index (+ index collapse-count)
-                                      ;; when we have a hit the collapsed dirs must not be iterated over
-                                      dir-parts (nthcdr (1+ collapse-count) dir-parts))
-                                child-btn)))
-                        (string= root (button-get child-btn :path)))))
+                root (f-join root dir-part)
+                btn
+                (-let [current-btn nil]
+                  (cl-block search
+                    ;; first a plain text-based search for the current dir-part string
+                    ;; then we grab the node we landed at and see what's going on
+                    ;; there's a couple ways this can go
+                    (while (search-forward dir-part nil :no-error)
+                      (setq current-btn (treemacs-current-button))
+                      (cond
+                       ;; somehow we landed on a line where there isn't even anything to look at
+                       ;; technically this should never happen, but better safe than sorry
+                       ((null current-btn)
+                        (cl-return-from search))
+                       ;; perfect match - return the node we're at
+                       ((string= root (button-get current-btn :path))
+                        (cl-return-from search current-btn))
+                       ;; perfect match - taking collapsed dirs into account
+                       ;; return the node, but make sure to advance the loop variables an
+                       ;; appropriate nuber of times, since a collapsed directory is basically
+                       ;; multiple search iterations bundled as one
+                       ((and (button-get current-btn :collapsed)
+                             (treemacs--is-path-in-dir? root (button-get btn :path)))
+                        (dotimes (_ (button-get current-btn :collapsed))
+                          (setq root (concat root "/" (pop dir-parts)))
+                          (cl-incf index))
+                        (cl-return-from search current-btn))
+                       ;; node we're at has a smaller depth than the one we started from
+                       ;; that means we overshot our target and there's nothing to be found here
+                       ((<= depth (button-get current-btn :depth))
+                        (cl-return-from search)))))))
           (unless btn (throw 'follow-failed 'follow-failed))
           (goto-char btn)
           ;; don't open dir at the very end of the list since we only want to put
@@ -392,10 +392,6 @@ failed."
             (treemacs--expand-dir-node btn :git-future git-future))
           (setq index (1+ index))))
       btn)))
-
-;;;;;;;;;;;;;;;
-;; Functions ;;
-;;;;;;;;;;;;;;;
 
 (defun treemacs--canonical-path (path)
   "The canonical version of PATH for being handled by treemacs.
