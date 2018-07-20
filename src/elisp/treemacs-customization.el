@@ -308,6 +308,11 @@ Valid values are
                  (const right))
   :group 'treemacs-configuration)
 
+(defcustom treemacs-file-follow-delay 0.2
+  "Delay in seconds of idle time for treemacs to follow the selected window."
+  :type 'number
+  :group 'treemacs)
+
 (defcustom treemacs-deferred-git-apply-delay 0.5
   "Delay in seconds of idle time before git fontification is applied.
 This is only relevant when using the deferred variant of git-mode."

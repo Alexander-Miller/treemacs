@@ -287,6 +287,7 @@ You can find an exhaustive overview of all functions, their keybinds and functio
       (setq treemacs-collapse-dirs              (if (executable-find "python") 3 0)
             treemacs-deferred-git-apply-delay   0.5
             treemacs-file-event-delay           5000
+            treemacs-file-follow-delay          0.2
             treemacs-follow-after-init          t
             treemacs-follow-recenter-distance   0.1
             treemacs-goto-tag-strategy          'refetch-index
@@ -376,6 +377,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-space-between-root-nodes   | t                                           | When non-nil treemacs will separate root nodes with an empty line.                                                                                                                         |
 | treemacs--fringe-indicator-bitmap   | [vertical bar]                              | The fringe bitmap used by the fringe-indicator minor mode.                                                                                                                                 |
 | treemacs-deferred-git-apply-delay   | 0.5                                         | Seconds of idle time for git highlighting to apply when using the deferred ~treemacs-git-mode~.                                                                                            |
+| treemacs-file-follow-delay          | 0.2                                         | Delay in seconds of idle time for treemacs to follow the selected window.                                                                                                                  |
 
 ** Faces
 Treemacs defines and uses the following faces:

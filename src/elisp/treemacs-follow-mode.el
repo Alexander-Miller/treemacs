@@ -38,6 +38,15 @@ Must be set to nil when no following should be triggered, e.g. when the
 treemacs buffer is being rebuilt or during treemacs' own window selection
 functions.")
 
+(defvar treemacs--follow-timer nil
+  "Idle timer for `treemacs--follow' to run.")
+
+(defun treemacs--idle-follow ()
+  "Start a timer for `treemacs--follow' to run unless it's started already."
+  (unless treemacs--follow-timer
+    (setq treemacs--follow-timer
+          (run-with-idle-timer treemacs-file-follow-delay nil #'treemacs--follow))) )
+
 (defun treemacs--follow ()
   "Move point to the current file in the treemacs buffer.
 Expand directories if needed. Do nothing if current file does not exist in the
@@ -45,6 +54,7 @@ file system or is not below current treemacs root or if the treemacs buffer is
 not visible."
   ;; Treemacs selecting files with `ace-window' results in a large amount of
   ;; window selections, so we should be breaking out as soon as possbile
+  (setq treemacs--follow-timer nil)
   (when treemacs--ready-to-follow
     (treemacs-without-following
      (let* ((treemacs-window (treemacs--is-visible?))
@@ -80,7 +90,7 @@ not visible."
   "Advice function for `treemacs-follow-mode'.
 Ignores the original arguments of `select-window' and directly calls
 `treemacs--follow'."
-  (treemacs--follow))
+  (treemacs--idle-follow))
 
 (defun treemacs--follow-compatibility-advice (original-func &rest args)
   "Make ORIGINAL-FUNC compatible with `treemacs-follow-mode'.

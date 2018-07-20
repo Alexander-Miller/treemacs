@@ -5,6 +5,8 @@
 ** Current master
  - Added ~treemacs-single-click-expand-action~ for single leftclick node expansion.
  - Added ~deferred~ variant of ~treemacs-git-mode~.
+ - Changed ~treemacs-follow-mode~ to run with an idle timer and added ~treemacs-file-follow-delay~
+   to control the delay.
  - Bug fixes.
 ** 2.2
  - Reduced minimum required emacs version to 25.2.
