@@ -635,6 +635,11 @@ Aside from this there are the following known incompatibilities:
    first being loaded the variable must be defined *before* treemacs is initialized. This is best achieved by adding the
    line ~(defvar treemacs-no-load-time-warnings t)~ to treemacs' use-package ~:init~ block.
 
+ * Can I expand *everything* under a node?
+
+   Yes, you just need to expand it with a [[https://www.emacswiki.org/emacs/PrefixArgument][prefix argument]]. Closing nodes with a prefix argument works as well. In this
+   case treemacs will forget about the nodes opened below the one that was closed and not reopen them automatically.
+
 * Contributing
 Contributions are very much welcome, but should fit the general scope and style of treemacs. The following is a list of
 guidelines that should be met (excepions confirm the rule):
