@@ -381,7 +381,7 @@ failed."
                         (cl-return-from search current-btn))
                        ;; node we're at has a smaller depth than the one we started from
                        ;; that means we overshot our target and there's nothing to be found here
-                       ((<= depth (button-get current-btn :depth))
+                       ((>= depth (button-get current-btn :depth))
                         (cl-return-from search)))))))
           (unless btn (throw 'follow-failed 'follow-failed))
           (goto-char btn)
