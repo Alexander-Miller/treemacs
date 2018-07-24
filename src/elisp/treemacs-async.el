@@ -209,14 +209,17 @@ Use either ARG as git integration value of read it interactively."
 
 (defsubst treemacs--get-or-parse-git-result (future)
   "Get the parsed git result of FUTURE.
-Parse and set it if it hasn't been done yet.
+Parse and set it if it hasn't been done yet. If FUTURE is nil an empty hash
+table is returned.
 
 FUTURE: Pfuture process"
-  (--if-let (process-get future 'git-table)
-      it
-    (-let [result (treemacs--git-status-parse-function future)]
-      (process-put future 'git-table result)
-      result)))
+  (if future
+    (--if-let (process-get future 'git-table)
+        it
+      (-let [result (treemacs--git-status-parse-function future)]
+        (process-put future 'git-table result)
+        result))
+    (ht)))
 
 (only-during-treemacs-init
   (-pcase (cons (not (null (executable-find "git")))
