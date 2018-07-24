@@ -585,9 +585,8 @@ It is assumed that this check has already been made.
 PATH: Filepath
 PROJECT `cl-struct-treemacs-project'"
   (unless project (setq project (treemacs--find-project-for-path path)))
-  (goto-char (treemacs-project->position project))
   (-let*- [;; go back here if the search fails
-           (start (point))
+           (start (prog1 (point) (goto-char (treemacs-project->position project))))
            ;; the path we're moving to minus the project root
            (path-minus-root (->> project (treemacs-project->path) (length) (substring path)))
            ;; the parts of the path that we can try to go to until we arrive at the project root
@@ -616,7 +615,7 @@ PROJECT `cl-struct-treemacs-project'"
                       (treemacs-project->position project)
                     (treemacs-shadow-node->position shadow-node)))
              ;; do the rest manually - at least the actual file to move to is still left in manual-parts
-             (search-result (if manual-parts (treemacs--follow-each-dir btn manual-parts) btn))]
+             (search-result (if manual-parts (save-match-data (treemacs--follow-each-dir btn manual-parts)) btn))]
       (if (eq 'follow-failed search-result)
           (prog1 nil
             (goto-char start))
