@@ -39,8 +39,8 @@
   "Go back to `evil-treemacs-state' after a mouse click."
   ;; a double click will likely have opened a file so we need to make
   ;; sure to go back in the right buffer
-  (-when-let- [b (treemacs-buffer-exists?)]
-    (with-current-buffer b
+  (--when-let (treemacs-get-local-buffer)
+    (with-current-buffer it
       (evil-treemacs-state))))
 
 (advice-add 'treemacs-leftclick-action   :after #'treemacs--turn-off-visual-state-after-click)

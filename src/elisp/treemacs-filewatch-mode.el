@@ -77,7 +77,7 @@ PATH: Filepath
 COLLAPSE: Bool"
   (when collapse
     (puthash path t treemacs--collapsed-filewatch-index))
-  (-if-let- [watch-info (gethash path treemacs--filewatch-index)]
+  (-if-let (watch-info (gethash path treemacs--filewatch-index))
       ;; just add current buffer to watch list if path is watched already
       (unless (memq (current-buffer) (car watch-info))
         (setcar watch-info (cons (current-buffer) (car watch-info))))
@@ -101,8 +101,8 @@ ALL: Bool"
     (treemacs-maphash treemacs--filewatch-index (watched-path watch-info)
       (when (or (string= path watched-path)
                 (treemacs--is-path-in-dir? watched-path path))
-        (-let- [(watching-buffers (car watch-info))
-                (watch-descr (cdr watch-info))]
+        (let ((watching-buffers (car watch-info))
+              (watch-descr (cdr watch-info)))
           (if all
               (progn
                 (file-notify-rm-watch watch-descr)
@@ -158,8 +158,8 @@ file from caches if it has been deleted instead of waiting for file processing."
       (when (eq 'deleted event-type)
         (treemacs--on-file-deletion (cl-third event) t))
       (if (eq 'renamed event-type)
-          (-let- [(old-name path)
-                  (new-name (cl-fourth event))]
+          (let ((old-name path)
+                (new-name (cl-fourth event)))
             (treemacs-run-in-every-buffer
              (treemacs--on-rename old-name new-name))
             (treemacs--set-refresh-flags (treemacs--nearest-parent-directory old-name))
@@ -190,7 +190,7 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
 (defun treemacs--stop-filewatch-for-current-buffer ()
   "Called when a treemacs buffer is torn down/killed.
 Will stop file watch on every path watched by this buffer."
-  (let ((buffer (treemacs-buffer-exists?))
+  (let ((buffer (treemacs-get-local-buffer))
         (to-remove))
     (treemacs-maphash treemacs--filewatch-index (watched-path watch-info)
       (-let [(watching-buffers . watch-descr) watch-info]
@@ -212,7 +212,7 @@ Reset the refresh flags of every buffer.
 Called when filewatch mode is disabled."
   (treemacs-run-in-every-buffer
    (treemacs-maphash treemacs-shadow-index (_ node)
-     (treemacs-shadow-node->reset-refresh-flag node)))
+     (treemacs-shadow-node->reset-refresh-flag! node)))
   (treemacs-maphash treemacs--filewatch-index (_ watch-info)
     (file-notify-rm-watch (cdr watch-info)))
   (ht-clear! treemacs--filewatch-index)
@@ -256,7 +256,7 @@ turn off all existing file watch processes and outstanding refresh actions."
   (fset 'treemacs--start-watching (lambda (_x &optional _y) (ignore)))
   (fset 'treemacs--stop-watching (lambda (_x &optional _y) (ignore))))
 
-(only-during-treemacs-init (treemacs-filewatch-mode))
+(treemacs-only-during-init (treemacs-filewatch-mode))
 
 (provide 'treemacs-filewatch-mode)
 

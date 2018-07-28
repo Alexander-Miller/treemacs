@@ -33,7 +33,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
   (when (eq 'mouse-1 (elt event 0))
     (unless (eq major-mode 'treemacs-mode)
       ;; no when-let - the window must exist or this function would not be called
-      (select-window (treemacs--is-visible?)))
+      (select-window (treemacs-get-local-window)))
     (goto-char (posn-point (cadr event)))
     (when (region-active-p)
       (keyboard-quit))
@@ -75,7 +75,7 @@ Clicking on icons will expand a file's tags, just like
   (when (eq 'mouse-1 (elt event 0))
     (unless (eq major-mode 'treemacs-mode)
       ;; no when-let - the window must exist or this function would not be called
-      (select-window (treemacs--is-visible?)))
+      (select-window (treemacs-get-local-window)))
     (goto-char (posn-point (cadr event)))
     (when (region-active-p)
       (keyboard-quit))
@@ -158,23 +158,23 @@ ignore any prefix argument."
              (-> btn (button-get :marker) (treemacs--extract-position)))]
       (if tag-buf
           (list tag-buf tag-pos)
-        (-pcase treemacs-goto-tag-strategy
-          ['refetch-index
+        (pcase treemacs-goto-tag-strategy
+          ('refetch-index
            (let (file tag-path)
              (with-current-buffer (marker-buffer btn)
                (setq file (treemacs--nearest-path btn)
                      tag-path (treemacs--tags-path-of btn)))
-             (treemacs--imenu-tag-noselect file tag-path))]
-          ['call-xref
+             (treemacs--imenu-tag-noselect file tag-path)))
+          ('call-xref
            (let ((xref (xref-definition
                         (treemacs-with-button-buffer btn
                           (treemacs--get-label-of btn)))))
              (when xref
-               (list (xref-item-buffer xref) (xref-item-position xref))))]
-          ['issue-warning
+               (list (xref-item-buffer xref) (xref-item-position xref)))))
+          ('issue-warning
            (treemacs-log "Tag '%s' is located in a buffer that does not exist."
-                          (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face))]
-          [_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)])))))
+                          (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
+          (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))))))
 
 (provide 'treemacs-mouse-interface)
 

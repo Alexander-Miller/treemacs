@@ -223,7 +223,7 @@ PROJECT: `cl-struct-treemacs-project'"
 (defun treemacs--follow-tag-at-point ()
   "Follow the tag at point in the treemacs view."
   (interactive)
-  (let* ((treemacs-window (treemacs--is-visible?))
+  (let* ((treemacs-window (treemacs-get-local-window))
          (buffer (current-buffer))
          (buffer-file (when buffer (buffer-file-name)))
          (project (treemacs--find-project-for-buffer)))

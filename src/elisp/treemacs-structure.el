@@ -75,7 +75,7 @@
   "Reset the shadow index and."
   (setq treemacs-shadow-index (make-hash-table :size 300 :test #'equal)))
 
-(defun treemacs-shadow-node->print (node)
+(defun treemacs-shadow-node->print! (node)
   "Pretty print NODE.
 Debug function."
   (message
@@ -95,15 +95,15 @@ Debug function."
   "Get node with KEY, if any."
   (ht-get treemacs-shadow-index key))
 
-(defun treemacs-shadow-node->invalidate-pos (node)
+(defun treemacs-shadow-node->invalidate-pos! (node)
   "Set the pos field of NODE to nil."
   (setf (treemacs-shadow-node->position node) nil))
 
-(defun treemacs-shadow-node->reset-refresh-flag (node)
+(defun treemacs-shadow-node->reset-refresh-flag! (node)
   "Set the refresh flag of NODE to nil."
   (setf (treemacs-shadow-node->refresh-flag node) nil))
 
-(defun treemacs-shadow-node->remove-from-index (node)
+(defun treemacs-shadow-node->remove-from-index! (node)
   "Remove NODE from the index."
   (ht-remove treemacs-shadow-index (treemacs-shadow-node->key node)))
 
@@ -117,8 +117,8 @@ Sets its POS info and collpase field to nil."
   "When node at KEY is expanded and does not yet exist in the index.
 Creates a new node for KEY at POS with parent at PARENT-KEY and inserts it in
 the index."
-  (-let*- [(parent (treemacs-get-from-shadow-index parent-key))
-           (new-node (make-treemacs-shadow-node :key key :parent parent :position pos))]
+  (let* ((parent (treemacs-get-from-shadow-index parent-key))
+         (new-node (make-treemacs-shadow-node :key key :parent parent :position pos)))
     (when parent
       (setf (treemacs-shadow-node->children parent) (cons new-node (treemacs-shadow-node->children parent))))
     (setf (treemacs-shadow-node->parent new-node) parent)
@@ -152,13 +152,13 @@ NODE's branch."
           (setf (treemacs-shadow-node->children parent)
                 (delete node (treemacs-shadow-node->children parent))))
         (treemacs--do-for-all-child-nodes node
-          #'treemacs-shadow-node->remove-from-index))
+          #'treemacs-shadow-node->remove-from-index!))
     ;; otherwise set the node to be closed and reset lower tiers' pos and refresh info
     (setf (treemacs-shadow-node->closed node) t)
     (treemacs--do-for-all-child-nodes node
       (lambda (it)
-        (treemacs-shadow-node->invalidate-pos it)
-        (treemacs-shadow-node->reset-refresh-flag it)))))
+        (treemacs-shadow-node->invalidate-pos! it)
+        (treemacs-shadow-node->reset-refresh-flag! it)))))
 
 (defun treemacs-on-collapse (key &optional purge)
   "Routine to run when node at KEY is closed again or deleted.
@@ -167,7 +167,7 @@ data of NODE and all its children. When PURGE is non-nil will instead remove
 NODE and its children from the index."
   ;; need to check for nil, since this code also runs on deletion of files or closed dirs
   ;; which were never part of the index
-  (-when-let- [node (treemacs-get-from-shadow-index key)]
+  (-when-let (node (treemacs-get-from-shadow-index key))
     (if (null (treemacs-shadow-node->children node))
         ;; no children - just throw the node out of the index and its parent
         (-let [parent (treemacs-shadow-node->parent node)]
@@ -179,11 +179,11 @@ NODE and its children from the index."
 
 (defun treemacs--on-rename (old-name new-name)
   "Routine to run after a file was renamed from OLD-NAME to NEW-NAME."
-  (-when-let- [node (treemacs-get-from-shadow-index old-name)]
+  (-when-let (node (treemacs-get-from-shadow-index old-name))
     (treemacs--do-for-all-child-nodes node
       (lambda (it)
-        (-let*- [(old-key (treemacs-shadow-node->key it))
-                 (new-key nil)]
+        (let* ((old-key (treemacs-shadow-node->key it))
+               (new-key nil))
           ;; keys of tags are tag paths
           (setq new-key
                 (if (stringp old-key)
@@ -197,7 +197,7 @@ NODE and its children from the index."
 (defun treemacs--invalidate-position-cache ()
   "Invalidate the position of all nodes in the index."
   (treemacs-maphash treemacs-shadow-index (_ node)
-    (treemacs-shadow-node->invalidate-pos node)))
+    (treemacs-shadow-node->invalidate-pos! node)))
 
 (defun treemacs--recursive-refresh-descent (node)
   "The recursive descent implementation of `treemacs--recursive-refresh'.
@@ -212,7 +212,7 @@ parents' git status can be updated."
           (push node refreshed-nodes)
           (treemacs--refresh-dir (treemacs-shadow-node->key node))
           (treemacs--do-for-all-child-nodes node
-            #'treemacs-shadow-node->reset-refresh-flag))
+            #'treemacs-shadow-node->reset-refresh-flag!))
       (dolist (child (treemacs-shadow-node->children node))
         (setq refreshed-nodes
               (nconc refreshed-nodes
@@ -225,10 +225,10 @@ If the root is marked simply reset all refresh flags and run `treemacs-refresh'
 instead."
   (-let [projects (treemacs-workspace->projects (treemacs-current-workspace))]
     (dolist (project projects)
-      (-when-let- [root-node (-> project (treemacs-project->path) (treemacs-get-from-shadow-index))]
+      (-when-let (root-node (-> project (treemacs-project->path) (treemacs-get-from-shadow-index)))
         (if (treemacs-shadow-node->refresh-flag root-node)
             (progn
-              (treemacs--do-for-all-child-nodes root-node #'treemacs-shadow-node->reset-refresh-flag)
+              (treemacs--do-for-all-child-nodes root-node #'treemacs-shadow-node->reset-refresh-flag!)
               (treemacs--do-refresh (current-buffer) project))
           (dolist (root-child (treemacs-shadow-node->children root-node))
             (treemacs--recursive-refresh-descent root-child)))))))

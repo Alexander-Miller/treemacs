@@ -66,7 +66,7 @@ Useful if hl-line-mode doesn't stand out enough with your color theme"
       (treemacs--setup-fringe-indicator-mode)
     (treemacs--tear-down-fringe-indicator-mode)))
 
-(only-during-treemacs-init (treemacs-fringe-indicator-mode))
+(treemacs-only-during-init (treemacs-fringe-indicator-mode))
 
 (provide 'treemacs-fringe-indicator)
 

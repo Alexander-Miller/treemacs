@@ -25,6 +25,8 @@
 (require 'dash)
 (require 'pcase)
 (require 'cl-lib)
+(eval-when-compile
+  (require 'gv))
 
 (defmacro treemacs-import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS.
@@ -74,67 +76,22 @@ called from another buffer than the one the button resides in and
   `(with-current-buffer (marker-buffer ,btn)
     ,@body))
 
-(defmacro -if-let- (var-val then &rest else)
-  "Same as `-if-let', but expects VAR-VAL to be a vector.
-Delegates VAR-VAL, THEN and ELSE to `-if-let'."
-  (declare (debug ((vector sexp form) form body))
-           (indent 2))
-  (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
-    `(-if-let ,var-val-lst ,then ,@else)))
-
-(defmacro -unless-let (var-val &rest forms)
+(defmacro treemacs-unless-let (var-val &rest forms)
   "Same as `-if-let-', but the negative case is handled in the first form.
 Delegates VAR-VAL the FORMS forms to `-if-let-'."
   (declare (debug ((vector sexp form) body))
            (indent 2))
   (let ((then (cdr forms))
         (else (car forms)))
-    `(-if-let- ,var-val (progn ,@then) ,else)))
+    `(-if-let ,var-val (progn ,@then) ,else)))
 
 (defmacro treemacs--with-current-button (error-msg &rest body)
   "Execute an action with the current button bound to 'current-btn'.
 Log ERROR-MSG if no button is selected, otherwise run BODY."
   (declare (debug (form body)))
-  `(-if-let- [current-btn (treemacs-current-button)]
+  `(-if-let (current-btn (treemacs-current-button))
        (progn ,@body)
      (treemacs-pulse-on-failure ,error-msg)))
-
-(defmacro -when-let- (var-val &rest body)
-  "Same as `-when-let', but expects VAR-VAL to be a vector.
-Delegates VAR-VAL and BODY to `-when-let'."
-  (declare (debug ((vector sexp form) body))
-           (indent 1))
-  (-let [var-val-lst (list (aref var-val 0) (aref var-val 1))]
-    `(-when-let ,var-val-lst ,@body)))
-
-(defmacro -let- (vars &rest body)
-  "Same as `let', but VARS is an array.
-Otherwise just delegates VARS and BODY to `let'."
-  (declare (debug ((vector &rest (sexp form)) body))
-           (indent 1))
-  (-let [varlist (cl-map 'list #'identity vars)]
-    `(let ,varlist ,@body)))
-
-(defmacro -let*- (vars &rest body)
-  "Same as `let*', but VARS is an array.
-Otherwise just delegates VARS and BODY to `let*'."
-  (declare (indent 1)
-           (debug ((vector &rest (sexp form)) body)))
-  (-let [varlist (cl-map 'list #'identity vars)]
-    `(let* ,varlist ,@body)))
-
-(defmacro -pcase (exp &rest cases)
-  "Same as `pcase', except that the match arms are vectors.
-Otherwise just delegates EXP and CASES to `pcase'."
-  (declare (indent 1)
-           (debug (form &rest (vector pcase-PAT body))))
-  (let (cases-list)
-    (--each cases
-      (let (c)
-        (dotimes (x (length it))
-          (push (aref it x) c))
-        (push  (nreverse c) cases-list)))
-    `(pcase ,exp ,@(nreverse cases-list))))
 
 (defmacro treemacs-without-following (&rest body)
   "Execute BODY with `treemacs--ready-to-follow' set to nil."
@@ -164,37 +121,37 @@ Will bind to current button to 'btn' for the executon of the action forms.
 When NO-ERROR is non-nil no error will be thrown if no match for the button
 state is achieved."
   (declare (debug (&rest [sexp form])))
-  `(-if-let- [btn (treemacs-current-button)]
-       (-pcase (button-get btn :state)
+  `(-if-let (btn (treemacs-current-button))
+       (pcase (button-get btn :state)
          ,@(when on-root-node-open
-             `([`root-node-open
-                ,on-root-node-open]))
+             `((`root-node-open
+                ,on-root-node-open)))
          ,@(when on-root-node-closed
-             `([`root-node-closed
-                ,on-root-node-closed]))
+             `((`root-node-closed
+                ,on-root-node-closed)))
          ,@(when on-file-node-open
-             `([`file-node-open
-                ,on-file-node-open]))
+             `((`file-node-open
+                ,on-file-node-open)))
          ,@(when on-file-node-closed
-             `([`file-node-closed
-                ,on-file-node-closed]))
+             `((`file-node-closed
+                ,on-file-node-closed)))
          ,@(when on-dir-node-open
-             `([`dir-node-open
-                ,on-dir-node-open]))
+             `((`dir-node-open
+                ,on-dir-node-open)))
          ,@(when on-dir-node-closed
-             `([`dir-node-closed
-                ,on-dir-node-closed]))
+             `((`dir-node-closed
+                ,on-dir-node-closed)))
          ,@(when on-tag-node-open
-             `([`tag-node-open
-                ,on-tag-node-open]))
+             `((`tag-node-open
+                ,on-tag-node-open)))
          ,@(when on-tag-node-closed
-             `([`tag-node-closed
-                ,on-tag-node-closed]))
+             `((`tag-node-closed
+                ,on-tag-node-closed)))
          ,@(when on-tag-node-leaf
-             `([`tag-node
-                ,on-tag-node-leaf]))
+             `((`tag-node
+                ,on-tag-node-leaf)))
          ,@(unless no-error
-             `([state (error "[Treemacs] Unexpected button state %s" state)])))
+             `((state (error "[Treemacs] Unexpected button state %s" state)))))
      ,on-nil))
 
 (cl-defmacro treemacs--execute-button-action
@@ -295,25 +252,25 @@ it on the same line."
       ;; try to stay at the same file/tag
       ;; if the tag no longer exists move to the tag's owning file node
       ;; if the file no longer exists try to stay in the same visual line
-      (-pcase curr-state
-        [(or 'root-node-open 'root-node-closed 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
+      (pcase curr-state
+        ((or 'root-node-open 'root-node-closed 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
          (if (and (f-exists? curr-file)
                   (or treemacs-show-hidden-files
                       (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
              (treemacs-goto-button curr-file)
-           (treemacs-without-messages (with-no-warnings (goto-line curr-line))))]
-        [(or 'tag-node-open 'tag-node-closed 'tag-node)
+           (treemacs-without-messages (with-no-warnings (goto-line curr-line)))))
+        ((or 'tag-node-open 'tag-node-closed 'tag-node)
          ;; no correction needed, if the tag does not exist point is left at the next best node
-         (treemacs--goto-tag-button-at curr-tagpath)]
-        [(pred null)
-         (with-no-warnings (goto-line 1))]
-        [_ (treemacs-log "Refresh doesn't yet know how to deal with '%s'" curr-state)])
+         (treemacs--goto-tag-button-at curr-tagpath))
+        ((pred null)
+         (with-no-warnings (goto-line 1)))
+        (_ (treemacs-log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
       (treemacs--evade-image)
       (set-window-start (get-buffer-window) curr-winstart)
 
       ;; this part seems to fix the issue of point being reset to the top
       ;; when the buffer is refreshed without the window being selected
-      (-when-let- [w (get-buffer-window (buffer-name) t)]
+      (-when-let (w (get-buffer-window (buffer-name) t))
         (set-window-point w (point)))
       ,@final-form)))
 
@@ -326,24 +283,24 @@ it on the same line."
          (with-current-buffer --buffer--
            ,@body)))))
 
-(defmacro -defstruct (name &rest properties)
+(defmacro treemacs-defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.
 Delegates to `cl-defstruct', creating a struct with a 'NAME->' :conc-name and
-foregoing typechecking for its properties for the hope of performance."
+foregoing typechecking for its properties for the hope of improved performance."
   (-let [prefix (concat (symbol-name name) "->")]
     `(progn
        (cl-defstruct (,name (:conc-name ,(intern prefix)))
          ,@properties)
        ,@(--map
-          (-let*- [(prop-name (symbol-name (nth it properties)))
-                   (func-name (intern (concat prefix prop-name)))]
+          (let* ((prop-name (symbol-name (nth it properties)))
+                 (func-name (intern (concat prefix prop-name))))
             `(progn
                (fset ',func-name
                      (lambda (obj) ,(format "Get the %s property of OBJ." prop-name) (aref obj ,(1+ it))))
                (gv-define-setter ,func-name (val obj) `(aset ,obj ,(1+ ,it) ,val))))
           (number-sequence 0 (1- (length properties)))))))
 
-(defmacro only-during-treemacs-init (&rest body)
+(defmacro treemacs-only-during-init (&rest body)
   "Run BODY only when treemacs has not yet been loaded.
 Specifically only run it when (featurep 'treemacs) returns nil."
   (declare (debug t))

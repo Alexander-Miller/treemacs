@@ -33,9 +33,9 @@
   treemacs--expand-root-node
   treemacs--add-root-element)
 
-(-defstruct treemacs-project name path)
+(treemacs-defstruct treemacs-project name path)
 
-(-defstruct treemacs-workspace name projects)
+(treemacs-defstruct treemacs-workspace name projects)
 
 (defvar-local treemacs--project-positions nil)
 
@@ -99,7 +99,7 @@
   "Return non-nil if PROJECT is expanded in the current buffer."
   (eq 'root-node-open (button-get (treemacs-project->position project) :state)))
 
-(defsubst treemacs-project->refresh (project)
+(defsubst treemacs-project->refresh! (project)
   "Refresh PROJECT in the current buffer."
   (when (treemacs-project->is-expanded? project)
     (-let [root-btn (treemacs-project->position project)]
@@ -125,9 +125,9 @@ NAME is provided during ad-hoc navigation only."
         (treemacs-pulse-on-success
             (format "Project for %s already exists."
                     (propertize path 'face 'font-lock-string-face))))
-    (-let*- [(name (or name (read-string "Project Name: " (f-filename path))))
-             (project (make-treemacs-project :name name :path path))
-             (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null)))]
+    (let* ((name (or name (read-string "Project Name: " (f-filename path))))
+           (project (make-treemacs-project :name name :path path))
+           (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null))))
       (-when-let (double (--first (string= name (treemacs-project->name it))
                                   (treemacs-workspace->projects (treemacs-current-workspace))))
         (goto-char (treemacs-project->position double))
@@ -156,7 +156,7 @@ NAME is provided during ad-hoc navigation only."
 (defsubst treemacs-project-at-point ()
   "Get the `cl-struct-treemacs-project' for the (nearest) project at point.
 Return nil when `treemacs-current-button' is nil."
-  (-when-let- [btn (treemacs-current-button)]
+  (-when-let (btn (treemacs-current-button))
     (-let [project (button-get btn :project)]
       (while (not project)
         (setq btn (button-get btn :parent)

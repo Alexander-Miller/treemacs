@@ -136,11 +136,11 @@ ignored argument."
   "Make sure icons' background are pusled alongside the entire line."
   (when (eq 'treemacs-mode major-mode)
     (treemacs-with-writable-buffer
-     (-when-let- [btn (treemacs-current-button)]
-       (-let*- [(start (- (button-start btn) 2) )
-                (end (1+ start))
-                (img (get-text-property start 'display))
-                (cp (copy-sequence img))]
+     (-when-let (btn (treemacs-current-button))
+       (let* ((start (- (button-start btn) 2) )
+              (end (1+ start))
+              (img (get-text-property start 'display))
+              (cp (copy-sequence img)))
          (treemacs--set-img-property cp :background
                                      (face-attribute
                                       (overlay-get pulse-momentary-overlay 'face)

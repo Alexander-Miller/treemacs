@@ -51,16 +51,16 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
 
 (defun treemacs--git-status-process-extended (path)
   "Start an extended python-parsed git status process for files under PATH."
-  (-when-let- [git-root (vc-call-backend 'Git 'root path)]
-    (-let*- [(file-name-handler-alist nil)
-             (git-root (expand-file-name git-root))
-             (default-directory path)
-             (future (pfuture-new
-                      treemacs-python-executable
-                      "-O"
-                      "-S"
-                      treemacs--git-status.py
-                      git-root))]
+  (-when-let (git-root (vc-call-backend 'Git 'root path))
+    (let* ((file-name-handler-alist nil)
+           (git-root (expand-file-name git-root))
+           (default-directory path)
+           (future (pfuture-new
+                    treemacs-python-executable
+                    "-O"
+                    "-S"
+                    treemacs--git-status.py
+                    git-root)))
       future)))
 
 (defun treemacs--parse-git-status-extended (git-future)
@@ -84,8 +84,8 @@ GIT-FUTURE: Pfuture"
 
 (defun treemacs--git-status-process-simple (path)
   "Start a simple git status process for files under PATH."
-  (-let*- [(default-directory (f-canonical path))
-           (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-z" "."))]
+  (let* ((default-directory (f-canonical path))
+         (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-z" ".")))
     (process-put future 'default-directory default-directory)
     future))
 
@@ -103,12 +103,12 @@ GIT-FUTURE: Pfuture"
                    (status-list (->> (substring git-output 0 -1)
                                      (s-split "\0")
                                      (--map (s-split-up-to " " (s-trim it) 1)))))
-              (-let- [(len (length status-list))
-                      (i 0)]
+              (let ((len (length status-list))
+                    (i 0))
                 (while (< i len)
-                  (-let*- [(status-cons (nth i status-list))
-                           (status (car status-cons))
-                           (path (cadr status-cons))]
+                  (let* ((status-cons (nth i status-list))
+                         (status (car status-cons))
+                         (path (cadr status-cons)))
                     ;; don't include directories since only a part of the untracked dirs
                     ;; would be shown anway
                     (unless (eq ?/ (aref path (1- (length path))))
@@ -191,16 +191,16 @@ Use either ARG as git integration value of read it interactively."
                          (downcase)
                          (intern))))
   (setq treemacs-git-mode arg)
-  (-pcase treemacs-git-mode
-    [(or 'extended 'deferred)
+  (pcase treemacs-git-mode
+    ((or 'extended 'deferred)
      (fset 'treemacs--git-status-process-function #'treemacs--git-status-process-extended)
-     (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-extended)]
-    ['simple
+     (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-extended))
+    ('simple
      (fset 'treemacs--git-status-process-function #'treemacs--git-status-process-simple)
-     (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-simple)]
-    [_
+     (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-simple))
+    (_
      (fset 'treemacs--git-status-process-function #'ignore)
-     (fset 'treemacs--git-status-parse-function   (lambda (_) (ht)))]))
+     (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))))
 
 (defun treemacs--tear-down-git-mode ()
   "Tear down `treemacs-git-mode'."
@@ -221,13 +221,13 @@ FUTURE: Pfuture process"
         result))
     (ht)))
 
-(only-during-treemacs-init
-  (-pcase (cons (not (null (executable-find "git")))
+(treemacs-only-during-init
+  (pcase (cons (not (null (executable-find "git")))
                 (not (null (executable-find "python3"))))
-    [`(t . t)
-     (treemacs-git-mode 'deferred)]
-    [`(t . _)
-     (treemacs-git-mode 'simple)]))
+    (`(t . t)
+     (treemacs-git-mode 'deferred))
+    (`(t . _)
+     (treemacs-git-mode 'simple))))
 
 (provide 'treemacs-async)
 

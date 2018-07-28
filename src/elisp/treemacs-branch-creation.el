@@ -102,28 +102,28 @@ PATH: Filepath
 GIT-INFO: Hashtable
 DEFAULT: Face"
   (declare (pure t) (side-effect-free t))
-  (-pcase (ht-get git-info path)
-    [?M 'treemacs-git-modified-face]
-    [?U 'treemacs-git-conflict-face]
-    [?? 'treemacs-git-untracked-face]
-    [?! 'treemacs-git-ignored-face]
-    [?A 'treemacs-git-added-face]
-    [?R 'treemacs-git-renamed-face]
-    [_  default]))
+  (pcase (ht-get git-info path)
+    (?M 'treemacs-git-modified-face)
+    (?U 'treemacs-git-conflict-face)
+    (?? 'treemacs-git-untracked-face)
+    (?! 'treemacs-git-ignored-face)
+    (?A 'treemacs-git-added-face)
+    (?R 'treemacs-git-renamed-face)
+    (_  default)))
 
 (defsubst treemacs--get-dir-content (dir)
   "Get the content of DIR, separated into sublists of first dirs, then files."
   (let* ((sort-func
-          (-pcase treemacs-sorting
-            ['alphabetic-asc #'treemacs--sort-alphabetic-asc]
-            ['alphabetic-desc #'treemacs--sort-alphabetic-desc]
-            ['alphabetic-case-insensitive-asc  #'treemacs--sort-alphabetic-case-insensitive-asc]
-            ['alphabetic-case-insensitive-desc #'treemacs--sort-alphabetic-case-insensitive-desc]
-            ['size-asc #'treemacs--sort-size-asc]
-            ['size-desc #'treemacs--sort-size-desc]
-            ['mod-time-asc #'treemacs--sort-mod-time-asc]
-            ['mod-time-desc #'treemacs--sort-mod-time-desc]
-            [_ (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting)]))
+          (pcase treemacs-sorting
+            ('alphabetic-asc #'treemacs--sort-alphabetic-asc)
+            ('alphabetic-desc #'treemacs--sort-alphabetic-desc)
+            ('alphabetic-case-insensitive-asc  #'treemacs--sort-alphabetic-case-insensitive-asc)
+            ('alphabetic-case-insensitive-desc #'treemacs--sort-alphabetic-case-insensitive-desc)
+            ('size-asc #'treemacs--sort-size-asc)
+            ('size-desc #'treemacs--sort-size-desc)
+            ('mod-time-asc #'treemacs--sort-mod-time-asc)
+            ('mod-time-desc #'treemacs--sort-mod-time-desc)
+            (_ (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting))))
          ;; `directory-files' is much faster in a temp buffer for whatever reason
          (entries (with-temp-buffer (-> dir (directory-files t nil t) (treemacs--filter-files-to-be-shown))))
          (dirs-files (-separate #'file-directory-p entries)))
@@ -211,7 +211,7 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (push it strings))))
      (nreverse strings)))
 
-(defsubst treemacs--collapse-dirs (dirs)
+(defun treemacs--collapse-dirs (dirs)
   "Display DIRS as collpased.
 Go to each dir button, expand its label with the collapsed dirs, set its new
 path and give it a special parent-patX property so opening it will add the
@@ -301,31 +301,31 @@ set to PARENT."
       ;; based on previous invocations
       ;; if git-mode is disabled there is nothing to do - in this case the git status parse function will always
       ;; produce an empty hash table
-      (-pcase treemacs-git-mode
-        [(or 'simple 'extended)
-         (setq git-info (treemacs--get-or-parse-git-result git-future))]
-        ['deferred
+      (pcase treemacs-git-mode
+        ((or 'simple 'extended)
+         (setq git-info (treemacs--get-or-parse-git-result git-future)))
+        ('deferred
           (setq git-info (or (ht-get treemacs--git-cache root) (ht)))
-          (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state parent git-future (current-buffer))]
-        [_
-         (setq git-info (ht))])
+          (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state parent git-future (current-buffer)))
+        (_
+         (setq git-info (ht))))
 
       (when treemacs-pre-file-insert-predicates
         (-let [result nil]
           (while file-strings
-            (-let*- [(prefix (car file-strings))
-                     (icon (cadr file-strings))
-                     (filename (cl-third file-strings))
-                     (filepath (concat root "/" filename))]
+            (let* ((prefix (car file-strings))
+                   (icon (cadr file-strings))
+                   (filename (cl-third file-strings))
+                   (filepath (concat root "/" filename)))
               (unless (--any? (funcall it filepath git-info) treemacs-pre-file-insert-predicates)
                 (setq result (cons filename (cons icon (cons prefix result))))))
             (setq file-strings (cl-cdddr file-strings)))
           (setq file-strings (nreverse result)))
-        (-let- [(result nil)]
+        (-let [result nil]
           (while dir-strings
-            (-let*- [(prefix (car dir-strings))
-                     (dirname (cadr dir-strings))
-                     (dirpath (concat root "/" dirname))]
+            (let* ((prefix (car dir-strings))
+                   (dirname (cadr dir-strings))
+                   (dirpath (concat root "/" dirname)))
               (unless (--any? (funcall it dirpath git-info) treemacs-pre-file-insert-predicates)
                 (setq result (cons dirname (cons prefix result)))))
             (setq dir-strings (cddr dir-strings)))
@@ -370,9 +370,9 @@ BUFFER: Buffer"
         ;; the node may have been closed or deleted by now
         (when (and (treemacs-get-from-shadow-index parent-path)
                    (memq (button-get parent-btn :state) '(dir-node-open root-node-open)))
-          (-let- [(depth (1+ (button-get parent-btn :depth)))
-                  (git-info (treemacs--get-or-parse-git-result git-future))
-                  (btn parent-btn)]
+          (let ((depth (1+ (button-get parent-btn :depth)))
+                (git-info (treemacs--get-or-parse-git-result git-future))
+                (btn parent-btn))
             (ht-set! treemacs--git-cache parent-path git-info)
             (treemacs-with-writable-buffer
              ;; the depth check ensures that we only iterate over the nodes that are below parent-btn
@@ -414,10 +414,10 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
 
 (defun treemacs--expand-root-node (btn)
   "Expand the given root BTN."
-  (-let*- [(path (button-get btn :path))
-           (git-path (if (button-get btn :symlink) (file-truename path) path))
-           (git-future (treemacs--git-status-process-function git-path))
-           (collapse-future (treemacs--collapsed-dirs-process path))]
+  (let* ((path (button-get btn :path))
+         (git-path (if (button-get btn :symlink) (file-truename path) path))
+         (git-future (treemacs--git-status-process-function git-path))
+         (collapse-future (treemacs--collapsed-dirs-process path)))
     (treemacs--button-open
      :immediate-insert nil
      :button btn

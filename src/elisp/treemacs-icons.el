@@ -211,7 +211,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
       (treemacs--setup-tui-icons)
     (treemacs--setup-gui-icons)))
 
-(only-during-treemacs-init
+(treemacs-only-during-init
  (treemacs--setup-icons))
 
 (defun treemacs-reset-icons ()

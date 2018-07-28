@@ -42,7 +42,7 @@
   (unless noninteractive
     (condition-case e
         (when (f-exists? treemacs-persist-file)
-          (-when-let- [workspace (-> treemacs-persist-file (f-read 'utf-8) (read) (car))]
+          (-when-let (workspace (-> treemacs-persist-file (f-read 'utf-8) (read) (car)))
             (dolist (project (treemacs-workspace->projects workspace))
               (unless (-> project (treemacs-project->path) (f-exists?))
                 (treemacs-log (format "Project at %s does not exist and was removed from the workspace."
@@ -54,8 +54,9 @@
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
 
-(unless (or noninteractive (featurep 'treemacs))
-  (treemacs--restore))
+(treemacs-only-during-init
+ (unless noninteractive
+   (treemacs--restore)))
 
 (provide 'treemacs-persistence)
 

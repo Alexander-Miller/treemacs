@@ -93,7 +93,7 @@
   treemacs-add-project-at
   treemacs-project->is-expanded?
   treemacs-project->path
-  treemacs-project->refresh
+  treemacs-project->refresh!
   treemacs-project->position
   treemacs--find-project-for-path)
 
@@ -180,19 +180,21 @@ Returns nil when point is between projects."
       (recentf-add-file new-file)
       (recentf-remove-if-non-kept old-file))))
 
-(defsubst treemacs--is-visible? ()
-  "Inidicates whether this frame's treemacs buffer is currently visible.
-Will return the treemacs window if true."
+(defun treemacs-get-local-window ()
+  "Return the window displaying the treemacs buffer in the current frame.
+Returns nil if no treemacs buffer is visible."
   (->> (window-list (selected-frame))
        (--first (->> it
                      (window-buffer)
                      (buffer-name)
                      (s-starts-with? treemacs--buffer-name-prefix)))))
 
-(defsubst treemacs-buffer-exists? ()
-  "Indicates whether this frame's treemacs buffer exists.
-Returns the buffer if it does exist."
-  (let ((b (cdr (assoc (selected-frame) treemacs--buffer-access))))
+(defun treemacs-get-local-buffer ()
+  "Return the treemacs buffer local to the current frame.
+Returns nil if no such buffer exists.."
+  (-let [b (->> treemacs--buffer-access
+                (assq (selected-frame))
+                (cdr))]
     (when (buffer-live-p b) b)))
 
 (defsubst treemacs--select-visible-window ()
@@ -261,8 +263,8 @@ and special names like this."
 (defsubst treemacs--get-framelocal-buffer ()
   "Get this frame's local buffer, creating it if necessary.
 Will also perform cleanup if the buffer is dead."
-  (-let*- [(frame (selected-frame))
-           (buf   (assq frame treemacs--buffer-access))]
+  (let* ((frame (selected-frame))
+         (buf   (assq frame treemacs--buffer-access)))
     (when (or (null buf)
               (not (buffer-live-p buf)))
       (setq treemacs--buffer-access
@@ -278,8 +280,8 @@ Will also perform cleanup if the buffer is dead."
 (defsubst treemacs--next-neighbour-of (btn)
   "Get the next same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
-  (-let- [(depth (button-get btn :depth))
-          (next (next-button (button-end btn)))]
+  (-let ((depth (button-get btn :depth))
+         (next (next-button (button-end btn))))
     (while (and next (< depth (button-get next :depth)))
       (setq next (next-button (button-end next))))
     (when (and next (= depth (button-get next :depth))) next)))
@@ -287,8 +289,8 @@ Will also perform cleanup if the buffer is dead."
 (defsubst treemacs--prev-neighbour-of (btn)
   "Get the previous same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
-  (-let- [(depth (button-get btn :depth))
-          (prev (previous-button (button-start btn)))]
+  (let ((depth (button-get btn :depth))
+        (prev (previous-button (button-start btn))))
     (while (and prev (< depth (button-get prev :depth)))
       (setq prev (previous-button (button-start prev))))
     (when (and prev (= depth (button-get prev :depth))) prev)))
@@ -297,8 +299,8 @@ Will also perform cleanup if the buffer is dead."
   "Return the next button after BTN that is not a child of BTN."
   (declare (side-effect-free t))
   (when btn
-    (-let- [(depth (button-get btn :depth))
-            (next (next-button (button-end btn) t))]
+    (let ((depth (button-get btn :depth))
+          (next (next-button (button-end btn) t)))
       (while (and next (< depth (button-get next :depth)))
         (setq next (next-button (button-end next) t)))
       next)))
@@ -341,12 +343,12 @@ failed."
     (goto-char btn)
     ;; point is currently on the next closest dir to the followed file we could get
     ;; from the shadow index, so we expand it to keep going
-    (-pcase (button-get btn :state)
-      ['dir-node-closed (treemacs--expand-dir-node btn :git-future git-future)]
-      ['root-node-closed (treemacs--expand-root-node btn)])
+    (pcase (button-get btn :state)
+      ('dir-node-closed (treemacs--expand-dir-node btn :git-future git-future))
+      ('root-node-closed (treemacs--expand-root-node btn)))
     (catch 'follow-failed
-      (-let- [(index 0)
-              (dir-part nil)]
+      (let ((index 0)
+            (dir-part nil))
         ;; for every item in dir-parts append it to the already found path for a new
         ;; 'root' to follow, so for root = /x/ and dir-parts = [src, config, foo.el]
         ;; consecutively try to move to /x/src, /x/src/confg and finally /x/src/config/foo.el
@@ -459,24 +461,24 @@ buffer."
   "Initialize a treemacs buffer from the current workspace.
 Add a project for ROOT if it's non-nil."
   (-let [origin-buffer (current-buffer)]
-    (-pcase (treemacs--current-visibility)
-      ['visible (treemacs--select-visible-window)]
-      ['exists (treemacs--select-not-visible-window)]
-      ['none
+    (pcase (treemacs-current-visibility)
+      ('visible (treemacs--select-visible-window))
+      ('exists (treemacs--select-not-visible-window))
+      ('none
        (treemacs--setup-buffer)
        (treemacs-mode)
        (treemacs--reset-index)
        (treemacs--reset-project-positions)
        (treemacs-with-writable-buffer
-        (-let*- [(projects (treemacs-workspace->projects (treemacs-current-workspace)))
-                 (last-index (1- (length projects)))]
+        (let* ((projects (treemacs-workspace->projects (treemacs-current-workspace)))
+               (last-index (1- (length projects))))
           (--each projects
             (treemacs--add-root-element it)
             (unless (= it-index last-index)
               (insert "\n")
               (when treemacs-space-between-root-nodes
                 (insert "\n"))))))
-       (goto-char 2)])
+       (goto-char 2)))
     (when root (treemacs-add-project-at (treemacs--canonical-path root)))
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
@@ -497,27 +499,27 @@ Add a project for ROOT if it's non-nil."
 (defun treemacs--push-button (btn &optional recursive)
   "Execute the appropriate action given the state of the pushed BTN.
 Optionally do so in a RECURSIVE fashion."
-  (-pcase (button-get btn :state)
-    ['root-node-closed (treemacs--expand-root-node btn)]
-    ['dir-node-open    (treemacs--collapse-dir-node btn recursive)]
-    ['dir-node-closed  (treemacs--expand-dir-node btn :recursive recursive)]
-    ['file-node-open   (treemacs--collapse-file-node btn recursive)]
-    ['file-node-closed (treemacs--expand-file-node btn recursive)]
-    ['tag-node-open    (treemacs--collapse-tag-node btn recursive)]
-    ['tag-node-closed  (treemacs--expand-tag-node btn recursive)]
-    ['tag-node         (progn (other-window 1) (treemacs--goto-tag btn))]
-    [_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn :state))]))
+  (pcase (button-get btn :state)
+    ('root-node-closed (treemacs--expand-root-node btn))
+    ('dir-node-open    (treemacs--collapse-dir-node btn recursive))
+    ('dir-node-closed  (treemacs--expand-dir-node btn :recursive recursive))
+    ('file-node-open   (treemacs--collapse-file-node btn recursive))
+    ('file-node-closed (treemacs--expand-file-node btn recursive))
+    ('tag-node-open    (treemacs--collapse-tag-node btn recursive))
+    ('tag-node-closed  (treemacs--expand-tag-node btn recursive))
+    ('tag-node         (progn (other-window 1) (treemacs--goto-tag btn)))
+    (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn :state)))))
 
 (defun treemacs--reopen-node (btn git-info)
   "Reopen file BTN.
 GIT-INFO is passed through from the previous branch build."
-  (-pcase (button-get btn :state)
-    ['dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info)]
-    ['file-node-closed (treemacs--expand-file-node btn)]
-    ['tag-node-closed  (treemacs--expand-tag-node btn)]
-    ['root-node-closed (treemacs--expand-root-node btn)]
-    [other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
-                              (button-get btn :path) other)]))
+  (pcase (button-get btn :state)
+    ('dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info))
+    ('file-node-closed (treemacs--expand-file-node btn))
+    ('tag-node-closed  (treemacs--expand-tag-node btn))
+    ('root-node-closed (treemacs--expand-root-node btn))
+    (other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
+                              (button-get btn :path) other))))
 
 (defun treemacs--reopen-at (path git-info)
   "Reopen dirs below PATH.
@@ -569,7 +571,7 @@ IS-FILE?: Bool"
                (make-directory dir t))
              (f-touch path-to-create))
          (make-directory path-to-create t)))
-      (-when-let- [project (treemacs--find-project-for-path path-to-create)]
+      (-when-let (project (treemacs--find-project-for-path path-to-create))
         (treemacs-without-messages (treemacs--do-refresh (current-buffer) project))
         (treemacs-goto-button (treemacs--canonical-path path-to-create) project)
         (recenter))
@@ -585,21 +587,21 @@ It is assumed that this check has already been made.
 PATH: Filepath
 PROJECT `cl-struct-treemacs-project'"
   (unless project (setq project (treemacs--find-project-for-path path)))
-  (-let*- [;; go back here if the search fails
-           (start (prog1 (point) (goto-char (treemacs-project->position project))))
-           ;; the path we're moving to minus the project root
-           (path-minus-root (->> project (treemacs-project->path) (length) (substring path)))
-           ;; the parts of the path that we can try to go to until we arrive at the project root
-           (dir-parts (nreverse (s-split (f-path-separator) path-minus-root 'omit-nulls)))
-           ;; the path we try to quickly move to because it's already open and thus in the shadow-index
-           (goto-path (if dir-parts (treemacs--parent path) path))
-           ;; if we try mode than this many times to grab a path location for the shadow index it means
-           ;; the file we want to move to is under a *closed* project node
-           (counter (length dir-parts))
-           ;; manual as in to be expanded manually after we moved to the next closest node we can find
-           ;; in the shadow index
-           (manual-parts nil)
-           (shadow-node nil)]
+  (let* (;; go back here if the search fails
+         (start (prog1 (point) (goto-char (treemacs-project->position project))))
+         ;; the path we're moving to minus the project root
+         (path-minus-root (->> project (treemacs-project->path) (length) (substring path)))
+         ;; the parts of the path that we can try to go to until we arrive at the project root
+         (dir-parts (nreverse (s-split (f-path-separator) path-minus-root 'omit-nulls)))
+         ;; the path we try to quickly move to because it's already open and thus in the shadow-index
+         (goto-path (if dir-parts (treemacs--parent path) path))
+         ;; if we try mode than this many times to grab a path location for the shadow index it means
+         ;; the file we want to move to is under a *closed* project node
+         (counter (length dir-parts))
+         ;; manual as in to be expanded manually after we moved to the next closest node we can find
+         ;; in the shadow index
+         (manual-parts nil)
+         (shadow-node nil))
     ;; try to move as close as possible to the followed file, starting with its immediate parent
     ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
     ;; all the while collecting the parts of the path that beed manual expanding
@@ -611,11 +613,11 @@ PROJECT `cl-struct-treemacs-project'"
             goto-path (treemacs--parent goto-path)
             counter (1- counter))
       (push (pop dir-parts) manual-parts))
-    (-let*- [(btn (if (= 0 counter)
-                      (treemacs-project->position project)
-                    (treemacs-shadow-node->position shadow-node)))
-             ;; do the rest manually - at least the actual file to move to is still left in manual-parts
-             (search-result (if manual-parts (save-match-data (treemacs--follow-each-dir btn manual-parts)) btn))]
+    (let* ((btn (if (= 0 counter)
+                    (treemacs-project->position project)
+                  (treemacs-shadow-node->position shadow-node)))
+           ;; do the rest manually - at least the actual file to move to is still left in manual-parts
+           (search-result (if manual-parts (save-match-data (treemacs--follow-each-dir btn manual-parts)) btn)))
       (if (eq 'follow-failed search-result)
           (prog1 nil
             (goto-char start))
@@ -626,7 +628,7 @@ PROJECT `cl-struct-treemacs-project'"
 
 (defun treemacs--on-window-config-change ()
   "Collects all tasks that need to run on a window config change."
-  (-when-let (w (treemacs--is-visible?))
+  (-when-let (w (treemacs-get-local-window))
     (treemacs-without-following
      (with-selected-window w
        ;; apparently keeping the hook around can lead to a feeback loop together with helms
@@ -675,18 +677,18 @@ Will return t when FILE
                   eol)
               file))
 
-(defun treemacs--current-visibility ()
+(defun treemacs-current-visibility ()
   "Return whether the current visibility state of the treemacs buffer.
 Valid states are 'visible, 'exists and 'none."
   (cond
-   ((treemacs--is-visible?)   'visible)
-   ((treemacs-buffer-exists?) 'exists)
+   ((treemacs-get-local-window) 'visible)
+   ((treemacs-get-local-buffer) 'exists)
    (t 'none)))
 
 (defun treemacs--on-frame-kill (frame)
   "Remove its framelocal buffer when FRAME is killed."
-  (-when-let- [b (cdr (assq frame treemacs--buffer-access))]
-    (kill-buffer b))
+  (--when-let (cdr (assq frame treemacs--buffer-access))
+    (kill-buffer it))
   (setq treemacs--buffer-access
         (assq-delete-all frame treemacs--buffer-access))
   (unless treemacs--buffer-access
@@ -790,8 +792,8 @@ Will refresh every project when PROJECT is 'all."
         project curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
 
        (if (eq 'all project)
-           (-each (treemacs-workspace->projects (treemacs-current-workspace)) #'treemacs-project->refresh)
-         (treemacs-project->refresh project)))
+           (-each (treemacs-workspace->projects (treemacs-current-workspace)) #'treemacs-project->refresh!)
+         (treemacs-project->refresh! project)))
 
      (run-hook-with-args
       'treemacs-post-refresh-hook
@@ -805,10 +807,10 @@ Will refresh every project when PROJECT is 'all."
 The answer depends on the distance between `point' and the window top/bottom
 being smaller than `treemacs-follow-recenter-distance'."
   (interactive)
-  (-let*- [(current-line (float (count-lines (window-start) (point))))
-           (all-lines (float (window-height)))
-           (distance-from-top (/ current-line all-lines))
-           (distance-from-bottom (- 1.0 distance-from-top))]
+  (let* ((current-line (float (count-lines (window-start) (point))))
+         (all-lines (float (window-height)))
+         (distance-from-top (/ current-line all-lines))
+         (distance-from-bottom (- 1.0 distance-from-top)))
     (when (or (> treemacs-follow-recenter-distance distance-from-top)
               (> treemacs-follow-recenter-distance distance-from-bottom))
       (recenter))))
@@ -819,13 +821,13 @@ Additionally also navigate to BTN's tag if GOTO-TAG is t.
 
 BTN: Button
 GOTO-TAG: Bool"
-  (-let- [(path (if goto-tag?
-                    (treemacs-with-button-buffer btn
-                      (treemacs--nearest-path btn))
-                  (treemacs-safe-button-get btn :path)))
-          (buffer-to-restore (current-buffer))
-          (buffer-to-kill nil)]
-    (-if-let- [buffer (get-file-buffer path)]
+  (let ((path (if goto-tag?
+                  (treemacs-with-button-buffer btn
+                    (treemacs--nearest-path btn))
+                (treemacs-safe-button-get btn :path)))
+        (buffer-to-restore (current-buffer))
+        (buffer-to-kill nil))
+    (-if-let (buffer (get-file-buffer path))
         (switch-to-buffer buffer)
       (find-file path)
       (setq buffer-to-kill (current-buffer)))

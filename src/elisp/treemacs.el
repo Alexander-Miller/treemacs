@@ -70,10 +70,10 @@
 * If the workspace is empty additionally ask for the root path of the first
   project to add."
   (interactive)
-  (-pcase (treemacs--current-visibility)
-    ['visible (delete-window (treemacs--is-visible?))]
-    ['exists  (treemacs-select-window)]
-    ['none    (treemacs--init (treemacs--read-first-project-path))]))
+  (pcase (treemacs-current-visibility)
+    ('visible (delete-window (treemacs-get-local-window)))
+    ('exists  (treemacs-select-window))
+    ('none    (treemacs--init (treemacs--read-first-project-path)))))
 
 ;;;###autoload
 (defun treemacs-bookmark (&optional arg)
@@ -93,19 +93,19 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
              collect (propertize name 'location location))]
     (if (null bookmarks)
         (treemacs-log "Didn't find any bookmarks pointing to files.")
-      (-let*- [(bookmark (completing-read "Bookmark: " bookmarks))
-               (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
-               (dir (if (f-directory? location) location (f-dirname location)))
-               (project (treemacs--find-project-for-path dir))]
+      (let* ((bookmark (completing-read "Bookmark: " bookmarks))
+             (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
+             (dir (if (f-directory? location) location (f-dirname location)))
+             (project (treemacs--find-project-for-path dir)))
         (cl-block body
           (unless project
             (cl-return-from body
               (treemacs-pulse-on-failure "Bookmark at %s does not fall under any project in the workspace."
                 (propertize location 'face 'font-lock-string-face))))
-          (-pcase (treemacs--current-visibility)
-            ['visible (treemacs--select-visible-window)]
-            ['exists  (treemacs--select-not-visible-window)]
-            ['none    (treemacs--init)])
+          (pcase (treemacs-current-visibility)
+            ('visible (treemacs--select-visible-window))
+            ('exists  (treemacs--select-not-visible-window))
+            ('none    (treemacs--init)))
           (treemacs-goto-button location project)
           (treemacs-pulse-on-success)
           (when arg (treemacs-visit-node-no-split)))))))
@@ -118,21 +118,21 @@ file instead.
 Will show/create a treemacs buffers if it is not visible/does not exist.
 For the most part only useful when `treemacs-follow-mode' is not active."
   (interactive "P")
-  (-let- [(path (unless arg (buffer-file-name (current-buffer))))
-          (manually-entered nil)]
+  (-let ((path (unless arg (buffer-file-name (current-buffer))))
+         (manually-entered nil))
     (unless path
       (setq manually-entered t
             path (->> (--if-let (treemacs-current-button) (treemacs--nearest-path it))
                       (read-file-name "File to find: ")
                       (treemacs--canonical-path))))
-    (-unless-let [project (treemacs--find-project-for-path path)]
+    (treemacs-unless-let (project (treemacs--find-project-for-path path))
         (treemacs-pulse-on-failure (format "%s does not fall under any project in the workspace."
                                     (propertize path 'face 'font-lock-string-face)))
       (save-selected-window
-        (-pcase (treemacs--current-visibility)
-          ['visible (treemacs--select-visible-window)]
-          ['exists  (treemacs--select-not-visible-window)]
-          ['none    (treemacs--init)])
+        (pcase (treemacs-current-visibility)
+          ('visible (treemacs--select-visible-window))
+          ('exists  (treemacs--select-not-visible-window))
+          ('none    (treemacs--init)))
         (treemacs-goto-button path project)
         (when manually-entered (treemacs-pulse-on-success))))))
 
@@ -147,11 +147,11 @@ containing directory as root. Will do nothing if the current buffer is not
 visiting a file or Emacs cannot find any tags for the current file."
   (interactive)
   (cl-block body
-    (-let*- [(buffer (current-buffer))
-             (buffer-file (when buffer (buffer-file-name buffer)))
-             (project (treemacs--find-project-for-buffer))
-             (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
-             (treemacs-window nil)]
+    (let* ((buffer (current-buffer))
+           (buffer-file (when buffer (buffer-file-name buffer)))
+           (project (treemacs--find-project-for-buffer))
+           (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
+           (treemacs-window nil))
       (unless buffer-file
         (treemacs-pulse-on-failure "Current buffer is not visiting a file.")
         (cl-return-from body))
@@ -163,10 +163,10 @@ visiting a file or Emacs cannot find any tags for the current file."
                                     (propertize buffer-file 'face 'font-lock-string-face)))
         (cl-return-from body))
       (save-selected-window
-        (-pcase (treemacs--current-visibility)
-          ['visible (treemacs--select-visible-window)]
-          ['exists  (treemacs--select-not-visible-window)]
-          ['none    (treemacs--init)])
+        (pcase (treemacs-current-visibility)
+          ('visible (treemacs--select-visible-window))
+          ('exists  (treemacs--select-not-visible-window))
+          ('none    (treemacs--init)))
         (setq treemacs-window (selected-window)))
       (treemacs--do-follow-tag index treemacs-window buffer-file project))))
 
@@ -177,10 +177,10 @@ Bring it to the foreground if it is not visible.
 Initialize a new treemacs buffer as calling `treemacs' would if there is no
 treemacs buffer for this frame."
   (interactive)
-  (-pcase (treemacs--current-visibility)
-    ['visible (treemacs--select-visible-window)]
-    ['exists  (treemacs--select-not-visible-window)]
-    ['none    (treemacs--init (treemacs--read-first-project-path))]))
+  (pcase (treemacs-current-visibility)
+    ('visible (treemacs--select-visible-window))
+    ('exists  (treemacs--select-not-visible-window))
+    ('none    (treemacs--init (treemacs--read-first-project-path)))))
 
 ;;;###autoload
 (defun treemacs-show-changelog ()
