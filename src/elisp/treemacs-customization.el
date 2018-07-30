@@ -56,6 +56,15 @@ times."
   :type 'integer
   :group 'treemacs-configuration)
 
+(defcustom treemacs-display-in-side-window t
+  "When non-nil treemacs will use a dedicated side-window.
+On the one hand this will alleviate issues of unequally sized window splits when
+treemacs is visible (since Emacs does not understand that treemacs has fixed
+window size). On the other hand it may lead to issues with other packages like
+shell-pop, as making treemacs a side-window makes it unsplittable."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-show-hidden-files t
   "Dotfiles will be shown if this is set to t and be hidden otherwise."
   :type 'boolean

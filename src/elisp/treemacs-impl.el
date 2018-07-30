@@ -697,12 +697,16 @@ Valid states are 'visible, 'exists and 'none."
 
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
-  (-> (selected-window)
-      (frame-root-window)
-      (split-window nil treemacs-position)
-      (select-window))
-  (let ((buf (treemacs--get-framelocal-buffer)))
-    (switch-to-buffer buf))
+  (if treemacs-display-in-side-window
+      (-> (treemacs--get-framelocal-buffer)
+          (display-buffer-in-side-window `((side . ,treemacs-position)))
+          (select-window))
+    (-> (selected-window)
+        (frame-root-window)
+        (split-window nil treemacs-position)
+        (select-window))
+      (-let [buf (treemacs--get-framelocal-buffer)]
+        (switch-to-buffer buf)))
   (treemacs--forget-last-highlight)
   (set-window-dedicated-p (selected-window) t)
   (let ((window-size-fixed))
