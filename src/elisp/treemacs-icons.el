@@ -77,7 +77,7 @@ Insert VAR into `treemacs-icon-hash' for each of the given file EXTENSIONS."
   `(progn
      (defvar ,var nil)
      (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
-             (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
+            (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
         (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
         (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
         (setq ,var
