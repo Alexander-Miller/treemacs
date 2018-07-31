@@ -132,13 +132,16 @@ Every string list consists of the following elements:
  * The single directories being collapsed, to be put under filewatch
    if `treemacs-filewatch-mode' is on."
   (when (> treemacs-collapse-dirs 0)
-    (pfuture-new treemacs-python-executable
-                 "-O"
-                 "-S"
-                 treemacs--dirs-to-collpase.py
-                 path
-                 (number-to-string treemacs-collapse-dirs)
-                 (if treemacs-show-hidden-files "t" "x"))))
+    ;; needs to be set or we'll run into trouble when deleting
+    ;; haven't taken the time to figure out why, so let's just leave it at that
+    (-let [default-directory path]
+      (pfuture-new treemacs-python-executable
+                   "-O"
+                   "-S"
+                   treemacs--dirs-to-collpase.py
+                   path
+                   (number-to-string treemacs-collapse-dirs)
+                   (if treemacs-show-hidden-files "t" "x")))))
 
 (defun treemacs--parse-collapsed-dirs (future)
   "Parse the output of collpsed dirs FUTURE.

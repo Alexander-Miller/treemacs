@@ -856,6 +856,14 @@ GOTO-TAG: Bool"
           (with-selected-window window
             (switch-to-buffer buffer-to-restore)))))))
 
+(defun treemacs-is-path-visible? (path)
+  "Return whether a node for PATH is displayed in the current buffer.
+The return value, if PATH is visible, is either the shadow node of PATH - if it
+is an expanded directory - or the shadow node of its parent - if it is a dir or
+file below an expanded directory."
+  (or (treemacs-get-from-shadow-index path)
+      (treemacs-get-from-shadow-index (treemacs--parent path))))
+
 (provide 'treemacs-impl)
 
 ;;; treemacs-impl.el ends here

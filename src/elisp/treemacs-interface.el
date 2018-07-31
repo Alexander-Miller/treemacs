@@ -319,7 +319,11 @@ will instead be wiped irreversibly."
                         "Item is neither a file, nor a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)")
                     nil)))
             (treemacs--on-file-deletion path)
-            (treemacs-without-messages (treemacs-refresh)))))
+            (treemacs-without-messages
+             (treemacs-run-in-every-buffer
+              (-when-let (project (treemacs--find-project-for-path path))
+                (when (treemacs-is-path-visible? path)
+                  (treemacs--do-refresh (current-buffer) project))))))))
     (treemacs-pulse-on-failure "Nothing to delete here."))
   (treemacs--evade-image))
 
