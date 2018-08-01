@@ -747,7 +747,8 @@ open before eing used for peeking."
    :tag-action (treemacs--setup-peek-buffer btn t)))
 
 (defun treemacs-root-up ()
-  "Switch treemacs' root directory to current root's parent, if possible."
+  "Move treemacs' root one level upward.
+Only works with a single project in the workspace."
   (interactive)
   (cl-block body
     (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
@@ -771,8 +772,8 @@ open before eing used for peeking."
           (treemacs-toggle-node))))))
 
 (defun treemacs-root-down ()
-  "Use currently selected directory as new root.
-Do nothing for other node types."
+  "Move treemacs' root into the directory at point.
+Only works with a single project in the workspace."
   (interactive)
   (cl-block body
     (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))

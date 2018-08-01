@@ -15,6 +15,7 @@
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
    - [[#projects-and-workspaces][Projects and Workspaces]]
+   - [[#navigation-without-projects-and-workspaces][Navigation without Projects and Workspaces]]
    - [[#frame-locality][Frame Locality]]
    - [[#mouse-interface][Mouse Interface]]
    - [[#follow-mode][Follow-mode]]
@@ -122,6 +123,12 @@ treemacs heavily relies on every node having a unique natural key in its absolut
 outweigh the cons, as a multiroot setup allows to work on multiple projects with any combination concern/buffer
 separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for concurrent display not
 only of the file system, but e.g. the currently open buffers.
+** Navigation without Projects and Workspaces
+If a strict workspace and project structure, as described above, is too stringent for your use-case you can, under
+certain circumstances, use treemacs to freely navigate through your your file system, similar to dired: When your
+workspace contains /exactly/ a single project you can use ~h~ and ~l~ (or ~treemacs-root-up~ and ~treemacs-root-down~) to
+arbitrarily change the single project's root. ~h~ will navigate one level upward in the file system, ~l~ will move into
+the directory at point.
 
 ** Frame Locality
 Treemacs buffers have a limited scope they are visible in: the frames they are created in. A treemacs buffer, once
@@ -578,6 +585,8 @@ By default Treemacs's keymap looks as follows:
 | yr            | treemacs-copy-project-root                  | Copy the absolute path of the project root for the node at point.                                              |
 | s             | treemacs-resort                             | Set a new value for ~treemacs-sorting~.                                                                        |
 | b             | treemacs-add-bookmark                       | Bookmark the currently selected files's, dir's or tag's location.                                              |
+| h             | treemacs-root-up                            | Move treemacs' root one level upward. Only works with a single project in the workspace.                       |
+| l             | treemacs-root-down                          | Move treemacs' root into the directory at point. Only works with a single project in the workspace.            |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting to
