@@ -52,14 +52,17 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
+(defconst treemacs-version
+  (eval-when-compile
+    (format "v2.2-%s" (format-time-string "%F" (current-time)))))
+
 ;;;###autoload
 (defun treemacs-version ()
-  "Return `treemacs-version'."
+  "Return the `treemacs-version'."
   (interactive)
-  (-let [v "2.2"]
-    (when (called-interactively-p 'interactive)
-      (treemacs-log "v%s" v))
-    v))
+  (when (called-interactively-p 'interactive)
+    (treemacs-log "%s" treemacs-version))
+  treemacs-version)
 
 ;;;###autoload
 (defun treemacs ()

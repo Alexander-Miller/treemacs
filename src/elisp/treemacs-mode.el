@@ -66,7 +66,7 @@ to it will instead show a blank."
   (-if-let (b (treemacs-get-local-buffer))
       (with-current-buffer b
         (let*
-            ((title              (format (propertize "Treemacs v%s Helpful Hydra" 'face 'treemacs-help-title-face) (treemacs-version)))
+            ((title              (format (propertize "Treemacs %s Helpful Hydra" 'face 'treemacs-help-title-face) (treemacs-version)))
              (column-nav         (propertize "Navigation" 'face 'treemacs-help-column-face))
              (column-nodes       (propertize "Opening Nodes" 'face 'treemacs-help-column-face))
              (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))
