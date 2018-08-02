@@ -368,7 +368,11 @@ headline with subelements is saved in an 'org-imenu-marker' text property."
               ;; some imenu implementations, like markdown, will only provide
               ;; a raw buffer position (an int) to move to
               (switch-to-buffer (or buf (get-file-buffer file)))
-              (goto-char pos))))
+              (goto-char pos)
+              ;; a little bit of convenience - reveal those nested headlines
+              (when (and (eq major-mode 'org-mode)
+                         (fboundp 'org-reveal))
+                (org-reveal)))))
       (error
        (treemacs-log "Something went wrong when finding tag '%s': %s"
               (propertize tag 'face 'treemacs-tags-face)
@@ -385,7 +389,11 @@ headline with subelements is saved in an 'org-imenu-marker' text property."
     (if tag-buf
         (progn
           (switch-to-buffer tag-buf nil t)
-          (goto-char tag-pos))
+          (goto-char tag-pos)
+          ;; a little bit of convenience - reveal those nested headlines
+          (when (and (eq major-mode 'org-mode)
+                     (fboundp 'org-reveal))
+            (org-reveal)))
       (pcase treemacs-goto-tag-strategy
         ('refetch-index
          (treemacs--call-imenu-and-goto-tag
