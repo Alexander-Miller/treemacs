@@ -117,7 +117,7 @@
   (ert-deftest current-visibility::existing-buffer ()
     (with-mock
       (stub s-starts-with? => nil)
-      (stub assq => `(t . ,(current-buffer)))
+      (stub treemacs-get-local-buffer => (get-buffer-create "*scratch*"))
       (should (eq 'exists (treemacs-current-visibility)))))
 
   (ert-deftest current-visibility::no-buffer ()
