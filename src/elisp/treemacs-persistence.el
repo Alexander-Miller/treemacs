@@ -88,7 +88,8 @@ ITER: Treemacs-Iter struct"
               (substring (treemacs-iter->next! iter) 3))
         (while (s-matches? treemacs--persist-kv-regex (treemacs-iter->peek iter))
           (push (treemacs-iter->next! iter) kv-lines))
-        (cl-assert kv-lines "Found project without properties")
+        ;; due to a bug in Emacs 25 we cannot use `cl-assert'
+        (unless kv-lines (error "Found project without properties"))
         (dolist (kv-line kv-lines)
           (-let [(key val) (s-split " :: " kv-line)]
             (unless (string= " - path" key)
