@@ -98,7 +98,7 @@ removed from the filewatch hashes.
 PATH: Filepath
 ALL: Bool"
   (let (to-remove)
-    (treemacs-maphash treemacs--filewatch-index (watched-path watch-info)
+    (treemacs--maphash treemacs--filewatch-index (watched-path watch-info)
       (when (or (string= path watched-path)
                 (treemacs--is-path-in-dir? watched-path path))
         (let ((watching-buffers (car watch-info))
@@ -192,7 +192,7 @@ Stop watching deleted dirs and refresh all the buffers that need updating."
 Will stop file watch on every path watched by this buffer."
   (let ((buffer (treemacs-get-local-buffer))
         (to-remove))
-    (treemacs-maphash treemacs--filewatch-index (watched-path watch-info)
+    (treemacs--maphash treemacs--filewatch-index (watched-path watch-info)
       (-let [(watching-buffers . watch-descr) watch-info]
         (when (memq buffer watching-buffers)
           (if (= 1 (length watching-buffers))
@@ -211,9 +211,9 @@ Reset the refresh flags of every buffer.
 
 Called when filewatch mode is disabled."
   (treemacs-run-in-every-buffer
-   (treemacs-maphash treemacs-shadow-index (_ node)
+   (treemacs--maphash treemacs-shadow-index (_ node)
      (treemacs-shadow-node->reset-refresh-flag! node)))
-  (treemacs-maphash treemacs--filewatch-index (_ watch-info)
+  (treemacs--maphash treemacs--filewatch-index (_ watch-info)
     (file-notify-rm-watch (cdr watch-info)))
   (ht-clear! treemacs--filewatch-index)
   (ht-clear! treemacs--collapsed-filewatch-index))

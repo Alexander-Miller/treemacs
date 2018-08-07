@@ -85,7 +85,7 @@ Delegates VAR-VAL the FORMS forms to `-if-let-'."
         (else (car forms)))
     `(-if-let ,var-val (progn ,@then) ,else)))
 
-(defmacro treemacs--with-current-button (error-msg &rest body)
+(defmacro treemacs-with-current-button (error-msg &rest body)
   "Execute an action with the current button bound to 'current-btn'.
 Log ERROR-MSG if no button is selected, otherwise run BODY."
   (declare (debug (form body)))
@@ -283,7 +283,7 @@ it on the same line."
          (with-current-buffer --buffer--
            ,@body)))))
 
-(defmacro treemacs-defstruct (name &rest properties)
+(defmacro treemacs--defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.
 Delegates to `cl-defstruct', creating a struct with a 'NAME->' :conc-name and
 foregoing typechecking for its properties for the hope of improved performance."
@@ -312,7 +312,7 @@ Specifically only run it when (featurep 'treemacs) returns nil."
   `(unless (featurep 'treemacs)
      ,@body))
 
-(defmacro treemacs-maphash (table names &rest body)
+(defmacro treemacs--maphash (table names &rest body)
   "Iterate over entries of TABLE in BODY.
 Entry variables will bound based on NAMES which is a list of two elements."
   (declare (debug (sexp sexp body))

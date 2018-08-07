@@ -33,9 +33,9 @@
   treemacs--expand-root-node
   treemacs--add-root-element)
 
-(treemacs-defstruct treemacs-project name path)
+(treemacs--defstruct treemacs-project name path)
 
-(treemacs-defstruct treemacs-workspace name projects)
+(treemacs--defstruct treemacs-workspace name projects)
 
 (defconst treemacs--workspaces (list (make-treemacs-workspace :name "Default Workspace")))
 

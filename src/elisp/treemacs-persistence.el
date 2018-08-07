@@ -42,7 +42,7 @@
 
 ;; Should probably be replaced with `generator.el', but we're maintaining Emacs 25
 ;; compatibility while Emacs 26 is the last stable release.
-(treemacs-defstruct treemacs-iter list)
+(treemacs--defstruct treemacs-iter list)
 
 (defsubst treemacs-iter->next! (iter)
   "Get the next element of iterator ITER.

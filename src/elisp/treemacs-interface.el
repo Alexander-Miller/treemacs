@@ -543,7 +543,7 @@ For file and directory nodes their absolute path is saved. Tag nodes
 additionally also save the tag's position. A tag can only be bookmarked if the
 treemacs node is pointing to a valid buffer position."
   (interactive)
-  (treemacs--with-current-button
+  (treemacs-with-current-button
    "There is nothing to bookmark here."
    (pcase (button-get current-btn :state)
      ((or 'file-node-open 'file-node-closed 'dir-node-open 'dir-node-closed)
