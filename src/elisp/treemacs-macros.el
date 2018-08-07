@@ -296,7 +296,12 @@ foregoing typechecking for its properties for the hope of improved performance."
                  (func-name (intern (concat prefix prop-name))))
             `(progn
                (fset ',func-name
-                     (lambda (obj) ,(format "Get the %s property of OBJ." prop-name) (aref obj ,(1+ it))))
+                     (lambda (obj)
+                       ,(format "Get the %s property of OBJ." prop-name)
+                       (aref obj ,(1+ it))))
+               (put ',func-name 'byte-optimizer 'byte-compile-inline-expand)
+               (put ',func-name 'compiler-macro nil)
+               (put ',func-name 'gv-expander nil)
                (gv-define-setter ,func-name (val obj) `(aset ,obj ,(1+ ,it) ,val))))
           (number-sequence 0 (1- (length properties)))))))
 
