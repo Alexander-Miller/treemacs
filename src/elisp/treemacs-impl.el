@@ -87,6 +87,7 @@
 (treemacs-import-functions-from "treemacs-workspaces"
   make-treemacs-project
   treemacs--reset-project-positions
+  treemacs--find-workspace
   treemacs-current-workspace
   treemacs-workspace->projects
   treemacs-workspace->is-empty?
@@ -469,6 +470,11 @@ Add a project for ROOT if it's non-nil."
        (treemacs-mode)
        (treemacs--reset-index)
        (treemacs--reset-project-positions)
+       (treemacs--find-workspace)
+       (when (treemacs-workspace->is-empty?)
+         (-> (treemacs--read-first-project-path)
+             (treemacs--canonical-path)
+             (treemacs-add-project-at)))
        (treemacs-with-writable-buffer
         (let* ((projects (treemacs-workspace->projects (treemacs-current-workspace)))
                (last-index (1- (length projects))))

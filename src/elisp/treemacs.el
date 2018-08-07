@@ -52,6 +52,10 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
+(treemacs-only-during-init
+ (unless noninteractive
+   (treemacs--restore)))
+
 (defconst treemacs-version
   (eval-when-compile
     (format "v2.2-%s" (format-time-string "%F" (current-time)))))
@@ -76,7 +80,7 @@
   (pcase (treemacs-current-visibility)
     ('visible (delete-window (treemacs-get-local-window)))
     ('exists  (treemacs-select-window))
-    ('none    (treemacs--init (treemacs--read-first-project-path)))))
+    ('none    (treemacs--init))))
 
 ;;;###autoload
 (defun treemacs-bookmark (&optional arg)
@@ -183,7 +187,7 @@ treemacs buffer for this frame."
   (pcase (treemacs-current-visibility)
     ('visible (treemacs--select-visible-window))
     ('exists  (treemacs--select-not-visible-window))
-    ('none    (treemacs--init (treemacs--read-first-project-path)))))
+    ('none    (treemacs--init))))
 
 ;;;###autoload
 (defun treemacs-show-changelog ()

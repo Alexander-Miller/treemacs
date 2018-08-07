@@ -37,12 +37,23 @@
 
 (treemacs-defstruct treemacs-workspace name projects)
 
+(defconst treemacs--workspaces (list (make-treemacs-workspace :name "Default Workspace")))
+
 (defvar-local treemacs--project-positions nil)
 
 (defvar-local treemacs--project-of-buffer nil
   "The `cl-struct-treemacs-project' that the current buffer falls under, if any.")
 
-(defvar treemacs-current-workspace (make-treemacs-workspace :name "Default Workspace"))
+(defsubst treemacs--find-workspace ()
+  "Find the right workspace for the current (uninitialized) treemacs buffer."
+  (set-frame-parameter (selected-frame) 'treemacs-workspace (car treemacs--workspaces)))
+
+(defsubst treemacs-current-workspace ()
+  "Get the current workspace.
+Workspaces are local to frames and are therefore stored as frame parameters and
+not buffer-local values."
+  (or (frame-parameter (selected-frame) 'treemacs-workspace)
+      (user-error "There is no workspace in the current buffer")))
 
 (defun treemacs--find-project-for-buffer ()
   "In the current workspace find the project current buffer's file falls under."
@@ -50,33 +61,29 @@
     (when (buffer-file-name)
       (setq treemacs--project-of-buffer
             (--first (treemacs--is-path-in-dir? (buffer-file-name) (treemacs-project->path it))
-                     (treemacs-workspace->projects treemacs-current-workspace)))))
+                     (treemacs-workspace->projects (treemacs-current-workspace))))))
   treemacs--project-of-buffer)
 
 (defsubst treemacs--find-project-for-path (path)
   "Return the project for PATH in the current workspace."
   (--first (treemacs--is-path-in-dir? path (treemacs-project->path it))
-           (treemacs-workspace->projects treemacs-current-workspace)))
-
-(defsubst treemacs-current-workspace ()
-  "Get the current workspace."
-  treemacs-current-workspace)
+           (treemacs-workspace->projects (treemacs-current-workspace))))
 
 (defsubst treemacs-workspace->is-empty? ()
   "Return t when there are no projects in the current workspace."
-  (null (treemacs-workspace->projects treemacs-current-workspace)))
+  (null (treemacs-workspace->projects (treemacs-current-workspace))))
 
 (defsubst treemacs--add-project-to-current-workspace (project)
   "Add PROJECT to the current workspace."
-  (setf (treemacs-workspace->projects treemacs-current-workspace)
+  (setf (treemacs-workspace->projects (treemacs-current-workspace))
         ;; reversing around to get the order right - new project goes to the *bottom* of the list
-        (-let [reversed (nreverse (treemacs-workspace->projects treemacs-current-workspace))]
+        (-let [reversed (nreverse (treemacs-workspace->projects (treemacs-current-workspace)))]
           (nreverse (push project reversed)))))
 
 (defsubst treemacs--remove-project-from-current-workspace (project)
   "Remove PROJECT from the current workspace."
-  (setf (treemacs-workspace->projects treemacs-current-workspace)
-        (delete project (treemacs-workspace->projects treemacs-current-workspace)))
+  (setf (treemacs-workspace->projects (treemacs-current-workspace))
+        (delete project (treemacs-workspace->projects (treemacs-current-workspace))))
   ;; also reset the cached buffers' projects
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
@@ -127,7 +134,7 @@ NAME is provided during ad-hoc navigation only."
                     (propertize path 'face 'font-lock-string-face))))
     (let* ((name (or name (read-string "Project Name: " (f-filename path))))
            (project (make-treemacs-project :name name :path path))
-           (empty-workspace? (-> treemacs-current-workspace (treemacs-workspace->projects) (null))))
+           (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
       (-when-let (double (--first (string= name (treemacs-project->name it))
                                   (treemacs-workspace->projects (treemacs-current-workspace))))
         (goto-char (treemacs-project->position double))

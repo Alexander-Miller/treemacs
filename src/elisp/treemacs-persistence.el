@@ -106,7 +106,7 @@ ITER: Treemacs-Iter struct"
       (f-mkdir (f-dirname treemacs-persist-file))
       (f-touch treemacs-persist-file))
     (condition-case e
-        (let ((ws treemacs-current-workspace)
+        (let ((ws (treemacs-current-workspace))
               (txt))
           (with-current-buffer (find-file-noselect treemacs-persist-file nil :literally)
             (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
@@ -128,9 +128,7 @@ ITER: Treemacs-Iter struct"
                                         (s-starts-with? "#+STARTUP:" it))
                                     (-> treemacs-persist-file (f-read) (s-lines)))]
             (if (--any? (s-matches? treemacs--persist-kv-regex it) str-list)
-                (setq treemacs-current-workspace
-                      (car (treemacs--read-workspaces
-                            (make-treemacs-iter :list str-list))))
+                (setq treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list str-list)))
               ;; read state based on the system used before the current ini-format
               ;; should be removed after enough time has passed
               (-when-let (workspace (-> treemacs-persist-file (f-read 'utf-8) (read) (car)))
@@ -140,14 +138,10 @@ ITER: Treemacs-Iter struct"
                                           (propertize (treemacs-project->path project) 'face 'font-lock-string-face)))
                     (setf (treemacs-workspace->projects workspace)
                           (delete project (treemacs-workspace->projects workspace)))))
-                (setq treemacs-current-workspace workspace)))))
+                (setq treemacs--workspaces (list workspace))))))
       (error (treemacs-log "Error '%s' when loading the persisted workspace." e)))))
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
-
-(treemacs-only-during-init
- (unless noninteractive
-   (treemacs--restore)))
 
 (provide 'treemacs-persistence)
 

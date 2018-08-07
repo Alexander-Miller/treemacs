@@ -441,23 +441,27 @@
 ;; `treemacs--find-project-for-path'
 (progn
   (ert-deftest project-for-path::returns-nil-on-nil-input ()
-    (let* ((project (make-treemacs-project :path "/A"))
-           (treemacs-current-workspace (make-treemacs-workspace :projects (list project))))
-      (should-not (treemacs--find-project-for-path nil))))
+    (-let [project (make-treemacs-project :path "/A")]
+      (with-mock
+        (stub treemacs-current-workspace => (make-treemacs-workspace :projects (list project)))
+        (should-not (treemacs--find-project-for-path nil)))))
 
   (ert-deftest project-for-path::returns-nil-on-empty-workspace ()
-    (-let [treemacs-current-workspace (make-treemacs-workspace :projects nil)]
+    (with-mock
+      (stub treemacs-current-workspace => (make-treemacs-workspace :projects nil))
       (should-not (treemacs--find-project-for-path "/A"))))
 
   (ert-deftest project-for-path::returns-nil-when-path-does-not-fit ()
-    (let* ((project (make-treemacs-project :path "/A/B"))
-           (treemacs-current-workspace (make-treemacs-workspace :projects (list project))))
-      (should-not (treemacs--find-project-for-path "/A/C"))))
+    (-let [project (make-treemacs-project :path "/A/B")]
+      (with-mock
+        (stub treemacs-current-workspace => (make-treemacs-workspace :projects (list project)))
+        (should-not (treemacs--find-project-for-path "/A/C")))))
 
   (ert-deftest project-for-path::returns-project-when-path-fits ()
-    (let* ((project (make-treemacs-project :path "/A/B"))
-           (treemacs-current-workspace (make-treemacs-workspace :projects (list project))))
-      (should (equal project (treemacs--find-project-for-path "/A/B/C"))))))
+    (-let [project (make-treemacs-project :path "/A/B")]
+      (with-mock
+        (stub treemacs-current-workspace => (make-treemacs-workspace :projects (list project)))
+        (should (equal project (treemacs--find-project-for-path "/A/B/C")))))))
 
 ;; `treemacs--find-index-pos'
 (progn
@@ -864,11 +868,11 @@
       (let* ((imenu-auto-rescan t)
              (org-imenu-depth 10)
              (treemacs-collapse-dirs 3)
-             (project (make-treemacs-project :name "Test Project" :path (concat treemacs-dir "/test")))
-             (treemacs-current-workspace (make-treemacs-workspace :name "Test Workspace" :projects (list project))))
+             (project (make-treemacs-project :name "Test Project" :path (concat treemacs-dir "/test"))))
         (unless noninteractive
           (unwind-protect
-              (progn
+              (with-mock
+                (stub treemacs-current-workspace => (make-treemacs-workspace :name "Test Workspace" :projects (list project)))
                 (delete-other-windows)
                 (--when-let (treemacs-get-local-buffer) (kill-buffer it))
 
