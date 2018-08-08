@@ -88,14 +88,22 @@ ITER: Treemacs-Iter struct"
               (substring (treemacs-iter->next! iter) 3))
         (while (s-matches? treemacs--persist-kv-regex (treemacs-iter->peek iter))
           (push (treemacs-iter->next! iter) kv-lines))
-        (cl-assert (not (null kv-lines)) "Found project without properties")
-        (dolist (kv-line kv-lines)
-          (-let [(key val) (s-split " :: " kv-line)]
-            (unless (string= " - path" key)
-              (treemacs-log "Encountered unknown project key-value in line [%s]" kv-line))
-            (pcase key
-              (" - path" (setf (treemacs-project->path project) val)))))
-        (push project projects)))
+        (if (null kv-lines)
+            (treemacs-log "Project %s has no path and will be ignored."
+                          (propertize (treemacs-project->name project)
+                                      'face 'font-lock-type-face))
+          (dolist (kv-line kv-lines)
+            (-let [(key val) (s-split " :: " kv-line)]
+              (pcase key
+                (" - path"
+                 (setf (treemacs-project->path project) val))
+                (_
+                 (treemacs-log "Encountered unknown project key-value in line [%s]" kv-line)))))
+          (if (-> project (treemacs-project->path) (file-exists-p) (not))
+              (treemacs-log "The location of project %s at %s cannot be read, the project will be ignored."
+                            (propertize (treemacs-project->name project) 'face 'font-lock-type-face)
+                            (propertize (treemacs-project->path project) 'face 'font-lock-string-face))
+            (push project projects)))))
     (nreverse projects)))
 
 (defun treemacs--persist ()
