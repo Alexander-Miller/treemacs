@@ -34,9 +34,9 @@
 (defvar treemacs--persist-kv-regex
   (rx bol
       " - "
-      (1+ (or (syntax word) (syntax symbol)))
+      (1+ (or (syntax word) (syntax symbol) (syntax punctuation)))
       " :: "
-      (1+ (or (syntax word) (syntax symbol) space))
+      (1+ (or (syntax word) (syntax symbol) (syntax punctuation) space))
       eol)
   "The regular expression to match org's \"key :: value\" lines.")
 
@@ -88,8 +88,7 @@ ITER: Treemacs-Iter struct"
               (substring (treemacs-iter->next! iter) 3))
         (while (s-matches? treemacs--persist-kv-regex (treemacs-iter->peek iter))
           (push (treemacs-iter->next! iter) kv-lines))
-        ;; due to a bug in Emacs 25 we cannot use `cl-assert'
-        (unless kv-lines (error "Found project without properties"))
+        (cl-assert (not (null kv-lines)) "Found project without properties")
         (dolist (kv-line kv-lines)
           (-let [(key val) (s-split " :: " kv-line)]
             (unless (string= " - path" key)
