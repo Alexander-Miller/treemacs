@@ -33,6 +33,10 @@
   treemacs--expand-root-node
   treemacs--add-root-element)
 
+(treemacs-import-functions-from "treemacs-interface"
+  treemacs-previous-project
+  treemacs-next-project)
+
 (treemacs--defstruct treemacs-project name path)
 
 (treemacs--defstruct treemacs-workspace name projects)
@@ -123,24 +127,43 @@ not buffer-local values."
       (next-single-property-change :project)
       (null)))
 
-(cl-defun treemacs-add-project-at (path &optional name)
+(cl-defun treemacs-do-add-project-to-workspace (path &optional name)
   "Add project at PATH to the current workspace.
-NAME is provided during ad-hoc navigation only."
-  (--if-let (treemacs--find-project-for-path path)
-      (progn
-        (goto-char (treemacs-project->position it))
-        (treemacs-pulse-on-success
-            (format "Project for %s already exists."
-                    (propertize path 'face 'font-lock-string-face))))
+NAME is provided during ad-hoc navigation only.
+Return values may be as follows:
+
+* If the project for the given path already exists:
+  - the symbol `duplicate-project'
+  - the project the PATH falls into
+  - an error message
+* If a project for the given name already exists:
+  - the symbol `duplicate-name'
+  - the project with the duplicate name
+  - an error message
+* If everything went well:
+  - the symbol `success'
+  - a log message
+
+PATH: Filepath
+NAME: String"
+  (cl-block body
+    (setq path (treemacs--canonical-path path))
+    (-when-let (project (treemacs--find-project-for-path path))
+        (cl-return-from body
+          `(duplicate-project
+            ,project
+            ,(format "A project for %s already exists."
+                    (propertize path 'face 'font-lock-string-face)))))
     (let* ((name (or name (read-string "Project Name: " (f-filename path))))
            (project (make-treemacs-project :name name :path path))
            (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
       (-when-let (double (--first (string= name (treemacs-project->name it))
                                   (treemacs-workspace->projects (treemacs-current-workspace))))
-        (goto-char (treemacs-project->position double))
-        (cl-return-from  treemacs-add-project-at
-          (treemacs-pulse-on-failure "A project with the name %s already exists."
-            (propertize name 'face 'font-lock-type-face))))
+        (cl-return-from body
+          `(duplicate-name
+            ,double
+            ,(format "A project with the name %s already exists."
+                     (propertize name 'face 'font-lock-type-face)))))
       (treemacs--add-project-to-current-workspace project)
       (treemacs-run-in-every-buffer
        (treemacs-with-writable-buffer
@@ -156,9 +179,38 @@ NAME is provided during ad-hoc navigation only."
             (insert "\n")))
         (treemacs--add-root-element project)
         (treemacs--insert-shadow-node (make-treemacs-shadow-node
-                                :key path :position (treemacs-project->position project)))))
-      (treemacs-pulse-on-success "Added project %s to the workspace."
-        (propertize name 'face 'font-lock-type-face)))))
+                                       :key path :position (treemacs-project->position project)))))
+      `(success
+        ,(format "Added project %s to the workspace."
+                 (propertize name 'face 'font-lock-type-face))))))
+(defalias 'treemacs-add-project-at #'treemacs-do-add-project-to-workspace)
+(with-no-warnings
+  (make-obsolete #'treemacs-add-project-at #'treemacs-do-add-project-to-workspace "v.2.2.1"))
+
+(defun treemacs-do-remove-project-from-workspace (project)
+  "Add the given PROJECT to the current workspace.
+
+PROJECT: Project Struct"
+  (treemacs-run-in-every-buffer
+   (treemacs-with-writable-buffer
+    (-let [project-btn (treemacs-project->position project)]
+      (goto-char project-btn)
+      (when (treemacs-project->is-expanded? project)
+        (treemacs--collapse-root-node project-btn t)))
+    (kill-whole-line)
+    (-let [is-last? (treemacs-project->is-last? project)]
+      (if is-last?
+          (treemacs-previous-project)
+        (kill-whole-line)
+        (treemacs-next-project)))
+    ;; (treemacs--forget-last-highlight) ???
+    (delete-trailing-whitespace)
+    (treemacs--remove-project-from-current-workspace project)
+    (--when-let (treemacs-get-local-window)
+      (with-selected-window it
+        (recenter)))
+    (treemacs--evade-image)
+    (hl-line-highlight))))
 
 (defsubst treemacs-project-at-point ()
   "Get the `cl-struct-treemacs-project' for the (nearest) project at point.

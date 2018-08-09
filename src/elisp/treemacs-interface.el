@@ -641,38 +641,30 @@ For slower scrolling see `treemacs-previous-line-other-window'"
           (propertize new-name 'face 'font-lock-type-face))))))
   (treemacs--evade-image))
 
-(defun treemacs-add-project (path)
-  "Add a new project for a given PATH."
-  (interactive "DDirectory: ")
-  (treemacs-add-project-at (treemacs--canonical-path path)))
+(defun treemacs-add-project-to-workspace (path)
+  "Add a projec at given PATH to the current workspace."
+  (interactive "DProject root: ")
+  (pcase (treemacs-do-add-project-to-workspace path)
+    (`(success ,msg)
+     (treemacs-pulse-on-success msg))
+    (`(duplicate-project ,project ,msg)
+     (goto-char (treemacs-project->position project))
+     (treemacs-pulse-on-success msg))
+    (`(duplicate-name ,project ,msg)
+     (goto-char (treemacs-project->position project))
+     (treemacs-pulse-on-failure msg))))
+(defalias 'treemacs-add-project #'treemacs-add-project-to-workspace)
+(with-no-warnings
+  (make-obsolete #'treemacs-add-project #'treemacs-add-project-to-workspace "v2.2.1"))
 
-(defun treemacs-remove-project ()
-  "Remove the project at point."
+(defun treemacs-remove-project-from-workspace ()
+  "Remove the project at point from the current workspace."
   (interactive)
   (treemacs-unless-let (project (treemacs-project-at-point))
       (treemacs-pulse-on-failure "There is no project here.")
-    (treemacs-run-in-every-buffer
-     (treemacs-with-writable-buffer
-      (-let [project-btn (treemacs-project->position project)]
-        (goto-char project-btn)
-        (when (treemacs-project->is-expanded? project)
-          (treemacs--collapse-root-node project-btn t))
-        (kill-whole-line)
-        (treemacs--forget-last-highlight)
-        (unless (treemacs-project->is-last? project)
-          (kill-whole-line))
-        (delete-trailing-whitespace))
-      (treemacs--remove-project-from-current-workspace project)
-      (treemacs-on-collapse (treemacs-project->path project) t)
-      (-let [treemacs-pulse-on-failure nil]
-        (unless (treemacs-next-project) (treemacs-previous-project)))
-      (--when-let (treemacs-get-local-window)
-        (with-selected-window it
-          (recenter)))
-      (treemacs--evade-image)
-      (hl-line-highlight)
-      (treemacs-pulse-on-success "Removed project %s from the workspace."
-        (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))))
+    (treemacs-do-remove-project-from-workspace project)
+    (treemacs-pulse-on-success "Removed project %s from the workspace."
+      (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))
 
 (defun treemacs-refresh ()
   "Refresh the project at point."
@@ -766,8 +758,8 @@ Only works with a single project in the workspace."
              (treemacs--no-messages t)
              (treemacs-pulse-on-success nil))
         (unless (string= root new-root)
-          (treemacs-remove-project)
-          (treemacs-add-project-at new-root new-name)
+          (treemacs-remove-project-from-workspace)
+          (treemacs-do-add-project-to-workspace new-root new-name)
           (treemacs-goto-button new-root)
           (treemacs-toggle-node))))))
 
@@ -787,8 +779,8 @@ Only works with a single project in the workspace."
          (let ((new-root (button-get btn :path))
                (treemacs--no-messages t)
                (treemacs-pulse-on-success nil))
-           (treemacs-remove-project)
-           (treemacs-add-project-at new-root (file-name-nondirectory new-root))
+           (treemacs-remove-project-from-workspace)
+           (treemacs-do-add-project-to-workspace new-root (file-name-nondirectory new-root))
            (treemacs-goto-button new-root)
            (treemacs-toggle-node)))
         (_

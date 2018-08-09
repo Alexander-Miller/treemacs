@@ -885,7 +885,7 @@
 
                 ;; add another project, expand both and jump between them
                 (-let [unread-command-events (listify-key-sequence (kbd "RET"))]
-                  (treemacs-add-project (concat treemacs-dir "/src")))
+                  (treemacs-add-project-to-workspace (concat treemacs-dir "/src")))
                 (should (string= "src" (treemacs--get-label-of (treemacs-current-button))))
                 (call-interactively #'treemacs-previous-project)
                 (should (string= "Test Project" (treemacs--get-label-of (treemacs-current-button))))

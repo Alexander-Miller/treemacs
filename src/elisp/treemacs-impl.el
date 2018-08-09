@@ -91,7 +91,7 @@
   treemacs-current-workspace
   treemacs-workspace->projects
   treemacs-workspace->is-empty?
-  treemacs-add-project-at
+  treemacs-do-add-project-to-workspace
   treemacs-project->is-expanded?
   treemacs-project->path
   treemacs-project->refresh!
@@ -474,7 +474,7 @@ Add a project for ROOT if it's non-nil."
        (when (treemacs-workspace->is-empty?)
          (-> (treemacs--read-first-project-path)
              (treemacs--canonical-path)
-             (treemacs-add-project-at)))
+             (treemacs-do-add-project-to-workspace)))
        (treemacs-with-writable-buffer
         (let* ((projects (treemacs-workspace->projects (treemacs-current-workspace)))
                (last-index (1- (length projects))))
@@ -485,7 +485,7 @@ Add a project for ROOT if it's non-nil."
               (when treemacs-space-between-root-nodes
                 (insert "\n"))))))
        (goto-char 2)))
-    (when root (treemacs-add-project-at (treemacs--canonical-path root)))
+    (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root)))
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
