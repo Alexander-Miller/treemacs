@@ -60,6 +60,10 @@ ITER: Treemacs-Iter struct."
       ;; we still need something to make the `s-matches?' calls work
       "__EMPTY__"))
 
+(defsubst treemacs--should-not-run-persistence? ()
+  "No saving and loading in noninteractive and CI environments."
+  (or noninteractive (getenv "CI")))
+
 (defun treemacs--read-workspaces (iter)
   "Read a list of workspaces from the lines in ITER.
 
@@ -108,7 +112,7 @@ ITER: Treemacs-Iter struct"
 
 (defun treemacs--persist ()
   "Persist treemacs' state in `treemacs-persist-file'."
-  (unless noninteractive
+  (unless (treemacs--should-not-run-persistence?)
     (unless (f-exists? treemacs-persist-file)
       (f-mkdir (f-dirname treemacs-persist-file))
       (f-touch treemacs-persist-file))
@@ -128,7 +132,7 @@ ITER: Treemacs-Iter struct"
 
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs-persist-file'."
-  (unless noninteractive
+  (unless (treemacs--should-not-run-persistence?)
     (condition-case e
         (when (file-exists-p treemacs-persist-file)
           (-let [str-list (--reject (or (string= it "")

@@ -30,6 +30,16 @@
 (require 'f)
 (require 'ht)
 
+(defmacro treemacs--with-workspace (ws &rest body)
+  "Set WS as the current workspace and then run BODY."
+  (declare (indent 1))
+  `(-let [--original-- (treemacs-current-workspace)]
+     (unwind-protect
+         (progn
+           (set-frame-parameter (selected-frame) 'treemacs-workspace ,ws)
+           ,@body)
+       (set-frame-parameter (selected-frame) 'treemacs-workspace --original--))))
+
 ;; `treemacs--maybe-filter-dotfiles'
 (progn
   (ert-deftest filter-dotfiles::do-nothing-when-dotfiles-are-shown ()
@@ -442,25 +452,21 @@
 (progn
   (ert-deftest project-for-path::returns-nil-on-nil-input ()
     (-let [project (make-treemacs-project :path "/A")]
-      (with-mock
-        (stub treemacs-current-workspace => (make-treemacs-workspace :projects (list project)))
+      (treemacs--with-workspace (make-treemacs-workspace :projects (list project))
         (should-not (treemacs--find-project-for-path nil)))))
 
   (ert-deftest project-for-path::returns-nil-on-empty-workspace ()
-    (with-mock
-      (stub treemacs-current-workspace => (make-treemacs-workspace :projects nil))
+    (treemacs--with-workspace (make-treemacs-workspace :projects nil)
       (should-not (treemacs--find-project-for-path "/A"))))
 
   (ert-deftest project-for-path::returns-nil-when-path-does-not-fit ()
     (-let [project (make-treemacs-project :path "/A/B")]
-      (with-mock
-        (stub treemacs-current-workspace => (make-treemacs-workspace :projects (list project)))
+      (treemacs--with-workspace (make-treemacs-workspace :projects (list project))
         (should-not (treemacs--find-project-for-path "/A/C")))))
 
   (ert-deftest project-for-path::returns-project-when-path-fits ()
     (-let [project (make-treemacs-project :path "/A/B")]
-      (with-mock
-        (stub treemacs-current-workspace => (make-treemacs-workspace :projects (list project)))
+      (treemacs--with-workspace (make-treemacs-workspace :projects (list project))
         (should (equal project (treemacs--find-project-for-path "/A/B/C")))))))
 
 ;; `treemacs--find-index-pos'
@@ -865,14 +871,16 @@
 (ert-deftest treemacs::sys-test ()
   (save-window-excursion
     (save-match-data
-      (let* ((imenu-auto-rescan t)
-             (org-imenu-depth 10)
-             (treemacs-collapse-dirs 3)
-             (project (make-treemacs-project :name "Test Project" :path (concat treemacs-dir "/test"))))
-        (unless noninteractive
-          (unwind-protect
-              (with-mock
-                (stub treemacs-current-workspace => (make-treemacs-workspace :name "Test Workspace" :projects (list project)))
+      (unless noninteractive
+        (unwind-protect
+            (let* ((imenu-auto-rescan t)
+                   (org-imenu-depth 10)
+                   (treemacs-collapse-dirs 3)
+                   (project (make-treemacs-project :name "Test Project" :path (concat treemacs-dir "/test")))
+                   (workspace (make-treemacs-workspace :name "Test Workspace" :projects (list project)))
+                   (workspaces treemacs--workspaces))
+              (treemacs--with-workspace workspace
+                (setq treemacs--workspaces (list workspace))
                 (delete-other-windows)
                 (--when-let (treemacs-get-local-buffer) (kill-buffer it))
 
@@ -1002,7 +1010,9 @@
                 (call-interactively #'treemacs-find-tag)
                 (call-interactively #'treemacs-select-window)
                 (should (string= "FOO" (treemacs--get-label-of (treemacs-current-button)))))
-            (--when-let (treemacs-get-local-buffer) (kill-buffer it))))))))
+
+              (--when-let (treemacs-get-local-buffer) (kill-buffer it))
+              (setq treemacs--workspaces workspaces)))))))
 
 (provide 'treemacs-test)
 

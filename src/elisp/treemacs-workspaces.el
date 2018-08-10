@@ -56,8 +56,7 @@
   "Get the current workspace.
 Workspaces are local to frames and are therefore stored as frame parameters and
 not buffer-local values."
-  (or (frame-parameter (selected-frame) 'treemacs-workspace)
-      (user-error "There is no workspace in the current buffer")))
+  (frame-parameter (selected-frame) 'treemacs-workspace))
 
 (defun treemacs--find-project-for-buffer ()
   "In the current workspace find the project current buffer's file falls under."
