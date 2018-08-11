@@ -471,19 +471,19 @@ Add a project for ROOT if it's non-nil."
        (treemacs--reset-index)
        (treemacs--reset-project-positions)
        (treemacs--find-workspace)
-       (when (treemacs-workspace->is-empty?)
-         (-> (treemacs--read-first-project-path)
-             (treemacs--canonical-path)
-             (treemacs-do-add-project-to-workspace)))
-       (treemacs-with-writable-buffer
-        (let* ((projects (treemacs-workspace->projects (treemacs-current-workspace)))
-               (last-index (1- (length projects))))
-          (--each projects
-            (treemacs--add-root-element it)
-            (unless (= it-index last-index)
-              (insert "\n")
-              (when treemacs-space-between-root-nodes
-                (insert "\n"))))))
+       (if (treemacs-workspace->is-empty?)
+           (-> (treemacs--read-first-project-path)
+               (treemacs--canonical-path)
+               (treemacs-do-add-project-to-workspace))
+         (treemacs-with-writable-buffer
+          (let* ((projects (treemacs-workspace->projects (treemacs-current-workspace)))
+                 (last-index (1- (length projects))))
+            (--each projects
+              (treemacs--add-root-element it)
+              (unless (= it-index last-index)
+                (insert "\n")
+                (when treemacs-space-between-root-nodes
+                  (insert "\n")))))))
        (goto-char 2)))
     (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root)))
     (with-no-warnings (setq treemacs--ready-to-follow t))
