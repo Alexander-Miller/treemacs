@@ -53,8 +53,7 @@
   (require 'treemacs-macros))
 
 (treemacs-only-during-init
- (unless noninteractive
-   (treemacs--restore)))
+ (treemacs--restore))
 
 (defconst treemacs-version
   (eval-when-compile
