@@ -276,7 +276,7 @@ Used as a post command hook."
         truncate-lines      t
         indent-tabs-mode    nil
         cursor-type         nil
-        desktop-save-buffer t)
+        desktop-save-buffer nil)
 
   ;; higher fuzz value makes it less likely to start a mouse drag
   ;; and make a switch to visual state
@@ -286,6 +286,10 @@ Used as a post command hook."
   (visual-line-mode -1)
   (font-lock-mode -1)
   (jit-lock-mode nil)
+  ;; fringe indicator must be set up right here, before hl-line-mode, since activating hl-line-mode will
+  ;; invoke the movement of the fringe overlay that would otherwise be nil
+  (when treemacs-fringe-indicator-mode
+    (treemacs--setup-fringe-indicator-mode))
   (hl-line-mode t)
 
   ;; needs to run manually the first time treemacs is loaded, since the hook is only added *after*

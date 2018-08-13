@@ -47,13 +47,11 @@
 
 (defun treemacs--setup-fringe-indicator-mode ()
   "Setup `treemacs-fringe-indicator-mode'."
-  (treemacs-run-in-every-buffer (treemacs--enable-fringe-indicator))
-  (add-hook 'treemacs-mode-hook #'treemacs--enable-fringe-indicator))
+  (treemacs-run-in-every-buffer (treemacs--enable-fringe-indicator)))
 
 (defun treemacs--tear-down-fringe-indicator-mode ()
   "Tear down `treemacs-fringe-indicator-mode'."
-  (treemacs-run-in-every-buffer (treemacs--disable-fringe-indicator))
-  (remove-hook 'treemacs-mode-hook #'treemacs--enable-fringe-indicator))
+  (treemacs-run-in-every-buffer (treemacs--disable-fringe-indicator)))
 
 (define-minor-mode treemacs-fringe-indicator-mode
   "Toggle `treemacs-fringe-indicator-mode'.
