@@ -21,6 +21,7 @@
 ;;; Code:
 
 (require 's)
+(require 'f)
 (require 'hydra)
 (require 'treemacs-interface)
 (require 'treemacs-customization)
@@ -264,7 +265,7 @@ Used as a post command hook."
   (--if-let (treemacs-current-button)
       (-let [path (treemacs--nearest-path it)]
         (when (file-readable-p path)
-          (setq default-directory (if (file-directory-p path) path (file-name-directory path)))))
+          (setq default-directory (f-slash (if (file-directory-p path) path (file-name-directory path))))))
     "/"))
 
 ;;;###autoload
