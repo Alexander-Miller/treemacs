@@ -152,8 +152,6 @@ ITER: Treemacs-Iter struct"
                 (setq treemacs--workspaces (list workspace))))))
       (error (treemacs-log "Error '%s' when loading the persisted workspace." e)))))
 
-(add-hook 'kill-emacs-hook #'treemacs--persist)
-
 (provide 'treemacs-persistence)
 
 ;;; treemacs-persistence.el ends here

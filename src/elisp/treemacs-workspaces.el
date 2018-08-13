@@ -37,6 +37,9 @@
   treemacs-previous-project
   treemacs-next-project)
 
+(treemacs-import-functions-from "treemacs-persistence"
+  treemacs--persist)
+
 (treemacs--defstruct treemacs-project name path)
 
 (treemacs--defstruct treemacs-workspace name projects)
@@ -179,6 +182,7 @@ NAME: String"
         (treemacs--add-root-element project)
         (treemacs--insert-shadow-node (make-treemacs-shadow-node
                                        :key path :position (treemacs-project->position project)))))
+      (treemacs--persist)
       `(success
         ,(format "Added project %s to the workspace."
                  (propertize name 'face 'font-lock-type-face))))))
@@ -202,14 +206,15 @@ PROJECT: Project Struct"
           (treemacs-previous-project)
         (kill-whole-line)
         (treemacs-next-project)))
-    ;; (treemacs--forget-last-highlight) ???
+    (treemacs--forget-last-highlight)
     (delete-trailing-whitespace)
     (treemacs--remove-project-from-current-workspace project)
     (--when-let (treemacs-get-local-window)
       (with-selected-window it
         (recenter)))
     (treemacs--evade-image)
-    (hl-line-highlight))))
+    (hl-line-highlight)))
+  (treemacs--persist))
 
 (defsubst treemacs-project-at-point ()
   "Get the `cl-struct-treemacs-project' for the (nearest) project at point.
