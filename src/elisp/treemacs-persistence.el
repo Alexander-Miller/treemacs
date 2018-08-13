@@ -138,7 +138,8 @@ ITER: Treemacs-Iter struct"
           (-let [str-list (--reject (or (string= it "")
                                         (s-starts-with? "#+STARTUP:" it))
                                     (-> treemacs-persist-file (f-read) (s-lines)))]
-            (if (--any? (s-matches? treemacs--persist-kv-regex it) str-list)
+            (if (and (>= (length str-list) 3)
+                     (--any? (s-matches? treemacs--persist-kv-regex it) str-list))
                 (setq treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list str-list)))
               ;; read state based on the system used before the current ini-format
               ;; should be removed after enough time has passed

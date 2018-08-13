@@ -44,7 +44,7 @@
 
 (treemacs--defstruct treemacs-workspace name projects)
 
-(defconst treemacs--workspaces (list (make-treemacs-workspace :name "Default Workspace")))
+(defvar treemacs--workspaces (list (make-treemacs-workspace :name "Default Workspace")))
 
 (defvar-local treemacs--project-positions nil)
 
