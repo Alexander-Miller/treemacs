@@ -49,7 +49,7 @@
 (defvar-local treemacs--project-positions nil)
 
 (defvar-local treemacs--project-of-buffer nil
-  "The `cl-struct-treemacs-project' that the current buffer falls under, if any.")
+  "The project that the current buffer falls under, if any.")
 
 (defsubst treemacs--find-workspace ()
   "Find the right workspace for the current (uninitialized) treemacs buffer."
@@ -232,7 +232,7 @@ PROJECT: Project Struct"
   (treemacs--persist))
 
 (defsubst treemacs-project-at-point ()
-  "Get the `cl-struct-treemacs-project' for the (nearest) project at point.
+  "Get the project for the (nearest) project at point.
 Return nil when `treemacs-current-button' is nil."
   (-when-let (btn (treemacs-current-button))
     (-let [project (button-get btn :project)]

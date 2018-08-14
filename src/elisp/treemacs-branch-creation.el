@@ -488,7 +488,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
 (defun treemacs--add-root-element (project)
   "Insert a new root node for the given PROJECT node.
 
-PROJECT: `cl-struct-treemacs-project'"
+PROJECT: Project Struct"
   (insert treemacs-icon-root)
   (treemacs--set-project-position project (point-marker))
   (insert

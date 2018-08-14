@@ -591,7 +591,7 @@ No attempt is made to verify that PATH falls under a project in the workspace.
 It is assumed that this check has already been made.
 
 PATH: Filepath
-PROJECT `cl-struct-treemacs-project'"
+PROJECT Project Struct"
   (unless project (setq project (treemacs--find-project-for-path path)))
   (let* (;; go back here if the search fails
          (start (prog1 (point) (goto-char (treemacs-project->position project))))

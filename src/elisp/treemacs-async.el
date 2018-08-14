@@ -225,12 +225,12 @@ FUTURE: Pfuture process"
     (ht)))
 
 (treemacs-only-during-init
-  (pcase (cons (not (null (executable-find "git")))
-                (not (null (executable-find "python3"))))
-    (`(t . t)
-     (treemacs-git-mode 'deferred))
-    (`(t . _)
-     (treemacs-git-mode 'simple))))
+ (pcase (cons (not (null (executable-find "git")))
+              (not (null (executable-find "python3"))))
+   (`(t . t)
+    (treemacs-git-mode 'deferred))
+   (`(t . _)
+    (treemacs-git-mode 'simple))))
 
 (provide 'treemacs-async)
 
