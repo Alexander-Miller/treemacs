@@ -645,14 +645,17 @@ For slower scrolling see `treemacs-previous-line-other-window'"
   "Add a projec at given PATH to the current workspace."
   (interactive "DProject root: ")
   (pcase (treemacs-do-add-project-to-workspace path)
-    (`(success ,msg)
-     (treemacs-pulse-on-success msg))
-    (`(duplicate-project ,project ,msg)
-     (goto-char (treemacs-project->position project))
-     (treemacs-pulse-on-success msg))
-    (`(duplicate-name ,project ,msg)
-     (goto-char (treemacs-project->position project))
-     (treemacs-pulse-on-failure msg))))
+    (`(success ,project)
+     (treemacs-pulse-on-success "Added project %s to the workspace."
+       (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))
+    (`(duplicate-project ,duplicate)
+     (goto-char (treemacs-project->position duplicate))
+     (treemacs-pulse-on-success "A project for %s already exists."
+       (propertize (treemacs-project->path duplicate) 'face 'font-lock-string-face)))
+    (`(duplicate-name ,duplicate)
+     (goto-char (treemacs-project->position duplicate))
+     (treemacs-pulse-on-failure "A project with the name %s already exists."
+             (propertize (treemacs-project->name duplicate) 'face 'font-lock-type-face)))))
 (defalias 'treemacs-add-project #'treemacs-add-project-to-workspace)
 (with-no-warnings
   (make-obsolete #'treemacs-add-project #'treemacs-add-project-to-workspace "v2.2.1"))

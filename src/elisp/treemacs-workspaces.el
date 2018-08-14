@@ -129,7 +129,7 @@ not buffer-local values."
       (next-single-property-change :project)
       (null)))
 
-(cl-defun treemacs-do-add-project-to-workspace (path &optional name)
+(defun treemacs-do-add-project-to-workspace (path &optional name)
   "Add project at PATH to the current workspace.
 NAME is provided during ad-hoc navigation only.
 Return values may be as follows:
@@ -137,14 +137,12 @@ Return values may be as follows:
 * If the project for the given path already exists:
   - the symbol `duplicate-project'
   - the project the PATH falls into
-  - an error message
 * If a project for the given name already exists:
   - the symbol `duplicate-name'
   - the project with the duplicate name
-  - an error message
 * If everything went well:
   - the symbol `success'
-  - a log message
+  - the created project
 
 PATH: Filepath
 NAME: String"
@@ -152,20 +150,14 @@ NAME: String"
     (setq path (treemacs--canonical-path path))
     (-when-let (project (treemacs--find-project-for-path path))
         (cl-return-from body
-          `(duplicate-project
-            ,project
-            ,(format "A project for %s already exists."
-                    (propertize path 'face 'font-lock-string-face)))))
+          `(duplicate-project ,project)))
     (let* ((name (or name (read-string "Project Name: " (f-filename path))))
            (project (make-treemacs-project :name name :path path))
            (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
       (-when-let (double (--first (string= name (treemacs-project->name it))
                                   (treemacs-workspace->projects (treemacs-current-workspace))))
         (cl-return-from body
-          `(duplicate-name
-            ,double
-            ,(format "A project with the name %s already exists."
-                     (propertize name 'face 'font-lock-type-face)))))
+          `(duplicate-name ,double)))
       (treemacs--add-project-to-current-workspace project)
       (treemacs-run-in-every-buffer
        (treemacs-with-writable-buffer
@@ -183,9 +175,7 @@ NAME: String"
         (treemacs--insert-shadow-node (make-treemacs-shadow-node
                                        :key path :position (treemacs-project->position project)))))
       (treemacs--persist)
-      `(success
-        ,(format "Added project %s to the workspace."
-                 (propertize name 'face 'font-lock-type-face))))))
+      `(success ,project))))
 (defalias 'treemacs-add-project-at #'treemacs-do-add-project-to-workspace)
 (with-no-warnings
   (make-obsolete #'treemacs-add-project-at #'treemacs-do-add-project-to-workspace "v.2.2.1"))
