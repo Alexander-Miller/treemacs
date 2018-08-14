@@ -55,6 +55,10 @@
   "Find the right workspace for the current (uninitialized) treemacs buffer."
   (set-frame-parameter (selected-frame) 'treemacs-workspace (car treemacs--workspaces)))
 
+(defsubst treemacs-workspaces ()
+  "Return the list of all workspaces in treemacs."
+  treemacs--workspaces)
+
 (defsubst treemacs-current-workspace ()
   "Get the current workspace.
 Workspaces are local to frames and are therefore stored as frame parameters and
