@@ -140,11 +140,17 @@ Return values may be as follows:
 * If a workspace for the given name already exists:
   - the symbol `duplicate-name'
   - the workspace with the duplicate name
+* If the given name is invalid:
+  - the symbol `invalid-name'
+  - the name
 * If everything went well:
   - the symbol `success'
   - the created workspace"
   (cl-block body
     (-let [name (read-string "Workspace name: ")]
+      (when (treemacs--is-name-invalid? name)
+        (cl-return-from body
+          `(invalid-name ,name)))
       (-when-let (ws (--first (string= name (treemacs-workspace->name it))
                               treemacs--workspaces))
         (cl-return-from body
@@ -165,6 +171,9 @@ Return values may be as follows:
 * If a project for the given name already exists:
   - the symbol `duplicate-name'
   - the project with the duplicate name
+* If the given name is invalid:
+  - the symbol `invalid-name'
+  - the name
 * If everything went well:
   - the symbol `success'
   - the created project
@@ -179,6 +188,9 @@ NAME: String"
     (let* ((name (or name (read-string "Project Name: " (f-filename path))))
            (project (make-treemacs-project :name name :path path))
            (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
+      (when (treemacs--is-name-invalid? name)
+        (cl-return-from body
+          `(invalid-name ,name)))
       (-when-let (double (--first (string= name (treemacs-project->name it))
                                   (treemacs-workspace->projects (treemacs-current-workspace))))
         (cl-return-from body
@@ -230,6 +242,14 @@ PROJECT: Project Struct"
     (treemacs--evade-image)
     (hl-line-highlight)))
   (treemacs--persist))
+
+(defun treemacs--is-name-invalid? (name)
+  "Validate the NAME of a project or workspace.
+Returns t when the name is invalid.
+
+NAME: String"
+  (or (string= "" name)
+      (not (s-matches? (rx (1+ (or space (syntax word) (syntax symbol) (syntax punctuation)))) name))))
 
 (defsubst treemacs-project-at-point ()
   "Get the project for the (nearest) project at point.

@@ -648,6 +648,9 @@ For slower scrolling see `treemacs-previous-line-other-window'"
     (`(success ,project)
      (treemacs-pulse-on-success "Added project %s to the workspace."
        (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))
+    (`(invalid-name ,name)
+     (treemacs-pulse-on-failure "Name '%s' is invalid."
+       (propertize name 'face 'font-lock-string-face)))
     (`(duplicate-project ,duplicate)
      (goto-char (treemacs-project->position duplicate))
      (treemacs-pulse-on-success "A project for %s already exists."
@@ -676,6 +679,9 @@ For slower scrolling see `treemacs-previous-line-other-window'"
     (`(success ,workspace)
      (treemacs-pulse-on-success "Workspace %s successfully created."
        (propertize (treemacs-workspace->name workspace) 'face 'font-lock-type-face)))
+    (`(invalid-name ,name)
+     (treemacs-pulse-on-failure "Name '%s' is invalid."
+       (propertize name 'face 'font-lock-string-face)))
     (`(duplicate-name ,duplicate)
      (treemacs-pulse-on-failure "A workspace with the name %s already exists."
        (propertize (treemacs-workspace->name duplicate) 'face 'font-lock-string-face)))))
