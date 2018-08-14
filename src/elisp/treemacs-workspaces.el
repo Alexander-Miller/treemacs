@@ -129,6 +129,27 @@ not buffer-local values."
       (next-single-property-change :project)
       (null)))
 
+(defun treemacs-do-create-workspace ()
+  "Create a new workspace.
+Return values may be as follows:
+
+* If a workspace for the given name already exists:
+  - the symbol `duplicate-name'
+  - the workspace with the duplicate name
+* If everything went well:
+  - the symbol `success'
+  - the created workspace"
+  (cl-block body
+    (-let [name (read-string "Workspace name: ")]
+      (-when-let (ws (--first (string= name (treemacs-workspace->name it))
+                              treemacs--workspaces))
+        (cl-return-from body
+          `(duplicate-name ,ws)))
+      (-let [workspace (make-treemacs-workspace :name name)]
+        (add-to-list 'treemacs--workspaces workspace :append)
+        (treemacs--persist)
+        `(success ,workspace)))))
+
 (defun treemacs-do-add-project-to-workspace (path &optional name)
   "Add project at PATH to the current workspace.
 NAME is provided during ad-hoc navigation only.

@@ -669,6 +669,17 @@ For slower scrolling see `treemacs-previous-line-other-window'"
     (treemacs-pulse-on-success "Removed project %s from the workspace."
       (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))
 
+(defun treemacs-create-workspace ()
+  "Create a new workspace."
+  (interactive)
+  (pcase (treemacs-do-create-workspace)
+    (`(success ,workspace)
+     (treemacs-pulse-on-success "Workspace %s successfully created."
+       (propertize (treemacs-workspace->name workspace) 'face 'font-lock-type-face)))
+    (`(duplicate-name ,duplicate)
+     (treemacs-pulse-on-failure "A workspace with the name %s already exists."
+       (propertize (treemacs-workspace->name duplicate) 'face 'font-lock-string-face)))))
+
 (defun treemacs-refresh ()
   "Refresh the project at point."
   (interactive)
