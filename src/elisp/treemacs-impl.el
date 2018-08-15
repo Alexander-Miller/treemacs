@@ -816,7 +816,6 @@ Will refresh every project when PROJECT is 'all."
   "Potentially recenter after following a file or tag.
 The answer depends on the distance between `point' and the window top/bottom
 being smaller than `treemacs-follow-recenter-distance'."
-  (interactive)
   (let* ((current-line (float (count-lines (window-start) (point))))
          (all-lines (float (window-height)))
          (distance-from-top (/ current-line all-lines))

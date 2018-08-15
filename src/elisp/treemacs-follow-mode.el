@@ -65,7 +65,7 @@ not visible."
                   (not (s-starts-with? treemacs--buffer-name-prefix (buffer-name current-buffer)))
                   (f-exists? current-file))
          (-when-let (project-for-file (treemacs--find-project-for-buffer))
-           (with-current-buffer (window-buffer treemacs-window)
+           (with-selected-window treemacs-window
              (-let [selected-file (--if-let (treemacs-current-button)
                                       (treemacs--nearest-path it)
                                     (treemacs-project->path project-for-file))]
