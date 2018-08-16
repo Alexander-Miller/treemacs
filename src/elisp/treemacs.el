@@ -57,7 +57,9 @@
 
 (defconst treemacs-version
   (eval-when-compile
-    (format "v2.2.1-%s" (format-time-string "%F" (current-time)))))
+    (format "v2.2.1-%s@%s"
+            (format-time-string "%Y.%m.%d" (current-time))
+            emacs-version)))
 
 ;;;###autoload
 (defun treemacs-version ()
