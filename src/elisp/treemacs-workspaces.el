@@ -160,6 +160,36 @@ Return values may be as follows:
         (treemacs--persist)
         `(success ,workspace)))))
 
+(defun treemacs-do-remove-workspace (&optional ask-to-confirm)
+  "Delete a workspace.
+Ask the user to confirm the deletion when ASK-TO-CONFIRM is t (it will be when
+this is called from `treemacs-remove-workspace').
+Return values may be as follows:
+
+* If only a single workspace remains:
+  - the symbol `only-one-workspace'
+* If the user cancel the deletion:
+  - the symbol `user-cancel'
+* If everything went well:
+  - the symbol `success'
+  - the deleted workspace
+  - the list of the remaining workspaces"
+  (cl-block body
+    (when (= 1 (length treemacs--workspaces))
+      (cl-return-from body 'only-one-workspace))
+    (let* ((names->workspaces (--map (cons (treemacs-workspace->name it) it) treemacs--workspaces))
+           (name (completing-read "Delete: " names->workspaces nil t))
+           (to-delete (cdr (assoc name names->workspaces))))
+      (when (and ask-to-confirm
+                 (not (yes-or-no-p (format "Delete workspace %s and all its projects?"
+                                           (propertize (treemacs-workspace->name to-delete)
+                                                       'face 'font-lock-type-face)))))
+        (cl-return-from body 'user-cancel))
+      ;; TODO re-render
+      (setq treemacs--workspaces (delete to-delete treemacs--workspaces))
+      (treemacs--persist)
+      `(success ,to-delete ,treemacs--workspaces))))
+
 (defun treemacs-do-add-project-to-workspace (path &optional name)
   "Add project at PATH to the current workspace.
 NAME is provided during ad-hoc navigation only.

@@ -686,6 +686,18 @@ For slower scrolling see `treemacs-previous-line-other-window'"
      (treemacs-pulse-on-failure "A workspace with the name %s already exists."
        (propertize (treemacs-workspace->name duplicate) 'face 'font-lock-string-face)))))
 
+(defun treemacs-remove-workspace ()
+  "Delete a workspace."
+  (interactive)
+  (pcase (treemacs-do-remove-workspace :ask-to-confirm)
+    ('only-one-workspace
+     (treemacs-pulse-on-failure "You cannot delete the last workspace."))
+    ('user-cancel
+     (ignore))
+    (`(success ,deleted ,_)
+     (treemacs-pulse-on-success "Workspace %s was deleted."
+       (propertize (treemacs-workspace->name deleted) 'face 'font-lock-type-face)))))
+
 (defun treemacs-refresh ()
   "Refresh the project at point."
   (interactive)
