@@ -120,13 +120,14 @@ longer be contigious.")
 
 (defconst treemacs-dir
   ;; locally we're in src/elisp, installed from melpa we're at the package root
-  (-let [dir (-> (if load-file-name
-                     (file-name-directory load-file-name)
-                   default-directory)
-                 (expand-file-name))]
-    (if (s-ends-with? "src/elisp/" dir)
-        (-> dir (f-parent) (f-parent))
-      dir))
+  (eval-when-compile
+    (-let [dir (-> (if load-file-name
+                       (file-name-directory load-file-name)
+                     default-directory)
+                   (expand-file-name))]
+      (if (s-ends-with? "src/elisp/" dir)
+          (-> dir (f-parent) (f-parent))
+        dir)))
   "The directory treemacs.el is stored in.")
 
 (defvar treemacs--no-messages nil

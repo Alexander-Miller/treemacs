@@ -30,14 +30,16 @@
   (require 'treemacs-macros))
 
 (defvar treemacs--dirs-to-collpase.py
-  (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
-      (f-join treemacs-dir "treemacs-dirs-to-collapse.py")
-    (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py")))
+  (eval-when-compile
+    (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
+        (f-join treemacs-dir "treemacs-dirs-to-collapse.py")
+      (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py"))))
 
 (defvar treemacs--git-status.py
-  (if (member "treemacs-git-status.py" (directory-files treemacs-dir))
-      (f-join treemacs-dir "treemacs-git-status.py")
-    (f-join treemacs-dir "src/scripts/treemacs-git-status.py")))
+  (eval-when-compile
+    (if (member "treemacs-git-status.py" (directory-files treemacs-dir))
+        (f-join treemacs-dir "treemacs-git-status.py")
+      (f-join treemacs-dir "src/scripts/treemacs-git-status.py"))))
 
 (defun treemacs--git-status-process-function (path)
   "Dummy with PATH.
