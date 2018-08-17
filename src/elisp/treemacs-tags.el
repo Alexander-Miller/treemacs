@@ -164,7 +164,7 @@ DEPTH: Int"
 
 (defun treemacs--expand-file-node (btn &optional recursive)
   "Open tag items for file BTN.
-Recursively open all tag below BTN when RECURSIVE is non-nil."
+Recursively open all tags below BTN when RECURSIVE is non-nil."
   (-let [path (button-get btn :path)]
     (-if-let (index (treemacs--get-imenu-index path))
         (treemacs--button-open
