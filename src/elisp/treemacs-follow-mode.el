@@ -90,7 +90,8 @@ not visible."
   "Advice function for `treemacs-follow-mode'.
 Ignores the original arguments of `select-window' and directly calls
 `treemacs--follow'."
-  (treemacs--idle-follow))
+  (when treemacs--ready-to-follow
+    (treemacs--idle-follow)))
 
 (defun treemacs--follow-compatibility-advice (original-func &rest args)
   "Make ORIGINAL-FUNC compatible with `treemacs-follow-mode'.
