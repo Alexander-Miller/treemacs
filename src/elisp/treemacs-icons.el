@@ -28,14 +28,12 @@
 (require 'treemacs-workspaces)
 (eval-and-compile (require 'treemacs-macros))
 
-(defconst treemacs--image-creation-impossible
-  (condition-case e
-      (progn (create-image "" 'png) nil)
-    (error e))
-  "This variable is a non-nil error value when Emacs is unable to create images.
+(defsubst treemacs--is-image-creation-impossible? ()
+  "Will return non-nil when Emacs is unable to create images.
 In this scenario (usually caused by running Emacs without a graphical
 environment) treemacs will not create any of its icons and will be forced to
-permanently use its simple string icon fallack.")
+permanently use its simple string icon fallack."
+  (not (image-type-available-p 'png)))
 
 (defvar treemacs-icons-hash (make-hash-table :size 200 :test #'equal)
   "Hash table containing a mapping of icons onto file extensions.")
@@ -74,24 +72,25 @@ via `assq'.")
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define VAR with its display property being the image created from FILE-NAME.
 Insert VAR into `treemacs-icon-hash' for each of the given file EXTENSIONS."
-  `(progn
-     (defvar ,var nil)
-     (setq ,var
-           (eval-when-compile
-             ;; need to defvar here or the compiler will complain
-             (defvar treemacs--icon-size nil)
-             (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
-                    (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
-               (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
-               (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
-               (concat (propertize " "
-                                   'display image-unselected
-                                   'img-selected image-selected
-                                   'img-unselected image-unselected)
-                       " "))))
-     (push ,var treemacs--created-icons)
-     (--each (quote ,extensions) (ht-set! treemacs-icons-hash it ,var))
-     ,var))
+  (unless (treemacs--is-image-creation-impossible?)
+    `(progn
+       (defvar ,var nil)
+       (setq ,var
+             (eval-when-compile
+               ;; need to defvar here or the compiler will complain
+               (defvar treemacs--icon-size nil)
+               (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
+                      (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
+                 (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
+                 (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
+                 (concat (propertize " "
+                                     'display image-unselected
+                                     'img-selected image-selected
+                                     'img-unselected image-unselected)
+                         " "))))
+       (push ,var treemacs--created-icons)
+       (--each (quote ,extensions) (ht-set! treemacs-icons-hash it ,var))
+       ,var)))
 
 (defmacro treemacs--define-icon-with-default (var val)
   "Define a VAR with value VAL.
@@ -206,8 +205,8 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-hy           "hy.png"               "hy")
   (treemacs--setup-icon treemacs-icon-json         "json.png"             "json")
   (treemacs--setup-icon treemacs-icon-julia        "julia.png"            "jl")
-  (treemacs--setup-icon treemacs-icon-elixir       "elixir.png"       "ex")
-  (treemacs--setup-icon treemacs-icon-elixir-light "elixir_light.png" "exs" "eex")
+  (treemacs--setup-icon treemacs-icon-elixir       "elixir.png"           "ex")
+  (treemacs--setup-icon treemacs-icon-elixir-light "elixir_light.png"     "exs" "eex")
   (treemacs--setup-icon treemacs-icon-makefile     "vsc/makefile.png"     "makefile")
   (treemacs--setup-icon treemacs-icon-license      "vsc/license.png"      "license")
   (treemacs--setup-icon treemacs-icon-zip          "vsc/zip.png"          "zip" "7z" "tar" "gz" "rar")
@@ -231,7 +230,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
 (defun treemacs--setup-icons ()
   "Create and define all icons-related caches, hashes and stashes."
   (setq treemacs-icons-hash (make-hash-table :size 100 :test #'equal))
-  (if treemacs--image-creation-impossible
+  (if (treemacs--is-image-creation-impossible?)
       (treemacs--setup-tui-icons)
     (treemacs--setup-gui-icons)))
 
@@ -293,10 +292,10 @@ is changed."
 If it's running in a TUI switch to simple text icons.
 
 TUI icons will be used if
- * `treemacs--image-creation-impossible' is t,
+ * `treemacs--is-image-creation-impossible?' returns t,
  * `treemacs-no-png-images' is it
  * or if the current frame is a TUI frame"
-  (if (or treemacs--image-creation-impossible
+  (if (or (treemacs--is-image-creation-impossible?)
             treemacs-no-png-images
             (not (window-system)))
       (progn
