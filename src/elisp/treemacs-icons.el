@@ -30,7 +30,7 @@
 
 (defconst treemacs--image-creation-impossible
   (condition-case e
-      (progn (create-image "" 'xpm) nil)
+      (progn (create-image "" 'png) nil)
     (error e))
   "This variable is a non-nil error value when Emacs is unable to create images.
 In this scenario (usually caused by running Emacs without a graphical
