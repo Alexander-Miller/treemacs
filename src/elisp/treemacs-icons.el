@@ -58,7 +58,7 @@ via `assq'.")
   "Return `treemacs--created-icons'."
   treemacs--created-icons)
 
-(defun treemacs--create-image (file-path)
+(defsubst treemacs--create-image (file-path)
   "Load image from FILE-PATH and size it based on `treemacs--icon-size'."
   (-let [(height width) `(,treemacs--icon-size ,treemacs--icon-size)]
     ;; special case for the root icon which is unique in being 20x26 pixels large
@@ -76,19 +76,22 @@ via `assq'.")
 Insert VAR into `treemacs-icon-hash' for each of the given file EXTENSIONS."
   `(progn
      (defvar ,var nil)
-     (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
-            (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
-        (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
-        (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
-        (setq ,var
-              (concat (propertize " "
-                                  'display image-unselected
-                                  'img-selected image-selected
-                                  'img-unselected image-unselected)
-                      " "))
-        (push ,var treemacs--created-icons)
-        (--each (quote ,extensions) (ht-set! treemacs-icons-hash it ,var))
-        ,var)))
+     (setq ,var
+           (eval-when-compile
+             ;; need to defvar here or the compiler will complain
+             (defvar treemacs--icon-size nil)
+             (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
+                    (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
+               (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
+               (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
+               (concat (propertize " "
+                                   'display image-unselected
+                                   'img-selected image-selected
+                                   'img-unselected image-unselected)
+                       " "))))
+     (push ,var treemacs--created-icons)
+     (--each (quote ,extensions) (ht-set! treemacs-icons-hash it ,var))
+     ,var))
 
 (defmacro treemacs--define-icon-with-default (var val)
   "Define a VAR with value VAL.
@@ -112,12 +115,12 @@ Remember the value in `treemacs--default-icons-alist'."
 ;; capable of displaying images and a 'txt' variant as fallback for TUI frames
 
 (defvar treemacs-icon-root-text            "")
-(defvar treemacs-icon-closed-text          (propertize "+ " 'face 'treemacs-term-node-face))
-(defvar treemacs-icon-open-text            (propertize "- " 'face 'treemacs-term-node-face))
-(defvar treemacs-icon-fallback-text        (propertize "  " 'face 'font-lock-keyword-face))
-(defvar treemacs-icon-tag-leaf-text        (propertize "• " 'face 'font-lock-constant-face))
-(defvar treemacs-icon-tag-node-closed-text (propertize "▸ " 'face 'font-lock-string-face))
-(defvar treemacs-icon-tag-node-open-text   (propertize "▾ " 'face 'font-lock-string-face))
+(defvar treemacs-icon-closed-text          (eval-when-compile (propertize "+ " 'face 'treemacs-term-node-face)))
+(defvar treemacs-icon-open-text            (eval-when-compile (propertize "- " 'face 'treemacs-term-node-face)))
+(defvar treemacs-icon-fallback-text        (eval-when-compile (propertize "  " 'face 'font-lock-keyword-face)))
+(defvar treemacs-icon-tag-leaf-text        (eval-when-compile (propertize "• " 'face 'font-lock-constant-face)))
+(defvar treemacs-icon-tag-node-closed-text (eval-when-compile (propertize "▸ " 'face 'font-lock-string-face)))
+(defvar treemacs-icon-tag-node-open-text   (eval-when-compile (propertize "▾ " 'face 'font-lock-string-face)))
 
 (defvar treemacs-icon-root-png            "")
 (defvar treemacs-icon-closed-png          "")
@@ -232,9 +235,6 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
       (treemacs--setup-tui-icons)
     (treemacs--setup-gui-icons)))
 
-(treemacs-only-during-init
- (treemacs--setup-icons))
-
 (defun treemacs-reset-icons ()
   "Reset customized icons to their default values."
   (interactive)
@@ -347,6 +347,9 @@ be assigned which treemacs icon, for exmaple
                  (icon (cdr (assq mode mode-icon-alist))))
       (treemacs-log "Map %s to %s" extension (symbol-name icon))
       (ht-set! treemacs-icons-hash (substring extension 1) (symbol-value icon)))))
+
+(treemacs-only-during-init
+ (treemacs--setup-icons))
 
 (provide 'treemacs-icons)
 
