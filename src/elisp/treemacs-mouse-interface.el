@@ -66,8 +66,9 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 
 (defun treemacs-single-click-expand-action (event)
   "A modified single-leftclick action that expands the clicked nodes.
-Can be bound to [mouse-1] if you prefer to expand nodes with a single click
-instead of a double click.
+Can be bound to <mouse1> if you prefer to expand nodes with a single click
+instead of a double click. Either way it must be bound to a mouse click, or
+EVENT will not be supplied.
 
 Clicking on icons will expand a file's tags, just like
 `treemacs-leftclick-action'."
