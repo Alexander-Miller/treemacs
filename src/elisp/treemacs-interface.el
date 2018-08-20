@@ -750,6 +750,7 @@ With a prefix ARG also forget about all the nodes opened in the project."
     (while (not (button-get btn :project))
       (setq btn (button-get btn :parent)))
     (when (eq 'root-node-open (button-get btn :state))
+      (treemacs--forget-last-highlight)
       (goto-char btn)
       (treemacs--collapse-root-node btn arg)
       (treemacs--maybe-recenter))))
@@ -759,6 +760,7 @@ With a prefix ARG also forget about all the nodes opened in the project."
 With a prefix ARG also forget about all the nodes opened in the projects."
   (interactive "P")
   (save-excursion
+    (treemacs--forget-last-highlight)
     (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
       (-when-let (pos (treemacs-project->position project))
         (when (eq 'root-node-open (button-get pos :state))
