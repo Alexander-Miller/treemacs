@@ -38,7 +38,7 @@ permanently use its simple string icon fallack."
 (defvar treemacs-icons-hash (make-hash-table :size 200 :test #'equal)
   "Hash table containing a mapping of icons onto file extensions.")
 
-(defvar treemacs--icon-size nil
+(defvar treemacs--icon-size 22
   "Size in pixels icons will be resized to.
 See also `treemacs-resize-icons'.")
 
@@ -56,14 +56,20 @@ via `assq'.")
   "Return `treemacs--created-icons'."
   treemacs--created-icons)
 
+(defmacro treemacs--size-adjust (width height)
+  "Special adjust for the WIDTH and HEIGHT of an icon.
+Necessary since root icon are not rectangular."
+  `(let ((w (round (* ,width 0.9090)))
+         (h (round (* ,height 1.1818))))
+     (setq ,width w ,height h)))
+
 (defsubst treemacs--create-image (file-path)
   "Load image from FILE-PATH and size it based on `treemacs--icon-size'."
   (-let [(height width) `(,treemacs--icon-size ,treemacs--icon-size)]
     ;; special case for the root icon which is unique in being 20x26 pixels large
     (when (and (integerp treemacs--icon-size)
                (s-ends-with? "root.png" file-path))
-      (setq width (round (* width 0.9090))
-            height (round (* height 1.1818))))
+      (treemacs--size-adjust width height))
     (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
         (create-image file-path 'imagemagick nil :ascent 'center :width width :height height)
       ;; interning the extension lets up pass both png and xpm icons
@@ -284,8 +290,17 @@ is changed."
   (setq treemacs--icon-size size)
   ;; resizing only works in gui displays so we just re-run the routine that creates
   ;; all the icons after the new size is set
-  (treemacs--setup-gui-icons)
-  (treemacs--refresh-buffer-icons))
+  (--each (treemacs--created-icons)
+    (let ((display        (get-text-property 0 'display it))
+          (img-selected   (get-text-property 0 'img-selected it))
+          (img-unselected (get-text-property 0 'img-unselected it))
+          (width          treemacs--icon-size)
+          (height         treemacs--icon-size))
+      (when (s-ends-with? "root.png" (plist-get (cdr display) :file))
+        (treemacs--size-adjust width height))
+      (dolist (property (list display img-selected img-unselected))
+        (plist-put (cdr property) :height height)
+        (plist-put (cdr property) :width width)))))
 
 (defun treemacs--adjust-icons-to-window-system ()
   "Check if the current treemacs buffer should use TUI icons.
