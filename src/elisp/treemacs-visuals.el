@@ -137,7 +137,7 @@ ignored argument."
   (when (eq 'treemacs-mode major-mode)
     (treemacs-with-writable-buffer
      (-when-let (btn (treemacs-current-button))
-       (let* ((start (- (button-start btn) 2) )
+       (let* ((start (max (point-at-bol) (- (button-start btn) 2)) )
               (end (1+ start))
               (img (get-text-property start 'display))
               (cp (copy-sequence img)))
