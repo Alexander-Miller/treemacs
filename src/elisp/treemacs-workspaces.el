@@ -49,11 +49,7 @@
 (defvar-local treemacs--project-positions nil)
 
 (defvar-local treemacs--project-of-buffer nil
-  "The project that the current buffer falls under, if any.")
-
-(defsubst treemacs--find-workspace ()
-  "Find the right workspace for the current (uninitialized) treemacs buffer."
-  (set-frame-parameter (selected-frame) 'treemacs-workspace (car treemacs--workspaces)))
+  "The project that the current buffer falls under, if any.");; TODO invalidate when?
 
 (defsubst treemacs-workspaces ()
   "Return the list of all workspaces in treemacs."
@@ -62,8 +58,14 @@
 (defsubst treemacs-current-workspace ()
   "Get the current workspace.
 Workspaces are local to frames and are therefore stored as frame parameters and
-not buffer-local values."
+not buffer-local values.
+This function can be used with `setf'."
   (frame-parameter (selected-frame) 'treemacs-workspace))
+(gv-define-setter treemacs-current-workspace (val) `(set-frame-parameter (selected-frame) 'treemacs-workspace ,val))
+
+(defsubst treemacs--find-workspace ()
+  "Find the right workspace for the current (uninitialized) treemacs buffer."
+  (setf (treemacs-current-workspace) (car treemacs--workspaces)))
 
 (defun treemacs--find-project-for-buffer ()
   "In the current workspace find the project current buffer's file falls under."
@@ -272,6 +274,28 @@ PROJECT: Project Struct"
     (treemacs--evade-image)
     (hl-line-highlight)))
   (treemacs--persist))
+
+(defun treemacs-do-switch-workspace ()
+  "Switch to a new workspace.
+Return values may be as follows:
+
+* If there are no workspaces to switch to:
+  - the symbol `only-one-workspace'
+* If everything went well:
+  - the symbol `success'
+  - the selected workspace"
+  (cl-block body
+    (when (= 1 (length treemacs--workspaces))
+      (cl-return-from body
+        'only-one-workspace))
+    (let* ((workspaces (->> treemacs--workspaces
+                            (--reject (eq it (treemacs-current-workspace)))
+                            (--map (cons (treemacs-workspace->name it) it))))
+           (name (completing-read "Switch to: " workspaces nil t))
+           (selected (cdr (--first (string= (car it) name) workspaces))))
+      (setf (treemacs-current-workspace) selected)
+      (cl-return-from body
+        `(success ,selected)))))
 
 (defun treemacs--is-name-invalid? (name)
   "Validate the NAME of a project or workspace.

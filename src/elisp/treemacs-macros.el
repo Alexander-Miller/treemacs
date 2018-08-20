@@ -278,10 +278,11 @@ it on the same line."
   "Run BODY once locally in every treemacs buffer."
   (declare (debug t))
   `(dolist (frame->buffer treemacs--buffer-access)
-     (-let [--buffer-- (cdr frame->buffer)]
+     (-let [(--frame-- . --buffer--) frame->buffer]
        (when (buffer-live-p --buffer--)
-         (with-current-buffer --buffer--
-           ,@body)))))
+         (with-selected-frame --frame--
+             (with-current-buffer --buffer--
+               ,@body))))))
 
 (defmacro treemacs--defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.

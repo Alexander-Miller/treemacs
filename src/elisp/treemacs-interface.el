@@ -38,6 +38,9 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
+(treemacs-import-functions-from "treemacs"
+  treemacs-select-window)
+
 (defconst treemacs-valid-button-states
   '(root-node-open
     root-node-closed
@@ -697,6 +700,34 @@ For slower scrolling see `treemacs-previous-line-other-window'"
     (`(success ,deleted ,_)
      (treemacs-pulse-on-success "Workspace %s was deleted."
        (propertize (treemacs-workspace->name deleted) 'face 'font-lock-type-face)))))
+
+(defun treemacs-switch-workspace ()
+  "Select a different workspace for treemacs."
+  (interactive)
+  (pcase (treemacs-do-switch-workspace)
+    ('only-one-workspace
+     (treemacs-pulse-on-failure "There are no other workspaces to select."))
+    (`(success ,workspace)
+     (let ((window-visible? nil)
+           (buffer-exists? nil))
+       (pcase (treemacs-current-visibility)
+         ('visible
+          (setq window-visible? t
+                buffer-exists? t))
+         ('exists
+          (setq buffer-exists? t)))
+       (when window-visible?
+         (delete-window (treemacs-get-local-window)))
+       (when buffer-exists?
+         (kill-buffer (treemacs-get-local-buffer)))
+       (when buffer-exists?
+         (let ((treemacs-follow-after-init nil)
+               (treemacs-follow-mode nil))
+           (treemacs-select-window)))
+       (when (not window-visible?)
+         (bury-buffer)))
+     (treemacs-pulse-on-success "Selected workspace %s."
+       (propertize (treemacs-workspace->name workspace))))))
 
 (defun treemacs-refresh ()
   "Refresh the project at point."
