@@ -188,7 +188,7 @@ information and highlight them accordingly (see also the ~treemacs-git-...~ face
  * The extended variant highlights both files and directories. This greatly increases the complexity and length of the
    parsing process, and is therefore done in an asynchronous python process for the sake of performance. The extended
    variant requires python3 to work.
- * The deferred variant is the same is extended, except the tasks of rendering nodes and highlighting them are
+ * The deferred variant is the same as extended, except the tasks of rendering nodes and highlighting them are
    separated. The former happens immediately, the latter after ~treemacs-deferred-git-apply-delay~ seconds of idle time.
    This may be faster (if not in truth then at least in appereance) as the git process is given a much greater amount of
    time to finish. The downside is that the effect of nodes changing their colors may be somewhat jarring, though this
