@@ -361,7 +361,7 @@ likewise be updated."
         (unless (file-exists-p old-path)
           (cl-return-from body
            (treemacs-pulse-on-failure "The file to be renamed does not exist.")))
-        (setq new-name (read-string "New name: ")
+        (setq new-name (read-string "New name: " (file-name-nondirectory old-path))
               dir      (f-dirname old-path)
               new-path (f-join dir new-name))
         (when (file-exists-p new-path)
