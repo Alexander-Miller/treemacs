@@ -25,6 +25,11 @@
 (require 'treemacs-impl)
 (eval-and-compile (require 'treemacs-macros))
 
+(treemacs-only-during-init
+ ;; make sure frame params are not persisted by desktop-save-mode
+ (push '(treemacs-id . :never) frameset-filter-alist)
+ (push '(treemacs-workspace . :never) frameset-filter-alist))
+
 (with-eval-after-load 'winum
 
   (when (boundp 'winum-ignored-buffers)
