@@ -348,26 +348,22 @@ likewise be updated."
   (cl-block body
     (-let [btn (treemacs-current-button)]
       (unless btn
-        (cl-return-from body
-         (treemacs-pulse-on-failure "Found nothing to rename here.")))
+        (treemacs-return "Found nothing to rename here."))
       (let* ((old-path (button-get btn :path))
              (project (treemacs--find-project-for-path old-path))
              (new-path nil)
              (new-name nil)
              (dir nil))
         (unless old-path
-          (cl-return-from body
-            (treemacs-pulse-on-failure "Found nothing to rename here.")))
+          (treemacs-return "Found nothing to rename here."))
         (unless (file-exists-p old-path)
-          (cl-return-from body
-           (treemacs-pulse-on-failure "The file to be renamed does not exist.")))
+          (treemacs-return "The file to be renamed does not exist."))
         (setq new-name (read-string "New name: " (file-name-nondirectory old-path))
               dir      (f-dirname old-path)
               new-path (f-join dir new-name))
-        (when (file-exists-p new-path)
-          (cl-return-from body
-           (treemacs-pulse-on-failure "A file named %s already exists."
-             (propertize new-name 'face font-lock-string-face))))
+        (treemacs-return (file-exists-p new-path)
+          "A file named %s already exists."
+          (propertize new-name 'face font-lock-string-face))
         (treemacs--without-filewatch (rename-file old-path new-path))
         (treemacs--replace-recentf-entry old-path new-path)
         (-let [treemacs-silent-refresh t]
@@ -809,8 +805,8 @@ Only works with a single project in the workspace."
   (interactive)
   (cl-block body
     (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
-      (cl-return-from body
-        (treemacs-pulse-on-failure "Ad-hoc navigation is only possible when there is but a single project in the workspace.")))
+      (treemacs-return
+          "Ad-hoc navigation is only possible when there is but a single project in the workspace."))
     (-let [btn (treemacs-current-button)]
       (unless btn
         (setq btn (previous-button (point))))
@@ -833,9 +829,8 @@ Only works with a single project in the workspace."
 Only works with a single project in the workspace."
   (interactive)
   (cl-block body
-    (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
-      (cl-return-from body
-        (treemacs-pulse-on-failure "Ad-hoc navigation is only possible when there is but a single project in the workspace.")))
+    (treemacs-return (/= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
+      "Ad-hoc navigation is only possible when there is but a single project in the workspace.")
     (treemacs-unless-let (btn (treemacs-current-button))
         (treemacs-pulse-on-failure
             "There is no directory to move into here.")

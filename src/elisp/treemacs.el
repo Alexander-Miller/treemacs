@@ -106,10 +106,9 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
              (dir (if (f-directory? location) location (f-dirname location)))
              (project (treemacs--find-project-for-path dir)))
         (cl-block body
-          (unless project
-            (cl-return-from body
-              (treemacs-pulse-on-failure "Bookmark at %s does not fall under any project in the workspace."
-                (propertize location 'face 'font-lock-string-face))))
+          (treemacs-return (null project)
+            "Bookmark at %s does not fall under any project in the workspace."
+            (propertize location 'face 'font-lock-string-face))
           (pcase (treemacs-current-visibility)
             ('visible (treemacs--select-visible-window))
             ('exists  (treemacs--select-not-visible-window))
@@ -160,16 +159,13 @@ visiting a file or Emacs cannot find any tags for the current file."
            (project (treemacs--find-project-for-buffer))
            (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
            (treemacs-window nil))
-      (unless buffer-file
-        (treemacs-pulse-on-failure "Current buffer is not visiting a file.")
-        (cl-return-from body))
-      (unless index
-        (treemacs-pulse-on-failure "Current buffer has no tags.")
-        (cl-return-from body))
-      (unless project
-        (treemacs-pulse-on-failure (format "%s does not fall under any project in the workspace."
-                                    (propertize buffer-file 'face 'font-lock-string-face)))
-        (cl-return-from body))
+      (treemacs-return (null buffer-file)
+        "Current buffer is not visiting a file.")
+      (treemacs-return (null index)
+        "Current buffer has no tags.")
+      (treemacs-return (null project)
+        "%s does not fall under any project in the workspace."
+        (propertize buffer-file 'face 'font-lock-string-face))
       (save-selected-window
         (pcase (treemacs-current-visibility)
           ('visible (treemacs--select-visible-window))

@@ -78,7 +78,7 @@ called from another buffer than the one the button resides in and
 
 (defmacro treemacs-unless-let (var-val &rest forms)
   "Same as `-if-let-', but the negative case is handled in the first form.
-Delegates VAR-VAL the FORMS forms to `-if-let-'."
+Delegates VAR-VAL and the given FORMS to `-if-let-'."
   (declare (debug ((vector sexp form) body))
            (indent 2))
   (let ((then (cdr forms))
@@ -323,6 +323,24 @@ Entry variables will bound based on NAMES which is a list of two elements."
     `(maphash
       (lambda (,key-name ,val-name) ,@body)
       ,table)))
+
+(defmacro treemacs-return (predicate &optional error-msg &rest error-args)
+  "Simplifies the common pattern of returning from a `cl-block' named 'body'.
+Supports two calling conventions:
+First by providing all arguments. The block will only be left when PREDICATE
+returns non-nil, ERROR-MSG and ERROR-ARGS will be passed to
+`treemacs-pulse-on-failure'.
+Second by providing a single string argument. In this case no test is made and
+the block is left directly with the given message being passed to
+`treemacs-pulse-on-failure'."
+  (declare (indent 1))
+  (if (and (stringp predicate)
+           (null error-msg))
+      `(cl-return-from body
+         (treemacs-pulse-on-failure ,predicate))
+    `(when ,predicate
+       (cl-return-from body
+         (treemacs-pulse-on-failure ,error-msg ,@error-args)))))
 
 (provide 'treemacs-macros)
 
