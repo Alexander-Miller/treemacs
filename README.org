@@ -95,7 +95,7 @@ If you don't care about reading the full readme here's a list of some bare bones
  * If you use projectile you can install ~treemacs-projectile~ to allow quickly add your projectile projects to
    treemacs.
  * Treemacs doesn't bind any global keys, you need to use whatever fits you best. A full install setup can be found
-   [[Installation][below]]. Otherwise just add a keybind for ~treemacs~.
+   [[#installation][below]]. Otherwise just add a keybind for ~treemacs~.
  * For navigation use n/p (j/k when evil), M-n/M-p to move to same-height neighbour u to go to parent, and C-n/C-k to
    move between projects.
  * There's half a dozen different ways to open nodes, all bound under o as prefix. Pick your favourite.
@@ -238,7 +238,7 @@ is saved in the variable ~treemacs-persist-file~.
 
 ** Terminal Compatibility
 When run in a terminal treemacs will fall back to a much simpler rendering system, foregoing its usual png icons and
-using simple ~+~ and ~-~ characters instead. The exact characters used are [[Custom Icons][highly customizable]].
+using simple ~+~ and ~-~ characters instead. The exact characters used are [[#custom-icons][highly customizable]].
 
 ** Tag View
 Treemacs is able to display not only the file system, but also tags found in individual files. The tags list is sourced
@@ -280,7 +280,7 @@ and customize it as needed (remove ~treemacs-evil~ if you don't use it, customiz
 Either way keep in mind that treemacs has /no default keybindings/ for its globally callable initialization functions. Each
 user is supposed to select keybindings for functions like ~treemacs-find-file~ based on whatever they find convenient.
 
-You can find an exhaustive overview of all functions, their keybindings and functions you need to bind yourself [[Keymap][below]].
+You can find an exhaustive overview of all functions, their keybindings and functions you need to bind yourself [[#keymap][below]].
 
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
@@ -460,7 +460,7 @@ example the code to use textual icons to display tags in gui mode could look lik
 *** File Icons
 
 First of all if you have an icon you'd like to make use of in treemacs my preferred solution is very much for you to
-open a pull request (adding a new icon is a one-liner in treemacs-visuals.el, see the last part of the [[Contributing]]
+open a pull request (adding a new icon is a one-liner in treemacs-visuals.el, see the last part of the [[#contributing][Contributing]]
 section) or an issue to let me know about a good icon I can add.
 
 If that's not possible or if you'd like to use something like ~all-the-icons.el~ (which isn't used in treemacs by
@@ -658,7 +658,7 @@ guidelines that should be met (exceptions confirm the rule):
  - There should be one commit per feature.
  - Code must be in the right place (what with the codebase being split in many small files). If there is no right place
    it probably goes into treemacs-impl.el which is where all the general implementation details go.
- - New features must be documented in the readme (for example mentioning new config options in the [[Variables][Config Table]]).
+ - New features must be documented in the readme (for example mentioning new config options in the [[#variables][Config Table]]).
  - There must not be any compiler warnings.
  - The test suite must pass.
 
