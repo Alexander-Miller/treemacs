@@ -130,7 +130,7 @@ An event counts as relevant when
     (not (or (equal action 'stopped)
              (and (equal action 'changed)
                   (not treemacs-git-mode))
-             (--any? (funcall it (f-filename dir) dir) treemacs-ignored-file-predicates)))))
+             (--any? (funcall it (treemacs--filename dir) dir) treemacs-ignored-file-predicates)))))
 
 (defsubst treemacs--set-refresh-flags (path)
   "Set refresh flags for PATH in the shadow index of every buffer.

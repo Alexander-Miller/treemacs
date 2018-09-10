@@ -217,7 +217,7 @@ NAME: String"
     (-when-let (project (treemacs--find-project-for-path path))
         (cl-return-from body
           `(duplicate-project ,project)))
-    (let* ((name (or name (read-string "Project Name: " (f-filename path))))
+    (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
            (project (make-treemacs-project :name name :path path))
            (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
       (when (treemacs--is-name-invalid? name)

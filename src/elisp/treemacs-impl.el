@@ -255,16 +255,21 @@ Returns nil when there is no button at point."
       (button-get it :path)
     (treemacs--parent (button-get btn :path))))
 
+(defsubst treemacs--filename (file)
+  "Return the name of FILE, same as `f-filename', but inlined."
+  (declare (pure t) (side-effect-free t))
+  (file-name-nondirectory (directory-file-name file)))
+
 (defsubst treemacs--reject-ignored-files (file)
   "Return t if FILE is *not* an ignored file.
 FILE here is a list consisting of an absolute path and file attributes."
-  (-let [filename (f-filename file)]
+  (-let [filename (treemacs--filename file)]
     (--none? (funcall it filename file) treemacs-ignored-file-predicates)))
 
 (defsubst treemacs--reject-ignored-and-dotfiles (file)
   "Return t when FILE is neither ignored, nor a dotfile.
 FILE here is a list consisting of an absolute path and file attributes."
-  (let ((filename (f-filename file)))
+  (let ((filename (treemacs--filename file)))
     (and (not (s-matches? treemacs-dotfiles-regex filename))
          (--none? (funcall it filename file) treemacs-ignored-file-predicates))))
 
@@ -275,7 +280,7 @@ This is something a of workaround to easily allow assigning icons to a FILE with
 a name like '.gitignore' without always having to check for both file extensions
 and special names like this."
   (declare (pure t) (side-effect-free t))
-  (-let [filename (f-filename file)]
+  (-let [filename (treemacs--filename file)]
     (save-match-data
       (if (string-match "\\.[^.]*\\'" filename)
           (substring filename (1+ (match-beginning 0)))
@@ -792,7 +797,7 @@ through the buffer list and kill buffer if PATH is a prefix."
       (let ((buf (get-file-buffer path)))
         (and buf
              (y-or-n-p (format "Kill buffer of %s, too? "
-                               (f-filename path)))
+                               (treemacs--filename path)))
              (kill-buffer buf)))
 
     ;; Prompt for each buffer visiting a file in directory
@@ -801,7 +806,7 @@ through the buffer list and kill buffer if PATH is a prefix."
        (treemacs--is-path-in-dir? (buffer-file-name it) path)
        (y-or-n-p (format "Kill buffer %s in %s, too? "
                          (buffer-name it)
-                         (f-filename path)))
+                         (treemacs--filename path)))
        (kill-buffer it)))
 
     ;; Kill all dired buffers in one step
@@ -811,7 +816,7 @@ through the buffer list and kill buffer if PATH is a prefix."
                        (--filter (treemacs--is-path-in-dir? (car it) path))
                        (-map #'cdr)))
         (and (y-or-n-p (format "Kill Dired buffers of %s, too? "
-                               (f-filename path)))
+                               (treemacs--filename path)))
              (-each dired-buffers-for-path #'kill-buffer))))))
 
 (defun treemacs--do-refresh (buffer project)

@@ -306,7 +306,7 @@ will instead be wiped irreversibly."
           (treemacs-pulse-on-failure "Only files and directories can be deleted.")
         (let* ((delete-by-moving-to-trash (not arg))
                (path (button-get btn :path))
-               (file-name (f-filename path)))
+               (file-name (treemacs--filename path)))
           (when
               (cond
                ((f-file? path)
@@ -373,7 +373,7 @@ likewise be updated."
         (treemacs--reload-buffers-after-rename old-path new-path)
         (treemacs-goto-button new-path project)
         (treemacs-pulse-on-success "Renamed %s to %s."
-          (propertize (f-filename old-path) 'face font-lock-string-face)
+          (propertize (treemacs--filename old-path) 'face font-lock-string-face)
           (propertize new-name 'face font-lock-string-face))))))
 
 (defun treemacs-create-dir ()

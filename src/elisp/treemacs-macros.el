@@ -256,7 +256,7 @@ it on the same line."
         ((or 'root-node-open 'root-node-closed 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
          (if (and (f-exists? curr-file)
                   (or treemacs-show-hidden-files
-                      (not (s-matches? treemacs-dotfiles-regex (f-filename curr-file)))))
+                      (not (s-matches? treemacs-dotfiles-regex (treemacs--filename curr-file)))))
              (treemacs-goto-button curr-file)
            (treemacs-without-messages (with-no-warnings (goto-line curr-line)))))
         ((or 'tag-node-open 'tag-node-closed 'tag-node)
