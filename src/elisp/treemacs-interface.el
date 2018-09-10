@@ -41,7 +41,7 @@
 (treemacs-import-functions-from "treemacs"
   treemacs-select-window)
 
-(defconst treemacs-valid-button-states
+(defvar treemacs-valid-button-states
   '(root-node-open
     root-node-closed
     dir-node-open

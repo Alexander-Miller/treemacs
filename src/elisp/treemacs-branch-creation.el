@@ -38,6 +38,10 @@
   treemacs--start-watching
   treemacs--stop-watching)
 
+(treemacs-import-functions-from "treemacs-extensions"
+  treemacs--apply-project-start-extensions
+  treemacs--apply-project-end-extensions)
+
 (defvar treemacs--git-cache-max-size 60
   "Maximum size for `treemacs--git-cache'.
 If it does reach that size it will be cut back to 30 entries.")
@@ -349,8 +353,10 @@ set to PARENT."
                                        (concat root "/" it) git-info 'treemacs-git-unmodified-face))
                           file-strings)))
 
-      (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process))
-      (treemacs--reopen-at root git-future))))
+      (save-excursion
+        (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs collapse-process))
+        (treemacs--reopen-at root git-future))
+      (point-at-eol))))
 
 (defun treemacs--apply-deferred-git-state (parent-btn git-future buffer)
   "Apply the git fontification for direct children of PARENT-BTN.
@@ -380,7 +386,8 @@ BUFFER: Buffer"
              (while (and (setq btn (next-button btn))
                          (>= (button-get btn :depth) depth))
                (-let [path (button-get btn :path)]
-                 (when (= depth (button-get btn :depth))
+                 (when (and (= depth (button-get btn :depth))
+                            (not (button-get btn :no-git)))
                    (button-put btn 'face
                                (treemacs--get-button-face path git-info (button-get btn :default-face)))))))))))))
 
@@ -423,7 +430,10 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
      :button btn
      :new-state 'root-node-open
      :open-action
-     (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn)
+     (progn
+       (treemacs--apply-project-start-extensions btn)
+       (goto-char (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn))
+       (treemacs--apply-project-end-extensions btn))
      :post-open-action
      (progn
        (treemacs-on-expand path btn nil)

@@ -103,6 +103,22 @@
 
 (declare-function treemacs-mode "treemacs-mode")
 
+(defvar treemacs--closed-node-states
+  '(root-node-closed
+    dir-node-closed
+    file-node-closed
+    tag-node-closed)
+  "States marking a node as closed.
+Used in `treemacs-is-node-collapsed?'")
+
+(defvar treemacs--open-node-states
+  '(root-node-open
+    dir-node-open
+    file-node-open
+    tag-node-open)
+  "States marking a node as open.
+Used in `treemacs-is-node-expanded?'")
+
 (defvar treemacs--buffer-access nil
   "Alist mapping treemacs buffers to frames.")
 
@@ -154,6 +170,14 @@ Returns nil when point is between projects."
     (let ((p (next-single-property-change (point-at-bol) 'button nil (point-at-eol))))
       (when (and (get-char-property p 'button))
           (copy-marker p t)))))
+
+(defsubst treemacs-is-node-expanded? (btn)
+  "Return whether BTN is in an open state."
+  (memq (button-get btn :state) treemacs--open-node-states))
+
+(defsubst treemacs-is-node-collapsed? (btn)
+  "Return whether BTN is in a closed state."
+  (memq (button-get btn :state) treemacs--closed-node-states))
 
 (defsubst treemacs--unslash (path)
   "Remove the final slash in PATH."
