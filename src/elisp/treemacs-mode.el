@@ -134,7 +134,8 @@ to it will instead show a blank."
                (car key-goto-parent)    (car key-open-vert)                          (car key-toggle-width)                           (car key-resort)
                (car key-down-next-w)    (car key-open-ace)                           (car key-fringe-mode)                            (car key-bookmark)
                (car key-up-next-w)      (car key-open-ace-h)
-               (car key-open-ext)       (car key-open-ace-v)
+                                        (car key-open-ace-v)
+                                        (car key-open-ext)
                )))
           (eval
            `(defhydra treemacs--helpful-hydra (:exit nil :hint nil :columns 5)
