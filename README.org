@@ -626,6 +626,13 @@ Aside from this there are the following known incompatibilities:
 
    See ~treemacs-silent-refresh~ and ~treemacs-silent-filewatch~.
 
+ * ENOSPC / No space left on device
+
+   You may run into this error when you use filewatch-mode. The solution is to increase the number of allowed user
+   watches, as described in [[https://stackoverflow.com/questions/16748737/grunt-watch-error-waiting-fatal-error-watch-enospc][this link]]. You'll also want to see what's responsible for setting all those file watches in
+   the first place, since treemacs only watches the directories it is displaying and so won't produce more than a couple
+   dozen watches at best.
+
  * Why is treemacs warning me about not being able to find some background colors and falling back to something else?
 
    Treemacs needs those colors to make sure that background colors of its icons correctly align with hl-line-mode. Png
