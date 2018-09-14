@@ -30,34 +30,56 @@
 (defvar treemacs--project-start-extensions nil)
 (defvar treemacs--project-end-extensions nil)
 
-(defun treemacs-define-extension (ext pos)
+(cl-defun treemacs-define-extension (&key extension predicate position)
   "Define an extension for treemacs to use.
-EXT is an extension function, as created by `treemacs-define-expandable-node'
+EXTENSION is an extension function, as created by `treemacs-define-expandable-node'
 when a `:root' argument is given.
-POS is either `project-start' or `project-end', indicating whether the
+
+PREDICATE is a function that will be called to determine whether the extension
+should be displayed. It is invoked with a single argument, which is the treemacs
+project struct that is being expanded. All methods that can be invoked on this
+type start with the `treemacs-project->' prefix.
+
+POSITION is either `project-start' or `project-end', indicating whether the
 extension should be rendered as the first or last element of a project.
 
 See also `treemacs-remove-extension'."
-  (pcase pos
-    ('project-start (add-to-list 'treemacs--project-start-extensions ext))
-    ('project-end   (add-to-list 'treemacs--project-end-extensions ext))
-    (other          (error "Invalid extension point value `%s'" other))))
+  (-let [cell (cons extension predicate)]
+    (pcase position
+      ('project-start (add-to-list 'treemacs--project-start-extensions cell))
+      ('project-end   (add-to-list 'treemacs--project-end-extensions cell))
+      (other          (error "Invalid extension position value `%s'" other)))))
 
-(defun treemacs-remove-extension (ext pos)
-  "Remove an extension EXT at position POS.
+(cl-defun treemacs-remove-extension (extension posistion)
+  "Remove an EXTENSION at a given POSITION.
 See also `treemacs-define-extension'."
-  (pcase pos
-    ('project-start (setq treemacs--project-start-extensions (delete ext treemacs--project-start-extensions)))
-    ('project-end   (setq treemacs--project-end-extensions   (delete ext treemacs--project-end-extensions)))
-    (other          (error "Invalid extension point value `%s'" other))))
+  (pcase posistion
+    ('project-start
+     (setq treemacs--project-start-extensions
+           (--reject (equal extension (car it)) treemacs--project-start-extensions)))
+    ('project-end
+     (setq treemacs--project-end-extensions
+      (--reject (equal extension (car it)) treemacs--project-end-extensions)))
+    (other
+     (error "Invalid extension position value `%s'" other))))
 
-(defsubst treemacs--apply-project-start-extensions (project-btn)
-  "Apply the extension for PROJECT-BTN at the start of the project."
-  (dolist (ext treemacs--project-start-extensions)
-    (funcall ext project-btn)))
+(defsubst treemacs--apply-project-start-extensions (project-btn project-struct)
+  "Apply the extension for PROJECT-BTN at the start of the project.
+First pass PROJECT-STRUCT to the predicate to check whether to render the extension."
+  (dolist (cell treemacs--project-start-extensions)
+    (let ((extension (car cell))
+          (predicate (cdr cell)))
+      (when (funcall predicate project-struct)
+        (funcall extension project-btn)))))
 
-(defsubst treemacs--apply-project-end-extensions (project-btn)
-  "Apply the extension for PROJECT-BTN at the end of the project."
+(defsubst treemacs--apply-project-end-extensions (project-btn project-struct)
+  "Apply the extension for PROJECT-BTN at the end of the project.
+First pass PROJECT-STRUCT to the predicate to check whether to render the extension."
+  (dolist (cell treemacs--project-end-extensions)
+    (let ((extension (car cell))
+          (predicate (cdr cell)))
+      (when (funcall predicate project-struct)
+        (funcall extension project-btn))))
   (dolist (ext treemacs--project-end-extensions)
     (funcall ext project-btn)))
 
