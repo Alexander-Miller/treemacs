@@ -21,17 +21,27 @@
 ;;; Code:
 
 (require 'dash)
+(require 's)
 (require 'treemacs-branch-creation)
 (require 'treemacs-impl)
 (require 'treemacs-interface)
 (eval-when-compile
   (require 'cl-lib))
 
-(defvar treemacs--project-start-extensions nil)
-(defvar treemacs--project-end-extensions nil)
-
-(cl-defun treemacs-define-extension (&key extension predicate position)
-  "Define an extension for treemacs to use.
+(defmacro treemacs--build-extension-addition (name)
+  "Internal building block.
+Creates a `treemacs-define-${NAME}-extension' function and the necessary helpers."
+  (let ((define-function-name  (intern (s-lex-format "treemacs-define-${name}-extension")))
+        (start-extension-point (intern (s-lex-format "treemacs--${name}-start-extensions")))
+        (end-extension-point   (intern (s-lex-format "treemacs--${name}-end-extensions")))
+        (start-position        (intern (s-lex-format "${name}-start")))
+        (end-position          (intern (s-lex-format "${name}-end"))))
+    `(progn
+       (defvar ,start-extension-point nil)
+       (defvar ,end-extension-point nil)
+       (cl-defun ,define-function-name (&key extension predicate position)
+         ,(s-lex-format
+           "Define an extension of type `${name}' for treemacs to use.
 EXTENSION is an extension function, as created by `treemacs-define-expandable-node'
 when a `:root' argument is given.
 
@@ -40,48 +50,70 @@ should be displayed. It is invoked with a single argument, which is the treemacs
 project struct that is being expanded. All methods that can be invoked on this
 type start with the `treemacs-project->' prefix.
 
-POSITION is either `project-start' or `project-end', indicating whether the
+POSITION is either `${name}-start' or `${name}-end', indicating whether the
 extension should be rendered as the first or last element of a project.
 
-See also `treemacs-remove-extension'."
-  (-let [cell (cons extension predicate)]
-    (pcase position
-      ('project-start (add-to-list 'treemacs--project-start-extensions cell))
-      ('project-end   (add-to-list 'treemacs--project-end-extensions cell))
-      (other          (error "Invalid extension position value `%s'" other)))))
+See also `treemacs-remove-${name}-extension'.")
+         (-let [cell (cons extension predicate)]
+           (pcase position
+             (',start-position (add-to-list ',start-extension-point cell))
+             (',end-position   (add-to-list ',end-extension-point cell))
+             (other          (error "Invalid extension position value `%s'" other)))) ))))
 
-(cl-defun treemacs-remove-extension (extension posistion)
-  "Remove an EXTENSION at a given POSITION.
-See also `treemacs-define-extension'."
-  (pcase posistion
-    ('project-start
-     (setq treemacs--project-start-extensions
-           (--reject (equal extension (car it)) treemacs--project-start-extensions)))
-    ('project-end
-     (setq treemacs--project-end-extensions
-      (--reject (equal extension (car it)) treemacs--project-end-extensions)))
-    (other
-     (error "Invalid extension position value `%s'" other))))
+(defmacro treemacs--build-extension-removal (name)
+  "Internal building block.
+Creates a `treemacs-remove-${NAME}-extension' function and the necessary helpers."
+  (let ((remove-function-name  (intern (s-lex-format "treemacs-remove-${name}-extension")))
+        (start-extension-point (intern (s-lex-format "treemacs--${name}-start-extensions")))
+        (end-extension-point   (intern (s-lex-format "treemacs--${name}-end-extensions")))
+        (start-position        (intern (s-lex-format "${name}-start")))
+        (end-position          (intern (s-lex-format "${name}-end"))) )
+    `(progn
+       (cl-defun ,remove-function-name (extension posistion)
+         ,(s-lex-format
+          "Remove an EXTENSION of type `${name}' at a given POSITION.
+   See also `treemacs-define-${name}-extension'.")
+         (pcase posistion
+           (',start-position
+            (setq ,start-extension-point
+                  (--reject (equal extension (car it)) ,start-extension-point)))
+           (',end-position
+            (setq ,end-extension-point
+                  (--reject (equal extension (car it)) ,end-extension-point)))
+           (other
+            (error "Invalid extension position value `%s'" other)))))))
 
-(defsubst treemacs--apply-project-start-extensions (project-btn project-struct)
-  "Apply the extension for PROJECT-BTN at the start of the project.
-First pass PROJECT-STRUCT to the predicate to check whether to render the extension."
-  (dolist (cell treemacs--project-start-extensions)
-    (let ((extension (car cell))
-          (predicate (cdr cell)))
-      (when (funcall predicate project-struct)
-        (funcall extension project-btn)))))
+(defmacro treemacs--build-extension-application (name)
+  "Internal building block.
+Creates treemacs--apply-${NAME}-start/end-extensions functions."
+  (let ((apply-start-name      (intern (s-lex-format "treemacs--apply-${name}-start-extensions")))
+        (apply-end-name        (intern (s-lex-format "treemacs--apply-${name}-end-extensions")))
+        (start-extension-point (intern (s-lex-format "treemacs--${name}-start-extensions")))
+        (end-extension-point   (intern (s-lex-format "treemacs--${name}-end-extensions"))))
+    `(progn
+       (defsubst ,apply-start-name (node data)
+         ,(s-lex-format
+          "Apply the start extensions for NODE of type `${name}'
+Also pass additional DATA to predicate function.")
+         (dolist (cell ,start-extension-point)
+           (let ((extension (car cell))
+                 (predicate (cdr cell)))
+             (when (funcall predicate data)
+               (funcall extension node)))))
 
-(defsubst treemacs--apply-project-end-extensions (project-btn project-struct)
-  "Apply the extension for PROJECT-BTN at the end of the project.
-First pass PROJECT-STRUCT to the predicate to check whether to render the extension."
-  (dolist (cell treemacs--project-end-extensions)
-    (let ((extension (car cell))
-          (predicate (cdr cell)))
-      (when (funcall predicate project-struct)
-        (funcall extension project-btn))))
-  (dolist (ext treemacs--project-end-extensions)
-    (funcall ext project-btn)))
+       (defsubst ,apply-end-name (node data)
+         ,(s-lex-format
+          "Apply the end extensions for NODE of type `${name}'
+Also pass additional DATA to predicate function.")
+         (dolist (cell ,end-extension-point)
+           (let ((extension (car cell))
+                 (predicate (cdr cell)))
+             (when (funcall predicate data)
+               (funcall extension node))))))))
+
+(treemacs--build-extension-addition "project")
+(treemacs--build-extension-removal "project")
+(treemacs--build-extension-application "project")
 
 (defsubst treemacs-as-icon (string &rest more-properties)
   "Turn STRING into an icon for treemacs.
