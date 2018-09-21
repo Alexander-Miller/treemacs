@@ -164,7 +164,7 @@ node for quick retrieval later."
                      :key ,key-form
                      ,@more-properties)))
 
-(cl-defmacro treemacs-define-leaf-node (name icon &key ret-action)
+(cl-defmacro treemacs-define-leaf-node (name icon &key ret-action tab-action mouse1-action)
   "Define a type of node that is a leaf and cannot be further expanded.
 
 Based on the given NAME this macro will define a `treemacs-${name}-state' state
@@ -172,8 +172,9 @@ variable and a `treemacs-${name}-icon' icon variable.
 
 The ICON is a string that should be created with `treemacs-as-icon'.
 
-RET-ACTION is a function reference that will be invoked when RET is pressed on
-a node of this type."
+RET-ACTION, TAB-ACTION and MOUSE1-ACTION are function references that will be
+invoked when RET or TAB are pressed or mouse1 is double-clicked a node of this
+type."
   (declare (indent 1))
   (let ((state-name (intern (format "treemacs-%s-state" name)))
         (icon-name  (intern (format "treemacs-%s-icon" name))))
@@ -181,7 +182,12 @@ a node of this type."
        (defvar ,state-name ',state-name)
        (defvar ,icon-name ,icon)
        ,(when ret-action
-          `(treemacs-define-RET-action ,state-name ,ret-action)))))
+          `(treemacs-define-RET-action ,state-name ,ret-action))
+       ,(when tab-action
+          `(treemacs-define-TAB-action ,state-name ,tab-action))
+       ,(when mouse1-action
+          `(treemacs-define-doubleclick-action ,state-name ,mouse1-action))
+       t)))
 
 (cl-defmacro treemacs-define-expandable-node
     (name &key
