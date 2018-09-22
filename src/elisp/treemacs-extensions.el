@@ -195,6 +195,7 @@ type."
           icon-closed
           query-function
           render-action
+          ret-action
           root-marker
           root-label
           root-face
@@ -210,6 +211,10 @@ RENDER-ACTION is another form that will render the single items provided by
 QUERY-FUNCTION. For every RENDER-FORM invocation the element to be rendered is
 bound under the name `item'. The form itself should end in a call to
 `treemacs-render-node'.
+
+RET-ACTION will define what function is called when RET is pressed on this type
+of node. Only RET, without TAB and mouse1 can be defined since for expandable
+nodes both TAB and RET should toggle expansion/collapse.
 
 ROOT-MARKER is a simple boolean. It indicates the special case that the node
 being defined is a top level entry point. When this value is non-nil this macro
@@ -245,6 +250,11 @@ way as the KEY-FORM argument in `treemacs-render-node'."
 
        (add-to-list 'treemacs-valid-button-states ,closed-state-name)
        (add-to-list 'treemacs-valid-button-states ,open-state-name)
+
+       ,(when ret-action
+          `(progn
+             (treemacs-define-RET-action ,open-state-name ,ret-action)
+             (treemacs-define-RET-action ,closed-state-name ,ret-action)))
 
        (defun ,expand-name (&optional _)
          ,(format "Expand treemacs nodes of type `%s'." name)
@@ -285,7 +295,6 @@ way as the KEY-FORM argument in `treemacs-render-node'."
          (interactive)
          (cl-block body
            (-let [btn (treemacs-current-button)]
-             ;; TODO(2018/09/02): automate return from as macro
              (when (null btn)
                (cl-return-from body
                  (treemacs-pulse-on-failure "There is nothing to do here.")))
