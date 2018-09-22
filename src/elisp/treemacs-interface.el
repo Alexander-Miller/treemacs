@@ -126,8 +126,12 @@ executed action, if possible.
 This function's exact configuration is stored in `treemacs-TAB-actions-config'."
   (interactive "P")
   (-when-let (state (treemacs--prop-at-point :state))
-    (funcall (cdr (assq state treemacs-TAB-actions-config)) arg)
-    (treemacs--evade-image)))
+    (--if-let (cdr (assq state treemacs-TAB-actions-config))
+        (progn
+          (funcall it arg)
+          (treemacs--evade-image))
+      (treemacs-pulse-on-failure "No TAB action defined for node of type %s."
+        (propertize (format "%s" state) 'face 'font-lock-type-face)))))
 
 (defun treemacs-goto-parent-node ()
   "Select parent of selected node, if possible."
@@ -245,7 +249,12 @@ action, if possible.
 This function's exact configuration is stored in `treemacs-RET-actions-config'."
   (interactive "P")
   (-when-let (state (treemacs--prop-at-point :state))
-    (funcall (cdr (assq state treemacs-RET-actions-config)) arg)))
+    (--if-let (cdr (assq state treemacs-RET-actions-config))
+        (progn
+          (funcall it arg)
+          (treemacs--evade-image))
+      (treemacs-pulse-on-failure "No RET action defined for node of type %s."
+        (propertize (format "%s" state) 'face 'font-lock-type-face)))))
 
 (defun treemacs-define-RET-action (state action)
   "Define the behaviour of `treemacs-RET-action'.

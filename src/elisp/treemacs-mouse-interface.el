@@ -61,8 +61,12 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (when (region-active-p)
       (keyboard-quit))
     (-when-let (state (treemacs--prop-at-point :state))
-      (funcall (cdr (assoc state treemacs-doubleclick-actions-config))))
-    (treemacs--evade-image)))
+      (--if-let (cdr (assq state treemacs-RET-actions-config))
+          (progn
+            (funcall it)
+            (treemacs--evade-image))
+        (treemacs-pulse-on-failure "No double click action defined for node of type %s."
+          (propertize (format "%s" state) 'face 'font-lock-type-face))))))
 
 (defun treemacs-single-click-expand-action (event)
   "A modified single-leftclick action that expands the clicked nodes.
