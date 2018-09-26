@@ -228,7 +228,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-toml         "vsc/toml.png"         "toml")
   (treemacs--setup-icon treemacs-icon-nim          "vsc/nim.png"          "nim")
   (treemacs--setup-icon treemacs-icon-org          "vsc/org.png"          "org")
-  (treemacs--setup-icon treemacs-icon-perl         "vsc/perl.png"         "perl")
+  (treemacs--setup-icon treemacs-icon-perl         "vsc/perl.png"         "pl" "pm" "perl")
   (treemacs--setup-icon treemacs-icon-vim          "vsc/vim.png"          "vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc")
   (treemacs--setup-icon treemacs-icon-depend       "vsc/dependencies.png" "cask")
   (treemacs--setup-icon treemacs-icon-r            "vsc/r.png"            "r"))
