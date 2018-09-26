@@ -161,9 +161,7 @@ PARENT is the (optional) button under which this one is inserted.
 DEPTH indicates how deep in the filetree the current button is."
   (list
    prefix
-   (ht-get treemacs-icons-hash
-           (-> path (treemacs--file-extension) (downcase))
-           treemacs-icon-fallback)
+   (treemacs-icon-for-file path)
    (propertize (file-name-nondirectory path)
                'button '(t)
                'category 'default-button

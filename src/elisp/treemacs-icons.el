@@ -135,6 +135,13 @@ Remember the value in `treemacs--default-icons-alist'."
 (defvar treemacs-icon-tag-node-open-png   "")
 (defvar treemacs-icon-text                "")
 
+(defsubst treemacs-icon-for-file (path)
+  "Retrieve an icon for PATH from `treemacs-icons-hash'.
+Uses `treemacs-icon-fallback' as fallback."
+  (ht-get treemacs-icons-hash
+          (-> path (treemacs--file-extension) (downcase))
+          treemacs-icon-fallback) )
+
 (defmacro treemacs--set-icon-save-default (&rest key-values)
   "Pass KEY-VALUES to `setq'.
 Also save the assignments in `treemacs--default-icons-alist'."

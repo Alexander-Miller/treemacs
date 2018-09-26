@@ -132,7 +132,8 @@ Optionally include MORE-PROPERTIES (like `face' or `display')."
 Meant to be used as a `:render-action' for `treemacs-define-expandable-node'.
 
 ICON is a simple string serving as the node's icon, and must be created with
-`treemacs-as-icon'.
+`treemacs-as-icon'. If the icon is for a file you can also use
+`treemacs-icon-for-file'.
 
 LABEL-FORM must return the string that will serve as the node's label text,
 based on the element that should be rendered being bound as `item'. So for
@@ -170,7 +171,8 @@ node for quick retrieval later."
 Based on the given NAME this macro will define a `treemacs-${name}-state' state
 variable and a `treemacs-${name}-icon' icon variable.
 
-The ICON is a string that should be created with `treemacs-as-icon'.
+The ICON is a string that should be created with `treemacs-as-icon'. If the icon
+is for a file you can also use `treemacs-icon-for-file'.
 
 RET-ACTION, TAB-ACTION and MOUSE1-ACTION are function references that will be
 invoked when RET or TAB are pressed or mouse1 is double-clicked a node of this
