@@ -112,7 +112,7 @@ should be placed under."
       (with-current-buffer buff
         (when (eq major-mode 'emacs-lisp-mode)
           (setq-local imenu-generic-expression treemacs-elisp-imenu-expression))
-        (setq result (imenu--make-index-alist t)
+        (setq result (and imenu-generic-expression (imenu--make-index-alist t))
               mode major-mode))
       (unless existing-buffer (kill-buffer buff))
       (when result
