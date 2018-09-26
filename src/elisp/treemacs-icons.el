@@ -218,7 +218,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-zip          "vsc/zip.png"          "zip" "7z" "tar" "gz" "rar")
   (treemacs--setup-icon treemacs-icon-elm          "vsc/elm.png"          "elm")
   (treemacs--setup-icon treemacs-icon-xml          "vsc/xml.png"          "xml")
-  (treemacs--setup-icon treemacs-icon-binary       "vsc/binary.png"       "exe")
+  (treemacs--setup-icon treemacs-icon-binary       "vsc/binary.png"       "exe" "dll" "obj" "so" "o")
   (treemacs--setup-icon treemacs-icon-ruby         "vsc/ruby.png"         "rb")
   (treemacs--setup-icon treemacs-icon-scss         "vsc/scss.png"         "scss")
   (treemacs--setup-icon treemacs-icon-lua          "vsc/lua.png"          "lua")
