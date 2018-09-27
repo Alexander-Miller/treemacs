@@ -231,6 +231,7 @@ PROJECT: Project Struct"
       (condition-case e
           (-when-let (index (treemacs--flatten&sort-imenu-index))
             (treemacs--do-follow-tag index treemacs-window buffer-file project))
+        (imenu-unavailable (ignore e))
         (error (treemacs-log "Encountered error while following tag at point: %s" e))))))
 
 (defsubst treemacs--setup-tag-follow-mode ()
