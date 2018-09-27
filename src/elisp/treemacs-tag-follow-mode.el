@@ -195,7 +195,7 @@ PROJECT: Project Struct"
                           (not (eq treemacs--previously-followed-tag-btn btn)))
                  (save-excursion
                    (goto-char treemacs--previously-followed-tag-btn)
-                   (when  (and (string= (button-get (treemacs-current-button) :path)
+                   (when  (and (string= (-some-> (treemacs-current-button) (button-get :path))
                                         (button-get treemacs--previously-followed-tag-btn :path))
                                (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn :state)))
                      (treemacs--collapse-file-node treemacs--previously-followed-tag-btn))))
