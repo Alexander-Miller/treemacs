@@ -177,35 +177,56 @@ FLAT-INDEX: Sorted list of tag paths
 TREEMACS-WINDOW: Window
 BUFFER-FILE: Path
 PROJECT: Project Struct"
+  (treemacs-log "START")
+  (treemacs-log "FLAT INDEX %s" flat-index)
+  (treemacs-log "WINDOW %S" treemacs-window)
+  (treemacs-log "FILE %S" buffer-file)
+  (treemacs-log "WINDOW %S" treemacs-window)
   (let* ((tag-path (treemacs--find-index-pos (point) flat-index))
          (file-states '(file-node-open file-node-closed root-node-open root-node-closed))
          (btn))
+    (treemacs-log "TAG PATH %s" tag-path)
     (when tag-path
       (treemacs-without-following
        (with-selected-window treemacs-window
+         (treemacs-log "NOW IN WINDOW %s" (selected-window))
          (setq btn (treemacs-current-button))
+         (treemacs-log "CURRENT BTN %s // %s" btn (if btn (treemacs--get-label-of btn) "NIL"))
          (if btn
              (progn
+               (treemacs-log "FOUND BTN AT POINT")
                ;; first move to the nearest file when we're on a tag
                (when (memq (button-get btn :state) '(tag-node-open tag-node-closed tag-node))
+                 (treemacs-log "ON TAG NODE, MOVING UP")
                  (while (not (memq (button-get btn :state) file-states))
-                   (setq btn (button-get btn :parent))))
+                   (setq btn (button-get btn :parent))
+                   (treemacs-log "NOW ON %s // %s" btn (treemacs--get-label-of btn))))
                ;; close the button that was opened on the previous follow
                (when (and treemacs--previously-followed-tag-btn
                           (not (eq treemacs--previously-followed-tag-btn btn)))
+                 (treemacs-log "PREVIOUSLY ON %s // %s"
+                               treemacs--previously-followed-tag-btn
+                               (treemacs--get-label-of treemacs--previously-followed-tag-btn))
                  (save-excursion
                    (goto-char treemacs--previously-followed-tag-btn)
+                   (treemacs-log "MOVED TO %s // %s" (treemacs-current-button)
+                                 (if (treemacs-current-button) (treemacs--get-label-of (treemacs-current-button)) "NIL"))
                    (when  (and (string= (-some-> (treemacs-current-button) (button-get :path))
                                         (button-get treemacs--previously-followed-tag-btn :path))
                                (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn :state)))
+                     (treemacs-log "COLLAPSE PREVIOUS BTN")
                      (treemacs--collapse-file-node treemacs--previously-followed-tag-btn))))
                ;; when that doesnt work move manually to the correct file
                (unless (string-equal buffer-file (button-get btn :path))
+                 (treemacs-log "DIFFERENT FILE %s INSTEAD OF %s" buffer-file (button-get btn :path))
                  (treemacs-goto-button buffer-file project)
-                 (setq btn (treemacs-current-button))))
+                 (setq btn (treemacs-current-button))
+                 (treemacs-log "NOW AT %s %s" (treemacs-current-button) (treemacs--get-label-of (treemacs-current-button)))))
            ;; also move manually when there is no button at point
            (treemacs-goto-button buffer-file project)
-           (setq btn (treemacs-current-button)))
+           (treemacs-log "NO BTN AT POINT, MANUAL MOVE")
+           (setq btn (treemacs-current-button))
+           (treemacs-log "NOW AT %s // %s" (treemacs-current-button) (treemacs--get-label-of (treemacs-current-button))) )
          (goto-char (button-start btn))
          (setq treemacs--previously-followed-tag-btn btn)
          ;; imenu already rescanned when fetching the tag path
@@ -214,11 +235,14 @@ PROJECT: Project Struct"
            (setcar tag-path (car (car tag-path)))
            ;; the tag path also needs its file
            (setcdr tag-path (cons buffer-file (cdr tag-path)))
+           (treemacs-log "GOTO TAG %s" tag-path)
            (treemacs--goto-tag-button-at tag-path))
          (hl-line-highlight)
          (treemacs--evade-image)
          (when treemacs-recenter-after-tag-follow
-           (treemacs--maybe-recenter)))))))
+           (treemacs-log "RECENTER")
+           (treemacs--maybe-recenter))))))
+  (treemacs-log "DONE"))
 
 (defun treemacs--follow-tag-at-point ()
   "Follow the tag at point in the treemacs view."
