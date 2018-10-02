@@ -44,14 +44,16 @@
   "The idle timer object for `treemacs-tag-follow-mode'.
 Active while tag follow mode is enabled and nil/canceled otherwise.")
 
-(defvar-local treemacs--previously-followed-tag-btn nil
-  "Records the last button whose tags were expanded by tag follow mode.
+(defvar-local treemacs--previously-followed-tag-position nil
+  "Records the last node and path whose tags were expanded by tag follow mode.
+Is made up of a cons of the last expanded node and its path. Both are kept to
+make sure that the position has not become invalidated in the meantime.
 When `treemacs-tag-follow-cleanup' it t this button's tags will be closed up
 again when tag follow mode moves to another button.")
 
 (defsubst treemacs--forget-previously-follow-tag-btn ()
   "Forget the previously followed button when treemacs is killed or rebuilt."
-  (setq treemacs--previously-followed-tag-btn nil))
+  (setq treemacs--previously-followed-tag-position nil))
 
 (defsubst treemacs--flatten&sort-imenu-index ()
   "Flatten current file's imenu index and sort it by tag position.
@@ -191,14 +193,15 @@ PROJECT: Project Struct"
                  (while (not (memq (button-get btn :state) file-states))
                    (setq btn (button-get btn :parent))))
                ;; close the button that was opened on the previous follow
-               (when (and treemacs--previously-followed-tag-btn
-                          (not (eq treemacs--previously-followed-tag-btn btn)))
-                 (save-excursion
-                   (goto-char treemacs--previously-followed-tag-btn)
-                   (when  (and (string= (-some-> (treemacs-current-button) (button-get :path))
-                                        (button-get treemacs--previously-followed-tag-btn :path))
-                               (eq 'file-node-open (button-get treemacs--previously-followed-tag-btn :state)))
-                     (treemacs--collapse-file-node treemacs--previously-followed-tag-btn))))
+               (when (and treemacs--previously-followed-tag-position
+                          (not (eq (car treemacs--previously-followed-tag-position) btn)))
+                 (-let [(prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position]
+                   (save-excursion
+                     (goto-char prev-followed-pos)
+                     (when  (and (string= (-some-> (treemacs-current-button) (button-get :path))
+                                          prev-followed-path)
+                                 (eq 'file-node-open (button-get prev-followed-pos :state)))
+                       (treemacs--collapse-file-node prev-followed-pos)))))
                ;; when that doesnt work move manually to the correct file
                (unless (string-equal buffer-file (button-get btn :path))
                  (treemacs-goto-button buffer-file project)
@@ -207,7 +210,7 @@ PROJECT: Project Struct"
            (treemacs-goto-button buffer-file project)
            (setq btn (treemacs-current-button)))
          (goto-char (button-start btn))
-         (setq treemacs--previously-followed-tag-btn btn)
+         (setq treemacs--previously-followed-tag-position (cons btn (button-get btn :path)))
          ;; imenu already rescanned when fetching the tag path
          (let ((imenu-auto-rescan nil))
            ;; the target tag still has its position marker attached
