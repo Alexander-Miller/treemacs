@@ -68,7 +68,10 @@ or nesting depth."
          (first (caar flat-index))
          ;; in org mode buffers the first item may not be a cons since its position
          ;; is still stored as a text property
-         (semantic? (and (consp first) (overlayp (cdr first)))))
+         (semantic? (and (consp first) (overlayp (cdr first))))
+         (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
+                           #'treemacs--compare-markdown-tag-paths
+                         #'treemacs--compare-tag-paths)))
     (cond
      (semantic?
       ;; go ahead and just transform semantic overlays into markers so we dont
@@ -84,7 +87,7 @@ or nesting depth."
          (let ((leaf (car tag-path)))
            (when (stringp leaf)
              (setcar tag-path (cons leaf (get-text-property 0 'org-imenu-marker leaf))))))))
-    (sort flat-index #'treemacs--compare-tag-paths)))
+    (sort flat-index compare-func)))
 
 (defun treemacs--flatten-imenu-index (index &optional path)
   "Flatten a nested imenu INDEX to a flat list of tag paths.
@@ -129,6 +132,13 @@ P2: Tag-Path"
   (declare (pure t) (side-effect-free t))
   (< (-> p1 (cdar) (marker-position))
      (-> p2 (cdar) (marker-position))))
+
+(defun treemacs--compare-markdown-tag-paths (p1 p2)
+  "Specialized version of `treemacs--compare-tag-paths' for markdown and adoc.
+P1: Tag-Path
+P2: Tag-Path"
+  (declare (pure t) (side-effect-free t))
+  (< (cdar p1) (cdar p2)))
 
 (defun treemacs--find-index-pos (point list)
   "Find the tag at POINT within a flat tag-path LIST.
