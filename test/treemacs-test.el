@@ -407,7 +407,7 @@
     (should-not (treemacs--flatten-imenu-index (list))))
 
   (ert-deftest flatten-imenu::correctly-parses-single-item ()
-    (should (equal '(("Functions")) (treemacs--flatten-imenu-index '("Functions")))))
+    (should-not (treemacs--flatten-imenu-index '("Functions"))))
 
   (ert-deftest flatten-imenu::correctly-parses-full-list ()
     (let* ((input '(("Functions" ("f1") ("f2"))

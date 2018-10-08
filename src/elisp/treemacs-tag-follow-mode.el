@@ -99,10 +99,15 @@ PATH: String List"
   (declare (pure t) (side-effect-free t))
   (let (result)
     (--each index
-     (if (imenu--subalist-p it)
-         (setq result
-               (append result (treemacs--flatten-imenu-index (cdr it) (cons (car it) path))))
-       (setq result (cons (cons it (nreverse (copy-sequence path))) result))))
+     (cond
+      ((imenu--subalist-p it)
+       (setq result
+             (append result (treemacs--flatten-imenu-index (cdr it) (cons (car it) path)))))
+      ;; make sure our leaf elements have a cdr where a location should be stored, it looks like there are cases,
+      ;; at least on emacs 25, where we only get what amounts to an empty section
+      ;; https://github.com/Alexander-Miller/treemacs/issues/283#issuecomment-427281977
+      ((and (consp it) (cdr it))
+       (setq result (cons (cons it (nreverse (copy-sequence path))) result)))))
     result))
 
 (defun treemacs--flatten-org-mode-imenu-index (index &optional path)
