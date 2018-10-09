@@ -307,6 +307,7 @@ Used as a post command hook."
 
   (treemacs--adjust-icons-to-window-system)
   (treemacs--setup-icon-highlight)
+  (treemacs--setup-icon-background-colors)
   (treemacs--setup-mode-line))
 
 (provide 'treemacs-mode)
