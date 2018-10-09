@@ -162,6 +162,7 @@ node for quick retrieval later."
                      :state ,state
                      :parent btn
                      :depth depth
+                     :path (append (button-get btn :path) (list ,key-form))
                      :key ,key-form
                      ,@more-properties)))
 
@@ -290,7 +291,9 @@ way as the KEY-FORM argument in `treemacs-render-node'."
             :post-open-action
             (progn
               (treemacs-on-expand
-               (button-get btn :key) btn (-some-> (button-get btn :parent) (button-get :key)))))))
+               (button-get btn :path) btn
+               (-> btn (button-get :parent) (button-get :path)))
+              (treemacs--reopen-at (button-get btn :path) (ht))))))
 
        (defun ,collapse-name (&optional _)
          ,(format "Collapse treemacs nodes of type `%s'." name)
@@ -313,7 +316,7 @@ way as the KEY-FORM argument in `treemacs-render-node'."
           :new-state ',closed-state-name
           :new-icon ,closed-icon-name
           :post-close-action
-          (treemacs-on-collapse (button-get btn :key))))
+          (treemacs-on-collapse (button-get btn :path))))
 
        (treemacs-define-TAB-action ',open-state-name #',collapse-name)
        (treemacs-define-TAB-action ',closed-state-name #',expand-name)
@@ -331,6 +334,7 @@ way as the KEY-FORM argument in `treemacs-render-node'."
                           'category 'default-button
                           'face ,root-face
                           :key ,root-key-form
+                          :path (list (button-get parent :project) ,root-key-form)
                           :depth 1
                           :no-git t
                           :parent parent

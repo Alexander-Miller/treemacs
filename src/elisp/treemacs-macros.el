@@ -342,6 +342,19 @@ the block is left directly with the given message being passed to
        (cl-return-from body
          (treemacs-pulse-on-failure ,error-msg ,@error-args)))))
 
+(cl-defmacro treemacs-first-child-node-where (btn &rest predicate)
+  "Among the *direct* children of BTN find the first child matching PREDICATE.
+For the PREDICATE call the button being checked is bound as 'child-btn'."
+  (declare (indent 1) (debug (sexp body)))
+  `(cl-block __search__
+     (let* ((child-btn (next-button (button-end ,btn) t))
+            (depth (button-get child-btn :depth)))
+       (when (equal (button-get child-btn :parent) ,btn)
+         (if ,@predicate
+             (cl-return-from __search__ child-btn)
+           (while (= depth (button-get (setq child-btn (next-button (button-end child-btn))) :depth))
+             (when ,@predicate (cl-return-from __search__ child-btn))))))))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here

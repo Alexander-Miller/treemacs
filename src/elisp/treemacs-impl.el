@@ -363,69 +363,6 @@ Simply collapses and re-expands the button (if it has not been closed)."
       (goto-char (button-start btn))
       (treemacs--push-button btn))))
 
-(defsubst treemacs--follow-each-dir (btn dir-parts)
-  "Starting at BTN follow (goto and open) every single dir in DIR-PARTS.
-Return the button that is found or the symbol `follow-failed' if the search
-failed."
-  (let* ((root       (button-get btn :path))
-         (git-future (treemacs--git-status-process-function root))
-         (last-index (- (length dir-parts) 1))
-         (depth      (button-get btn :depth)))
-    (goto-char btn)
-    ;; point is currently on the next closest dir to the followed file we could get
-    ;; from the shadow index, so we expand it to keep going
-    (pcase (button-get btn :state)
-      ('dir-node-closed (treemacs--expand-dir-node btn :git-future git-future))
-      ('root-node-closed (treemacs--expand-root-node btn)))
-    (catch 'follow-failed
-      (let ((index 0)
-            (dir-part nil))
-        ;; for every item in dir-parts append it to the already found path for a new
-        ;; 'root' to follow, so for root = /x/ and dir-parts = [src, config, foo.el]
-        ;; consecutively try to move to /x/src, /x/src/confg and finally /x/src/config/foo.el
-        (while dir-parts
-          (setq dir-part (pop dir-parts)
-                root (f-join root dir-part)
-                btn
-                (-let [current-btn nil]
-                  (cl-block search
-                    ;; first a plain text-based search for the current dir-part string
-                    ;; then we grab the node we landed at and see what's going on
-                    ;; there's a couple ways this can go
-                    (while (search-forward dir-part nil :no-error)
-                      (setq current-btn (treemacs-current-button))
-                      (cond
-                       ;; somehow we landed on a line where there isn't even anything to look at
-                       ;; technically this should never happen, but better safe than sorry
-                       ((null current-btn)
-                        (cl-return-from search))
-                       ;; perfect match - return the node we're at
-                       ((string= root (button-get current-btn :path))
-                        (cl-return-from search current-btn))
-                       ;; perfect match - taking collapsed dirs into account
-                       ;; return the node, but make sure to advance the loop variables an
-                       ;; appropriate nuber of times, since a collapsed directory is basically
-                       ;; multiple search iterations bundled as one
-                       ((and (button-get current-btn :collapsed)
-                             (treemacs--is-path-in-dir? root (button-get btn :path)))
-                        (dotimes (_ (button-get current-btn :collapsed))
-                          (setq root (concat root "/" (pop dir-parts)))
-                          (cl-incf index))
-                        (cl-return-from search current-btn))
-                       ;; node we're at has a smaller depth than the one we started from
-                       ;; that means we overshot our target and there's nothing to be found here
-                       ((>= depth (button-get current-btn :depth))
-                        (cl-return-from search)))))))
-          (unless btn (throw 'follow-failed 'follow-failed))
-          (goto-char btn)
-          ;; don't open dir at the very end of the list since we only want to put
-          ;; point in its line
-          (when (and (eq 'dir-node-closed (button-get btn :state))
-                     (< index last-index))
-            (treemacs--expand-dir-node btn :git-future git-future))
-          (setq index (1+ index))))
-      btn)))
-
 (defun treemacs--canonical-path (path)
   "The canonical version of PATH for being handled by treemacs.
 In practice this means expand PATH and remove its final slash."
@@ -555,8 +492,7 @@ GIT-INFO is passed through from the previous branch build."
     ('file-node-closed (treemacs--expand-file-node btn))
     ('tag-node-closed  (treemacs--expand-tag-node btn))
     ('root-node-closed (treemacs--expand-root-node btn))
-    (other             (error "[Treemacs] Cannot reopen button at path %s with state %s"
-                              (button-get btn :path) other))))
+    (other             (funcall (alist-get other treemacs-TAB-actions-config) btn))))
 
 (defun treemacs--reopen-at (path git-info)
   "Reopen dirs below PATH.
@@ -615,11 +551,163 @@ IS-FILE?: Bool"
       (treemacs-pulse-on-success
           "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
 
+(defsubst treemacs--follow-path-elements (btn items)
+  "Starting at BTN follow (goto and open) every single element in ITEMS.
+Return the button that is found or the symbol `follow-failed' if the search
+failed."
+  (when (treemacs-is-node-collapsed? btn)
+    (goto-char btn)
+    (funcall (cdr (assq (button-get btn :state) treemacs-TAB-actions-config))))
+  (cl-block search
+    (while items
+      (-let [item (pop items)]
+        (setq btn (treemacs-first-child-node-where btn
+                    (equal (button-get child-btn :key) item)))
+        (unless btn
+          (cl-return-from search
+            'follow-failed))
+        (goto-char btn)
+        (when (and items (treemacs-is-node-collapsed? btn))
+          (funcall (cdr (assq (button-get btn :state) treemacs-TAB-actions-config)))))))
+  btn)
+
+(defsubst treemacs--follow-each-dir (btn dir-parts)
+  "Starting at BTN follow (goto and open) every single dir in DIR-PARTS.
+Return the button that is found or the symbol `follow-failed' if the search
+failed."
+  (let* ((root       (button-get btn :path))
+         (git-future (treemacs--git-status-process-function root))
+         (last-index (- (length dir-parts) 1))
+         (depth      (button-get btn :depth)))
+    (goto-char btn)
+    ;; point is currently on the next closest dir to the followed file we could get
+    ;; from the shadow index, so we expand it to keep going
+    (pcase (button-get btn :state)
+      ('dir-node-closed (treemacs--expand-dir-node btn :git-future git-future))
+      ('root-node-closed (treemacs--expand-root-node btn)))
+    (catch 'follow-failed
+      (let ((index 0)
+            (dir-part nil))
+        ;; for every item in dir-parts append it to the already found path for a new
+        ;; 'root' to follow, so for root = /x/ and dir-parts = [src, config, foo.el]
+        ;; consecutively try to move to /x/src, /x/src/confg and finally /x/src/config/foo.el
+        (while dir-parts
+          (setq dir-part (pop dir-parts)
+                root (f-join root dir-part)
+                btn
+                (-let [current-btn nil]
+                  (cl-block search
+                    ;; first a plain text-based search for the current dir-part string
+                    ;; then we grab the node we landed at and see what's going on
+                    ;; there's a couple ways this can go
+                    (while (search-forward dir-part nil :no-error)
+                      (setq current-btn (treemacs-current-button))
+                      (cond
+                       ;; somehow we landed on a line where there isn't even anything to look at
+                       ;; technically this should never happen, but better safe than sorry
+                       ((null current-btn)
+                        (cl-return-from search))
+                       ;; perfect match - return the node we're at
+                       ((string= root (button-get current-btn :path))
+                        (cl-return-from search current-btn))
+                       ;; perfect match - taking collapsed dirs into account
+                       ;; return the node, but make sure to advance the loop variables an
+                       ;; appropriate nuber of times, since a collapsed directory is basically
+                       ;; multiple search iterations bundled as one
+                       ((and (button-get current-btn :collapsed)
+                             (treemacs--is-path-in-dir? root (button-get btn :path)))
+                        (dotimes (_ (button-get current-btn :collapsed))
+                          (setq root (concat root "/" (pop dir-parts)))
+                          (cl-incf index))
+                        (cl-return-from search current-btn))
+                       ;; node we're at has a smaller depth than the one we started from
+                       ;; that means we overshot our target and there's nothing to be found here
+                       ((>= depth (button-get current-btn :depth))
+                        (cl-return-from search)))))))
+          (unless btn (throw 'follow-failed 'follow-failed))
+          (goto-char btn)
+          ;; don't open dir at the very end of the list since we only want to put
+          ;; point in its line
+          (when (and (eq 'dir-node-closed (button-get btn :state))
+                     (< index last-index))
+            (treemacs--expand-dir-node btn :git-future git-future))
+          (setq index (1+ index))))
+      btn)))
+
 (defun treemacs-goto-button (path &optional project)
+  "Move point to button identified by PATH under PROJECT in the current buffer.
+Inspite the signature this function effectively supports two different calling
+conventions.
+
+The first one is for movement towards a node that identifies a file. In this
+case the signature is applied as is, and this function diverges simply into
+`treemacs-goto-file-button'. PATH is a filepath string while PROJECT is fully
+optional, as treemacs is able to determine which project, if any, a given file
+belongs to. Providing the project is therefore only a matter of efficiency and
+convenience. If PROJECT is not given it will be found with
+`treemacs--find-project-for-path'. No attempt is made to verify that PATH falls
+under a project in the workspace. It is assumed that this check has already been
+made.
+
+The second calling convention deals with custom nodes defined by an extension
+for treemacs. In this case the PATH is made up of all the node keys that lead to
+the node to be moved to. Since treemacs has no means to determine which project
+a node belongs to it must always be included as the very first element of the
+PATH (and is stored by treemacs as such). The second argument is therefore
+ignored as it is a mandatory part of the first.
+
+Either way this fuction will return a marker to the moved to position if it was
+successful.
+
+PATH: Filepath | Node Path
+PROJECT Project Struct"
+  (if (and (stringp path)
+           (file-exists-p path))
+      (treemacs-goto-file-button path project)
+    (setq project (car path))
+    (let* (;; go back here if the search fails
+           (start (prog1 (point) (goto-char (treemacs-project->position project))))
+           (goto-path path)
+           (counter (1- (length goto-path)))
+           ;; manual as in to be expanded manually after we moved to the next closest node we can find
+           ;; in the shadow index
+           (manual-parts nil)
+           (shadow-node nil))
+      ;; try to move as close as possible to the followed node, starting with its immediate parent
+      ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
+      ;; all the while collecting the parts of the path that beed manual expanding
+      (while (and (> counter 0)
+                  (null shadow-node))
+        (setq shadow-node (treemacs-get-from-shadow-index goto-path)
+              counter (1- counter))
+        (if shadow-node
+            (unless (treemacs-shadow-node->position shadow-node)
+              (setq shadow-node nil))
+          (push (nth (1+ counter) goto-path) manual-parts)
+          (setcdr (nthcdr counter goto-path) nil)))
+      (let* ((btn (if shadow-node
+                      (treemacs-shadow-node->position shadow-node)
+                    (treemacs-project->position project)))
+             ;; do the rest manually
+             (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
+        (if (eq 'follow-failed search-result)
+            (prog1 nil
+              (goto-char start))
+          (goto-char search-result)
+          ;; TODO(2018/10/09): dont do that unless necessary
+          (treemacs--evade-image)
+          (hl-line-highlight)
+          (set-window-point (get-buffer-window) (point))
+          search-result)))))
+
+(defun treemacs-goto-file-button (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.
 If PROJECT is not given it will be found with `treemacs--find-project-for-path'.
 No attempt is made to verify that PATH falls under a project in the workspace.
 It is assumed that this check has already been made.
+
+This function is called by `treemacs-goto-button' when PATH identifies a file
+name.
 
 PATH: Filepath
 PROJECT Project Struct"
