@@ -667,7 +667,9 @@ PROJECT Project Struct"
     (setq project (car path))
     (let* (;; go back here if the search fails
            (start (prog1 (point) (goto-char (treemacs-project->position project))))
-           (goto-path path)
+           ;; making a copy since the variable is a reference to a node actual path
+           ;; and will be changed in-place here
+           (goto-path (copy-sequence path))
            (counter (1- (length goto-path)))
            ;; manual as in to be expanded manually after we moved to the next closest node we can find
            ;; in the shadow index
@@ -680,11 +682,14 @@ PROJECT Project Struct"
                   (null shadow-node))
         (setq shadow-node (treemacs-get-from-shadow-index goto-path)
               counter (1- counter))
-        (if shadow-node
-            (unless (treemacs-shadow-node->position shadow-node)
-              (setq shadow-node nil))
+        (cond
+         ((null shadow-node)
           (push (nth (1+ counter) goto-path) manual-parts)
-          (setcdr (nthcdr counter goto-path) nil)))
+          (setcdr (nthcdr counter goto-path) nil))
+         ((and shadow-node (null (treemacs-shadow-node->position shadow-node)))
+          (setq shadow-node nil)
+          (push (nth (1+ counter) goto-path) manual-parts)
+          (setcdr (nthcdr counter goto-path) nil))))
       (let* ((btn (if shadow-node
                       (treemacs-shadow-node->position shadow-node)
                     (treemacs-project->position project)))
