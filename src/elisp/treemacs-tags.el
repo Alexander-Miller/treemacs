@@ -416,7 +416,7 @@ headline with subelements is saved in an 'org-imenu-marker' text property."
 Will return the found tag node, or nil if no such node exists (anymore). In this
 case point will be left at the next highest node available."
   (-let [(tag file . path) tag-path]
-    (-when-let (file-node (treemacs-goto-file-button file))
+    (-when-let (file-node (treemacs-goto-file-node file))
       (when (eq 'file-node-closed (button-get file-node :state))
         (goto-char (button-start file-node))
         (treemacs--expand-file-node file-node))

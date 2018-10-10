@@ -380,7 +380,7 @@ likewise be updated."
            (treemacs--on-rename old-path new-path)
            (treemacs--do-refresh (current-buffer) project)))
         (treemacs--reload-buffers-after-rename old-path new-path)
-        (treemacs-goto-file-button new-path project)
+        (treemacs-goto-file-node new-path project)
         (treemacs-pulse-on-success "Renamed %s to %s."
           (propertize (treemacs--filename old-path) 'face font-lock-string-face)
           (propertize new-name 'face font-lock-string-face))))))
@@ -830,7 +830,7 @@ Only works with a single project in the workspace."
         (unless (string= root new-root)
           (treemacs-remove-project-from-workspace)
           (treemacs-do-add-project-to-workspace new-root new-name)
-          (treemacs-goto-file-button new-root)
+          (treemacs-goto-file-node new-root)
           (treemacs-toggle-node))))))
 
 (defun treemacs-root-down ()
@@ -850,7 +850,7 @@ Only works with a single project in the workspace."
                (treemacs-pulse-on-success nil))
            (treemacs-remove-project-from-workspace)
            (treemacs-do-add-project-to-workspace new-root (file-name-nondirectory new-root))
-           (treemacs-goto-file-button new-root)
+           (treemacs-goto-file-node new-root)
            (treemacs-toggle-node)))
         (_
          (treemacs-pulse-on-failure "Button at point is not a directory."))))))

@@ -219,10 +219,10 @@ PROJECT: Project Struct"
                        (treemacs--collapse-file-node prev-followed-pos)))))
                ;; when that doesnt work move manually to the correct file
                (unless (string-equal buffer-file (button-get btn :path))
-                 (treemacs-goto-file-button buffer-file project)
+                 (treemacs-goto-file-node buffer-file project)
                  (setq btn (treemacs-current-button))))
            ;; also move manually when there is no button at point
-           (treemacs-goto-file-button buffer-file project)
+           (treemacs-goto-file-node buffer-file project)
            (setq btn (treemacs-current-button)))
          (goto-char (button-start btn))
          (setq treemacs--previously-followed-tag-position (cons btn (button-get btn :path)))

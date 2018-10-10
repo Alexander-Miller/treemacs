@@ -937,7 +937,7 @@
                 (should (string= "testdir1/testdir2" (treemacs--get-label-of (treemacs-current-button))))
 
                 ;; test tags
-                (treemacs-goto-button (concat treemacs-dir "/test/testdir1/testdir2/testfile.el"))
+                (treemacs-goto-node (concat treemacs-dir "/test/testdir1/testdir2/testfile.el"))
                 (should (string= "testfile.el" (treemacs--get-label-of (treemacs-current-button))))
 
                 (call-interactively #'treemacs-TAB-action)

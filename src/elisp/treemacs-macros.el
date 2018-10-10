@@ -257,7 +257,7 @@ it on the same line."
          (if (and (f-exists? curr-file)
                   (or treemacs-show-hidden-files
                       (not (s-matches? treemacs-dotfiles-regex (treemacs--filename curr-file)))))
-             (treemacs-goto-button curr-file)
+             (treemacs-goto-node curr-file)
            (treemacs-without-messages (with-no-warnings (goto-line curr-line)))))
         ((or 'tag-node-open 'tag-node-closed 'tag-node)
          ;; no correction needed, if the tag does not exist point is left at the next best node

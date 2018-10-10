@@ -356,7 +356,7 @@ being edited to trigger."
 (defsubst treemacs--refresh-dir (path)
   "Local refresh for button at PATH.
 Simply collapses and re-expands the button (if it has not been closed)."
-  (-let [btn (treemacs-goto-file-button path)]
+  (-let [btn (treemacs-goto-file-node path)]
     (when (memq (button-get btn :state) '(dir-node-open file-node-open))
       (goto-char (button-start btn))
       (treemacs--push-button btn)
@@ -505,7 +505,7 @@ GIT-INFO is passed through from the previous branch build."
                 (-reject #'treemacs-shadow-node->closed)
                 (-map #'treemacs-shadow-node->key)
                 (treemacs--maybe-filter-dotfiles)))
-     (treemacs--reopen-node (treemacs-goto-button it) git-info))))
+     (treemacs--reopen-node (treemacs-goto-node it) git-info))))
 
 (defun treemacs--nearest-path (btn)
   "Return the path property of the current button (or BTN).
@@ -546,7 +546,7 @@ IS-FILE?: Bool"
          (make-directory path-to-create t)))
       (-when-let (project (treemacs--find-project-for-path path-to-create))
         (treemacs-without-messages (treemacs--do-refresh (current-buffer) project))
-        (treemacs-goto-file-button (treemacs--canonical-path path-to-create) project)
+        (treemacs-goto-file-node (treemacs--canonical-path path-to-create) project)
         (recenter))
       (treemacs-pulse-on-success
           "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
@@ -634,14 +634,14 @@ failed."
           (setq index (1+ index))))
       btn)))
 
-(defun treemacs-goto-button (path &optional project)
+(defun treemacs-goto-node (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.
 Inspite the signature this function effectively supports two different calling
 conventions.
 
 The first one is for movement towards a node that identifies a file. In this
 case the signature is applied as is, and this function diverges simply into
-`treemacs-goto-file-button'. PATH is a filepath string while PROJECT is fully
+`treemacs-goto-file-node'. PATH is a filepath string while PROJECT is fully
 optional, as treemacs is able to determine which project, if any, a given file
 belongs to. Providing the project is therefore only a matter of efficiency and
 convenience. If PROJECT is not given it will be found with
@@ -663,7 +663,7 @@ PATH: Filepath | Node Path
 PROJECT Project Struct"
   (if (and (stringp path)
            (file-exists-p path))
-      (treemacs-goto-file-button path project)
+      (treemacs-goto-file-node path project)
     (setq project (car path))
     (let* (;; go back here if the search fails
            (start (prog1 (point) (goto-char (treemacs-project->position project))))
@@ -705,13 +705,13 @@ PROJECT Project Struct"
           (set-window-point (get-buffer-window) (point))
           search-result)))))
 
-(defun treemacs-goto-file-button (path &optional project)
+(defun treemacs-goto-file-node (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.
 If PROJECT is not given it will be found with `treemacs--find-project-for-path'.
 No attempt is made to verify that PATH falls under a project in the workspace.
 It is assumed that this check has already been made.
 
-This function is called by `treemacs-goto-button' when PATH identifies a file
+This function is called by `treemacs-goto-node' when PATH identifies a file
 name.
 
 PATH: Filepath
