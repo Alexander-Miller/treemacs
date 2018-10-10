@@ -237,7 +237,7 @@ DIRS: List of Collapse Paths. Each Collapse Path is a list of
         (treemacs--start-watching (car it))
         (dolist (step (nthcdr 2 it))
           (treemacs--start-watching step t)))
-      (let* ((b (treemacs-goto-button (car it)))
+      (let* ((b (treemacs-goto-file-button (car it)))
              (props (text-properties-at (button-start b)))
              (new-path (nth (- (length it) 1) it)))
         (button-put b :path new-path)

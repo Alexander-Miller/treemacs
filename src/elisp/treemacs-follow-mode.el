@@ -70,7 +70,7 @@ not visible."
                                       (treemacs--nearest-path it)
                                     (treemacs-project->path project-for-file))]
                (unless (string= selected-file current-file)
-                 (when (treemacs-goto-button current-file project-for-file)
+                 (when (treemacs-goto-file-button current-file project-for-file)
                    (when treemacs-project-follow-cleanup
                      (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
                        (unless (or (not (treemacs-project->is-expanded? project))

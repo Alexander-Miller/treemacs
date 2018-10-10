@@ -356,7 +356,7 @@ being edited to trigger."
 (defsubst treemacs--refresh-dir (path)
   "Local refresh for button at PATH.
 Simply collapses and re-expands the button (if it has not been closed)."
-  (-let [btn (treemacs-goto-button path)]
+  (-let [btn (treemacs-goto-file-button path)]
     (when (memq (button-get btn :state) '(dir-node-open file-node-open))
       (goto-char (button-start btn))
       (treemacs--push-button btn)
@@ -546,7 +546,7 @@ IS-FILE?: Bool"
          (make-directory path-to-create t)))
       (-when-let (project (treemacs--find-project-for-path path-to-create))
         (treemacs-without-messages (treemacs--do-refresh (current-buffer) project))
-        (treemacs-goto-button (treemacs--canonical-path path-to-create) project)
+        (treemacs-goto-file-button (treemacs--canonical-path path-to-create) project)
         (recenter))
       (treemacs-pulse-on-success
           "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
