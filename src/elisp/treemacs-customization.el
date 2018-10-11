@@ -328,6 +328,14 @@ This is only relevant when using the deferred variant of git-mode."
   :type 'number
   :group 'treemacs-configuration)
 
+(defcustom treemacs-max-git-entries 5000
+  "Maximum number of git status entries treemacs will process.
+Information for entries that number will be silently ignored. The 'entries'
+refer to the lines output by `git status --porcelain --ignored'. The limit does
+not apply to the simple `treemacs-git-mode.'"
+  :type 'number
+  :group 'treemacs-configuration)
+
 (defcustom treemacs-tag-follow-delay 1.5
   "Delay in seconds of inactivity for `treemacs-tag-follow-mode' to trigger."
   :type 'number

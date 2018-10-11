@@ -202,7 +202,9 @@ information and highlight them accordingly (see also the ~treemacs-git-...~ face
 #+END_SRC
 
 All versions use an asynchronous git process and are optimized to not do more work than necessary, so their performance
-cost should, for the most part, be the constant amount of time it takes to fork a subprocess.
+cost should, for the most part, be the constant amount of time it takes to fork a subprocess. For repositories where
+this is not the case ~treemacs-max-git-entries~ (default value 5000) will limit the number of git status entries
+treemacs will process before ignoring the rest.
 
 ** Filewatch-mode
 ~treemacs-filewatch-mode~ is a global minor mode which enables treemacs to watch the files it is displaying for changes
@@ -302,6 +304,7 @@ You can find an exhaustive overview of all functions, their keybindings and func
             treemacs-indentation                2
             treemacs-indentation-string         " "
             treemacs-is-never-other-window      nil
+            treemacs-max-git-entries            5000
             treemacs-no-png-images              nil
             treemacs-project-follow-cleanup     nil
             treemacs-persist-file               (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
@@ -387,6 +390,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-deferred-git-apply-delay   | 0.5                                         | Seconds of idle time for git highlighting to apply when using the deferred ~treemacs-git-mode~.                                                                                            |
 | treemacs-file-follow-delay          | 0.2                                         | Delay in seconds of idle time for treemacs to follow the selected window.                                                                                                                  |
 | treemacs-display-in-side-window     | t                                           | When non-nil treemacs will use a dedicated [[https://www.gnu.org/software/emacs/draft/manual/html_node/elisp/Side-Windows.html][side-window]].                                                                                                                                    |
+| treemacs-max-git-entries            | 5000                                        | Maximum number of git status entries treemacs will process. Anything above that number will be ignored.                                                                                    |
 
 ** Faces
 Treemacs defines and uses the following faces:

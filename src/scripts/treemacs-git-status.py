@@ -5,6 +5,7 @@ from posixpath import join
 import sys
 
 GIT_ROOT  = str.encode(sys.argv[1])
+LIMIT     = int(sys.argv[2])
 GIT_CMD   = "git status --porcelain --ignored ."
 STDOUT    = sys.stdout.buffer
 OPEN      = b'("'
@@ -26,6 +27,7 @@ def main():
     dirs = {}
 
     output += b'('
+    iter_count = 0
     for item in proc.stdout:
         if item.startswith(b' '):
             item = item[1:]
@@ -60,6 +62,9 @@ def main():
                     dirs[full_dirname] = True
         if state.startswith(b'?') and isdir(full_root):
             print_all_untracked_files(full_root)
+        iter_count += 1
+        if iter_count >= LIMIT:
+            break
     output += b')'
     STDOUT.write(output)
 
