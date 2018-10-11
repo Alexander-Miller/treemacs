@@ -125,7 +125,7 @@ Optionally include MORE-PROPERTIES (like `face' or `display')."
   "Update the node identified by its PATH.
 Throws an error when the node cannot be found. Does nothing if the node is not
 expanded."
-  (treemacs-unless-let (btn (treemacs-goto-button path))
+  (treemacs-unless-let (btn (treemacs-goto-node path))
       (error "Node at path %s cannot be found" path)
     (when (treemacs-is-node-expanded? btn)
       (funcall (alist-get (button-get btn :state) treemacs-TAB-actions-config))
