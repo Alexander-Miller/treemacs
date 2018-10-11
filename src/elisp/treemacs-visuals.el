@@ -43,8 +43,6 @@
 ;; Since it is a marker in the treemacs buffer it is important for it to be reset whenever it might
 ;; become invalid.
 
-;; values will be properly set (and reset) in `treemacs--create-icons'
-
 (treemacs-import-functions-from "treemacs-icons"
   treemacs--created-icons)
 
@@ -52,20 +50,24 @@
   "The last button treemacs has highlighted.")
 
 (defvar treemacs--not-selected-icon-background
-  (let ((bg (face-attribute 'default :background nil t)))
-    (if (eq 'unspecified bg)
-        (prog1 "#2d2d31"
-          (unless (boundp 'treemacs-no-load-time-warnings)
-            (message "[Treemacs] Warning: coudn't find default background color, falling back on #2d2d31.")))
-      bg))
+  (pcase (face-attribute 'default :background nil t)
+    ('unspecified
+     (prog1 "#2d2d31"
+       (unless (boundp 'treemacs-no-load-time-warnings)
+         (message "[Treemacs] Warning: coudn't find default background color for icons, falling back on #2d2d31."))))
+    ('unspecified-bg
+     (prog1 "#2d2d31"
+       (unless (boundp 'treemacs-no-load-time-warnings)
+         (message "[Treemacs] Warning: background color is unspecified, icons will likely look wrong. Falling back on #2d2d31."))))
+    (other other))
   "Background for non-selected icons.")
 
 (defvar treemacs--selected-icon-background
-  (let ((bg (face-attribute 'hl-line :background nil t)))
-    (if (eq 'unspecified bg)
+  (-let [bg (face-attribute 'hl-line :background nil t)]
+    (if (memq bg '(unspecified unspecified-b))
         (prog1 treemacs--not-selected-icon-background
           (unless (boundp 'treemacs-no-load-time-warnings)
-            (message "[Treemacs] Warning: couldn't find hl-line-mode's background color, falling back on %s."
+            (message "[Treemacs] Warning: couldn't find hl-line-mode's background color for icons, falling back on %s."
                      treemacs--not-selected-icon-background)))
       bg))
   "Background for selected icons.")
@@ -100,16 +102,27 @@
 Fetch the current theme's background & hl-line colors and inject them into
 `treemacs--created-icons'. Also called as advice after `load-theme', hence the
 ignored argument."
-  (setq treemacs--not-selected-icon-background (face-attribute 'default :background nil t)
-        treemacs--selected-icon-background     (face-attribute 'hl-line :background nil t))
-  (--each (treemacs--created-icons)
-    (progn
-      (treemacs--set-img-property
-       (get-text-property 0 'img-selected it)
-       :background treemacs--selected-icon-background)
-      (treemacs--set-img-property
-       (get-text-property 0 'img-unselected it)
-       :background treemacs--not-selected-icon-background))))
+  (let ((default-background (face-attribute 'default :background nil t))
+        (hl-line-background (face-attribute 'hl-line :background nil t))
+        (changed? nil))
+    (when (eq default-background 'unspecified-bg)
+      (setq default-background "#2d2d31"))
+    (unless (equal treemacs--not-selected-icon-background default-background)
+      (setq treemacs--not-selected-icon-background default-background
+            changed? t))
+    (unless (equal treemacs--selected-icon-background hl-line-background)
+      (setq treemacs--selected-icon-background hl-line-background
+            changed? t))
+    ;; make sure we only change all the icons' colors when we have to
+    (when changed?
+      (--each (treemacs--created-icons)
+        (progn
+          (treemacs--set-img-property
+           (get-text-property 0 'img-selected it)
+           :background treemacs--selected-icon-background)
+          (treemacs--set-img-property
+           (get-text-property 0 'img-unselected it)
+           :background treemacs--not-selected-icon-background))))))
 
 (defun treemacs--update-icon-selection ()
   "Highlight current icon, unhighlight `treemacs--last-highlight'."
