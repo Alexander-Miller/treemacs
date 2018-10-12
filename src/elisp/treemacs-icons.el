@@ -352,6 +352,8 @@ name if there is no period. This makes it possible to match file names like
 
 FILE-EXTENSIONS are also not case sensitive and will be downcased before they're
 inserted into `treemacs-icons-hash'."
+  (unless icon
+    (user-error "Custom icon cannot be nil"))
   (push icon treemacs--created-icons)
   (--each file-extensions
     (ht-set! treemacs-icons-hash
