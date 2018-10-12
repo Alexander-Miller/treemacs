@@ -58,7 +58,7 @@ via `assq'.")
 
 (defmacro treemacs--size-adjust (width height)
   "Special adjust for the WIDTH and HEIGHT of an icon.
-Necessary since root icon are not rectangular."
+Necessary since root icons are not rectangular."
   `(let ((w (round (* ,width 0.9090)))
          (h (round (* ,height 1.1818))))
      (setq ,width w ,height h)))
@@ -140,7 +140,7 @@ Remember the value in `treemacs--default-icons-alist'."
 Uses `treemacs-icon-fallback' as fallback."
   (ht-get treemacs-icons-hash
           (-> path (treemacs--file-extension) (downcase))
-          treemacs-icon-fallback) )
+          treemacs-icon-fallback))
 
 (defmacro treemacs--set-icon-save-default (&rest key-values)
   "Pass KEY-VALUES to `setq'.
@@ -243,10 +243,13 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
 
 (defun treemacs--setup-icons ()
   "Create and define all icons-related caches, hashes and stashes."
-  (setq treemacs-icons-hash (make-hash-table :size 100 :test #'equal))
+  (setq treemacs-icons-hash (make-hash-table :size 300 :test #'equal))
   (if (treemacs--is-image-creation-impossible?)
       (treemacs--setup-tui-icons)
-    (treemacs--setup-gui-icons)))
+    (treemacs--setup-gui-icons))
+  ;; prevent nil values, as in https://github.com/hlissner/doom-emacs/issues/941#issuecomment-429154169
+  ;; however that happens
+  (setq treemacs--created-icons (-reject #'null treemacs--created-icons)))
 
 (defun treemacs-reset-icons ()
   "Reset customized icons to their default values."
@@ -319,8 +322,8 @@ TUI icons will be used if
  * `treemacs-no-png-images' is it
  * or if the current frame is a TUI frame"
   (if (or (treemacs--is-image-creation-impossible?)
-            treemacs-no-png-images
-            (not (window-system)))
+          treemacs-no-png-images
+          (not (window-system)))
       (progn
         (setq-local treemacs-icons-hash           (ht))
         (setq-local treemacs-icon-root            treemacs-icon-root-text)
