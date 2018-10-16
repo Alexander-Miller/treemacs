@@ -40,7 +40,9 @@
 
 (treemacs-import-functions-from "treemacs-extensions"
   treemacs--apply-project-start-extensions
-  treemacs--apply-project-end-extensions)
+  treemacs--apply-project-end-extensions
+  treemacs--apply-directory-start-extensions
+  treemacs--apply-directory-end-extensions)
 
 (defvar treemacs--git-cache-max-size 60
   "Maximum size for `treemacs--git-cache'.
@@ -150,6 +152,7 @@ DEPTH indicates how deep in the filetree the current button is."
                :default-face 'treemacs-directory-face
                :state 'dir-node-closed
                :path path
+               :key path
                :symlink (file-symlink-p path)
                :parent parent
                :depth depth)))
@@ -170,6 +173,7 @@ DEPTH indicates how deep in the filetree the current button is."
                :default-face 'treemacs-git-unmodified-face
                :state 'file-node-closed
                :path path
+               :key path
                :parent parent
                :depth depth)))
 
@@ -472,7 +476,9 @@ RECURSIVE: Bool"
        (progn
          ;; do on-expand first so buttons that need collapsing can quickly find their parent
          (treemacs-on-expand path btn (treemacs-parent-of btn))
-         (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn))
+         (treemacs--apply-directory-start-extensions btn path)
+         (goto-char (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn))
+         (treemacs--apply-directory-end-extensions btn path))
        :post-open-action
        (progn
          (treemacs--start-watching path)

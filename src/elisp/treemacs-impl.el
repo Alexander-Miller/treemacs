@@ -80,6 +80,7 @@
   treemacs-shadow-node->key
   treemacs-shadow-node->closed
   treemacs-shadow-node->position
+  treemacs-project-p
   treemacs--reset-index
   treemacs--on-rename
   treemacs--invalidate-position-cache)
@@ -634,6 +635,92 @@ failed."
           (setq index (1+ index))))
       btn)))
 
+(defsubst treemacs--goto-custom-top-node (path)
+  "Move to the project extension node at PATH."
+  (let* ((project (car path))
+         ;; go back here if the search fails
+         (start (prog1 (point) (goto-char (treemacs-project->position project))))
+         ;; making a copy since the variable is a reference to a node actual path
+         ;; and will be changed in-place here
+         (goto-path (copy-sequence path))
+         (counter (1- (length goto-path)))
+         ;; manual as in to be expanded manually after we moved to the next closest node we can find
+         ;; in the shadow index
+         (manual-parts nil)
+         (shadow-node nil))
+    ;; try to move as close as possible to the followed node, starting with its immediate parent
+    ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
+    ;; all the while collecting the parts of the path that beed manual expanding
+    (while (and (> counter 0)
+                (null shadow-node))
+      (setq shadow-node (treemacs-get-from-shadow-index goto-path)
+            counter (1- counter))
+      (cond
+       ((null shadow-node)
+        (push (nth (1+ counter) goto-path) manual-parts)
+        (setcdr (nthcdr counter goto-path) nil))
+       ((and shadow-node (null (treemacs-shadow-node->position shadow-node)))
+        (setq shadow-node nil)
+        (push (nth (1+ counter) goto-path) manual-parts)
+        (setcdr (nthcdr counter goto-path) nil))))
+    (let* ((btn (if shadow-node
+                    (treemacs-shadow-node->position shadow-node)
+                  (treemacs-project->position project)))
+           ;; do the rest manually
+           (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
+      (if (eq 'follow-failed search-result)
+          (prog1 nil
+            (goto-char start))
+        (goto-char search-result)
+        ;; TODO(2018/10/09): dont do that unless necessary
+        (treemacs--evade-image)
+        (hl-line-highlight)
+        (set-window-point (get-buffer-window) (point))
+        search-result))))
+
+(defsubst treemacs--goto-custom-dir-node (path)
+  "Move to the directory extension node at PATH."
+  (let* (;; go back here if the search fails
+         (project (treemacs--find-project-for-path (car path)))
+         (start (prog1 (point) (goto-char (treemacs-project->position project))))
+         ;; making a copy since the variable is a reference to a node actual path
+         ;; and will be changed in-place here
+         (goto-path (copy-sequence path))
+         (counter (1- (length goto-path)))
+         ;; manual as in to be expanded manually after we moved to the next closest node we can find
+         ;; in the shadow index
+         (manual-parts nil)
+         (shadow-node nil))
+    ;; try to move as close as possible to the followed node, starting with its immediate parent
+    ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
+    ;; all the while collecting the parts of the path that beed manual expanding
+    (while (and (> (1+ counter) 0)
+                (null shadow-node))
+      (setq shadow-node (treemacs-get-from-shadow-index (if (cdr goto-path) goto-path (car goto-path)))
+            counter (1- counter))
+      (cond
+       ((null shadow-node)
+        (push (nth (1+ counter) goto-path) manual-parts)
+        (setcdr (nthcdr counter goto-path) nil))
+       ((and shadow-node (null (treemacs-shadow-node->position shadow-node)))
+        (setq shadow-node nil)
+        (push (nth (1+ counter) goto-path) manual-parts)
+        (setcdr (nthcdr counter goto-path) nil))))
+    (let* ((btn (if shadow-node
+                    (treemacs-shadow-node->position shadow-node)
+                  (treemacs-project->position project)))
+           ;; do the rest manually
+           (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
+      (if (eq 'follow-failed search-result)
+          (prog1 nil
+            (goto-char start))
+        (goto-char search-result)
+        ;; TODO(2018/10/09): dont do that unless necessary
+        (treemacs--evade-image)
+        (hl-line-highlight)
+        (set-window-point (get-buffer-window) (point))
+        search-result))))
+
 (defun treemacs-goto-node (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.
 Inspite the signature this function effectively supports two different calling
@@ -651,59 +738,27 @@ made.
 
 The second calling convention deals with custom nodes defined by an extension
 for treemacs. In this case the PATH is made up of all the node keys that lead to
-the node to be moved to. Since treemacs has no means to determine which project
-a node belongs to it must always be included as the very first element of the
-PATH (and is stored by treemacs as such). The second argument is therefore
-ignored as it is a mandatory part of the first.
+the node to be moved to.
+
+For a directory extension, created with `treemacs-define-directory-extension',
+that means that the path's first element must be the filepath of its parent. For
+a project extension, created with `treemacs-define-project-extension', the
+first element of the path must instead be the project struct it's located under.
+The second argument is therefore ignored as it is a mandatory part of the first.
 
 Either way this fuction will return a marker to the moved to position if it was
 successful.
 
 PATH: Filepath | Node Path
 PROJECT Project Struct"
-  (if (and (stringp path)
-           (file-exists-p path))
-      (treemacs-goto-file-node path project)
-    (setq project (car path))
-    (let* (;; go back here if the search fails
-           (start (prog1 (point) (goto-char (treemacs-project->position project))))
-           ;; making a copy since the variable is a reference to a node actual path
-           ;; and will be changed in-place here
-           (goto-path (copy-sequence path))
-           (counter (1- (length goto-path)))
-           ;; manual as in to be expanded manually after we moved to the next closest node we can find
-           ;; in the shadow index
-           (manual-parts nil)
-           (shadow-node nil))
-      ;; try to move as close as possible to the followed node, starting with its immediate parent
-      ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
-      ;; all the while collecting the parts of the path that beed manual expanding
-      (while (and (> counter 0)
-                  (null shadow-node))
-        (setq shadow-node (treemacs-get-from-shadow-index goto-path)
-              counter (1- counter))
-        (cond
-         ((null shadow-node)
-          (push (nth (1+ counter) goto-path) manual-parts)
-          (setcdr (nthcdr counter goto-path) nil))
-         ((and shadow-node (null (treemacs-shadow-node->position shadow-node)))
-          (setq shadow-node nil)
-          (push (nth (1+ counter) goto-path) manual-parts)
-          (setcdr (nthcdr counter goto-path) nil))))
-      (let* ((btn (if shadow-node
-                      (treemacs-shadow-node->position shadow-node)
-                    (treemacs-project->position project)))
-             ;; do the rest manually
-             (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
-        (if (eq 'follow-failed search-result)
-            (prog1 nil
-              (goto-char start))
-          (goto-char search-result)
-          ;; TODO(2018/10/09): dont do that unless necessary
-          (treemacs--evade-image)
-          (hl-line-highlight)
-          (set-window-point (get-buffer-window) (point))
-          search-result)))))
+  (cond
+   ((and (stringp path)
+         (file-exists-p path))
+    (treemacs-goto-file-node path project))
+   ((treemacs-project-p (car path))
+    (treemacs--goto-custom-top-node path))
+   (t
+    (treemacs--goto-custom-dir-node path))))
 
 (defun treemacs-goto-file-node (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.
