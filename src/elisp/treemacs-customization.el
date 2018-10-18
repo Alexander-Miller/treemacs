@@ -541,6 +541,11 @@ is enabled, since constantly expanding an entire project is farily expensive."
              nil)
   :group 'treemacs-configuration)
 
+(defcustom treemacs-show-cursor nil
+  "When non-nil treemacs the cursor will remain visible in the treemacs buffer."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

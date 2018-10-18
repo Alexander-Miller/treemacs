@@ -277,8 +277,16 @@ Used as a post command hook."
   (setq buffer-read-only    t
         truncate-lines      t
         indent-tabs-mode    nil
-        cursor-type         nil
         desktop-save-buffer nil)
+
+  (unless treemacs-show-cursor
+    (setq cursor-type nil))
+  (when (boundp 'evil-treemacs-state-cursor)
+    (with-no-warnings
+      (setq evil-treemacs-state-cursor
+            (if treemacs-show-cursor
+                evil-motion-state-cursor
+              '(hbar . 0)))))
 
   ;; higher fuzz value makes it less likely to start a mouse drag
   ;; and make a switch to visual state
