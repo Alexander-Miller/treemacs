@@ -1,0 +1,177 @@
+# -*- fill-column: 120 -*-
+
+* Content                                                                            :TOC:noexport:
+- [[#treemacs-extension-tutorial][Treemacs Extension Tutorial]]
+   - [[#extensions-for-projects][Extensions for Projects]]
+   - [[#extension-for-directories][Extension for Directories]]
+   - [[#node-navigation-and-updates][Node Navigation and Updates]]
+   - [[#about-properties][About Properties]]
+
+* Treemacs Extension Tutorial
+** Extensions for Projects
+
+First our dependencies:
+
+#+BEGIN_SRC emacs-lisp
+  (require 'treemacs)
+  (require 'dash)
+#+END_SRC
+
+Now let's define a source for the data we'll be displaying: a list of buffers, grouped by their major modes, with
+transient buffers (whose names start with a space) removed. It doesn't really make much sense to add a buffer list like
+that under some project, but this example is 1) reasonably practical, and 2) very simple, allowing us to concentrate on
+integrating it with treemacs.
+
+#+BEGIN_SRC emacs-lisp
+  (defun showcase--get-buffer-groups ()
+    "Get the list of buffers, grouped by their major mode."
+    (->> (buffer-list)
+         (--reject (eq ?\ (aref (buffer-name it) 0)))
+         (--group-by (buffer-local-value 'major-mode it))))
+#+END_SRC
+
+The output of this function would look roughly like this. This is the structure our extension will have when we're done.
+
+#+BEGIN_SRC emacs-lisp
+  ((org-mode
+    #<buffer Extensions.org>)
+   (emacs-lisp-mode
+    #<buffer init.el>
+    #<buffer treemacs-customization.el>
+    #<buffer *scratch*>
+    #<buffer treemacs-extensions.el>)
+   (spacemacs-buffer-mode
+    #<buffer *spacemacs*>)
+   (messages-buffer-mode
+    #<buffer *Messages*>)
+   (compilation-mode
+    #<buffer *Compile-Log*>)
+   (magit-status-mode
+    #<buffer magit: treemacs>))
+#+END_SRC
+
+Before we begin defining what our nodes look like we will slightly get ahead of ourselves and define the function that
+allows us to visit the buffer node at point. The buffer that is represented by the node will be stored in its ~:buffer~
+property, so all we need to do is extract it, make sure it's alive, and show it in ~next-window~. The function could
+make use of the prefix argument, but we won't us it here. This function can now be used to give our leaf nodes a TAB,
+RET, or double-mouse1 action (the latter is a work in progress).
+
+#+BEGIN_SRC emacs-lisp
+  (defun showcase-visit-buffer (&rest _)
+    "Switch to the buffer saved in node at point."
+    (let* ((node (treemacs-current-button))
+           (buffer (button-get node :buffer)))
+      (when (buffer-live-p buffer)
+        (select-window (next-window))
+        (switch-to-buffer buffer))))
+#+END_SRC
+
+Now we'll get to building our custom treemacs tree. Node types are defined from the bottom up, so we start with the
+leaves of our tree, nodes that represent some specific buffer. ~treemacs-define-leaf-node~ needs 3 things: a name, an
+icon, and optional keyword arguments for TAB, RET, and doubleclick actions. This is why we defined our visit-buffer
+command in advance. Instead of using ~treemacs-as-icon~ to iconize a string you can also use ~treemacs-icon-for-file~ or
+directly use one of treemacs' own icons (like ~treemacs-icon-css~).
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-leaf-node buffer-leaf
+    (treemacs-as-icon "• " 'face 'font-lock-builtin-face)
+    :ret-action #'showcase-visit-buffer
+    :tab-action #'showcase-visit-buffer
+    :mouse1-action (lambda (&rest args) (interactive) (showcase-visit-buffer args)))
+#+END_SRC
+
+Now we move further up and define our first expandable node type that represents a group of buffers with a specific
+major mode. This is where it gets interesting. Aside from the two icons for the node being either open or closed we need
+a query function and a render action. The former will be called by treemacs to this node is expanded and must provide
+a list of child nodes to display.
+
+In the context of the invocation of the query function the node being expanded is bound under the name ~btn~, named so
+because under all its layers of abstraction treemacs' nodes (specifically the text and not the icons) are buttons as per
+the builtin ~button.el~ library. Its functions can all be invoked on treemacs nodes, including ~button-get~, which we
+use here to retrieve the list of buffers that we will have stored in the node's ~:buffers~ property.
+
+In the next step treemacs will loop over the list returned by the query function, invoking the render action form for
+each. Every element in the iteration will be bound as ~item~. Whatever code is used in the render action, it must end in
+a call to ~treemacs-render-node~, which creates the strings treemacs will be inserting. It requires an icon, a display
+name, an initial state, a face, a (reasonably) unique key, and an optional list of arbitrary additional properties to
+store.
+
+Here we can see why node definition must go bottom to top. The leaf node definition from above has given us the
+variables for both the icon and the initial state. Since we are iterating over a list of buffers we can use the buffer
+name for the display label. Buffers are also unique, so we can use them as the node's unique key as well. There are
+requirements for the choice of the face. Finally we also store the buffer in every node's ~:buffer~ property so we can
+later use it in ~showcase-visit-buffer~.
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-expandable-node buffer-group
+    :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
+    :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
+    :query-function (button-get btn :buffers)
+    :render-action
+    (treemacs-render-node
+     :icon treemacs-buffer-leaf-icon
+     :label-form (buffer-name item)
+     :state treemacs-buffer-leaf-state
+     :face 'font-lock-string-face
+     :key-form item
+     :more-properties (:buffer item)))
+#+END_SRC
+
+Third things third we define a root node to hold the list of buffers together. It works much the same way as just
+defining an expandable node, but requires additional information. So far we've created a small render chain. Buffers are
+rendered by buffers groups, buffer groups are rendered by the buffer root, but the buffer root is not rendered by the
+next highest node, but by treemacs itself. So we set ~:root-marker~ to t and provide a ~:root-label~, ~:root-face~ and a
+~:root-key-form~, same as when calling into ~treemacs-render-node~.
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-expandable-node buffers-root
+    :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
+    :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
+    :query-function (treemacs--get-buffer-groups)
+    :render-action
+    (treemacs-render-node
+     :icon treemacs-icon-buffer-group-closed
+     :label-form (symbol-name (car item))
+     :state treemacs-buffer-group-closed-state
+     :face 'font-lock-keyword-face
+     :key-form (car item)
+     :more-properties (:buffers (cdr item)))
+    :root-marker t
+    :root-label "Buffers"
+    :root-face 'font-lock-type-face
+    :root-key-form 'Buffers)
+#+END_SRC
+
+This code will have defined a function called ~treemacs-BUFFERS-ROOT-extension~ which we can use as our extension, but
+first we need another, final building block. We are building an extension for projects, we have yet to decide /which/
+projects it is for. In other words we need a predicate. So let's assume we want our extension to show up only for the
+first project in the workspace.
+
+#+BEGIN_SRC emacs-lisp
+  (defun showcase-extension-predicate (project)
+    (eq project
+        (-> (treemacs-current-workspace)
+            (treemacs-workspace->projects)
+            (car))))
+#+END_SRC
+
+With everything in place we can now tell treemacs about our extension. The final argument ~:position~ decides whether
+the extension will rendered at the very start or the very end of the project's immediate children.
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-project-extension
+   :extension #'treemacs-BUFFERS-ROOT-extension
+   :predicate #'showcase-extension-predicate
+   :position 'project-start)
+#+END_SRC
+
+** Extension for Directories
+
+Extension for arbitraray directories work much the same way as extensions for projects. The only differences are that a
+directory predicate takes a file path argument of type string and that the final call is made to
+~treemacs-define-directory-extension~.
+
+** Node Navigation and Updates
+~TODO~
+** About Properties
+~TODO~
