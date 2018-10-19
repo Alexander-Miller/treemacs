@@ -51,6 +51,15 @@ make sure that the position has not become invalidated in the meantime.
 When `treemacs-tag-follow-cleanup' it t this button's tags will be closed up
 again when tag follow mode moves to another button.")
 
+(defvar-local treemacs--imenu-cache nil
+  "Cache for the current buffer's flattened and sorted imenu index.
+Is reset in `first-change-hook' will only be set again after the buffer has been
+saved.")
+
+(defun treemacs--reset-imenu-cache ()
+  "Reset `treemacs--imenu-cache'."
+  (setq-local treemacs--imenu-cache nil))
+
 (defsubst treemacs--forget-previously-follow-tag-btn ()
   "Forget the previously followed button when treemacs is killed or rebuilt."
   (setq treemacs--previously-followed-tag-position nil))
@@ -192,7 +201,7 @@ END: Integer"
 
 FLAT-INDEX: Sorted list of tag paths
 TREEMACS-WINDOW: Window
-BUFFER-FILE: Path
+BUFFER-FILE: Filepath
 PROJECT: Project Struct"
   (let* ((tag-path (treemacs--find-index-pos (point) flat-index))
          (file-states '(file-node-open file-node-closed root-node-open root-node-closed))
@@ -228,11 +237,14 @@ PROJECT: Project Struct"
          (setq treemacs--previously-followed-tag-position (cons btn (button-get btn :path)))
          ;; imenu already rescanned when fetching the tag path
          (let ((imenu-auto-rescan nil))
-           ;; the target tag still has its position marker attached
-           (setcar tag-path (car (car tag-path)))
-           ;; the tag path also needs its file
-           (setcdr tag-path (cons buffer-file (cdr tag-path)))
-           (treemacs--goto-tag-button-at tag-path))
+           ;; make a copy since this tag-path will be saved as cache, and the two modifications made here
+           ;; make it impossible to find the current position in `treemacs--find-index-pos'
+           (-let [tag-path (copy-sequence tag-path)]
+             ;; the target tag still has its position marker attached
+             (setcar tag-path (car (car tag-path)))
+             ;; the tag path also needs its file
+             (setcdr tag-path (cons buffer-file (cdr tag-path)))
+             (treemacs--goto-tag-button-at tag-path)))
          (hl-line-highlight)
          (treemacs--evade-image)
          (when treemacs-recenter-after-tag-follow
@@ -247,7 +259,10 @@ PROJECT: Project Struct"
          (project (treemacs--find-project-for-buffer)))
     (when (and treemacs-window buffer-file project)
       (condition-case e
-          (-when-let (index (treemacs--flatten&sort-imenu-index))
+          (-when-let (index (or treemacs--imenu-cache
+                                (treemacs--flatten&sort-imenu-index)))
+            (unless (buffer-modified-p)
+              (setq-local treemacs--imenu-cache (copy-sequence index)))
             (treemacs--do-follow-tag index treemacs-window buffer-file project))
         (imenu-unavailable (ignore e))
         (error (treemacs-log "Encountered error while following tag at point: %s" e))))))
@@ -255,11 +270,16 @@ PROJECT: Project Struct"
 (defsubst treemacs--setup-tag-follow-mode ()
   "Setup tag follow mode."
   (treemacs-follow-mode -1)
+  (--each (buffer-list)
+    (with-current-buffer it
+      (treemacs--reset-imenu-cache)))
+  (add-hook 'first-change-hook #'treemacs--reset-imenu-cache)
   (setq treemacs--tag-follow-timer
         (run-with-idle-timer treemacs-tag-follow-delay t #'treemacs--follow-tag-at-point)))
 
 (defsubst treemacs--tear-down-tag-follow-mode ()
   "Tear down tag follow mode."
+  (remove-hook 'first-change-hook #'treemacs--reset-imenu-cache)
   (when treemacs--tag-follow-timer
     (cancel-timer treemacs--tag-follow-timer)))
 
@@ -275,9 +295,10 @@ The follow action is attached to Emacs' idle timer and will run
 integer, meaning it accepts floating point values like 1.5.
 
 Every time a tag is followed a rescan of the imenu index is forced by
-temporarily setting `imenu-auto-rescan' to t. This is necessary to assure that
-creation or deletion of tags does not lead to errors and guarantees an always
-up-to-date tag view.
+temporarily setting `imenu-auto-rescan' to t (though a cache is applied as long
+as the buffer is unmodified). This is necessary to assure that creation or
+deletion of tags does not lead to errors and guarantees an always up-to-date tag
+view.
 
 Note that in order to move to a tag in treemacs the treemacs buffer's window
 needs to be temporarily selected, which will reset `blink-cursor-mode's timer if
