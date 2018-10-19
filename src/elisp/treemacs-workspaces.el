@@ -235,10 +235,9 @@ NAME: String"
               (goto-char (point-min))
               (treemacs--reset-index))
           (goto-char (point-max))
-          (if (treemacs-current-button)
-              (progn
-                (insert "\n")
-                (when treemacs-space-between-root-nodes (insert "\n")))
+          (when (treemacs-current-button)
+            (insert "\n"))
+          (when treemacs-space-between-root-nodes
             (insert "\n")))
         (treemacs--add-root-element project)
         (treemacs--insert-shadow-node (make-treemacs-shadow-node
