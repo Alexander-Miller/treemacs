@@ -208,7 +208,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-css          "css.png"              "css")
   (treemacs--setup-icon treemacs-icon-conf         "conf.png"             "properties" "conf" "config" "cfg" "ini" "xdefaults" "xresources" "terminalrc" "ledgerrc")
   (treemacs--setup-icon treemacs-icon-html         "html.png"             "html" "htm")
-  (treemacs--setup-icon treemacs-icon-git          "git.png"              "git" "gitignore" "gitconfig")
+  (treemacs--setup-icon treemacs-icon-git          "git.png"              "git" "gitignore" "gitconfig" "gitmodules")
   (treemacs--setup-icon treemacs-icon-dart         "dart.png"             "dart")
   (treemacs--setup-icon treemacs-icon-java         "java.png"             "java")
   (treemacs--setup-icon treemacs-icon-kotlin       "kotlin.png"           "kt")
