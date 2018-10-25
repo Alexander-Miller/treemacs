@@ -439,7 +439,9 @@ Add a project for ROOT if it's non-nil."
        (treemacs--reset-index)
        (treemacs--reset-project-positions)
        (unless (treemacs-current-workspace)
-         (treemacs--find-workspace))
+         (treemacs--find-workspace)
+         (run-hook-with-args treemacs-workspace-first-found-functions
+                             (treemacs-current-workspace) (selected-frame)))
        (if (treemacs-workspace->is-empty?)
            (-> (treemacs--read-first-project-path)
                (treemacs--canonical-path)

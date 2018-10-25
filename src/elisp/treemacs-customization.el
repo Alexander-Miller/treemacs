@@ -546,6 +546,13 @@ is enabled, since constantly expanding an entire project is farily expensive."
   :type 'boolean
   :group 'treemacs-configuration)
 
+(defcustom treemacs-workspace-first-found-functions nil
+  "Hooks that run when treemacs finds a workspace for the first time.
+Hooks are expected to take 2 arguments: the workspace that was found and the
+frame it was found for."
+  :type 'hook
+  :group 'treemacs-configuration)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here
