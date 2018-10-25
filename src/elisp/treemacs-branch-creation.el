@@ -235,33 +235,34 @@ DIRS: List of Collapse Paths. Each Collapse Path is a list of
  \"/home/a/Documents/git/treemacs/.cask/26.0\"
  \"/home/a/Documents/git/treemacs/.cask/26.0/elpa\"\)"
   (when dirs
-    (dolist (it dirs)
-      ;; no warning since filewatch mode is known to be defined
-      (when (with-no-warnings treemacs-filewatch-mode)
-        (treemacs--start-watching (car it))
-        (dolist (step (nthcdr 2 it))
-          (treemacs--start-watching step t)))
-      (let* ((b (treemacs-goto-file-node (car it)))
-             (props (text-properties-at (button-start b)))
-             (new-path (nth (- (length it) 1) it)))
-        (button-put b :path new-path)
-        ;; if the collapsed path leads to a symlinked directory the button needs to be marked as a symlink
-        ;; so `treemacs--expand-dir-node' will know to start a new git future under its true-name
-        (button-put b :symlink (or (button-get b :symlink)
-                                   (--first (file-symlink-p it)
-                                            (cdr it))))
-        ;; number of direcoties that have been appended to the original path
-        ;; value is used in `treemacs--follow-each-dir'
-        (button-put b :collapsed (- (length it) 2))
-        (end-of-line)
-        (let* ((beg (point))
-               (dir (cadr it))
-               (parent (file-name-directory dir)))
-          (insert dir)
-          (add-text-properties beg (point) props)
-          (add-text-properties
-           (button-start b) (+ beg (length parent))
-           '(face treemacs-directory-collapsed-face)))))))
+    (-let [project (-> dirs (car) (car) (treemacs--find-project-for-path))]
+      (dolist (it dirs)
+        ;; no warning since filewatch mode is known to be defined
+        (when (with-no-warnings treemacs-filewatch-mode)
+          (treemacs--start-watching (car it))
+          (dolist (step (nthcdr 2 it))
+            (treemacs--start-watching step t)))
+        (let* ((b (treemacs-goto-file-node (car it) project))
+               (props (text-properties-at (button-start b)))
+               (new-path (nth (- (length it) 1) it)))
+          (button-put b :path new-path)
+          ;; if the collapsed path leads to a symlinked directory the button needs to be marked as a symlink
+          ;; so `treemacs--expand-dir-node' will know to start a new git future under its true-name
+          (button-put b :symlink (or (button-get b :symlink)
+                                     (--first (file-symlink-p it)
+                                              (cdr it))))
+          ;; number of directories that have been appended to the original path
+          ;; value is used in `treemacs--follow-each-dir'
+          (button-put b :collapsed (- (length it) 2))
+          (end-of-line)
+          (let* ((beg (point))
+                 (dir (cadr it))
+                 (parent (file-name-directory dir)))
+            (insert dir)
+            (add-text-properties beg (point) props)
+            (add-text-properties
+             (button-start b) (+ beg (length parent))
+             '(face treemacs-directory-collapsed-face))))))))
 
 (defun treemacs--create-branch (root depth git-future collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
