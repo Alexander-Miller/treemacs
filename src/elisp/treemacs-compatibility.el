@@ -37,6 +37,9 @@
       (add-to-list 'winum-ignored-buffers
                    (format "%sFramebuffer-%s*" treemacs--buffer-name-prefix n)))))
 
+(with-eval-after-load 'ace-window
+  (push 'treemacs-mode aw-ignored-buffers))
+
 (with-eval-after-load 'golden-ratio
   (when (bound-and-true-p golden-ratio-exclude-modes)
     (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode)))

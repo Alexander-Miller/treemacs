@@ -69,8 +69,8 @@ overview looks as follows:
    at point using, either manually or automatically using either ~treemacs-follow-mode~ or ~treemacs-tag-follow-mode~.
  * Git Integration :: Treemacs can use different faces for files and directories based on their git status.
    The git process is run asynchronously, minimizing its performance impact.
- * [[https://github.com/deb0ch/emacs-winum][Winum]] compatibility :: treemacs will not interfere with winum's numbering layout, your first window will always remain
-   your first window.
+ * [[https://github.com/deb0ch/emacs-winum][Winum]] & [[https://github.com/abo-abo/ace-window][ace-window]] compatibility :: The presence of treemacs will not interfere with winum's and ace-window's
+   usual layouts.
  * [[https://github.com/bbatsov/projectile][Projectile]] integration :: the ~treemacs-projectile~ package lets you quickly add your projectile projects to the
    treemacs workspace.
  * Simple mouse interface :: Left clicks will work the same as you're used to from with graphical applications
