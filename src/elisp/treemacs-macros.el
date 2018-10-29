@@ -23,6 +23,8 @@
 ;;; Code:
 
 (require 'dash)
+(require 'f)
+(require 's)
 (require 'pcase)
 (require 'cl-lib)
 (eval-when-compile
@@ -360,6 +362,49 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
                  (when ,@predicate (cl-return-from __search__ child-btn)) )
                 ((> depth child-depth)
                  (cl-return-from __search__ nil))))))))))
+
+(defmacro treemacs-is-path (left op &optional right)
+  "Readable utility macro for various path predicates.
+LEFT is a file path, RIGHT is either a path, project, or workspace while OP can
+take the following forms:
+
+ * `:same-as' will check for string equality
+ * `:in' will check will check whether LEFT is a child or the same as RIGHT.
+ * `:parent-of' will check whether LEFT is a parent of, and not equal to, RIGHT
+ * `:in-project' will check whether LEFT is part of the project RIGHT
+ * `:in-workspace' will check whether LEFT is part of the workspace RIGHT and
+   return the appropriate project when it is. If RIGHT is not given it will
+   default to calling `treemacs-current-workspace'.
+
+LEFT and RIGHT are expected to be in treemacs canonical file path format (see
+also `treemacs--canonical-path').
+
+Even if LEFT or RIGHT should be a form and not a variable it is guaranteed that
+they will be evaluated only once."
+  (cl-assert (memq op '(:same-as :in :parent-of :in-project :in-workspace))
+             :show-args
+             "Invalid treemacs-is-path operator: `%s'" op)
+  (cl-assert (or (eq op :in-workspace) right)
+             :show-args
+             "Missing right side argument.")
+  (macroexp-let2* nil
+      ((left left)
+       (right right))
+    (pcase op
+      (:same-as
+       `(string= ,left ,right))
+      (:in
+       `(or (string= ,left ,right)
+            (s-starts-with? (f-slash ,right) ,left)))
+      (:parent-of
+       `(and (s-starts-with? (f-slash ,left) ,right)
+             (not (string= ,left ,right))))
+      (:in-project
+       `(treemacs-is-path ,left :in (treemacs-project->path ,right)))
+      (:in-workspace
+       (-let [ws (or right '(treemacs-current-workspace))]
+         `(--first (treemacs-is-path ,left :in-project it)
+                   (treemacs-workspace->projects ,ws)))))))
 
 (provide 'treemacs-macros)
 

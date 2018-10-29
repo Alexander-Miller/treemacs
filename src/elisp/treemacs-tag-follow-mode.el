@@ -222,8 +222,8 @@ PROJECT: Project Struct"
                  (-let [(prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position]
                    (save-excursion
                      (goto-char prev-followed-pos)
-                     (when  (and (string= (-some-> (treemacs-current-button) (button-get :path))
-                                          prev-followed-path)
+                     (when  (and (treemacs-is-path (-some-> (treemacs-current-button) (button-get :path))
+                                                   :same-as prev-followed-path)
                                  (eq 'file-node-open (button-get prev-followed-pos :state)))
                        (treemacs--collapse-file-node prev-followed-pos)))))
                ;; when that doesnt work move manually to the correct file

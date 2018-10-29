@@ -69,7 +69,7 @@ not visible."
              (-let [selected-file (--if-let (treemacs-current-button)
                                       (treemacs--nearest-path it)
                                     (treemacs-project->path project-for-file))]
-               (unless (string= selected-file current-file)
+               (unless (treemacs-is-path selected-file :same-as current-file)
                  (when (treemacs-goto-file-node current-file project-for-file)
                    (when treemacs-project-follow-cleanup
                      (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))

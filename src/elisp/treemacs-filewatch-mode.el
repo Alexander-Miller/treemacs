@@ -99,8 +99,7 @@ PATH: Filepath
 ALL: Bool"
   (let (to-remove)
     (treemacs--maphash treemacs--filewatch-index (watched-path watch-info)
-      (when (or (string= path watched-path)
-                (treemacs--is-path-in-dir? watched-path path))
+      (when (treemacs-is-path watched-path :in path)
         (let ((watching-buffers (car watch-info))
               (watch-descr (cdr watch-info)))
           (if all

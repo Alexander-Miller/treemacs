@@ -89,27 +89,53 @@
             (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
         (should (equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E") (treemacs--maybe-filter-dotfiles input)))))))
 
-;; `treemacs--is-path-in-dir?'
+;; `treemacs-is-path'
 (progn
-  (ert-deftest path-in-dir::direct-parent ()
+  (ert-deftest is-path::direct-parent ()
     (let ((path "~/A/B/c")
           (parent "~/A/B"))
-      (should (treemacs--is-path-in-dir? path parent))))
+      (should (treemacs-is-path path :in parent))))
 
-  (ert-deftest path-in-dir::indirect-parent ()
+  (ert-deftest is-path::indirect-parent ()
     (let ((path "~/A/B/C/D/e")
           (parent "~/A"))
-      (should (treemacs--is-path-in-dir? path parent))))
+      (should (treemacs-is-path path :in parent))))
 
-  (ert-deftest path-in-dir::not-a-parent ()
+  (ert-deftest is-path::not-a-parent ()
     (let ((path "~/A/B/C/D/e")
           (parent "~/B"))
-      (should-not (treemacs--is-path-in-dir? path parent))))
+      (should-not (treemacs-is-path path :in parent))))
 
-  (ert-deftest path-in-dir::not-a-parent-with-simialr-prefix ()
+  (ert-deftest is-path::not-a-parent-with-simialr-prefix ()
     (let ((path "~/A/prefix")
           (parent "~/A/prefixp"))
-      (should-not (treemacs--is-path-in-dir? path parent)))))
+      (should-not (treemacs-is-path path :in parent))))
+
+  (ert-deftest is-path::in-project ()
+      (let ((path "~/P/abc")
+            (project (make-treemacs-project :name "P" :path "~/P")))
+        (should (treemacs-is-path path :in-project project))))
+
+  (ert-deftest is-path::not-in-project ()
+    (let ((path "~/X/abc")
+          (project (make-treemacs-project :name "P" :path "~/P")))
+      (should-not (treemacs-is-path path :in-project project))))
+
+  (ert-deftest is-path::in-workspace ()
+    (let* ((path "~/C/abc")
+           (p1 (make-treemacs-project :name "P1" :path "~/A"))
+           (p2 (make-treemacs-project :name "P2" :path "~/B"))
+           (p3 (make-treemacs-project :name "P3" :path "~/C"))
+           (ws (make-treemacs-workspace :name "WS" :projects (list p1 p2 p3))))
+      (should (eq (treemacs-is-path path :in-workspace ws) p3))))
+
+  (ert-deftest is-path::not-in-workspace ()
+    (let* ((path "~/D/abc")
+           (p1 (make-treemacs-project :name "P1" :path "~/A"))
+           (p2 (make-treemacs-project :name "P2" :path "~/B"))
+           (p3 (make-treemacs-project :name "P3" :path "~/C"))
+           (ws (make-treemacs-workspace :name "WS" :projects (list p1 p2 p3))))
+      (should-not (treemacs-is-path path :in-workspace ws)))))
 
 ;; `treemacs-current-visibility'
 (progn

@@ -827,7 +827,7 @@ Only works with a single project in the workspace."
                          (file-name-nondirectory new-root)))
              (treemacs--no-messages t)
              (treemacs-pulse-on-success nil))
-        (unless (string= root new-root)
+        (unless (treemacs-is-path root :same-as new-root)
           (treemacs-remove-project-from-workspace)
           (treemacs-do-add-project-to-workspace new-root new-name)
           (treemacs-goto-file-node new-root)

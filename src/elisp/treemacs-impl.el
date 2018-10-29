@@ -193,11 +193,6 @@ Returns nil when point is between projects."
   (interactive)
   (buffer-substring-no-properties (button-start btn) (button-end btn)))
 
-(defsubst treemacs--is-path-in-dir? (path dir)
-  "Is PATH in directory DIR?"
-  (or (string= path dir)
-      (s-starts-with? (f-slash dir) path)))
-
 (defsubst treemacs--replace-recentf-entry (old-file new-file)
   "Replace OLD-FILE with NEW-FILE in the recent file list."
   ;; code taken from spacemacs - is-bound check due to being introduced after emacs24?
@@ -386,7 +381,7 @@ In practice this means expand PATH and remove its final slash."
              (buff-file (buffer-file-name win-buff)))
         (when buff-file
           (setq buff-file (f-long buff-file))
-          (when (treemacs--is-path-in-dir? buff-file old-path)
+          (when (treemacs-is-path buff-file :in old-path)
             (treemacs-without-following
              (with-selected-window window
                (kill-buffer win-buff)
@@ -397,7 +392,7 @@ In practice this means expand PATH and remove its final slash."
   (--each (buffer-list)
     (-when-let (buff-file (buffer-file-name it))
       (setq buff-file (f-long buff-file))
-      (when (treemacs--is-path-in-dir? buff-file old-path)
+      (when (treemacs-is-path buff-file :in old-path)
         (let ((new-file (s-replace old-path new-path buff-file)))
           (kill-buffer it)
           (find-file-noselect new-file)
@@ -611,14 +606,14 @@ failed."
                        ((null current-btn)
                         (cl-return-from search))
                        ;; perfect match - return the node we're at
-                       ((string= root (button-get current-btn :path))
+                       ((treemacs-is-path root :same-as (button-get current-btn :path))
                         (cl-return-from search current-btn))
                        ;; perfect match - taking collapsed dirs into account
                        ;; return the node, but make sure to advance the loop variables an
                        ;; appropriate nuber of times, since a collapsed directory is basically
                        ;; multiple search iterations bundled as one
                        ((and (button-get current-btn :collapsed)
-                             (treemacs--is-path-in-dir? root (button-get btn :path)))
+                             (treemacs-is-path (button-get btn :path) :parent-of root))
                         (dotimes (_ (button-get current-btn :collapsed))
                           (setq root (concat root "/" (pop dir-parts)))
                           (cl-incf index))
@@ -901,7 +896,7 @@ Valid states are 'visible, 'exists and 'none."
 
 (defun treemacs--parent (path)
   "Parent of PATH, or PATH itself if PATH is the root directory."
-  (if (string= "/" path)
+  (if (treemacs-is-path path :same-as "/")
       path
     (-> path
         (file-name-directory)
@@ -953,7 +948,7 @@ through the buffer list and kill buffer if PATH is a prefix."
     ;; Prompt for each buffer visiting a file in directory
     (--each (buffer-list)
       (and
-       (treemacs--is-path-in-dir? (buffer-file-name it) path)
+       (treemacs-is-path (buffer-file-name it) :in path)
        (y-or-n-p (format "Kill buffer %s in %s, too? "
                          (buffer-name it)
                          (treemacs--filename path)))
@@ -963,7 +958,7 @@ through the buffer list and kill buffer if PATH is a prefix."
     (when (bound-and-true-p dired-buffers)
       (-when-let (dired-buffers-for-path
                   (->> dired-buffers
-                       (--filter (treemacs--is-path-in-dir? (car it) path))
+                       (--filter (treemacs-is-path (car it) :in path))
                        (-map #'cdr)))
         (and (y-or-n-p (format "Kill Dired buffers of %s, too? "
                                (treemacs--filename path)))

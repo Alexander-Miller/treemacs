@@ -71,15 +71,12 @@ This function can be used with `setf'."
   "In the current workspace find the project current buffer's file falls under."
   (unless treemacs--project-of-buffer
     (when (buffer-file-name)
-      (setq treemacs--project-of-buffer
-            (--first (treemacs--is-path-in-dir? (buffer-file-name) (treemacs-project->path it))
-                     (treemacs-workspace->projects (treemacs-current-workspace))))))
+      (setq treemacs--project-of-buffer (treemacs-is-path (buffer-file-name) :in-workspace))))
   treemacs--project-of-buffer)
 
 (defsubst treemacs--find-project-for-path (path)
   "Return the project for PATH in the current workspace."
-  (--first (treemacs--is-path-in-dir? path (treemacs-project->path it))
-           (treemacs-workspace->projects (treemacs-current-workspace))))
+  (treemacs-is-path path :in-workspace))
 
 (defsubst treemacs-workspace->is-empty? ()
   "Return t when there are no projects in the current workspace."
