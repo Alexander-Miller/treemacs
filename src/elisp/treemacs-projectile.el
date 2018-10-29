@@ -35,7 +35,9 @@
   (if (and (bound-and-true-p projectile-known-projects)
            (listp projectile-known-projects)
            projectile-known-projects)
-      (treemacs--init (completing-read "Project: " projectile-known-projects))
+      (-let [projects (--reject (treemacs-is-path it :in-workspace (treemacs-current-workspace))
+                                (-map #'treemacs--unslash projectile-known-projects))]
+        (treemacs--init (completing-read "Project: " projects)))
     (treemacs-pulse-on-failure "It looks like projectile does not know any projects.")))
 
 (define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
