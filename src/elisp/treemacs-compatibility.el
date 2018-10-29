@@ -31,17 +31,17 @@
  (push '(treemacs-workspace . :never) frameset-filter-alist))
 
 (with-eval-after-load 'winum
-
   (when (boundp 'winum-ignored-buffers)
     (dolist (n (number-sequence 1 5))
       (add-to-list 'winum-ignored-buffers
                    (format "%sFramebuffer-%s*" treemacs--buffer-name-prefix n)))))
 
 (with-eval-after-load 'ace-window
-  (push 'treemacs-mode aw-ignored-buffers))
+  (when (boundp 'aw-ignored-buffers)
+    (push 'treemacs-mode aw-ignored-buffers)))
 
 (with-eval-after-load 'golden-ratio
-  (when (bound-and-true-p golden-ratio-exclude-modes)
+  (when (boundp 'golden-ratio-exclude-modes)
     (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode)))
 
 (with-eval-after-load 'indent-guide
