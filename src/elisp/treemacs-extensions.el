@@ -172,6 +172,7 @@ node for quick retrieval later."
                      'category 'default-button
                      'face ,face
                      'help-echo nil
+                     :custom t
                      :state ,state
                      :parent btn
                      :depth depth
@@ -347,6 +348,7 @@ way as the KEY-FORM argument in `treemacs-render-node'."
                             'button '(t)
                             'category 'default-button
                             'face ,root-face
+                            :custom t
                             :key ,root-key-form
                             :path (list (or (button-get parent :project) (button-get parent :key)) ,root-key-form)
                             :depth depth

@@ -239,6 +239,16 @@ Returns nil if no such buffer exists.."
       (insert new-sym)
       (delete-char len))))
 
+(defsubst treemacs-project-of-node (node)
+  "Find the project the given NODE belongs to."
+  (if (button-get node :custom)
+      (car (button-get node :pat))
+    (-let [project (button-get node :project)]
+      (while (not project)
+        (setq node (button-get node :parent)
+              project (button-get node :project)))
+      project)))
+
 (defsubst treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point.
 Returns nil when there is no button at point."

@@ -739,10 +739,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
   (interactive)
   (treemacs-unless-let (btn (treemacs-current-button))
       (treemacs-log "There is nothing to refresh.")
-    (->> btn
-         (treemacs--nearest-path)
-         (treemacs--find-project-for-path)
-         (treemacs--do-refresh (current-buffer)))
+    (treemacs--do-refresh (current-buffer) (treemacs-project-of-node btn))
     (unless (pos-visible-in-window-p)
       (recenter))))
 

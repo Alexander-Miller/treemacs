@@ -305,11 +305,7 @@ NAME: String"
   "Get the project for the (nearest) project at point.
 Return nil when `treemacs-current-button' is nil."
   (-when-let (btn (treemacs-current-button))
-    (-let [project (button-get btn :project)]
-      (while (not project)
-        (setq btn (button-get btn :parent)
-              project (button-get btn :project)))
-      project)))
+    (treemacs-project-of-node btn)))
 
 (provide 'treemacs-workspaces)
 

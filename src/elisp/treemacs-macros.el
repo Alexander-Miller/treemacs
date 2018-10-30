@@ -81,7 +81,7 @@ called from another buffer than the one the button resides in and
 (defmacro treemacs-unless-let (var-val &rest forms)
   "Same as `-if-let-', but the negative case is handled in the first form.
 Delegates VAR-VAL and the given FORMS to `-if-let-'."
-  (declare (debug ((vector sexp form) body))
+  (declare (debug ((sexp form) body))
            (indent 2))
   (let ((then (cdr forms))
         (else (car forms)))
@@ -244,29 +244,35 @@ attempt first to keep point on the same file/tag, and if that does not work keep
 it on the same line."
   (declare (debug (form body)))
   `(treemacs-without-following
-    (let* ((curr-line     (line-number-at-pos))
-           (curr-btn      (treemacs-current-button))
-           (curr-state    (when curr-btn (button-get curr-btn :state)))
-           (curr-file     (when curr-btn (treemacs--nearest-path curr-btn)))
-           (curr-tagpath  (when curr-btn (treemacs--tags-path-of curr-btn)))
-           (curr-winstart (window-start (get-buffer-window))))
+    (let* ((curr-line      (line-number-at-pos)) ;; TODO(2018/10/29): line in *window*
+           (curr-btn       (treemacs-current-button))
+           (curr-node-path (when curr-btn (button-get curr-btn :path)))
+           (curr-state     (when curr-btn (button-get curr-btn :state)))
+           (curr-file      (when curr-btn (treemacs--nearest-path curr-btn)))
+           (curr-tagpath   (when curr-btn (treemacs--tags-path-of curr-btn)))
+           (curr-winstart  (window-start (get-buffer-window))))
       ,main-form
       ;; try to stay at the same file/tag
       ;; if the tag no longer exists move to the tag's owning file node
       ;; if the file no longer exists try to stay in the same visual line
       (pcase curr-state
         ((or 'root-node-open 'root-node-closed 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
-         (if (and (f-exists? curr-file)
+         (if (and (file-exists-p curr-file)
                   (or treemacs-show-hidden-files
                       (not (s-matches? treemacs-dotfiles-regex (treemacs--filename curr-file)))))
-             (treemacs-goto-node curr-file)
+             (treemacs-goto-file-node curr-file)
            (treemacs-without-messages (with-no-warnings (goto-line curr-line)))))
         ((or 'tag-node-open 'tag-node-closed 'tag-node)
          ;; no correction needed, if the tag does not exist point is left at the next best node
          (treemacs--goto-tag-button-at curr-tagpath))
         ((pred null)
-         (with-no-warnings (goto-line 1)))
-        (_ (treemacs-log "Refresh doesn't yet know how to deal with '%s'" curr-state)))
+         (goto-char (point-min)))
+        (_
+         ;; point is on a custom node
+         ;; TODO(2018/10/30): custom node exists predicate?
+         (condition-case _
+             (treemacs-goto-node curr-node-path)
+           (error (ignore)))))
       (treemacs--evade-image)
       (set-window-start (get-buffer-window) curr-winstart)
 
