@@ -66,8 +66,10 @@ not visible."
                   (f-exists? current-file))
          (-when-let (project-for-file (treemacs--find-project-for-buffer))
            (with-selected-window treemacs-window
+             ;; TODO(2018/10/30): custom file at point?
              (-let [selected-file (--if-let (treemacs-current-button)
-                                      (treemacs--nearest-path it)
+                                      (and (not (button-get it :custom))
+                                           (treemacs--nearest-path it))
                                     (treemacs-project->path project-for-file))]
                (unless (treemacs-is-path selected-file :same-as current-file)
                  (when (treemacs-goto-file-node current-file project-for-file)
