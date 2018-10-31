@@ -300,6 +300,7 @@ You can find an exhaustive overview of all functions, their keybindings and func
             treemacs-file-follow-delay          0.2
             treemacs-follow-after-init          t
             treemacs-follow-recenter-distance   0.1
+            treemacs-git-command-pipe           ""
             treemacs-goto-tag-strategy          'refetch-index
             treemacs-indentation                2
             treemacs-indentation-string         " "
@@ -393,6 +394,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-display-in-side-window     | t                                           | When non-nil treemacs will use a dedicated [[https://www.gnu.org/software/emacs/draft/manual/html_node/elisp/Side-Windows.html][side-window]].                                                                                                                                    |
 | treemacs-max-git-entries            | 5000                                        | Maximum number of git status entries treemacs will process. Anything above that number will be ignored.                                                                                    |
 | treemacs-show-cursor                | nil                                         | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                          |
+| treemacs-git-command-pipe           | ""                                          | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                               |
 
 ** Faces
 Treemacs defines and uses the following faces:

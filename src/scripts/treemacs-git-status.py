@@ -6,7 +6,7 @@ import sys
 
 GIT_ROOT  = str.encode(sys.argv[1])
 LIMIT     = int(sys.argv[2])
-GIT_CMD   = "git status --porcelain --ignored ."
+GIT_CMD   = "git status --porcelain --ignored . " + sys.argv[3]
 STDOUT    = sys.stdout.buffer
 OPEN      = b'("'
 CLOSE     = b'")'

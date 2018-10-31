@@ -63,7 +63,8 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
                     "-S"
                     treemacs--git-status.py
                     git-root
-                    (number-to-string treemacs-max-git-entries))))
+                    (number-to-string treemacs-max-git-entries)
+                    treemacs-git-command-pipe)))
       future)))
 
 (defun treemacs--parse-git-status-extended (git-future)

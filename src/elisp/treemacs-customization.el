@@ -519,6 +519,18 @@ the python3 binary."
   :type 'string
   :group 'treemacs-git)
 
+(defcustom treemacs-git-command-pipe ""
+  "Text to be appended to treemacs' git command.
+With `treemacs-git-mode' the command `git status --porcelain --ignored .' is
+run to fetch a directory's git information. The content of this variable will
+be appended to this git command. This might be useful in cases when git's output
+is so large that it leads to palpable delays, while setting
+`treemacs-max-git-entries' leads to loss of information. In such a scenario an
+additional filter statement (for example `| grep -v \"/vendor_dir/\"') can be used
+to reduce the size of the output to a manageable volume for treemacs."
+  :type 'string
+  :group 'treemacs-git)
+
 (defcustom treemacs-pre-refresh-hook nil
   "Hooks to run right before the refresh process for a project kicks off.
 During the refresh the project is effectively collapsed and then expanded again.
