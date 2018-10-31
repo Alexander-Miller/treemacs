@@ -143,9 +143,9 @@ next highest node, but by treemacs itself. So we set ~:root-marker~ to t and pro
 #+END_SRC
 
 This code will have defined a function called ~treemacs-BUFFERS-ROOT-extension~ which we can use as our extension, but
-first we need another, final building block. We are building an extension for projects, we have yet to decide /which/
-projects it is for. In other words we need a predicate. So let's assume we want our extension to show up only for the
-first project in the workspace.
+first we need another, final building block. We are building an extension for projects, but we have yet to decide
+/which/ projects it is for. In other words we need a predicate. So let's assume we want our extension to show up only
+for the first project in the workspace.
 
 #+BEGIN_SRC emacs-lisp
   (defun showcase-extension-predicate (project)
@@ -156,7 +156,7 @@ first project in the workspace.
 #+END_SRC
 
 With everything in place we can now tell treemacs about our extension. The final argument ~:position~ decides whether
-the extension will rendered at the very start or the very end of the project's immediate children.
+the extension will be rendered at the very start or the very end of the project's immediate children.
 
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-project-extension
@@ -174,4 +174,21 @@ directory predicate takes a file path argument of type string and that the final
 ** Node Navigation and Updates
 ~TODO~
 ** About Properties
-~TODO~
+~treemacs-render-node~ allows to add arbitrary propertis to a node, which can quickly lead to subtle, difficult-to-trace
+conflicts since treemacs itself makes extensive use of that option. To avoid such issues the following keywords and
+symbols must not be used as properties:
+
+ - ~:project~
+ - ~:state~
+ - ~:depth~
+ - ~:path~
+ - ~:key~
+ - ~:parent~
+ - ~:default-face~
+ - ~:symlink~
+ - ~:marker~
+ - ~:index~
+ - ~'button~
+ - ~'category~
+ - ~'face~
+ - ~'keymap~
