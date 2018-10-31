@@ -23,38 +23,46 @@
 (require 'f)
 
 (defgroup treemacs nil
-  "A major mode for displaying the file system in a tree layout."
-  :group 'files
-  :prefix "treemacs-"
-  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
+  "Treemacs configuration options."
+  :group 'treemacs
+  :prefix "treemacs-")
 
 (defgroup treemacs-faces nil
   "Faces for treemacs' syntax highlighting."
   :group 'treemacs
-  :group 'faces)
+  :group 'faces
+  :prefix "treemacs-"
+  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
-(defgroup treemacs-configuration nil
-  "Treemacs configuration options."
+(defgroup treemacs-git nil
+  "Customizations for treemacs' git integration"
   :group 'treemacs
-  :prefix "treemacs-")
+  :prefix "treemacs-"
+  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
+
+(defgroup treemacs-hooks nil
+  "Hooks provided by treemacs."
+  :group 'treemacs
+  :prefix "treemacs-"
+  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
 (defcustom treemacs-indentation 2
   "The number of spaces each level is indented in the file tree.
 Indentation is created by repeating `treemacs-indentation-string'."
   :type 'integer
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-indentation-string " "
   "The string that is for indentation in the file tree.
 Indentation is created by repeating this string `treemacs-indentation' many
 times."
   :type 'string
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-width 35
   "Width of the treemacs window."
   :type 'integer
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-display-in-side-window t
   "When non-nil treemacs will use a dedicated side-window.
@@ -63,12 +71,12 @@ treemacs is visible (since Emacs does not understand that treemacs has fixed
 window size). On the other hand it may lead to issues with other packages like
 shell-pop, as making treemacs a side-window makes it unsplittable."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-show-hidden-files t
   "Dotfiles will be shown if this is set to t and be hidden otherwise."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-TAB-actions-config
   '((root-node-open   . treemacs-toggle-node)
@@ -85,7 +93,7 @@ shell-pop, as making treemacs a side-window makes it unsplittable."
 See the doc string of `treemacs-RET-actions-config' for a detailed description
 of how this config works and how to modify it."
   :type 'alist
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-doubleclick-actions-config
   '((root-node-open   . treemacs-toggle-node)
@@ -102,7 +110,7 @@ of how this config works and how to modify it."
 See the doc string of `treemacs-RET-actions-config' for a detailed description
 of how this config works and how to modify it."
   :type 'alist
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-RET-actions-config
   '((root-node-open   . treemacs-toggle-node)
@@ -127,7 +135,7 @@ To keep the alist clean changes should not be made directly, but with
 `treemacs-define-RET-action', for example like this:
 \(treemacs-define-RET-action 'file-node-closed #'treemacs-visit-node-ace\)"
   :type 'alist
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-follow-after-init nil
   "When t always find and focus the current file when treemacs is built.
@@ -135,24 +143,12 @@ To keep the alist clean changes should not be made directly, but with
 A treemacs buffer is built when after calling `treemacs-init' or
 `treemacs-projectle-init'. This will ignore `treemacs-follow-mode'."
   :type 'boolean
-  :group 'treemacs-configuration)
-
-(defcustom treemacs-python-executable (executable-find "python")
-  "The python executable used by treemacs.
-An asynchronous python process is used in two optional feaures:
-`treemacs-collapse-dirs' and the extended variant of `treemacs-git-mode'.
-
-There is generally only one reason to change this value: an extended
-`treemacs-git-mode' requires python3 to work. If the default python executable
-is pointing to python2 this config variable can be used to direct treemacs to
-the python3 binary."
-  :type 'string
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
   "Files matching this regular expression count as dotfiles."
   :type 'regexp
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-sorting 'alphabetic-desc
   "Indicates how treemacs will sort its files and directories.
@@ -194,7 +190,7 @@ treemacs views containing hundreds or even thousands of nodes."
                  (const size-desc)
                  (const mod-time-asc)
                  (const mod-time-desc))
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-ignored-file-predicates
   '(treemacs--std-ignore-file-predicate)
@@ -212,7 +208,7 @@ filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and
 therefore should not be directly overwritten, but added to and removed from
 instead."
   :type 'list
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-pre-file-insert-predicates nil
   "List of predicates to test for files and directories that shouldn't be shown.
@@ -240,7 +236,7 @@ be rendered.
 Since removing files ignored by git is the most likely use-case treemacs offers
 `treemacs-is-file-git-ignored?' to quickly make this possible."
   :type 'list
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-file-event-delay 5000
   "How long (in milliseconds) to collect file events before refreshing.
@@ -250,7 +246,7 @@ file change events. This is done so as to avoid refreshing multiple times in a
 short time.
 See also `treemacs-filewatch-mode'."
   :type 'integer
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-goto-tag-strategy 'refetch-index
   "Inidicates how to move to a tag when its buffer is dead.
@@ -269,7 +265,7 @@ Its possible values are:
  * issue-warning
    Just issue a warning that the tag's position pointer is invalid."
   :type 'integer
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-collapse-dirs 0
   "When > 0 treemacs will collapse directories into one when possible.
@@ -283,7 +279,7 @@ To minimize this option's impact on display performace the search for
 directories to collapse is done asynchronously in a python script and will thus
 only work when python installed. The script should work both on python2 and 3."
   :type 'integer
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-silent-refresh nil
   "When non-nil a completed refresh will not be announced with a message.
@@ -292,20 +288,20 @@ This applies to refreshing both manual as well as automatic (due to e.g.
 To only disable messages from refreshes induced by filewatch mode use
 `treemacs-silent-filewatch'."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-silent-filewatch nil
   "When non-nil a refresh due to filewatch mode will cause no log message.
 To disable all refresh messages use `treemacs-silent-refresh'."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-is-never-other-window nil
   "When non-nil treemacs will never be used as `other-window'.
 This can prevent other packages from opening other buffers in the treemacs
 window. It also means treemacs is never selected by calls to `other-window'."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-position 'left
   "Position of treemacs buffer.
@@ -315,111 +311,62 @@ Valid values are
  * right."
   :type '(choice (const left)
                  (const right))
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-file-follow-delay 0.2
   "Delay in seconds of idle time for treemacs to follow the selected window."
   :type 'number
   :group 'treemacs)
 
-(defcustom treemacs-deferred-git-apply-delay 0.5
-  "Delay in seconds of idle time before git fontification is applied.
-This is only relevant when using the deferred variant of git-mode."
-  :type 'number
-  :group 'treemacs-configuration)
-
-(defcustom treemacs-max-git-entries 5000
-  "Maximum number of git status entries treemacs will process.
-Information for entries that number will be silently ignored. The 'entries'
-refer to the lines output by `git status --porcelain --ignored'. The limit does
-not apply to the simple `treemacs-git-mode.'"
-  :type 'number
-  :group 'treemacs-configuration)
 
 (defcustom treemacs-tag-follow-delay 1.5
   "Delay in seconds of inactivity for `treemacs-tag-follow-mode' to trigger."
   :type 'number
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-no-png-images nil
   "When non-nil treemacs will use TUI string icons even when running in a GUI.
 The change will apply the next time a treemacs buffer is created."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-tag-follow-cleanup t
   "When non-nil `treemacs-tag-follow-mode' will close file nodes it is leaving.
 When jumping between different files this can prevent the view from being
 flooded with their tags."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-recenter-after-file-follow nil
   "When non-nil the view will be centered when follow mode is active.
 This is done by calling `recenter' after `treemacs-follow-mode' moves to a new
 file."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-recenter-after-tag-follow nil
   "When non-nil the view will be centered when tag follow mode is active.
 This is done by calling `recenter' after `treemacs-tag-follow-mode' moves to a
 new file."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
-(defcustom treemacs-pre-refresh-hook nil
-  "Hooks to run right before the refresh process for a project kicks off.
-During the refresh the project is effectively collapsed and then expanded again.
-This hook runs *before* that happens. It runs with treemacs as the
-`current-buffer' and receives as its arguments all the information that treemacs
-collects for its refresh process:
- * The project being refreshed (might be 'all)
- * The current line number.
- * The current button. Might be nil if point is on the header line.
- * The current button's state. See also `treemacs-valid-button-states'. Is nil
-   if the current button is nil.
- * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
-   point is on the header.
- * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
-   nil if the current button is nil.
- * The start position of the current window, as given by `window-start'."
-  :type 'hook
-  :group 'treemacs-configuration)
 
-(defcustom treemacs-post-refresh-hook nil
-  "Hooks to run right before the refresh process is finished off.
-During the refresh the project is effectively collapsed and then expanded again.
-This hook runs *after* that has happened. It runs with treemacs as the
-`current-buffer' and receives as its arguments all the information that treemacs
-collects for its refresh process. Note that these values were collected at the
-start of the refresh, and may now be longer valid (for example the current
-button's position will be wrong, even if it wasn't deleted outright):
- * The project being refreshed (might be 'all)
- * The current line number.
- * The current button. Might be nil if point was on the header line.
- * The current button's state. See also `treemacs-valid-button-states'. Is nil
-   if the current button is nil.
- * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
-   point was on the header.
- * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
-   nil if the current button is nil.
- * The start position of the current window, as given by `window-start'."
-  :type 'hook
-  :group 'treemacs-configuration)
+
+
 
 (defcustom treemacs-pulse-on-success t
   "When non-nil treemacs will pulse the current line as a success indicator.
 This applies to actions like `treemacs-copy-path-at-point'."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-pulse-on-failure t
   "When non-nil treemacs will pulse the current line as a failure indicator.
 This applies to actions like treemacs not finding any tags it can show when
 `treemacs-toggle-node' is called on a file node."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-follow-recenter-distance 0.1
   "Minimum distance from the top/bottom for (tag-)follow mode to recenter.
@@ -435,7 +382,7 @@ Will only take effect if `treemacs-recenter-after-tag-follow' and/or
 
 Note that this does *not* take `scroll-margin' into account."
   :type 'float
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-elisp-imenu-expression
   (let ((name (rx (1+ whitespace) (? "'") (group-n 2 symbol-start (1+ (or (syntax word) (syntax symbol))) symbol-end)))
@@ -481,7 +428,7 @@ Note that this does *not* take `scroll-margin' into account."
 More discriminating than the default as it distinguishes between functions,
 inline functions, macros, faces, variables, customizations and types."
   :type 'alist
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-project-follow-cleanup nil
   "When non-nil `treemacs-follow-mode' will close projects it is leaving.
@@ -489,20 +436,20 @@ This means that treemacs will make sure that only the currently followed project
 is expanded while all others will remain collapsed.
 
 Setting this to t might lead to noticeable slowdowns, at least when `treemacs-git-mode'
-is enabled, since constantly expanding an entire project is farily expensive."
+is enabled, since constantly expanding an entire project is fairly expensive."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-persist-file
   (f-join user-emacs-directory ".cache" "treemacs-persist")
   "Path to the file treemacs uses to persist its state."
-  :group 'treemacs-configuration
+  :group 'treemacs
   :type 'string)
 
 (defcustom treemacs-space-between-root-nodes t
   "When non-nil treemacs will separate root nodes with an empty line."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs--fringe-indicator-bitmap
   (if (fboundp 'define-fringe-bitmap)
@@ -539,19 +486,85 @@ is enabled, since constantly expanding an entire project is farily expensive."
   :options (if (fboundp 'fringe-bitmaps)
                (cons 'treemacs--fringe-indicator-bitmap fringe-bitmaps)
              nil)
-  :group 'treemacs-configuration)
+  :group 'treemacs)
 
 (defcustom treemacs-show-cursor nil
   "When non-nil treemacs the cursor will remain visible in the treemacs buffer."
   :type 'boolean
-  :group 'treemacs-configuration)
+  :group 'treemacs)
+
+(defcustom treemacs-deferred-git-apply-delay 0.5
+  "Delay in seconds of idle time before git fontification is applied.
+This is only relevant when using the deferred variant of git-mode."
+  :type 'number
+  :group 'treemacs-git)
+
+(defcustom treemacs-max-git-entries 5000
+  "Maximum number of git status entries treemacs will process.
+Information for entries that number will be silently ignored. The 'entries'
+refer to the lines output by `git status --porcelain --ignored'. The limit does
+not apply to the simple `treemacs-git-mode.'"
+  :type 'number
+  :group 'treemacs-git)
+
+(defcustom treemacs-python-executable (executable-find "python")
+  "The python executable used by treemacs.
+An asynchronous python process is used in two optional feaures:
+`treemacs-collapse-dirs' and the extended variant of `treemacs-git-mode'.
+
+There is generally only one reason to change this value: an extended
+`treemacs-git-mode' requires python3 to work. If the default python executable
+is pointing to python2 this config variable can be used to direct treemacs to
+the python3 binary."
+  :type 'string
+  :group 'treemacs-git)
+
+(defcustom treemacs-pre-refresh-hook nil
+  "Hooks to run right before the refresh process for a project kicks off.
+During the refresh the project is effectively collapsed and then expanded again.
+This hook runs *before* that happens. It runs with treemacs as the
+`current-buffer' and receives as its arguments all the information that treemacs
+collects for its refresh process:
+ * The project being refreshed (might be 'all)
+ * The current line number.
+ * The current button. Might be nil if point is on the header line.
+ * The current button's state. See also `treemacs-valid-button-states'. Is nil
+   if the current button is nil.
+ * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
+   point is on the header.
+ * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
+   nil if the current button is nil.
+ * The start position of the current window, as given by `window-start'."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-post-refresh-hook nil
+  "Hooks to run right before the refresh process is finished off.
+During the refresh the project is effectively collapsed and then expanded again.
+This hook runs *after* that has happened. It runs with treemacs as the
+`current-buffer' and receives as its arguments all the information that treemacs
+collects for its refresh process. Note that these values were collected at the
+start of the refresh, and may now be longer valid (for example the current
+button's position will be wrong, even if it wasn't deleted outright):
+ * The project being refreshed (might be 'all)
+ * The current line number.
+ * The current button. Might be nil if point was on the header line.
+ * The current button's state. See also `treemacs-valid-button-states'. Is nil
+   if the current button is nil.
+ * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
+   point was on the header.
+ * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
+   nil if the current button is nil.
+ * The start position of the current window, as given by `window-start'."
+  :type 'hook
+  :group 'treemacs-hooks)
 
 (defcustom treemacs-workspace-first-found-functions nil
   "Hooks that run when treemacs finds a workspace for the first time.
 Hooks are expected to take 2 arguments: the workspace that was found and the
 frame it was found for."
   :type 'hook
-  :group 'treemacs-configuration)
+  :group 'treemacs-hooks)
 
 (provide 'treemacs-customization)
 
