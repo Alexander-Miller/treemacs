@@ -129,7 +129,7 @@ ITER: Treemacs-Iter struct"
               (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
               (dolist (pr (treemacs-workspace->projects ws))
                 (push (format "** %s\n" (treemacs-project->name pr)) txt)
-                (push (format " - path :: %s\n" (treemacs-project->path pr)) txt)))
+                (push (format "- path :: %s\n" (treemacs-project->path pr)) txt)))
             (delete-region (point-min) (point-max))
             (insert (apply #'concat (nreverse txt)))
             (save-buffer)
