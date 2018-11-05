@@ -22,6 +22,7 @@
 
 ;;; Code:
 
+(require 'thunk)
 (require 's)
 (require 'ht)
 (require 'cl-lib)
@@ -310,7 +311,7 @@ set to PARENT."
       ;; produce an empty hash table
       (pcase treemacs-git-mode
         ((or 'simple 'extended)
-         (setq git-info (treemacs--get-or-parse-git-result git-future)))
+         (setq git-info (thunk-force git-future)))
         ('deferred
           (setq git-info (or (ht-get treemacs--git-cache root) (ht)))
           (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state parent git-future (current-buffer)))
@@ -380,7 +381,7 @@ BUFFER: Buffer"
         (when (and (treemacs-get-from-shadow-index parent-path)
                    (memq (button-get parent-btn :state) '(dir-node-open root-node-open)))
           (let ((depth (1+ (button-get parent-btn :depth)))
-                (git-info (treemacs--get-or-parse-git-result git-future))
+                (git-info (thunk-force git-future))
                 (btn parent-btn))
             (ht-set! treemacs--git-cache parent-path git-info)
             (treemacs-with-writable-buffer
