@@ -496,7 +496,7 @@ Optionally do so in a RECURSIVE fashion."
     ('tag-node         (progn (other-window 1) (treemacs--goto-tag btn)))
     (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (button-get btn :state)))))
 
-(defun treemacs--reopen-node (btn git-info)
+(defun treemacs--reopen-node (btn &optional git-info)
   "Reopen file BTN.
 GIT-INFO is passed through from the previous branch build."
   (pcase (button-get btn :state)
@@ -506,7 +506,7 @@ GIT-INFO is passed through from the previous branch build."
     ('root-node-closed (treemacs--expand-root-node btn))
     (other             (funcall (alist-get other treemacs-TAB-actions-config) btn))))
 
-(defun treemacs--reopen-at (path git-info)
+(defun treemacs--reopen-at (path &optional git-info)
   "Reopen dirs below PATH.
 GIT-INFO is passed through from the previous branch build."
   (treemacs-without-messages

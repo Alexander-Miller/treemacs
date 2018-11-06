@@ -319,7 +319,7 @@ additional keys."
               (treemacs-on-expand
                (button-get btn :path) btn
                (-some-> btn (button-get :parent) (button-get :path)))
-              (treemacs--reopen-at (button-get btn :path) (ht))))))
+              (treemacs--reopen-at (button-get btn :path))))))
 
        (defun ,collapse-name (&optional _)
          ,(format "Collapse treemacs nodes of type `%s'." name)
