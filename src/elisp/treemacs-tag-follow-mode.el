@@ -227,9 +227,10 @@ PROJECT: Project Struct"
                                  (eq 'file-node-open (button-get prev-followed-pos :state)))
                        (treemacs--collapse-file-node prev-followed-pos)))))
                ;; when that doesnt work move manually to the correct file
-               (unless (string-equal buffer-file (button-get btn :path))
-                 (treemacs-goto-file-node buffer-file project)
-                 (setq btn (treemacs-current-button))))
+               (-let [btn-path (button-get btn :path)]
+                 (unless (and (stringp btn-path) (treemacs-is-path buffer-file :same-as btn-path))
+                   (treemacs-goto-file-node buffer-file project)
+                   (setq btn (treemacs-current-button)))))
            ;; also move manually when there is no button at point
            (treemacs-goto-file-node buffer-file project)
            (setq btn (treemacs-current-button)))
