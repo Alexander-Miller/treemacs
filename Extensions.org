@@ -6,6 +6,7 @@
    - [[#extension-for-directories][Extension for Directories]]
    - [[#extensions-at-the-top-level][Extensions at the Top level]]
    - [[#node-navigation-and-updates][Node Navigation and Updates]]
+   - [[#setting-the-working-directory][Setting the Working Directory]]
    - [[#about-properties][About Properties]]
 
 * Treemacs Extension Tutorial
@@ -188,6 +189,10 @@ Note that neither predicates, nor the use of a ~'bottom~ position have yet been 
 
 ** Node Navigation and Updates
 ~TODO~
+** Setting the Working Directory
+Treemacs sets the value of ~default-directory~ based on the nearest path at point. This allows commands like ~find-file~
+and ~magit-status~ to do what you mean based on the current context. This option is also available for custom nodes:
+just set the property ~:default-directory~ and treemacs will make use of its value when the node is in focus.
 ** About Properties
 ~treemacs-render-node~ allows to add arbitrary propertis to a node, which can quickly lead to subtle, difficult-to-trace
 conflicts since treemacs itself makes extensive use of that option. To avoid such issues the following keywords and

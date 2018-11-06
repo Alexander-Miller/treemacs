@@ -263,8 +263,9 @@ to it will instead show a blank."
 If there is no node at point use \"/\" instead.
 
 Used as a post command hook."
-  (-if-let* ((btn (treemacs-current-button))
-             (path (treemacs--nearest-path btn)))
+  (-if-let* ((btn  (treemacs-current-button))
+             (path (or (button-get btn :default-directory)
+                       (treemacs--nearest-path btn))))
       (when (and (stringp path)
                  (file-readable-p path))
         (setq default-directory (f-slash (if (file-directory-p path) path (file-name-directory path)))))
