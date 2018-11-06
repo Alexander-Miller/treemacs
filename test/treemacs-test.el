@@ -809,6 +809,29 @@
         (should-not (ht-get treemacs-shadow-index "/A/B/C"))
         (should-not (treemacs-shadow-node->children root))))))
 
+;; `treemacs--get-or-parse-git-result'
+(progn
+  (ert-deftest get-or-parse-git::retuns-empty-table-for-nil ()
+    (-let [result (treemacs--get-or-parse-git-result nil)]
+      (should result)
+      (should (ht-empty? result))))
+
+  (ert-deftest get-or-parse-git::returns-already-parsed-table ()
+    (let ((input (pfuture-new "echo"))
+          (result (ht)))
+      (process-put input 'git-table result)
+      (should (eq result (treemacs--get-or-parse-git-result input)))))
+
+  (ert-deftest get-or-parse-git::parses-git-output ()
+    (with-mock
+      (mock (treemacs--git-status-parse-function *) => (ht ("A" 1) ("B" 2)))
+      (let* ((input (pfuture-new "echo"))
+             (result (treemacs--get-or-parse-git-result input)))
+        (should (ht? result))
+        (should (= 2 (ht-size result)))
+        (should (= 1 (ht-get result "A")))
+        (should (= 2 (ht-get result "B")))))))
+
 ;; `treemacs-on-rename'
 (progn
   (ert-deftest on-rename::does-nothing-on-empty-index ()

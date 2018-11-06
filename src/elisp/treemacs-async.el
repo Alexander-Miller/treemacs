@@ -27,8 +27,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-customization)
 (eval-and-compile
-  (require 'treemacs-macros)
-  (require 'thunk))
+  (require 'treemacs-macros))
 
 (defvar treemacs--dirs-to-collpase.py
   (eval-when-compile
@@ -66,7 +65,7 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
                     git-root
                     (number-to-string treemacs-max-git-entries)
                     treemacs-git-command-pipe)))
-      (thunk-delay (treemacs--git-status-parse-function future)))))
+      future)))
 
 (defun treemacs--parse-git-status-extended (git-future)
   "Parse the git status derived from the output of GIT-FUTURE.
@@ -92,7 +91,7 @@ GIT-FUTURE: Pfuture"
   (let* ((default-directory (f-canonical path))
          (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-z" ".")))
     (process-put future 'default-directory default-directory)
-    (thunk-delay (treemacs--git-status-parse-function future))))
+    future))
 
 (defun treemacs--parse-git-status-simple (git-future)
   "Parse the output of GIT-FUTURE into a hash table."
@@ -214,6 +213,20 @@ Use either ARG as git integration value of read it interactively."
   "Tear down `treemacs-git-mode'."
   (fset 'treemacs--git-status-process-function #'ignore)
   (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
+
+(defsubst treemacs--get-or-parse-git-result (future)
+  "Get the parsed git result of FUTURE.
+Parse and set it if it hasn't been done yet. If FUTURE is nil an empty hash
+table is returned.
+
+FUTURE: Pfuture process"
+  (if future
+    (--if-let (process-get future 'git-table)
+        it
+      (-let [result (treemacs--git-status-parse-function future)]
+        (process-put future 'git-table result)
+        result))
+    (ht)))
 
 (treemacs-only-during-init
  (pcase (cons (not (null (executable-find "git")))
