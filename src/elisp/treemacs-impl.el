@@ -102,6 +102,9 @@
 (treemacs-import-functions-from "treemacs-visuals"
   treemacs-pulse-on-failure)
 
+(treemacs-import-functions-from "treemacs-extensions"
+  treemacs--apply-root-top-extensions)
+
 (declare-function treemacs-mode "treemacs-mode")
 
 (defvar treemacs--closed-node-states
@@ -242,7 +245,7 @@ Returns nil if no such buffer exists.."
 (defsubst treemacs-project-of-node (node)
   "Find the project the given NODE belongs to."
   (if (button-get node :custom)
-      (car (button-get node :pat))
+      (-> node (button-get :path) (car))
     (-let [project (button-get node :project)]
       (while (not project)
         (setq node (button-get node :parent)
@@ -452,6 +455,7 @@ Add a project for ROOT if it's non-nil."
                (treemacs--canonical-path)
                (treemacs-do-add-project-to-workspace))
          (treemacs-with-writable-buffer
+          (treemacs--apply-root-top-extensions :nothing-yet :nothing-yet)
           (let* ((projects (treemacs-workspace->projects (treemacs-current-workspace)))
                  (last-index (1- (length projects))))
             (--each projects

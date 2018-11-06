@@ -40,10 +40,10 @@
   treemacs--stop-watching)
 
 (treemacs-import-functions-from "treemacs-extensions"
-  treemacs--apply-project-start-extensions
-  treemacs--apply-project-end-extensions
-  treemacs--apply-directory-start-extensions
-  treemacs--apply-directory-end-extensions)
+  treemacs--apply-project-top-extensions
+  treemacs--apply-project-bottom-extensions
+  treemacs--apply-directory-top-extensions
+  treemacs--apply-directory-bottom-extensions)
 
 (defvar treemacs--git-cache-max-size 60
   "Maximum size for `treemacs--git-cache'.
@@ -436,9 +436,9 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
      :new-state 'root-node-open
      :open-action
      (progn
-       (treemacs--apply-project-start-extensions btn project)
+       (treemacs--apply-project-top-extensions btn project)
        (goto-char (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn))
-       (treemacs--apply-project-end-extensions btn project))
+       (treemacs--apply-project-bottom-extensions btn project))
      :post-open-action
      (progn
        (treemacs-on-expand path btn nil)
@@ -478,9 +478,9 @@ RECURSIVE: Bool"
        (progn
          ;; do on-expand first so buttons that need collapsing can quickly find their parent
          (treemacs-on-expand path btn (treemacs-parent-of btn))
-         (treemacs--apply-directory-start-extensions btn path)
+         (treemacs--apply-directory-top-extensions btn path)
          (goto-char (treemacs--create-branch path (1+ (button-get btn :depth)) git-future collapse-future btn))
-         (treemacs--apply-directory-end-extensions btn path))
+         (treemacs--apply-directory-bottom-extensions btn path))
        :post-open-action
        (progn
          (treemacs--start-watching path)

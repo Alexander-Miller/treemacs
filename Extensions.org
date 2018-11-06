@@ -4,6 +4,7 @@
 - [[#treemacs-extension-tutorial][Treemacs Extension Tutorial]]
    - [[#extensions-for-projects][Extensions for Projects]]
    - [[#extension-for-directories][Extension for Directories]]
+   - [[#extensions-at-the-top-level][Extensions at the Top level]]
    - [[#node-navigation-and-updates][Node Navigation and Updates]]
    - [[#about-properties][About Properties]]
 
@@ -162,7 +163,7 @@ the extension will be rendered at the very start or the very end of the project'
   (treemacs-define-project-extension
    :extension #'treemacs-BUFFERS-ROOT-extension
    :predicate #'showcase-extension-predicate
-   :position 'project-start)
+   :position 'top)
 #+END_SRC
 
 ** Extension for Directories
@@ -170,6 +171,20 @@ the extension will be rendered at the very start or the very end of the project'
 Extension for arbitraray directories work much the same way as extensions for projects. The only differences are that a
 directory predicate takes a file path argument of type string and that the final call is made to
 ~treemacs-define-directory-extension~.
+
+** Extensions at the Top level
+It is also possible to place extensions at the very top of the display tree, on the same level as projects. To make this
+work ~treemacs-define-expandable-node~ must receive not a ~:project-marker~, but a ~:root-marker~. Other than that
+nothing changes and the same restrictions apply, but the ~treemacs-BUFFERS-ROOT-extension~ that we've created in our
+example will be able to be passed to ~treemacs-define-root-extension~.
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-root-extension
+   :extension #'treemacs-BUFFERS-ROOT-extension
+   :position 'top)
+#+END_SRC
+
+Note that neither predicates, nor the use of a ~'bottom~ position have yet been implemented.
 
 ** Node Navigation and Updates
 ~TODO~
@@ -188,6 +203,7 @@ symbols must not be used as properties:
  - ~:symlink~
  - ~:marker~
  - ~:index~
+ - ~:custom~
  - ~'button~
  - ~'category~
  - ~'face~

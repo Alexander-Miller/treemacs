@@ -32,13 +32,11 @@
   "Internal building block.
 Creates a `treemacs-define-${NAME}-extension' function and the necessary helpers."
   (let ((define-function-name  (intern (s-lex-format "treemacs-define-${name}-extension")))
-        (start-extension-point (intern (s-lex-format "treemacs--${name}-start-extensions")))
-        (end-extension-point   (intern (s-lex-format "treemacs--${name}-end-extensions")))
-        (start-position        (intern (s-lex-format "${name}-start")))
-        (end-position          (intern (s-lex-format "${name}-end"))))
+        (top-extension-point (intern (s-lex-format "treemacs--${name}-top-extensions")))
+        (bottom-extension-point   (intern (s-lex-format "treemacs--${name}-bottom-extensions"))))
     `(progn
-       (defvar ,start-extension-point nil)
-       (defvar ,end-extension-point nil)
+       (defvar ,top-extension-point nil)
+       (defvar ,bottom-extension-point nil)
        (cl-defun ,define-function-name (&key extension predicate position)
          ,(s-lex-format
            "Define an extension of type `${name}' for treemacs to use.
@@ -50,65 +48,63 @@ should be displayed. It is invoked with a single argument, which is the treemacs
 project struct that is being expanded. All methods that can be invoked on this
 type start with the `treemacs-project->' prefix.
 
-POSITION is either `${name}-start' or `${name}-end', indicating whether the
-extension should be rendered as the first or last element of a project.
+POSITION is either `top' or `bottom', indicating whether the extension should be
+rendered as the first or last element of a project.
 
 See also `treemacs-remove-${name}-extension'.")
          (-let [cell (cons extension predicate)]
            (pcase position
-             (',start-position (add-to-list ',start-extension-point cell))
-             (',end-position   (add-to-list ',end-extension-point cell))
-             (other          (error "Invalid extension position value `%s'" other)))) ))))
+             ('top    (add-to-list ',top-extension-point cell))
+             ('bottom (add-to-list ',bottom-extension-point cell))
+             (other   (error "Invalid extension position value `%s'" other))))))))
 
 (defmacro treemacs--build-extension-removal (name)
   "Internal building block.
 Creates a `treemacs-remove-${NAME}-extension' function and the necessary helpers."
   (let ((remove-function-name  (intern (s-lex-format "treemacs-remove-${name}-extension")))
-        (start-extension-point (intern (s-lex-format "treemacs--${name}-start-extensions")))
-        (end-extension-point   (intern (s-lex-format "treemacs--${name}-end-extensions")))
-        (start-position        (intern (s-lex-format "${name}-start")))
-        (end-position          (intern (s-lex-format "${name}-end"))) )
+        (top-extension-point (intern (s-lex-format "treemacs--${name}-top-extensions")))
+        (bottom-extension-point   (intern (s-lex-format "treemacs--${name}-bottom-extensions"))))
     `(progn
        (cl-defun ,remove-function-name (extension posistion)
          ,(s-lex-format
           "Remove an EXTENSION of type `${name}' at a given POSITION.
    See also `treemacs-define-${name}-extension'.")
          (pcase posistion
-           (',start-position
-            (setq ,start-extension-point
-                  (--reject (equal extension (car it)) ,start-extension-point)))
-           (',end-position
-            (setq ,end-extension-point
-                  (--reject (equal extension (car it)) ,end-extension-point)))
+           ('top
+            (setq ,top-extension-point
+                  (--reject (equal extension (car it)) ,top-extension-point)))
+           ('bottom
+            (setq ,bottom-extension-point
+                  (--reject (equal extension (car it)) ,bottom-extension-point)))
            (other
             (error "Invalid extension position value `%s'" other)))))))
 
 (defmacro treemacs--build-extension-application (name)
   "Internal building block.
-Creates treemacs--apply-${NAME}-start/end-extensions functions."
-  (let ((apply-start-name      (intern (s-lex-format "treemacs--apply-${name}-start-extensions")))
-        (apply-end-name        (intern (s-lex-format "treemacs--apply-${name}-end-extensions")))
-        (start-extension-point (intern (s-lex-format "treemacs--${name}-start-extensions")))
-        (end-extension-point   (intern (s-lex-format "treemacs--${name}-end-extensions"))))
+Creates treemacs--apply-${NAME}-top/bottom-extensions functions."
+  (let ((apply-top-name         (intern (s-lex-format "treemacs--apply-${name}-top-extensions")))
+        (apply-bottom-name      (intern (s-lex-format "treemacs--apply-${name}-bottom-extensions")))
+        (top-extension-point    (intern (s-lex-format "treemacs--${name}-top-extensions")))
+        (bottom-extension-point (intern (s-lex-format "treemacs--${name}-bottom-extensions"))))
     `(progn
-       (defsubst ,apply-start-name (node data)
+       (defsubst ,apply-top-name (node data)
          ,(s-lex-format
-          "Apply the start extensions for NODE of type `${name}'
+          "Apply the top extensions for NODE of type `${name}'
 Also pass additional DATA to predicate function.")
-         (dolist (cell ,start-extension-point)
+         (dolist (cell ,top-extension-point)
            (let ((extension (car cell))
                  (predicate (cdr cell)))
-             (when (funcall predicate data)
+             (when (or (null predicate) (funcall predicate data))
                (funcall extension node)))))
 
-       (defsubst ,apply-end-name (node data)
+       (defsubst ,apply-bottom-name (node data)
          ,(s-lex-format
-          "Apply the end extensions for NODE of type `${name}'
+          "Apply the bottom extensions for NODE of type `${name}'
 Also pass additional DATA to predicate function.")
-         (dolist (cell ,end-extension-point)
+         (dolist (cell ,bottom-extension-point)
            (let ((extension (car cell))
                  (predicate (cdr cell)))
-             (when (funcall predicate data)
+             (when (or (null predicate) (funcall predicate data))
                (funcall extension node))))))))
 
 (treemacs--build-extension-addition "project")
@@ -117,6 +113,9 @@ Also pass additional DATA to predicate function.")
 (treemacs--build-extension-addition "directory")
 (treemacs--build-extension-removal "directory")
 (treemacs--build-extension-application "directory")
+(treemacs--build-extension-addition "root")
+(treemacs--build-extension-removal "root")
+(treemacs--build-extension-application "root")
 
 (defsubst treemacs-as-icon (string &rest more-properties)
   "Turn STRING into an icon for treemacs.
@@ -213,6 +212,7 @@ type."
           query-function
           render-action
           ret-action
+          project-marker
           root-marker
           root-label
           root-face
@@ -235,17 +235,29 @@ nodes both TAB and RET should toggle expansion/collapse.
 
 ROOT-MARKER is a simple boolean. It indicates the special case that the node
 being defined is a top level entry point. When this value is non-nil this macro
-will created an additional function in the form `treemacs-${NAME}-extension'
-that can be passed to `treemacs-define-extension'. It also means that the
-following pieces of additional information are required to render this node:
+will create an additional function in the form `treemacs-${NAME}-extension'
+that can be passed to `treemacs-define-project-extension'. It also means that
+the following pieces of additional information are required to render this node:
 
 ROOT-LABEL is the displayed label of the root node.
 
 ROOT-FACE is its face.
 
 ROOT-KEY-FORM is the form that will give the root node its unique key, the same
-way as the KEY-FORM argument in `treemacs-render-node'."
+way as the KEY-FORM argument in `treemacs-render-node'.
+
+PROJECT-MARKER works much the same way as ROOT-MARKER (and is mutually
+exclusive with it). The difference is that it declares the node defined here to
+a top-level element with nothing above it, like a project, instead of a
+top-level node *inside* a project. Other than that things work the same. Setting
+PROJECT-MARKER will define a function named `treemacs-${NAME}-extension' that
+can be passed to `treemacs-define-root-extension', and it requires the same
+additional keys."
   (declare (indent 1))
+  (cl-assert (or (when project-marker (not root-marker))
+                 (when root-marker (not project-marker))
+                 (and (not root-marker) (not project-marker)))
+             :show-args "Root and project markers cannot both be set.")
   (cl-assert (and icon-open icon-closed query-function render-action)
              :show-args "All values (except additional root information) are mandatory")
   (let ((open-icon-name    (intern (format "treemacs-icon-%s-open"    (symbol-name name))))
@@ -306,7 +318,7 @@ way as the KEY-FORM argument in `treemacs-render-node'."
             (progn
               (treemacs-on-expand
                (button-get btn :path) btn
-               (-> btn (button-get :parent) (button-get :path)))
+               (-some-> btn (button-get :parent) (button-get :path)))
               (treemacs--reopen-at (button-get btn :path) (ht))))))
 
        (defun ,collapse-name (&optional _)
@@ -354,8 +366,28 @@ way as the KEY-FORM argument in `treemacs-render-node'."
                             :depth depth
                             :no-git t
                             :parent parent
-                            :state ,closed-state-name))))))))
+                            :state ,closed-state-name)))))
 
+       ,(when project-marker
+          (cl-assert (and root-label root-face root-key-form)
+                     :show-args "Root information must be provided when `:project-marker' is non-nil")
+          `(defun ,(intern (format "treemacs-%s-extension" (upcase (symbol-name name)))) (&rest _)
+             (-let [pr (make-treemacs-project
+                        :name ,root-label
+                        :path ,root-key-form)]
+               (insert ,closed-icon-name)
+               (treemacs--set-project-position pr (point-marker))
+               (insert (propertize ,root-label
+                                   'button '(t)
+                                   'category 'default-button
+                                   'face ,root-face
+                                   :custom t
+                                   :key ,root-key-form
+                                   :path (list pr)
+                                   :depth 0
+                                   :project pr
+                                   :state ,closed-state-name)
+                       (if treemacs-space-between-root-nodes "\n\n" "\n"))))))))
 
 (provide 'treemacs-extensions)
 
