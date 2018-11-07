@@ -33,6 +33,10 @@ def main():
             item = item[1:]
         state, filename = item.split(b' ', 1)
 
+        # sometimes git outputs quoted filesnames
+        if filename.startswith(b'"'):
+            filename = filename[1:-1]
+
         # renames have the form STATE OLDNAME -> NEWNAME
         # final newline must be trimmed as well
         if state == b"R":
