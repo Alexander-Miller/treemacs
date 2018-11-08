@@ -171,8 +171,9 @@ Extract only so `treemacs--process-file-events' can decide when to call
 `save-excursion' without code duplication."
   (treemacs-run-in-every-buffer
    (treemacs-save-position
-    (treemacs--recursive-refresh)
-    (hl-line-highlight))))
+    (-let [treemacs--no-messages (or treemacs-silent-refresh treemacs-silent-filewatch)]
+      (treemacs--recursive-refresh)
+      (hl-line-highlight)))))
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected.
