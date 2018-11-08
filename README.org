@@ -331,7 +331,7 @@ You can find an exhaustive overview of all functions, their keybindings and func
       (pcase (cons (not (null (executable-find "git")))
                    (not (null (executable-find "python3"))))
         (`(t . t)
-         (treemacs-git-mode 'extended))
+         (treemacs-git-mode 'deferred))
         (`(t . _)
          (treemacs-git-mode 'simple))))
     :bind
