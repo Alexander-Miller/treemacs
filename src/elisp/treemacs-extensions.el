@@ -24,7 +24,6 @@
 (require 's)
 (require 'treemacs-branch-creation)
 (require 'treemacs-impl)
-(require 'treemacs-interface)
 (eval-when-compile
   (require 'cl-lib))
 
@@ -56,7 +55,8 @@ See also `treemacs-remove-${name}-extension'.")
            (pcase position
              ('top    (add-to-list ',top-extension-point cell))
              ('bottom (add-to-list ',bottom-extension-point cell))
-             (other   (error "Invalid extension position value `%s'" other))))))))
+             (other   (error "Invalid extension position value `%s'" other)))
+           t)))))
 
 (defmacro treemacs--build-extension-removal (name)
   "Internal building block.
@@ -77,7 +77,8 @@ Creates a `treemacs-remove-${NAME}-extension' function and the necessary helpers
             (setq ,bottom-extension-point
                   (--reject (equal extension (car it)) ,bottom-extension-point)))
            (other
-            (error "Invalid extension position value `%s'" other)))))))
+            (error "Invalid extension position value `%s'" other)))
+         t))))
 
 (defmacro treemacs--build-extension-application (name)
   "Internal building block.
@@ -371,23 +372,25 @@ additional keys."
        ,(when project-marker
           (cl-assert (and root-label root-face root-key-form)
                      :show-args "Root information must be provided when `:project-marker' is non-nil")
-          `(defun ,(intern (format "treemacs-%s-extension" (upcase (symbol-name name)))) (&rest _)
-             (-let [pr (make-treemacs-project
-                        :name ,root-label
-                        :path ,root-key-form)]
-               (insert ,closed-icon-name)
-               (treemacs--set-project-position pr (point-marker))
-               (insert (propertize ,root-label
-                                   'button '(t)
-                                   'category 'default-button
-                                   'face ,root-face
-                                   :custom t
-                                   :key ,root-key-form
-                                   :path (list pr)
-                                   :depth 0
-                                   :project pr
-                                   :state ,closed-state-name)
-                       (if treemacs-space-between-root-nodes "\n\n" "\n"))))))))
+          (-let [ext-name (intern (format "treemacs-%s-extension" (upcase (symbol-name name))))]
+            (put ext-name :defined-in (or load-file-name (buffer-name)))
+            `(defun ,ext-name (&rest _)
+                 (-let [pr (make-treemacs-project
+                            :name ,root-label
+                            :path ,root-key-form)]
+                   (insert ,closed-icon-name)
+                   (treemacs--set-project-position pr (point-marker))
+                   (insert (propertize ,root-label
+                                       'button '(t)
+                                       'category 'default-button
+                                       'face ,root-face
+                                       :custom t
+                                       :key ,root-key-form
+                                       :path (list pr)
+                                       :depth 0
+                                       :project pr
+                                       :state ,closed-state-name)
+                           (if treemacs-space-between-root-nodes "\n\n" "\n")))))))))
 
 (provide 'treemacs-extensions)
 

@@ -34,6 +34,7 @@
 (require 'treemacs-mouse-interface)
 (require 'treemacs-customization)
 (require 'treemacs-workspaces)
+(require 'treemacs-extensions)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -144,16 +145,16 @@ This function's exact configuration is stored in `treemacs-TAB-actions-config'."
   "Select next node at the same depth as currently selected node, if possible."
   (interactive)
   (or (-some-> (treemacs-current-button)
-            (treemacs--next-neighbour-of)
-            (goto-char))
+               (treemacs--next-neighbour-of)
+               (goto-char))
       (treemacs-pulse-on-failure)))
 
 (defun treemacs-previous-neighbour ()
   "Select previous node at the same depth as currently selected node, if possible."
   (interactive)
   (or (-some-> (treemacs-current-button)
-            (treemacs--prev-neighbour-of)
-            (goto-char))
+               (treemacs--prev-neighbour-of)
+               (goto-char))
       (treemacs-pulse-on-failure)))
 
 (defun treemacs-visit-node-vertical-split (&optional arg)
@@ -283,16 +284,16 @@ Treemacs knows how to open files on linux, windows and macos."
   ;; code adapted from ranger.el
   (-if-let (path (treemacs--prop-at-point :path))
       (pcase system-type
-       ('windows-nt
-        (declare-function w32-shell-execute "w32fns.c")
-        (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" path t t)))
-       ('darwin
-        (shell-command (format "open \"%s\"" path)))
-       ('gnu/linux
-        (let ((process-connection-type nil))
-          (start-process "" nil "xdg-open" path)))
-       (_ (treemacs-pulse-on-failure "Don't know how to open files on %s."
-                         (propertize (symbol-name system-type) 'face 'font-lock-string-face))))
+        ('windows-nt
+         (declare-function w32-shell-execute "w32fns.c")
+         (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" path t t)))
+        ('darwin
+         (shell-command (format "open \"%s\"" path)))
+        ('gnu/linux
+         (let ((process-connection-type nil))
+           (start-process "" nil "xdg-open" path)))
+        (_ (treemacs-pulse-on-failure "Don't know how to open files on %s."
+             (propertize (symbol-name system-type) 'face 'font-lock-string-face))))
     (treemacs-pulse-on-failure "Nothing to open here.")))
 
 (defun treemacs-kill-buffer ()
@@ -400,8 +401,8 @@ itself, using $HOME when there is no path at or near pooint to grab."
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
   (--each (-map #'cdr treemacs--buffer-access) (treemacs--do-refresh it 'all))
   (treemacs-log (concat "Dotfiles will now be "
-                         (if treemacs-show-hidden-files
-                             "displayed." "hidden."))))
+                        (if treemacs-show-hidden-files
+                            "displayed." "hidden."))))
 
 (defun treemacs-toggle-fixed-width ()
   "Toggle whether the treemacs buffer should have a fixed width.
@@ -409,8 +410,8 @@ See also `treemacs-width.'"
   (interactive)
   (setq treemacs--width-is-locked (not treemacs--width-is-locked))
   (treemacs-log "Window width has been %s."
-                 (propertize (if treemacs--width-is-locked "locked" "unlocked")
-                             'face 'font-lock-string-face)))
+                (propertize (if treemacs--width-is-locked "locked" "unlocked")
+                            'face 'font-lock-string-face)))
 
 (defun treemacs-set-width (&optional arg)
   "Select a new value for `treemacs-width'.
@@ -427,7 +428,7 @@ With a prefix ARG simply reset the width of the treemacs window."
   "Copy the absolute path of the node at point."
   (interactive)
   (--if-let (-some-> (treemacs--prop-at-point :path) (f-full) (kill-new))
-        (treemacs-pulse-on-success "Copied path: %s" (propertize it 'face 'font-lock-string-face))
+      (treemacs-pulse-on-success "Copied path: %s" (propertize it 'face 'font-lock-string-face))
     (treemacs-pulse-on-failure  "There is nothing to copy here")))
 
 (defun treemacs-copy-project-root ()
@@ -468,7 +469,7 @@ without the need to call `treemacs-resort' with a prefix arg."
           (treemacs-sorting sort-method))
     (treemacs-without-messages (treemacs-refresh))
     (treemacs-log "Temporarily resorted everything with sort method '%s.'"
-                   (propertize sort-name 'face 'font-lock-type-face))))
+                  (propertize sort-name 'face 'font-lock-type-face))))
 
 (defun treemacs-temp-resort-current-dir (&optional sort-method)
   "Temporarily resort the current directory.
@@ -481,40 +482,40 @@ without the need to call `treemacs-resort' with a prefix arg."
   (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
           (treemacs-sorting sort-method))
     (-if-let (btn (treemacs-current-button))
-             (pcase (button-get btn :state)
-               ('dir-node-closed
-                (treemacs--expand-dir-node btn)
-                (treemacs-log "Resorted %s with sort method '%s'."
-                               (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
-                               (propertize sort-name 'face 'font-lock-type-face)))
-               ('dir-node-open
-                (treemacs--collapse-dir-node btn)
-                (goto-char (button-start btn))
-                (treemacs--expand-dir-node btn)
-                (treemacs-log "Resorted %s with sort method '%s'."
-                               (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
-                               (propertize sort-name 'face 'font-lock-type-face)))
-               ((or 'file-node-open 'file-node-closed 'tag-node-open 'tag-node-closed 'tag-node)
-                (let* ((parent (button-get btn :parent)))
-                  (while (and parent
-                              (not (-some-> parent (button-get :path) (f-directory?))))
-                    (setq parent (button-get parent :parent)))
-                  (if parent
-                      (let ((line (line-number-at-pos))
-                            (window-point (window-point)))
-                        (goto-char (button-start parent))
-                        (treemacs--collapse-dir-node parent)
-                        (goto-char (button-start btn))
-                        (treemacs--expand-dir-node parent)
-                        (set-window-point (selected-window) window-point)
-                        (with-no-warnings (goto-line line))
-                        (treemacs-log "Resorted %s with sort method '%s'."
-                                       (propertize (treemacs--get-label-of parent) 'face 'font-lock-string-face)
-                                       (propertize sort-name 'face 'font-lock-type-face)))
-                    ;; a top level file's containing dir is root
-                    (treemacs-without-messages (treemacs-refresh))
-                    (treemacs-log "Resorted root directory with sort method '%s'."
-                                   (propertize sort-name 'face 'font-lock-type-face)))))))))
+        (pcase (button-get btn :state)
+          ('dir-node-closed
+           (treemacs--expand-dir-node btn)
+           (treemacs-log "Resorted %s with sort method '%s'."
+                         (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
+                         (propertize sort-name 'face 'font-lock-type-face)))
+          ('dir-node-open
+           (treemacs--collapse-dir-node btn)
+           (goto-char (button-start btn))
+           (treemacs--expand-dir-node btn)
+           (treemacs-log "Resorted %s with sort method '%s'."
+                         (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
+                         (propertize sort-name 'face 'font-lock-type-face)))
+          ((or 'file-node-open 'file-node-closed 'tag-node-open 'tag-node-closed 'tag-node)
+           (let* ((parent (button-get btn :parent)))
+             (while (and parent
+                         (not (-some-> parent (button-get :path) (f-directory?))))
+               (setq parent (button-get parent :parent)))
+             (if parent
+                 (let ((line (line-number-at-pos))
+                       (window-point (window-point)))
+                   (goto-char (button-start parent))
+                   (treemacs--collapse-dir-node parent)
+                   (goto-char (button-start btn))
+                   (treemacs--expand-dir-node parent)
+                   (set-window-point (selected-window) window-point)
+                   (with-no-warnings (goto-line line))
+                   (treemacs-log "Resorted %s with sort method '%s'."
+                                 (propertize (treemacs--get-label-of parent) 'face 'font-lock-string-face)
+                                 (propertize sort-name 'face 'font-lock-type-face)))
+               ;; a top level file's containing dir is root
+               (treemacs-without-messages (treemacs-refresh))
+               (treemacs-log "Resorted root directory with sort method '%s'."
+                             (propertize sort-name 'face 'font-lock-type-face)))))))))
 
 (defun treemacs-resort (&optional arg)
   "Select a new permanent value for `treemacs-sorting' and refresh.
@@ -542,7 +543,7 @@ Instead of calling this with a prefix arg you can also direcrly call
        (setq treemacs-sorting sort-value)
        (treemacs-without-messages (treemacs-refresh))
        (treemacs-log "Sorting method changed to '%s'."
-                      (propertize sort-name 'face 'font-lock-type-face)))))
+                     (propertize sort-name 'face 'font-lock-type-face)))))
   (treemacs--evade-image))
 
 (defun treemacs-add-bookmark ()
@@ -666,7 +667,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
     (`(duplicate-name ,duplicate)
      (goto-char (treemacs-project->position duplicate))
      (treemacs-pulse-on-failure "A project with the name %s already exists."
-             (propertize (treemacs-project->name duplicate) 'face 'font-lock-type-face)))))
+       (propertize (treemacs-project->name duplicate) 'face 'font-lock-type-face)))))
 (defalias 'treemacs-add-project #'treemacs-add-project-to-workspace)
 (with-no-warnings
   (make-obsolete #'treemacs-add-project #'treemacs-add-project-to-workspace "v2.2.1"))
@@ -851,6 +852,41 @@ Only works with a single project in the workspace."
            (treemacs-toggle-node)))
         (_
          (treemacs-pulse-on-failure "Button at point is not a directory."))))))
+
+(defun treemacs-show-extensions ()
+  "Display a list of all active extensions."
+  (interactive)
+  (-let [txt (list "#+TITLE: Treemacs Active Extensions\n")]
+    (cl-flet ((with-face (txt face) (propertize txt 'font-lock-face face)))
+      (pcase-dolist
+          (`(,headline . ,name)
+           '(("* Directory Extensions" . directory)
+             ("* Project Extensions" . project)
+             ("* Root Extetensions"  . root)) )
+        (let ((top-name (symbol-value (intern (s-lex-format "treemacs--${name}-top-extensions"))))
+              (bottom-name (symbol-value (intern (s-lex-format "treemacs--${name}-bottom-extensions")))))
+          (push headline txt)
+          (pcase-dolist
+              (`(,pos-txt . ,pos-val)
+               `(("** Top" . ,top-name)
+                 ("** Bottom" . ,bottom-name)))
+            (push pos-txt txt)
+            (if pos-val
+                (dolist (ext pos-val)
+                  (push (format " - %s\n   with predicate %s\n   defined in %s"
+                                (with-face (symbol-name (car ext)) 'font-lock-keyword-face)
+                                (with-face (--if-let (cdr ext) (symbol-name it) "None") 'font-lock-function-name-face)
+                                (with-face (get (car ext) :defined-in) 'font-lock-string-face))
+                        txt))
+              (push (with-face " - None" 'font-lock-comment-face) txt))))))
+    (-let [buf (get-buffer-create "*Treemacs Extension Overview*")]
+      (switch-to-buffer buf)
+      (org-mode)
+      (erase-buffer)
+      (->> txt (nreverse) (--map (concat it "\n")) (apply #'concat) (insert))
+      (with-no-warnings (org-reveal))
+      (goto-char 0)
+      (forward-line))))
 
 (provide 'treemacs-interface)
 
