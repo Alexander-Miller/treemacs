@@ -103,7 +103,8 @@
   treemacs-pulse-on-failure)
 
 (treemacs-import-functions-from "treemacs-extensions"
-  treemacs--apply-root-top-extensions)
+  treemacs--apply-root-top-extensions
+  treemacs--apply-root-bottom-extensions)
 
 (declare-function treemacs-mode "treemacs-mode")
 
@@ -437,7 +438,9 @@ buffer."
 (defun treemacs--init (&optional root)
   "Initialize a treemacs buffer from the current workspace.
 Add a project for ROOT if it's non-nil."
-  (-let [origin-buffer (current-buffer)]
+  (let ((origin-buffer (current-buffer))
+        (current-workspace (treemacs-current-workspace))
+        (separator (if treemacs-space-between-root-nodes "\n\n" "\n")))
     (pcase (treemacs-current-visibility)
       ('visible (treemacs--select-visible-window))
       ('exists (treemacs--select-not-visible-window))
@@ -446,24 +449,24 @@ Add a project for ROOT if it's non-nil."
        (treemacs-mode)
        (treemacs--reset-index)
        (treemacs--reset-project-positions)
-       (unless (treemacs-current-workspace)
+       (unless current-workspace
          (treemacs--find-workspace)
+         (setq current-workspace (treemacs-current-workspace))
          (run-hook-with-args treemacs-workspace-first-found-functions
-                             (treemacs-current-workspace) (selected-frame)))
+                             current-workspace (selected-frame)))
        (if (treemacs-workspace->is-empty?)
            (-> (treemacs--read-first-project-path)
                (treemacs--canonical-path)
                (treemacs-do-add-project-to-workspace))
          (treemacs-with-writable-buffer
-          (treemacs--apply-root-top-extensions :nothing-yet :nothing-yet)
-          (let* ((projects (treemacs-workspace->projects (treemacs-current-workspace)))
+          (treemacs--apply-root-top-extensions current-workspace)
+          (let* ((projects (treemacs-workspace->projects current-workspace))
                  (last-index (1- (length projects))))
             (--each projects
               (treemacs--add-root-element it)
               (unless (= it-index last-index)
-                (insert "\n")
-                (when treemacs-space-between-root-nodes
-                  (insert "\n")))))))
+                (insert separator))))
+          (treemacs--apply-root-bottom-extensions current-workspace)))
        (goto-char 2)))
     (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root)))
     (with-no-warnings (setq treemacs--ready-to-follow t))

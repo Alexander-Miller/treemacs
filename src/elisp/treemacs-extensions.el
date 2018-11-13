@@ -67,7 +67,7 @@ Creates a `treemacs-remove-${NAME}-extension' function and the necessary helpers
     `(progn
        (cl-defun ,remove-function-name (extension posistion)
          ,(s-lex-format
-          "Remove an EXTENSION of type `${name}' at a given POSITION.
+           "Remove an EXTENSION of type `${name}' at a given POSITION.
    See also `treemacs-define-${name}-extension'.")
          (pcase posistion
            ('top
@@ -90,7 +90,7 @@ Creates treemacs--apply-${NAME}-top/bottom-extensions functions."
     `(progn
        (defsubst ,apply-top-name (node data)
          ,(s-lex-format
-          "Apply the top extensions for NODE of type `${name}'
+           "Apply the top extensions for NODE of type `${name}'
 Also pass additional DATA to predicate function.")
          (dolist (cell ,top-extension-point)
            (let ((extension (car cell))
@@ -100,7 +100,7 @@ Also pass additional DATA to predicate function.")
 
        (defsubst ,apply-bottom-name (node data)
          ,(s-lex-format
-          "Apply the bottom extensions for NODE of type `${name}'
+           "Apply the bottom extensions for NODE of type `${name}'
 Also pass additional DATA to predicate function.")
          (dolist (cell ,bottom-extension-point)
            (let ((extension (car cell))
@@ -116,7 +116,30 @@ Also pass additional DATA to predicate function.")
 (treemacs--build-extension-application "directory")
 (treemacs--build-extension-addition "root")
 (treemacs--build-extension-removal "root")
-(treemacs--build-extension-application "root")
+
+;; slighty non-standard application for root extensions
+(defun treemacs--apply-root-top-extensions (workspace)
+  "Apply the top extensions for NODE of type `root' for the current WORKSPACE."
+  (let* ((len (1- (length treemacs--root-bottom-extensions)))
+         (more-than-one? (> len 0))
+         (separator (if treemacs-space-between-root-nodes "\n\n" "\n")))
+    (--each treemacs--root-top-extensions
+      (let ((extension (car it))
+            (predicate (cdr it)))
+        (when (or (null predicate) (funcall predicate workspace))
+          (funcall extension)
+          (unless (and (= it-index len) more-than-one?)
+            (insert separator)))))))
+
+(defun treemacs--apply-root-bottom-extensions (workspace)
+  "Apply the bottom extensions for NODE of type `root' for the current WORKSPACE."
+  (-let [separator (if treemacs-space-between-root-nodes "\n\n" "\n")]
+    (dolist (cell  treemacs--root-bottom-extensions)
+      (insert separator)
+      (let ((extension (car cell))
+            (predicate (cdr cell)))
+        (when (or (null predicate) (funcall predicate workspace))
+          (funcall extension))))))
 
 (defsubst treemacs-as-icon (string &rest more-properties)
   "Turn STRING into an icon for treemacs.
@@ -375,22 +398,21 @@ additional keys."
           (-let [ext-name (intern (format "treemacs-%s-extension" (upcase (symbol-name name))))]
             (put ext-name :defined-in (or load-file-name (buffer-name)))
             `(defun ,ext-name (&rest _)
-                 (-let [pr (make-treemacs-project
-                            :name ,root-label
-                            :path ,root-key-form)]
-                   (insert ,closed-icon-name)
-                   (treemacs--set-project-position pr (point-marker))
-                   (insert (propertize ,root-label
-                                       'button '(t)
-                                       'category 'default-button
-                                       'face ,root-face
-                                       :custom t
-                                       :key ,root-key-form
-                                       :path (list pr)
-                                       :depth 0
-                                       :project pr
-                                       :state ,closed-state-name)
-                           (if treemacs-space-between-root-nodes "\n\n" "\n")))))))))
+               (-let [pr (make-treemacs-project
+                          :name ,root-label
+                          :path ,root-key-form)]
+                 (insert ,closed-icon-name)
+                 (treemacs--set-project-position pr (point-marker))
+                 (insert (propertize ,root-label
+                                     'button '(t)
+                                     'category 'default-button
+                                     'face ,root-face
+                                     :custom t
+                                     :key ,root-key-form
+                                     :path (list pr)
+                                     :depth 0
+                                     :project pr
+                                     :state ,closed-state-name)))))))))
 
 (provide 'treemacs-extensions)
 
