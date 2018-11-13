@@ -22,7 +22,7 @@
 
 (require 'dash)
 (require 's)
-(require 'treemacs-branch-creation)
+(require 'treemacs-rendering)
 (require 'treemacs-impl)
 (eval-when-compile
   (require 'cl-lib))

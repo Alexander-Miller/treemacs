@@ -28,7 +28,7 @@
 (require 'dash)
 (require 'f)
 (require 'treemacs-impl)
-(require 'treemacs-branch-creation)
+(require 'treemacs-rendering)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-visuals)

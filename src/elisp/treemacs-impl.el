@@ -46,7 +46,7 @@
 (treemacs-import-functions-from "treemacs"
   treemacs-refresh)
 
-(treemacs-import-functions-from "treemacs-branch-creation"
+(treemacs-import-functions-from "treemacs-rendering"
   treemacs--add-root-element
   treemacs--expand-root-node
   treemacs--collapse-root-node

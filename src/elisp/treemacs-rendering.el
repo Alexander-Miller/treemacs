@@ -361,6 +361,15 @@ set to PARENT."
         (treemacs--reopen-at root git-future))
       (point-at-eol))))
 
+(define-inline treemacs-button-put (button prop val)
+  "Set BUTTON's PROP property to VAL."
+  (put-text-property
+   (or (previous-single-property-change (1+ button) 'button)
+	   (point-min))
+   (or (next-single-property-change button 'button)
+	   (point-max))
+   prop val))
+
 (defun treemacs--apply-deferred-git-state (parent-btn git-future buffer)
   "Apply the git fontification for direct children of PARENT-BTN.
 GIT-FUTURE is parsed the same way as in `treemacs--create-branch'. Additionally
@@ -391,7 +400,8 @@ BUFFER: Buffer"
                (-let [path (button-get btn :path)]
                  (when (and (= depth (button-get btn :depth))
                             (not (button-get btn :no-git)))
-                   (button-put btn 'face
+                   (treemacs-button-put btn 'mouse-face 'std::test-face)
+                   (treemacs-button-put btn 'face
                                (treemacs--get-button-face path git-info (button-get btn :default-face)))))))))))))
 
 (defun treemacs--resize-git-cache ()
@@ -518,6 +528,6 @@ PROJECT: Project Struct"
                :path (treemacs-project->path project)
                :depth 0)))
 
-(provide 'treemacs-branch-creation)
+(provide 'treemacs-rendering)
 
-;;; treemacs-branch-creation.el ends here
+;;; treemacs-rendering.el ends here

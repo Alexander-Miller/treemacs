@@ -28,7 +28,7 @@
 (eval-and-compile
   (require 'treemacs-macros))
 
-(treemacs-import-functions-from "treemacs-branch-creation"
+(treemacs-import-functions-from "treemacs-rendering"
   treemacs--collapse-root-node
   treemacs--expand-root-node
   treemacs--add-root-element)

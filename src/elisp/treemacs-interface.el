@@ -28,7 +28,7 @@
 (require 'dash)
 (require 'treemacs-impl)
 (require 'treemacs-filewatch-mode)
-(require 'treemacs-branch-creation)
+(require 'treemacs-rendering)
 (require 'treemacs-follow-mode)
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-mouse-interface)
