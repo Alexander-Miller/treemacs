@@ -224,6 +224,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-ocaml        "ocaml.png"            "ml" "mli")
   (treemacs--setup-icon treemacs-icon-puppet       "puppet.png"           "pp")
   (treemacs--setup-icon treemacs-icon-docker       "docker.png"           "dockerfile")
+  (treemacs--setup-icon treemacs-icon-vagrant      "vagrant.png"          "vagrantfile")
   (treemacs--setup-icon treemacs-icon-makefile     "vsc/makefile.png"     "makefile")
   (treemacs--setup-icon treemacs-icon-license      "vsc/license.png"      "license")
   (treemacs--setup-icon treemacs-icon-zip          "vsc/zip.png"          "zip" "7z" "tar" "gz" "rar")
