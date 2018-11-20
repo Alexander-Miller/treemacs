@@ -14,13 +14,15 @@ COMPILE_COMMAND = -f batch-byte-compile $(SRCDIR)/*.el
 
 .ONESHELL:
 
-compile:
+compile: prepare
 	@$(CASK) exec $(EMACS) $(EMACSFLAGS) $(COMPILE_COMMAND)
 
-prepare:
+.cask: Cask
 	@echo Updating external dependencies...
 	@$(CASK) install
 	@$(CASK) update
+
+prepare: .cask
 
 test: prepare
 	@echo Running test suite in GUI mode

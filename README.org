@@ -671,6 +671,8 @@ Contributions are very much welcome, but should fit the general scope and style 
 guidelines that should be met (exceptions confirm the rule):
 
  - There should be one commit per feature.
+ - Commit messages should start with a note in brackets that roughly describes the area the commit relates to, for
+   example ~[Icons]~ if you add an icon.
  - Code must be in the right place (what with the codebase being split in many small files). If there is no right place
    it probably goes into treemacs-impl.el which is where all the general implementation details go.
  - New features must be documented in the readme (for example mentioning new config options in the [[#variables][Config Table]]).
@@ -678,9 +680,10 @@ guidelines that should be met (exceptions confirm the rule):
  - The test suite must pass.
 
 Treemacs uses cask to setup a local testing environment and a Makefile that simplifies compiling and testing the
-codebase. First run ~cask install~ to locally pull treemacs' dependencies. Then you can use the following 3 Makefile
+codebase. First run ~cask install~ to locally pull treemacs' dependencies. Then you can use the following Makefile
 targets:
 
+ - make prepare :: Downloads and updates Cask's dependencies. Is a dependency of the ~test~ and ~compile~ targets.
  - make compile :: Compiles the code base (and treats compiler warnings as errors).
  - make clean :: Removes the generated .elc files.
  - make lint :: Runs first ~compile~ then ~clean~, even if the former fails.
