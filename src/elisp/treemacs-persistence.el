@@ -34,15 +34,14 @@
 ;; TODO: inline when the backwards compatible parts in `treemacs--restore' are removed
 (defvar treemacs--persist-kv-regex
   (rx bol
-      " - "
+      (? " ")
+      "- "
       (1+ (or (syntax word) (syntax symbol) (syntax punctuation)))
       " :: "
       (1+ (or (syntax word) (syntax symbol) (syntax punctuation) space))
       eol)
   "The regular expression to match org's \"key :: value\" lines.")
 
-;; Should probably be replaced with `generator.el', but we're maintaining Emacs 25
-;; compatibility while Emacs 26 is the last stable release.
 (treemacs--defstruct treemacs-iter list)
 
 (define-inline treemacs-iter->next! (iter)
@@ -105,8 +104,8 @@ ITER: Treemacs-Iter struct"
                                       'face 'font-lock-type-face))
           (dolist (kv-line kv-lines)
             (-let [(key val) (s-split " :: " kv-line)]
-              (pcase key
-                (" - path"
+              (pcase (s-trim key)
+                ("- path"
                  (setf (treemacs-project->path project) val))
                 (_
                  (treemacs-log "Encountered unknown project key-value in line [%s]" kv-line)))))
@@ -136,7 +135,7 @@ ITER: Treemacs-Iter struct"
               (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
               (dolist (pr (treemacs-workspace->projects ws))
                 (push (format "** %s\n" (treemacs-project->name pr)) txt)
-                (push (format "- path :: %s\n" (treemacs-project->path pr)) txt)))
+                (push (format " - path :: %s\n" (treemacs-project->path pr)) txt)))
             (delete-region (point-min) (point-max))
             (insert (apply #'concat (nreverse txt)))
             (save-buffer)
