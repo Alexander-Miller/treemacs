@@ -35,21 +35,21 @@ integrating it with treemacs.
 The output of this function would look roughly like this. This is the structure our extension will have when we're done.
 
 #+BEGIN_SRC emacs-lisp
-  ((org-mode
-    #<buffer Extensions.org>)
-   (emacs-lisp-mode
-    #<buffer init.el>
-    #<buffer treemacs-customization.el>
-    #<buffer *scratch*>
-    #<buffer treemacs-extensions.el>)
-   (spacemacs-buffer-mode
-    #<buffer *spacemacs*>)
-   (messages-buffer-mode
-    #<buffer *Messages*>)
-   (compilation-mode
-    #<buffer *Compile-Log*>)
-   (magit-status-mode
-    #<buffer magit: treemacs>))
+  ; ((org-mode
+  ;   #<buffer Extensions.org>)
+  ;  (emacs-lisp-mode
+  ;   #<buffer init.el>
+  ;   #<buffer treemacs-customization.el>
+  ;   #<buffer *scratch*>
+  ;   #<buffer treemacs-extensions.el>)
+  ;  (spacemacs-buffer-mode
+  ;   #<buffer *spacemacs*>)
+  ;  (messages-buffer-mode
+  ;   #<buffer *Messages*>)
+  ;  (compilation-mode
+  ;   #<buffer *Compile-Log*>)
+  ;  (magit-status-mode
+  ;   #<buffer magit: treemacs>))
 #+END_SRC
 
 Before we begin defining what our nodes look like we will slightly get ahead of ourselves and define the function that
@@ -129,7 +129,7 @@ next highest node, but by treemacs itself. So we set ~:root-marker~ to t and pro
   (treemacs-define-expandable-node buffers-root
     :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
     :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
-    :query-function (treemacs--get-buffer-groups)
+    :query-function (showcase--get-buffer-groups)
     :render-action
     (treemacs-render-node
      :icon treemacs-icon-buffer-group-closed
