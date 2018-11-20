@@ -65,13 +65,13 @@ buffer does not work, so this function will run the property extaction from
 inside BUTTON's buffer."
   `(with-current-buffer (marker-buffer ,button)
      ,(if (= 1 (length properties))
-           `(button-get ,button ,(car properties))
-         `(--map (button-get ,button it) ,properties))))
+           `(treemacs-button-get ,button ,(car properties))
+         `(--map (treemacs-button-get ,button it) ,properties))))
 
 (defmacro treemacs-with-button-buffer (btn &rest body)
   "Use BTN's buffer to execute BODY.
-Required for button interactions (like `button-get') that do not work when
-called from another buffer than the one the button resides in and
+Required for button interactions (like `treemacs-button-get') that do not work
+when called from another buffer than the one the button resides in and
 `treemacs-safe-button-get' is not enough."
   (declare (indent 1)
            (debug (form body)))
@@ -124,7 +124,7 @@ When NO-ERROR is non-nil no error will be thrown if no match for the button
 state is achieved."
   (declare (debug (&rest [sexp form])))
   `(-if-let (btn (treemacs-current-button))
-       (pcase (button-get btn :state)
+       (pcase (treemacs-button-get btn :state)
          ,@(when on-root-node-open
              `((`root-node-open
                 ,on-root-node-open)))
@@ -194,7 +194,7 @@ under or below it."
       (push 'tag-node valid-states))
     `(-when-let (btn (treemacs-current-button))
        (treemacs-without-following
-        (let* ((state (button-get btn :state))
+        (let* ((state (treemacs-button-get btn :state))
                (current-window (selected-window)))
           (if (not (memq state ',valid-states))
               (treemacs-pulse-on-failure "%s" ,no-match-explanation)
@@ -246,8 +246,8 @@ it on the same line."
   `(treemacs-without-following
     (let* ((curr-line      (line-number-at-pos)) ;; TODO(2018/10/29): line in *window*
            (curr-btn       (treemacs-current-button))
-           (curr-node-path (when curr-btn (button-get curr-btn :path)))
-           (curr-state     (when curr-btn (button-get curr-btn :state)))
+           (curr-node-path (when curr-btn (treemacs-button-get curr-btn :path)))
+           (curr-state     (when curr-btn (treemacs-button-get curr-btn :state)))
            (curr-file      (when curr-btn (treemacs--nearest-path curr-btn)))
            (curr-tagpath   (when curr-btn (treemacs--tags-path-of curr-btn)))
            (curr-winstart  (window-start (get-buffer-window))))
@@ -294,8 +294,9 @@ it on the same line."
 
 (defmacro treemacs--defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.
-Delegates to `cl-defstruct', creating a struct with a 'NAME->' :conc-name and
+Delegates to `cl-defstruct', creating a struct with a 'NAME->' `:conc-name' and
 foregoing typechecking for its properties for the hope of improved performance."
+  (declare (indent 1))
   (-let [prefix (concat (symbol-name name) "->")]
     `(progn
        (cl-defstruct (,name (:conc-name ,(intern prefix)))
@@ -304,14 +305,13 @@ foregoing typechecking for its properties for the hope of improved performance."
           (let* ((prop-name (symbol-name (nth it properties)))
                  (func-name (intern (concat prefix prop-name))))
             `(progn
-               (fset ',func-name
-                     (lambda (obj)
-                       ,(format "Get the %s property of OBJ." prop-name)
-                       (aref obj ,(1+ it))))
-               (put ',func-name 'byte-optimizer 'byte-compile-inline-expand)
-               (put ',func-name 'compiler-macro nil)
-               (put ',func-name 'gv-expander nil)
-               (gv-define-setter ,func-name (val obj) `(aset ,obj ,(1+ ,it) ,val))))
+               ;; ignore warnings since the accessors are defined twice
+               (with-no-warnings
+                 ;; redefine the accessors without the type checking
+                 (define-inline ,func-name (obj)
+                   ,(format "Get the '%s' property of `%s' OBJ." prop-name name)
+                   (declare (side-effect-free t))
+                   (inline-quote (aref ,',obj ,(1+ it)))))))
           (number-sequence 0 (1- (length properties)))))))
 
 (defmacro treemacs-only-during-init (&rest body)
@@ -356,13 +356,13 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
   (declare (indent 1) (debug (sexp body)))
   `(cl-block __search__
      (let* ((child-btn (next-button (button-end ,btn) t))
-            (depth (button-get child-btn :depth)))
-       (when (equal (button-get child-btn :parent) ,btn)
+            (depth (treemacs-button-get child-btn :depth)))
+       (when (equal (treemacs-button-get child-btn :parent) ,btn)
          (if ,@predicate
              (cl-return-from __search__ child-btn)
            (while child-btn
              (setq child-btn (next-button (button-end child-btn)))
-             (-let [child-depth (button-get child-btn :depth)]
+             (-let [child-depth (treemacs-button-get child-btn :depth)]
                (cond
                 ((= depth child-depth)
                  (when ,@predicate (cl-return-from __search__ child-btn)) )
@@ -393,6 +393,7 @@ they will be evaluated only once."
   (cl-assert (or (eq op :in-workspace) right)
              :show-args
              "Missing right side argument.")
+  (declare (debug (form form form)))
   (macroexp-let2* nil
       ((left left)
        (right right))

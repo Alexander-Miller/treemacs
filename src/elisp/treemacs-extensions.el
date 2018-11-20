@@ -154,8 +154,8 @@ expanded."
   (treemacs-unless-let (btn (treemacs-goto-node path))
       (error "Node at path %s cannot be found" path)
     (when (treemacs-is-node-expanded? btn)
-      (funcall (alist-get (button-get btn :state) treemacs-TAB-actions-config))
-      (funcall (alist-get (button-get btn :state) treemacs-TAB-actions-config)))))
+      (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))
+      (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))))
 
 (cl-defmacro treemacs-render-node
     (&key icon
@@ -199,7 +199,7 @@ node for quick retrieval later."
                      :state ,state
                      :parent btn
                      :depth depth
-                     :path (append (button-get btn :path) (list ,key-form))
+                     :path (append (treemacs-button-get btn :path) (list ,key-form))
                      :key ,key-form
                      ,@more-properties)))
 
@@ -317,16 +317,16 @@ additional keys."
              (when (null btn)
                (cl-return-from body
                  (treemacs-pulse-on-failure "There is nothing to do here.")))
-             (when (not (eq ',closed-state-name (button-get btn :state)))
+             (when (not (eq ',closed-state-name (treemacs-button-get btn :state)))
                (cl-return-from body
                  (treemacs-pulse-on-failure "This function cannot expand a node of type '%s'."
-                   (propertize (format "%s" (button-get btn :state)) 'face 'font-lock-type-face))))
+                   (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
              (,do-expand-name btn))))
 
        (defun ,do-expand-name (btn)
          ,(format "Execute expansion of treemacs nodes of type `%s'." name)
          (let ((items ,query-function)
-               (depth (1+ (button-get btn :depth))))
+               (depth (1+ (treemacs-button-get btn :depth))))
            (treemacs--button-open
             :button btn
             :new-state ',open-state-name
@@ -341,9 +341,9 @@ additional keys."
             :post-open-action
             (progn
               (treemacs-on-expand
-               (button-get btn :path) btn
-               (-some-> btn (button-get :parent) (button-get :path)))
-              (treemacs--reopen-at (button-get btn :path))))))
+               (treemacs-button-get btn :path) btn
+               (-some-> btn (treemacs-button-get :parent) (treemacs-button-get :path)))
+              (treemacs--reopen-at (treemacs-button-get btn :path))))))
 
        (defun ,collapse-name (&optional _)
          ,(format "Collapse treemacs nodes of type `%s'." name)
@@ -353,10 +353,10 @@ additional keys."
              (when (null btn)
                (cl-return-from body
                  (treemacs-pulse-on-failure "There is nothing to do here.")))
-             (when (not (eq ',open-state-name (button-get btn :state)))
+             (when (not (eq ',open-state-name (treemacs-button-get btn :state)))
                (cl-return-from body
                  (treemacs-pulse-on-failure "This function cannot collapse a node of type '%s'."
-                   (propertize (format "%s" (button-get btn :state)) 'face 'font-lock-type-face))))
+                   (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
              (,do-collapse-name btn))))
 
        (defun ,do-collapse-name (btn)
@@ -366,7 +366,7 @@ additional keys."
           :new-state ',closed-state-name
           :new-icon ,closed-icon-name
           :post-close-action
-          (treemacs-on-collapse (button-get btn :path))))
+          (treemacs-on-collapse (treemacs-button-get btn :path))))
 
        (treemacs-define-TAB-action ',open-state-name #',collapse-name)
        (treemacs-define-TAB-action ',closed-state-name #',expand-name)
@@ -375,7 +375,7 @@ additional keys."
           (cl-assert (and root-label root-face root-key-form)
                      :show-args "Root information must be provided when `:root-marker' is non-nil")
           `(cl-defun ,(intern (format "treemacs-%s-extension" (upcase (symbol-name name)))) (parent)
-             (-let [depth (1+ (button-get parent :depth))]
+             (-let [depth (1+ (treemacs-button-get parent :depth))]
                (insert
                 "\n"
                 (s-repeat (* depth treemacs-indentation) treemacs-indentation-string)
@@ -386,7 +386,9 @@ additional keys."
                             'face ,root-face
                             :custom t
                             :key ,root-key-form
-                            :path (list (or (button-get parent :project) (button-get parent :key)) ,root-key-form)
+                            :path (list (or (treemacs-button-get parent :project)
+                                            (treemacs-button-get parent :key))
+                                        ,root-key-form)
                             :depth depth
                             :no-git t
                             :parent parent

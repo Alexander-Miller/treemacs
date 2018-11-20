@@ -26,14 +26,17 @@
 (require 's)
 (require 'treemacs-visuals)
 (require 'treemacs-workspaces)
-(eval-and-compile (require 'treemacs-macros))
+(eval-and-compile
+  (require 'inline)
+  (require 'treemacs-macros))
 
-(defsubst treemacs--is-image-creation-impossible? ()
+(define-inline treemacs--is-image-creation-impossible? ()
   "Will return non-nil when Emacs is unable to create images.
 In this scenario (usually caused by running Emacs without a graphical
 environment) treemacs will not create any of its icons and will be forced to
 permanently use its simple string icon fallack."
-  (not (image-type-available-p 'png)))
+  (declare (pure t) (side-effect-free t))
+  (inline-quote (not (image-type-available-p 'png))))
 
 (defvar treemacs-icons-hash (make-hash-table :size 200 :test #'equal)
   "Hash table containing a mapping of icons onto file extensions.")
@@ -52,9 +55,10 @@ after a theme change.")
 Maps icons' names as symbols to their values, so that they can be queried
 via `assq'.")
 
-(defsubst treemacs--created-icons ()
+(define-inline treemacs--created-icons ()
   "Return `treemacs--created-icons'."
-  treemacs--created-icons)
+  (declare (side-effect-free t))
+  (inline-quote treemacs--created-icons))
 
 (defmacro treemacs--size-adjust (width height)
   "Special adjust for the WIDTH and HEIGHT of an icon.
@@ -63,17 +67,20 @@ Necessary since root icons are not rectangular."
          (h (round (* ,height 1.1818))))
      (setq ,width w ,height h)))
 
-(defsubst treemacs--create-image (file-path)
+(define-inline treemacs--create-image (file-path)
   "Load image from FILE-PATH and size it based on `treemacs--icon-size'."
-  (-let [(height width) `(,treemacs--icon-size ,treemacs--icon-size)]
-    ;; special case for the root icon which is unique in being 20x26 pixels large
-    (when (and (integerp treemacs--icon-size)
-               (s-ends-with? "root.png" file-path))
-      (treemacs--size-adjust width height))
-    (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
-        (create-image file-path 'imagemagick nil :ascent 'center :width width :height height)
-      ;; interning the extension lets up pass both png and xpm icons
-      (create-image file-path (intern (f-ext file-path)) nil :ascent 'center))))
+  (inline-letevals (file-path)
+    (inline-quote
+     (let ((height treemacs--icon-size)
+           (width treemacs--icon-size))
+       ;; special case for the root icon which is unique in being 20x26 pixels large
+       (when (and (integerp treemacs--icon-size)
+                  (s-ends-with? "root.png" ,file-path))
+         (treemacs--size-adjust width height))
+       (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
+           (create-image ,file-path 'imagemagick nil :ascent 'center :width width :height height)
+         ;; interning the extension lets up pass both png and xpm icons
+         (create-image ,file-path (intern (f-ext ,file-path)) nil :ascent 'center))))))
 
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define VAR with its display property being the image created from FILE-NAME.
@@ -135,12 +142,15 @@ Remember the value in `treemacs--default-icons-alist'."
 (defvar treemacs-icon-tag-node-open-png   "")
 (defvar treemacs-icon-text                "")
 
-(defsubst treemacs-icon-for-file (path)
+(define-inline treemacs-icon-for-file (path)
   "Retrieve an icon for PATH from `treemacs-icons-hash'.
 Uses `treemacs-icon-fallback' as fallback."
-  (ht-get treemacs-icons-hash
-          (-> path (treemacs--file-extension) (downcase))
-          treemacs-icon-fallback))
+  (declare (pure t))
+  (inline-letevals (path)
+    (inline-quote
+     (ht-get treemacs-icons-hash
+             (-> ,path (treemacs--file-extension) (downcase))
+             treemacs-icon-fallback))))
 
 (defmacro treemacs--set-icon-save-default (&rest key-values)
   "Pass KEY-VALUES to `setq'.

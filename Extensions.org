@@ -62,7 +62,7 @@ RET, or double-mouse1 action (the latter is a work in progress).
   (defun showcase-visit-buffer (&rest _)
     "Switch to the buffer saved in node at point."
     (let* ((node (treemacs-current-button))
-           (buffer (button-get node :buffer)))
+           (buffer (treemacs-button-get node :buffer)))
       (when (buffer-live-p buffer)
         (select-window (next-window))
         (switch-to-buffer buffer))))
@@ -89,8 +89,9 @@ a list of child nodes to display.
 
 In the context of the invocation of the query function the node being expanded is bound under the name ~btn~, named so
 because under all its layers of abstraction treemacs' nodes (specifically the text and not the icons) are buttons as per
-the builtin ~button.el~ library. Its functions can all be invoked on treemacs nodes, including ~button-get~, which we
-use here to retrieve the list of buffers that we will have stored in the node's ~:buffers~ property.
+the builtin ~button.el~ library. Its functions (or rather their faster treemacs variants) can all be invoked on treemacs
+nodes, including ~treemacs-button-get~, which we use here to retrieve the list of buffers that we will have stored in
+the node's ~:buffers~ property.
 
 In the next step treemacs will loop over the list returned by the query function, invoking the render action form for
 each. Every element in the iteration will be bound as ~item~. Whatever code is used in the render action, it must end in
@@ -108,7 +109,7 @@ later use it in ~showcase-visit-buffer~.
   (treemacs-define-expandable-node buffer-group
     :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
     :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
-    :query-function (button-get btn :buffers)
+    :query-function (treemacs-button-get btn :buffers)
     :render-action
     (treemacs-render-node
      :icon treemacs-buffer-leaf-icon

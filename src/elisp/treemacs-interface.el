@@ -137,7 +137,7 @@ This function's exact configuration is stored in `treemacs-TAB-actions-config'."
 (defun treemacs-goto-parent-node ()
   "Select parent of selected node, if possible."
   (interactive)
-  (--if-let (-some-> (treemacs-current-button) (button-get :parent))
+  (--if-let (-some-> (treemacs-current-button) (treemacs-button-get :parent))
       (goto-char it)
     (treemacs-pulse-on-failure "There is no parent to move up to.")))
 
@@ -312,10 +312,10 @@ By default files are deleted by moving them to the trash. With a prefix ARG they
 will instead be wiped irreversibly."
   (interactive "P")
   (-if-let (btn (treemacs-current-button))
-      (if (not (memq (button-get btn :state) '(file-node-open file-node-closed dir-node-open dir-node-closed)))
+      (if (not (memq (treemacs-button-get btn :state) '(file-node-open file-node-closed dir-node-open dir-node-closed)))
           (treemacs-pulse-on-failure "Only files and directories can be deleted.")
         (let* ((delete-by-moving-to-trash (not arg))
-               (path (button-get btn :path))
+               (path (treemacs-button-get btn :path))
                (file-name (treemacs--filename path)))
           (when
               (cond
@@ -359,7 +359,7 @@ likewise be updated."
     (-let [btn (treemacs-current-button)]
       (unless btn
         (treemacs-return "Found nothing to rename here."))
-      (let* ((old-path (button-get btn :path))
+      (let* ((old-path (treemacs-button-get btn :path))
              (project (treemacs--find-project-for-path old-path))
              (new-path nil)
              (new-name nil)
@@ -482,7 +482,7 @@ without the need to call `treemacs-resort' with a prefix arg."
   (-let* (((sort-name . sort-method) (or sort-method (treemacs--sort-value-selection)))
           (treemacs-sorting sort-method))
     (-if-let (btn (treemacs-current-button))
-        (pcase (button-get btn :state)
+        (pcase (treemacs-button-get btn :state)
           ('dir-node-closed
            (treemacs--expand-dir-node btn)
            (treemacs-log "Resorted %s with sort method '%s'."
@@ -496,10 +496,10 @@ without the need to call `treemacs-resort' with a prefix arg."
                          (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
                          (propertize sort-name 'face 'font-lock-type-face)))
           ((or 'file-node-open 'file-node-closed 'tag-node-open 'tag-node-closed 'tag-node)
-           (let* ((parent (button-get btn :parent)))
+           (let* ((parent (treemacs-button-get btn :parent)))
              (while (and parent
-                         (not (-some-> parent (button-get :path) (f-directory?))))
-               (setq parent (button-get parent :parent)))
+                         (not (-some-> parent (treemacs-button-get :path) (f-directory?))))
+               (setq parent (treemacs-button-get parent :parent)))
              (if parent
                  (let ((line (line-number-at-pos))
                        (window-point (window-point)))
@@ -554,12 +554,12 @@ treemacs node is pointing to a valid buffer position."
   (interactive)
   (treemacs-with-current-button
    "There is nothing to bookmark here."
-   (pcase (button-get current-btn :state)
+   (pcase (treemacs-button-get current-btn :state)
      ((or 'file-node-open 'file-node-closed 'dir-node-open 'dir-node-closed)
       (-let [name (read-string "Bookmark name: ")]
-        (bookmark-store name `((filename . ,(button-get current-btn :path))) nil)))
+        (bookmark-store name `((filename . ,(treemacs-button-get current-btn :path))) nil)))
      ('tag-node
-      (-let [(tag-buffer . tag-pos) (treemacs--extract-position (button-get current-btn :marker))]
+      (-let [(tag-buffer . tag-pos) (treemacs--extract-position (treemacs-button-get current-btn :marker))]
         (if (buffer-live-p tag-buffer)
             (bookmark-store
              (read-string "Bookmark name: ")
@@ -632,7 +632,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
        (treemacs-pulse-on-failure "There is no project here.")
      (let* ((old-name (treemacs-project->name project))
             (project-btn (treemacs-project->position project))
-            (state (button-get project-btn :state))
+            (state (treemacs-button-get project-btn :state))
             (new-name (read-string "New name: " (treemacs-project->name project))))
        (treemacs-save-position
         (progn
@@ -750,9 +750,9 @@ With a prefix ARG also forget about all the nodes opened in the project."
   (interactive "P")
   (treemacs-unless-let (btn (treemacs-current-button))
       (treemacs-pulse-on-failure "There is nothing to close here.")
-    (while (not (button-get btn :project))
-      (setq btn (button-get btn :parent)))
-    (when (eq 'root-node-open (button-get btn :state))
+    (while (not (treemacs-button-get btn :project))
+      (setq btn (treemacs-button-get btn :parent)))
+    (when (eq 'root-node-open (treemacs-button-get btn :state))
       (treemacs--forget-last-highlight)
       (goto-char btn)
       (treemacs--collapse-root-node btn arg)
@@ -766,7 +766,7 @@ With a prefix ARG also forget about all the nodes opened in the projects."
     (treemacs--forget-last-highlight)
     (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
       (-when-let (pos (treemacs-project->position project))
-        (when (eq 'root-node-open (button-get pos :state))
+        (when (eq 'root-node-open (treemacs-button-get pos :state))
           (goto-char pos)
           (treemacs--collapse-root-node pos arg)))))
   (treemacs--maybe-recenter))
@@ -782,7 +782,7 @@ With a prefix ARG also forget about all the nodes opened in the projects."
       (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
         (unless (eq project curr-project)
           (-when-let (pos (treemacs-project->position project))
-            (when (eq 'root-node-open (button-get pos :state))
+            (when (eq 'root-node-open (treemacs-button-get pos :state))
               (goto-char pos)
               (treemacs--collapse-root-node pos arg)))))))
   (treemacs--maybe-recenter))
@@ -841,9 +841,9 @@ Only works with a single project in the workspace."
     (treemacs-unless-let (btn (treemacs-current-button))
         (treemacs-pulse-on-failure
             "There is no directory to move into here.")
-      (pcase (button-get btn :state)
+      (pcase (treemacs-button-get btn :state)
         ((or 'dir-node-open 'dir-node-closed)
-         (let ((new-root (button-get btn :path))
+         (let ((new-root (treemacs-button-get btn :path))
                (treemacs--no-messages t)
                (treemacs-pulse-on-success nil))
            (treemacs-remove-project-from-workspace)

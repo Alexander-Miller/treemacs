@@ -68,7 +68,7 @@ not visible."
            (with-selected-window treemacs-window
              ;; TODO(2018/10/30): custom file at point?
              (-let [selected-file (--if-let (treemacs-current-button)
-                                      (and (not (button-get it :custom))
+                                      (and (not (treemacs-button-get it :custom))
                                            (treemacs--nearest-path it))
                                     (treemacs-project->path project-for-file))]
                (unless (treemacs-is-path selected-file :same-as current-file)
@@ -101,7 +101,7 @@ Do so by running it and its ARGS through `treemacs-without-following'."
   (treemacs-without-following
    (apply original-func args)))
 
-(defsubst treemacs--setup-follow-mode ()
+(defun treemacs--setup-follow-mode ()
   "Setup all the advice needed for `treemacs-follow-mode'."
   (advice-add 'select-window :after #'treemacs--select-window-advice)
   ;; which key compatibility
@@ -115,7 +115,7 @@ Do so by running it and its ARGS through `treemacs-without-following'."
     (advice-add #'winum--update :around #'treemacs--follow-compatibility-advice))
   (treemacs--follow))
 
-(defsubst treemacs--tear-down-follow-mode ()
+(defun treemacs--tear-down-follow-mode ()
   "Remove all the advice added by `treemacs--setup-follow-mode'."
   (advice-remove 'select-window 'treemacs--select-window-advice)
   ;; which key compatibility

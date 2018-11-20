@@ -26,6 +26,7 @@
 (require 'treemacs-visuals)
 (require 'treemacs-structure)
 (eval-and-compile
+  (require 'inline)
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs-rendering"
@@ -51,21 +52,26 @@
 (defvar-local treemacs--project-of-buffer nil
   "The project that the current buffer falls under, if any.");; TODO invalidate when?
 
-(defsubst treemacs-workspaces ()
+(define-inline treemacs-workspaces ()
   "Return the list of all workspaces in treemacs."
-  treemacs--workspaces)
+  (declare (side-effect-free t))
+  (inline-quote treemacs--workspaces))
 
-(defsubst treemacs-current-workspace ()
+(define-inline treemacs-current-workspace ()
   "Get the current workspace.
 Workspaces are local to frames and are therefore stored as frame parameters and
 not buffer-local values.
 This function can be used with `setf'."
-  (frame-parameter (selected-frame) 'treemacs-workspace))
+  (declare (side-effect-free t))
+  (inline-quote
+   (frame-parameter (selected-frame) 'treemacs-workspace)))
 (gv-define-setter treemacs-current-workspace (val) `(set-frame-parameter (selected-frame) 'treemacs-workspace ,val))
 
-(defsubst treemacs--find-workspace ()
+(define-inline treemacs--find-workspace ()
   "Find the right workspace for the current (uninitialized) treemacs buffer."
-  (setf (treemacs-current-workspace) (car treemacs--workspaces)))
+  (inline-quote
+   (setf (treemacs-current-workspace)
+         (car treemacs--workspaces))))
 
 (defun treemacs--find-project-for-buffer ()
   "In the current workspace find the project current buffer's file falls under."
@@ -74,63 +80,86 @@ This function can be used with `setf'."
       (setq treemacs--project-of-buffer (treemacs-is-path (buffer-file-name) :in-workspace))))
   treemacs--project-of-buffer)
 
-(defsubst treemacs--find-project-for-path (path)
+(define-inline treemacs--find-project-for-path (path)
   "Return the project for PATH in the current workspace."
-  (treemacs-is-path path :in-workspace))
+  (declare (side-effect-free t))
+  (inline-letevals (path)
+    (inline-quote (treemacs-is-path ,path :in-workspace))))
 
-(defsubst treemacs-workspace->is-empty? ()
+(define-inline treemacs-workspace->is-empty? ()
   "Return t when there are no projects in the current workspace."
-  (null (treemacs-workspace->projects (treemacs-current-workspace))))
+  (declare (side-effect-free t))
+  (inline-quote
+   (null (treemacs-workspace->projects (treemacs-current-workspace)))))
 
-(defsubst treemacs--add-project-to-current-workspace (project)
+(define-inline treemacs--add-project-to-current-workspace (project)
   "Add PROJECT to the current workspace."
-  (setf (treemacs-workspace->projects (treemacs-current-workspace))
-        ;; reversing around to get the order right - new project goes to the *bottom* of the list
-        (-let [reversed (nreverse (treemacs-workspace->projects (treemacs-current-workspace)))]
-          (nreverse (push project reversed)))))
+  (inline-letevals (project)
+    (inline-quote
+     (setf (treemacs-workspace->projects (treemacs-current-workspace))
+           ;; reversing around to get the order right - new project goes to the *bottom* of the list
+           (-let [reversed (nreverse (treemacs-workspace->projects (treemacs-current-workspace)))]
+             (nreverse (push ,project reversed)))))))
 
-(defsubst treemacs--remove-project-from-current-workspace (project)
+(define-inline treemacs--remove-project-from-current-workspace (project)
   "Remove PROJECT from the current workspace."
-  (setf (treemacs-workspace->projects (treemacs-current-workspace))
-        (delete project (treemacs-workspace->projects (treemacs-current-workspace))))
-  ;; also reset the cached buffers' projects
-  (dolist (buffer (buffer-list))
-    (with-current-buffer buffer
-      (when (equal treemacs--project-of-buffer project)
-        (setq treemacs--project-of-buffer nil)))))
+  (inline-letevals (project)
+    (inline-quote
+     (progn
+       (setf (treemacs-workspace->projects (treemacs-current-workspace))
+             (delete ,project (treemacs-workspace->projects (treemacs-current-workspace))))
+       ;; also reset the cached buffers' projects
+       (dolist (buffer (buffer-list))
+         (with-current-buffer buffer
+           (when (equal treemacs--project-of-buffer ,project)
+             (setq treemacs--project-of-buffer nil))))))))
 
-(defsubst treemacs--reset-project-positions ()
+(define-inline treemacs--reset-project-positions ()
   "Reset `treemacs--project-positions'."
-  (setq treemacs--project-positions (make-hash-table :test #'equal :size 20)))
+  (inline-quote
+   (setq treemacs--project-positions (make-hash-table :test #'equal :size 20))))
 
-(defsubst treemacs--set-project-position (project position)
+(define-inline treemacs--set-project-position (project position)
   "Insert PROJECT's POSITION into `treemacs--project-positions'."
-  (ht-set! treemacs--project-positions project position))
+  (inline-letevals (project position)
+    (inline-quote
+     (ht-set! treemacs--project-positions ,project ,position))))
 
-(defsubst treemacs-project->position (project)
+(define-inline treemacs-project->position (project)
   "Return the position of PROJECT in the current buffer."
-  (ht-get treemacs--project-positions project))
+  (declare (side-effect-free t))
+  (inline-letevals (project)
+    (inline-quote
+     (ht-get treemacs--project-positions ,project))))
 
-(defsubst treemacs-project->is-expanded? (project)
+(define-inline treemacs-project->is-expanded? (project)
   "Return non-nil if PROJECT is expanded in the current buffer."
-  (eq 'root-node-open (button-get (treemacs-project->position project) :state)))
+  (declare (side-effect-free t))
+  (inline-letevals (project)
+    (inline-quote
+     (eq 'root-node-open (treemacs-button-get (treemacs-project->position ,project) :state)))))
 
-(defsubst treemacs-project->refresh! (project)
+(define-inline treemacs-project->refresh! (project)
   "Refresh PROJECT in the current buffer."
-  (when (treemacs-project->is-expanded? project)
-    (-let [root-btn (treemacs-project->position project)]
-      (goto-char root-btn)
-      (treemacs--forget-last-highlight)
-      (treemacs--collapse-root-node root-btn)
-      (treemacs--expand-root-node root-btn))))
+  (inline-letevals (project)
+    (inline-quote
+     (when (treemacs-project->is-expanded? ,project)
+       (let ((root-btn (treemacs-project->position ,project)))
+         (goto-char root-btn)
+         (treemacs--forget-last-highlight)
+         (treemacs--collapse-root-node root-btn)
+         (treemacs--expand-root-node root-btn))))))
 
-(defsubst treemacs-project->is-last? (project)
+(define-inline treemacs-project->is-last? (project)
   "Return t when PROJECT's root node is the last in the view."
-  (-> project
-      (treemacs-project->position)
-      (button-end)
-      (next-single-property-change :project)
-      (null)))
+  (declare (side-effect-free t))
+  (inline-letevals (project)
+    (inline-quote
+     (-> ,project
+         (treemacs-project->position)
+         (button-end)
+         (next-single-property-change :project)
+         (null)))))
 
 (defun treemacs-do-create-workspace ()
   "Create a new workspace.
@@ -301,11 +330,13 @@ NAME: String"
   (or (string= "" name)
       (not (s-matches? (rx (1+ (or space (syntax word) (syntax symbol) (syntax punctuation)))) name))))
 
-(defsubst treemacs-project-at-point ()
+(define-inline treemacs-project-at-point ()
   "Get the project for the (nearest) project at point.
 Return nil when `treemacs-current-button' is nil."
-  (-when-let (btn (treemacs-current-button))
-    (treemacs-project-of-node btn)))
+  (declare (side-effect-free t))
+  (inline-quote
+   (-when-let (btn (treemacs-current-button))
+     (treemacs-project-of-node btn))))
 
 (provide 'treemacs-workspaces)
 

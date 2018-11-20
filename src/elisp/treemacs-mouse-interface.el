@@ -160,7 +160,7 @@ ignore any prefix argument."
              (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
     (-let [(tag-buf . tag-pos)
            (treemacs-with-button-buffer btn
-             (-> btn (button-get :marker) (treemacs--extract-position)))]
+             (-> btn (treemacs-button-get :marker) (treemacs--extract-position)))]
       (if tag-buf
           (list tag-buf tag-pos)
         (pcase treemacs-goto-tag-strategy

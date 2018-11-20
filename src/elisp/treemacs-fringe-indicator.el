@@ -23,13 +23,17 @@
 (require 'dash)
 (require 'treemacs-impl)
 (require 'treemacs-customization)
-(eval-and-compile (require 'treemacs-macros))
+(eval-and-compile
+  (require 'inline)
+  (require 'treemacs-macros))
 
 (defvar-local treemacs--fringe-indicator-overlay nil)
 
-(defsubst treemacs--move-fringe-indicator-to-point ()
-  "Move the fringe indicator to the point."
-  (move-overlay treemacs--fringe-indicator-overlay (point-at-bol) (1+ (point-at-eol))))
+(define-inline treemacs--move-fringe-indicator-to-point ()
+  "Move the fringe indicator to the position of point."
+  (inline-quote
+   (-let [pabol (point-at-bol)]
+     (move-overlay treemacs--fringe-indicator-overlay pabol  (1+ pabol)))))
 
 (defun treemacs--enable-fringe-indicator ()
   "Enabled the fringe indicator in the current buffer."

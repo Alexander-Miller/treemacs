@@ -26,7 +26,9 @@
 (require 'treemacs-impl)
 (require 'treemacs-customization)
 (require 'treemacs-fringe-indicator)
-(eval-and-compile (require 'treemacs-macros))
+(eval-and-compile
+  (require 'inline)
+  (require 'treemacs-macros))
 
 ;; An explanation for the what and why of the icon highlighting code below:
 ;; Using png images in treemacs has one annoying visual flaw: they overwrite the overlay
@@ -72,16 +74,19 @@
       bg))
   "Background for selected icons.")
 
-(defsubst treemacs--set-img-property (image property value)
+(define-inline treemacs--set-img-property (image property value)
   "Set IMAGE's PROPERTY to VALUE."
   ;; the emacs26 code where this is copied from says it's for internal
   ;; use only - let's se how that goes
-  (plist-put (cdr image) property value)
-  value)
+  (inline-letevals (image property value)
+    (inline-quote
+     (progn
+       (plist-put (cdr ,image) ,property ,value)
+       ,value))))
 
-(defsubst treemacs--forget-last-highlight ()
+(define-inline treemacs--forget-last-highlight ()
   "Set `treemacs--last-highlight' to nil."
-  (setq treemacs--last-highlight nil))
+  (inline-quote (setq treemacs--last-highlight nil)))
 
 (defun treemacs--setup-icon-highlight ()
   "Make sure treemacs icons background aligns with hi-line's."

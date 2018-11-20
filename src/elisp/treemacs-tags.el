@@ -35,29 +35,33 @@
 (require 'treemacs-structure)
 (require 'treemacs-icons)
 (eval-and-compile
+  (require 'inline)
   (require 'cl-lib)
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs"
   treemacs-select-window)
 
-(defsubst treemacs--tags-path-of (btn)
+(define-inline treemacs--tags-path-of (btn)
   "Return the path of tag labels leading to BTN.
 
 The car of the returned list is the label of BTN while its cdr is the top down
 path starting at the absolute path of the file the tags belong to.
 
 These paths are used to give tag nodes a unique key in the shadow tree."
-  (-if-let (path (button-get btn :path))
-      path
-    (let ((lbl (treemacs--get-label-of btn))
-          (btn (button-get btn :parent))
-          (ret))
-      (while (and btn (null (button-get btn :path)))
-        (push (treemacs--get-label-of btn) ret)
-        (setq btn (button-get btn :parent)))
-      (push (button-get btn :path) ret)
-      (cons lbl ret))))
+  (declare (side-effect-free t))
+  (inline-letevals (btn)
+    (inline-quote
+     (-if-let (path (treemacs-button-get ,btn :path))
+         path
+       (let ((lbl (treemacs--get-label-of ,btn))
+             (,btn (treemacs-button-get ,btn :parent))
+             (ret))
+         (while (and ,btn (null (treemacs-button-get ,btn :path)))
+           (push (treemacs--get-label-of ,btn) ret)
+           (setq ,btn (treemacs-button-get ,btn :parent)))
+         (push (treemacs-button-get ,btn :path) ret)
+         (cons lbl ret))))))
 
 (defun treemacs--partition-imenu-index (index default-name)
   "Put top level leaf nodes in INDEX under DEFAULT-NAME."
@@ -121,7 +125,7 @@ should be placed under."
         (unless (equal result '(nil))
           (treemacs--post-process-index result mode))))))
 
-(defsubst treemacs--insert-tag-leaf (item prefix parent depth)
+(define-inline treemacs--insert-tag-leaf (item prefix parent depth)
   "Return the text to insert for a tag leaf ITEM.
 Use PREFIX for indentation.
 Set PARENT and DEPTH button properties.
@@ -129,19 +133,21 @@ ITEM: String . Marker
 PREFIX: String
 PARENT: Button
 DEPTH: Int"
-  (list
-   prefix
-   (propertize (car item)
-               'button '(t)
-               'category 'default-button
-               'face 'treemacs-tags-face
-               'help-echo nil
-               :state 'tag-node
-               :parent parent
-               :depth depth
-               :marker (cdr item))))
+  (inline-letevals (item prefix parent depth)
+    (inline-quote
+     (list
+      ,prefix
+      (propertize (car ,item)
+                  'button '(t)
+                  'category 'default-button
+                  'face 'treemacs-tags-face
+                  'help-echo nil
+                  :state 'tag-node
+                  :parent ,parent
+                  :depth ,depth
+                  :marker (cdr ,item))))))
 
-(defsubst treemacs--insert-tag-node (node prefix parent depth)
+(define-inline treemacs--insert-tag-node (node prefix parent depth)
   "Return the text to insert for a tag NODE.
 Use PREFIX for indentation.
 Set PARENT and DEPTH button properties.
@@ -150,22 +156,24 @@ NODE: String & List of (String . Marker)
 PREFIX: String
 PARENT: Button
 DEPTH: Int"
-  (list
-   prefix
-   (propertize (car node)
-               'button '(t)
-               'category 'default-button
-               'face 'treemacs-tags-face
-               'help-echo nil
-               :state 'tag-node-closed
-               :parent parent
-               :depth depth
-               :index (cdr node))))
+  (inline-letevals (node prefix parent depth)
+    (inline-quote
+     (list
+      ,prefix
+      (propertize (car ,node)
+                  'button '(t)
+                  'category 'default-button
+                  'face 'treemacs-tags-face
+                  'help-echo nil
+                  :state 'tag-node-closed
+                  :parent ,parent
+                  :depth ,depth
+                  :index (cdr ,node))))))
 
 (defun treemacs--expand-file-node (btn &optional recursive)
   "Open tag items for file BTN.
 Recursively open all tags below BTN when RECURSIVE is non-nil."
-  (-let [path (button-get btn :path)]
+  (-let [path (treemacs-button-get btn :path)]
     (-if-let (index (treemacs--get-imenu-index path))
         (treemacs--button-open
          :button btn
@@ -176,7 +184,7 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
                        :extra-vars
                        ((node-prefix (concat prefix treemacs-icon-tag-node-closed))
                         (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
-                       :depth (1+ (button-get btn :depth))
+                       :depth (1+ (treemacs-button-get btn :depth))
                        :node-name item
                        :node-action (if (imenu--subalist-p item)
                                         (treemacs--insert-tag-node item node-prefix btn depth)
@@ -187,7 +195,7 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
                              (end-of-line)
                              (when recursive
                                (--each (treemacs--get-children-of btn)
-                                 (when (eq 'tag-node-closed (button-get it :state))
+                                 (when (eq 'tag-node-closed (treemacs-button-get it :state))
                                    (goto-char (button-start it))
                                    (treemacs--expand-tag-node it t))))))
       (treemacs-pulse-on-failure "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
@@ -198,7 +206,7 @@ Remove all open tag entries under BTN when RECURSIVE."
   (treemacs--button-close
    :button btn
    :new-state 'file-node-closed
-   :post-close-action (treemacs-on-collapse (button-get btn :path) recursive)))
+   :post-close-action (treemacs-on-collapse (treemacs-button-get btn :path) recursive)))
 
 (defun treemacs--visit-or-expand/collapse-tag-node (btn arg find-window)
   "Visit tag section BTN if possible, expand or collapse it otherwise.
@@ -219,7 +227,7 @@ the display window."
          (extension (f-ext path)))
     (pcase extension
       ("py"
-       (let* ((first-child (car (button-get btn :index)))
+       (let* ((first-child (car (treemacs-button-get btn :index)))
               (name (car first-child))
               (marker (cdr first-child)))
          ;; name of first subelement of a section node ends in "definition" means we have a function
@@ -239,7 +247,7 @@ the display window."
              ;; position we need to move
              (-let [need-to-close-section nil]
                (treemacs-with-button-buffer btn
-                 (when (eq 'tag-node-closed (button-get btn :state))
+                 (when (eq 'tag-node-closed (treemacs-button-get btn :state))
                    (setq need-to-close-section t)
                    (treemacs--expand-tag-node btn)))
                (treemacs--call-imenu-and-goto-tag
@@ -249,7 +257,7 @@ the display window."
                    (treemacs--collapse-tag-node btn))))
              (when arg (treemacs-select-window))))))
       ("org"
-       (treemacs-unless-let (pos (button-get btn 'org-imenu-marker))
+       (treemacs-unless-let (pos (treemacs-button-get btn 'org-imenu-marker))
            (treemacs--expand-tag-node btn arg)
          ;; select the window as visit-no-split would
          (when find-window
@@ -260,14 +268,14 @@ the display window."
          (if (marker-position pos)
              (goto-char pos)
            (treemacs--call-imenu-and-goto-tag (treemacs-with-button-buffer btn (treemacs--tags-path-of btn)) t))))
-      (_ (pcase (button-get btn :state)
+      (_ (pcase (treemacs-button-get btn :state)
            ('tag-node-open   (treemacs--collapse-tag-node btn arg))
            ('tag-node-closed (treemacs--expand-tag-node btn arg)))))))
 
 (defun treemacs--expand-tag-node (btn &optional recursive)
   "Open tags node items for BTN.
 Open all tag section under BTN when call is RECURSIVE."
-  (-let [index (button-get btn :index)]
+  (-let [index (treemacs-button-get btn :index)]
     (treemacs--button-open
      :button btn
      :immediate-insert t
@@ -275,7 +283,7 @@ Open all tag section under BTN when call is RECURSIVE."
      :new-icon treemacs-icon-tag-node-open
      :open-action (treemacs--create-buttons
                    :nodes index
-                   :depth (1+ (button-get btn :depth))
+                   :depth (1+ (treemacs-button-get btn :depth))
                    :node-name item
                    :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))
                                 (node-prefix (concat prefix treemacs-icon-tag-node-closed)))
@@ -285,14 +293,14 @@ Open all tag section under BTN when call is RECURSIVE."
      :post-open-action (progn
                          (treemacs-on-expand
                           (treemacs--tags-path-of btn) btn
-                          (-let [parent (button-get btn :parent)]
-                            (pcase (button-get parent :state)
-                              ('file-node-open (button-get parent :path))
+                          (-let [parent (treemacs-button-get btn :parent)]
+                            (pcase (treemacs-button-get parent :state)
+                              ('file-node-open (treemacs-button-get parent :path))
                               ('tag-node-open  (treemacs--tags-path-of parent))
                               (other (error "Impossible state of parent: %s" other)))))
                          (if recursive
                              (--each (treemacs--get-children-of btn)
-                               (when (eq 'tag-node-closed (button-get it :state))
+                               (when (eq 'tag-node-closed (treemacs-button-get it :state))
                                  (goto-char (button-start it))
                                  (treemacs--expand-tag-node it t)))
                            (treemacs--reopen-tags-under btn))))))
@@ -302,7 +310,7 @@ Open all tag section under BTN when call is RECURSIVE."
 Workaround for tag section having no easy way to purge all open tags below a
 button from cache. Easiest way is to just do it manually here."
   (--each (treemacs--get-children-of btn)
-    (when (eq 'tag-node-open (button-get it :state))
+    (when (eq 'tag-node-open (treemacs-button-get it :state))
       (treemacs--collapse-tag-node-recursive it)
       (goto-char (button-start it))
       (treemacs--collapse-tag-node it)))
@@ -322,7 +330,7 @@ Remove all open tag entries under BTN when RECURSIVE."
      (treemacs-on-collapse (treemacs--tags-path-of btn)))))
 
 
-(defsubst treemacs--extract-position (item)
+(define-inline treemacs--extract-position (item)
   "Extract a tag's buffer and position stored in ITEM.
 The position can be stored in the following ways:
 
@@ -335,16 +343,19 @@ The position can be stored in the following ways:
 
 Either way the return value is a const consisting of the buffer and the position
 of the tag. They might also be nil if the pointed-to buffer does not exist."
-  (pcase (type-of item)
-    ('marker
-     (cons (marker-buffer item) (marker-position item)))
-    ('overlay
-     (cons (overlay-buffer item) (overlay-start item)))
-    ('integer
-     (cons nil item))
-    ('cons
-     (-when-let (org-marker (get-text-property 0 'org-imenu-marker (car item)))
-       (cons (marker-buffer org-marker) (marker-position org-marker))))))
+  (declare (side-effect-free t))
+  (inline-letevals (item)
+    (inline-quote
+     (pcase (type-of ,item)
+       ('marker
+        (cons (marker-buffer ,item) (marker-position ,item)))
+       ('overlay
+        (cons (overlay-buffer ,item) (overlay-start ,item)))
+       ('integer
+        (cons nil ,item))
+       ('cons
+        (-when-let (org-marker (get-text-property 0 'org-imenu-marker (car ,item)))
+          (cons (marker-buffer org-marker) (marker-position org-marker))))))))
 
 (defun treemacs--call-imenu-and-goto-tag (tag-path &optional org?)
   "Call the imenu index of the tag at TAG-PATH and go to its position.
@@ -385,7 +396,7 @@ headline with subelements is saved in an 'org-imenu-marker' text property."
   ;; properties.
   (-let [(tag-buf . tag-pos)
          (treemacs-with-button-buffer btn
-           (-> btn (button-get :marker) (treemacs--extract-position)))]
+           (-> btn (treemacs-button-get :marker) (treemacs--extract-position)))]
     (if tag-buf
         (progn
           (switch-to-buffer tag-buf nil t)
@@ -417,7 +428,7 @@ Will return the found tag node, or nil if no such node exists (anymore). In this
 case point will be left at the next highest node available."
   (-let [(tag file . path) tag-path]
     (-when-let (file-node (treemacs-goto-file-node file))
-      (when (eq 'file-node-closed (button-get file-node :state))
+      (when (eq 'file-node-closed (treemacs-button-get file-node :state))
         (goto-char (button-start file-node))
         (treemacs--expand-file-node file-node))
       (dolist (tag-path-item path)
@@ -426,7 +437,7 @@ case point will be left at the next highest node available."
                                  (treemacs--get-children-of file-node)))
             (progn
               (setq file-node tag-path-node)
-              (when (eq 'tag-node-closed (button-get file-node :state))
+              (when (eq 'tag-node-closed (treemacs-button-get file-node :state))
                 (goto-char (button-start file-node))
                 (treemacs--expand-tag-node file-node)))
           (goto-char file-node)
@@ -452,7 +463,7 @@ case point will be left at the next highest node available."
         (-if-let (child-btn (--first (equal (treemacs-shadow-node->key sh-child)
                                              (treemacs--tags-path-of it))
                                       btns-under-btn))
-            (when (eq 'tag-node-closed (button-get child-btn :state))
+            (when (eq 'tag-node-closed (treemacs-button-get child-btn :state))
               (goto-char (button-start child-btn))
               (treemacs--expand-tag-node child-btn))
           (setf (treemacs-shadow-node->children sh-node)

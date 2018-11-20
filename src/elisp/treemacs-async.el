@@ -27,6 +27,7 @@
 (require 'treemacs-impl)
 (require 'treemacs-customization)
 (eval-and-compile
+  (require 'inline)
   (require 'treemacs-macros))
 
 (defvar treemacs--dirs-to-collpase.py
@@ -127,7 +128,7 @@ GIT-FUTURE: Pfuture"
                   (setq i (1+ i)))))))))
     git-info-hash))
 
-(defsubst treemacs--collapsed-dirs-process (path)
+(defun treemacs--collapsed-dirs-process (path)
   "Start a new process to determine dirs to collpase under PATH.
 Output format is an elisp list of string lists that's read directly.
 Every string list consists of the following elements:
@@ -214,19 +215,21 @@ Use either ARG as git integration value of read it interactively."
   (fset 'treemacs--git-status-process-function #'ignore)
   (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
 
-(defsubst treemacs--get-or-parse-git-result (future)
+(define-inline treemacs--get-or-parse-git-result (future)
   "Get the parsed git result of FUTURE.
 Parse and set it if it hasn't been done yet. If FUTURE is nil an empty hash
 table is returned.
 
 FUTURE: Pfuture process"
-  (if future
-    (--if-let (process-get future 'git-table)
-        it
-      (-let [result (treemacs--git-status-parse-function future)]
-        (process-put future 'git-table result)
-        result))
-    (ht)))
+  (inline-letevals (future)
+    (inline-quote
+     (if ,future
+         (--if-let (process-get ,future 'git-table)
+             it
+           (let ((result (treemacs--git-status-parse-function ,future)))
+             (process-put ,future 'git-table result)
+             result))
+       (ht)))))
 
 (treemacs-only-during-init
  (pcase (cons (not (null (executable-find "git")))

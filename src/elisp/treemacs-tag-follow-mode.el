@@ -37,6 +37,7 @@
 (require 'treemacs-tags)
 (require 'treemacs-follow-mode)
 (eval-and-compile
+  (require 'inline)
   (require 'cl-lib)
   (require 'treemacs-macros))
 
@@ -56,39 +57,40 @@ again when tag follow mode moves to another button.")
 Is reset in `first-change-hook' will only be set again after the buffer has been
 saved.")
 
-(defun treemacs--reset-imenu-cache ()
+(define-inline treemacs--reset-imenu-cache ()
   "Reset `treemacs--imenu-cache'."
-  (setq-local treemacs--imenu-cache nil))
+  (inline-quote (setq-local treemacs--imenu-cache nil)))
 
-(defsubst treemacs--forget-previously-follow-tag-btn ()
+(define-inline treemacs--forget-previously-follow-tag-btn ()
   "Forget the previously followed button when treemacs is killed or rebuilt."
-  (setq treemacs--previously-followed-tag-position nil))
+  (inline-quote (setq treemacs--previously-followed-tag-position nil)))
 
-(defsubst treemacs--flatten&sort-imenu-index ()
+(define-inline treemacs--flatten&sort-imenu-index ()
   "Flatten current file's imenu index and sort it by tag position.
 The tags are sorted into the order in which they appear, reguardless of section
 or nesting depth."
-  (let* ((imenu-auto-rescan t)
-         (org? (eq major-mode 'org-mode))
-         (index (-> (buffer-file-name) (treemacs--get-imenu-index)))
-         (flat-index (if org?
-                         (treemacs--flatten-org-mode-imenu-index index)
-                       (treemacs--flatten-imenu-index index)))
-         (first (caar flat-index))
-         ;; in org mode buffers the first item may not be a cons since its position
-         ;; is still stored as a text property
-         (semantic? (and (consp first) (overlayp (cdr first))))
-         (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
-                           #'treemacs--compare-markdown-tag-paths
-                         #'treemacs--compare-tag-paths)))
-    (cond
-     (semantic?
-      ;; go ahead and just transform semantic overlays into markers so we dont
-      ;; have trouble with comparisons when searching a position
-      (dolist (tag-path flat-index)
-        (let ((leaf (car tag-path))
-              (marker (make-marker)))
-          (setcdr leaf (move-marker marker (overlay-start (cdr leaf)))))))
+  (inline-quote
+   (let* ((imenu-auto-rescan t)
+          (org? (eq major-mode 'org-mode))
+          (index (-> (buffer-file-name) (treemacs--get-imenu-index)))
+          (flat-index (if org?
+                          (treemacs--flatten-org-mode-imenu-index index)
+                        (treemacs--flatten-imenu-index index)))
+          (first (caar flat-index))
+          ;; in org mode buffers the first item may not be a cons since its position
+          ;; is still stored as a text property
+          (semantic? (and (consp first) (overlayp (cdr first))))
+          (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
+                            #'treemacs--compare-markdown-tag-paths
+                          #'treemacs--compare-tag-paths)))
+     (cond
+      (semantic?
+       ;; go ahead and just transform semantic overlays into markers so we dont
+       ;; have trouble with comparisons when searching a position
+       (dolist (tag-path flat-index)
+         (let ((leaf (car tag-path))
+               (marker (make-marker)))
+           (setcdr leaf (move-marker marker (overlay-start (cdr leaf)))))))
       ;; same goes for an org index, since headlines with children store their
       ;; positions as text properties
       (org?
@@ -96,7 +98,7 @@ or nesting depth."
          (let ((leaf (car tag-path)))
            (when (stringp leaf)
              (setcar tag-path (cons leaf (get-text-property 0 'org-imenu-marker leaf))))))))
-    (sort flat-index compare-func)))
+     (sort flat-index compare-func))))
 
 (defun treemacs--flatten-imenu-index (index &optional path)
   "Flatten a nested imenu INDEX to a flat list of tag paths.
@@ -137,22 +139,26 @@ PATH: String List"
           (setq result (append result (treemacs--flatten-org-mode-imenu-index (cdr it) (cons (car it) path)))))))
     result))
 
-(defun treemacs--compare-tag-paths (p1 p2)
+(define-inline treemacs--compare-tag-paths (p1 p2)
   "Compare two tag paths P1 & P2 by the position of the tags they lead to.
 Used to sort tag paths according to the order their tags appear in.
 
 P1: Tag-Path
 P2: Tag-Path"
   (declare (pure t) (side-effect-free t))
-  (< (-> p1 (cdar) (marker-position))
-     (-> p2 (cdar) (marker-position))))
+  (inline-letevals (p1 p2)
+    (inline-quote
+     (< (-> ,p1 (cdar) (marker-position))
+        (-> ,p2 (cdar) (marker-position))))))
 
-(defun treemacs--compare-markdown-tag-paths (p1 p2)
+(define-inline treemacs--compare-markdown-tag-paths (p1 p2)
   "Specialized version of `treemacs--compare-tag-paths' for markdown and adoc.
 P1: Tag-Path
 P2: Tag-Path"
   (declare (pure t) (side-effect-free t))
-  (< (cdar p1) (cdar p2)))
+  (inline-letevals (p1 p2)
+    (inline-quote
+     (< (cdar ,p1) (cdar ,p2)))))
 
 (defun treemacs--find-index-pos (point list)
   "Find the tag at POINT within a flat tag-path LIST.
@@ -196,60 +202,62 @@ END: Integer"
      ((< pos2 point)
       (treemacs--binary-index-search point list index end)))))
 
-(defsubst treemacs--do-follow-tag (flat-index treemacs-window buffer-file project)
+(define-inline treemacs--do-follow-tag (flat-index treemacs-window buffer-file project)
   "Actual tag-follow implementation, run once the necessary data is gathered.
 
 FLAT-INDEX: Sorted list of tag paths
 TREEMACS-WINDOW: Window
 BUFFER-FILE: Filepath
 PROJECT: Project Struct"
-  (let* ((tag-path (treemacs--find-index-pos (point) flat-index))
-         (file-states '(file-node-open file-node-closed root-node-open root-node-closed))
-         (btn))
-    (when tag-path
-      (treemacs-without-following
-       (with-selected-window treemacs-window
-         (setq btn (treemacs-current-button))
-         (if btn
-             (progn
-               ;; first move to the nearest file when we're on a tag
-               (when (memq (button-get btn :state) '(tag-node-open tag-node-closed tag-node))
-                 (while (not (memq (button-get btn :state) file-states))
-                   (setq btn (button-get btn :parent))))
-               ;; close the button that was opened on the previous follow
-               (when (and treemacs--previously-followed-tag-position
-                          (not (eq (car treemacs--previously-followed-tag-position) btn)))
-                 (-let [(prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position]
-                   (save-excursion
-                     (goto-char prev-followed-pos)
-                     (when  (and (treemacs-is-path (-some-> (treemacs-current-button) (button-get :path))
-                                                   :same-as prev-followed-path)
-                                 (eq 'file-node-open (button-get prev-followed-pos :state)))
-                       (treemacs--collapse-file-node prev-followed-pos)))))
-               ;; when that doesnt work move manually to the correct file
-               (-let [btn-path (button-get btn :path)]
-                 (unless (and (stringp btn-path) (treemacs-is-path buffer-file :same-as btn-path))
-                   (treemacs-goto-file-node buffer-file project)
-                   (setq btn (treemacs-current-button)))))
-           ;; also move manually when there is no button at point
-           (treemacs-goto-file-node buffer-file project)
-           (setq btn (treemacs-current-button)))
-         (goto-char (button-start btn))
-         (setq treemacs--previously-followed-tag-position (cons btn (button-get btn :path)))
-         ;; imenu already rescanned when fetching the tag path
-         (let ((imenu-auto-rescan nil))
-           ;; make a copy since this tag-path will be saved as cache, and the two modifications made here
-           ;; make it impossible to find the current position in `treemacs--find-index-pos'
-           (-let [tag-path (copy-sequence tag-path)]
-             ;; the target tag still has its position marker attached
-             (setcar tag-path (car (car tag-path)))
-             ;; the tag path also needs its file
-             (setcdr tag-path (cons buffer-file (cdr tag-path)))
-             (treemacs--goto-tag-button-at tag-path)))
-         (hl-line-highlight)
-         (treemacs--evade-image)
-         (when treemacs-recenter-after-tag-follow
-           (treemacs--maybe-recenter)))))))
+  (inline-letevals (flat-index treemacs-window buffer-file project)
+    (inline-quote
+     (let* ((tag-path (treemacs--find-index-pos (point) ,flat-index))
+            (file-states '(file-node-open file-node-closed root-node-open root-node-closed))
+            (btn))
+       (when tag-path
+         (treemacs-without-following
+          (with-selected-window ,treemacs-window
+            (setq btn (treemacs-current-button))
+            (if btn
+                (progn
+                  ;; first move to the nearest file when we're on a tag
+                  (when (memq (treemacs-button-get btn :state) '(tag-node-open tag-node-closed tag-node))
+                    (while (not (memq (treemacs-button-get btn :state) file-states))
+                      (setq btn (treemacs-button-get btn :parent))))
+                  ;; close the button that was opened on the previous follow
+                  (when (and treemacs--previously-followed-tag-position
+                             (not (eq (car treemacs--previously-followed-tag-position) btn)))
+                    (-let [(prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position]
+                      (save-excursion
+                        (goto-char prev-followed-pos)
+                        (when  (and (treemacs-is-path (-some-> (treemacs-current-button) (treemacs-button-get :path))
+                                                      :same-as prev-followed-path)
+                                    (eq 'file-node-open (treemacs-button-get prev-followed-pos :state)))
+                          (treemacs--collapse-file-node prev-followed-pos)))))
+                  ;; when that doesnt work move manually to the correct file
+                  (-let [btn-path (treemacs-button-get btn :path)]
+                    (unless (and (stringp btn-path) (treemacs-is-path ,buffer-file :same-as btn-path))
+                      (treemacs-goto-file-node ,buffer-file ,project)
+                      (setq btn (treemacs-current-button)))))
+              ;; also move manually when there is no button at point
+              (treemacs-goto-file-node ,buffer-file ,project)
+              (setq btn (treemacs-current-button)))
+            (goto-char (button-start btn))
+            (setq treemacs--previously-followed-tag-position (cons btn (treemacs-button-get btn :path)))
+            ;; imenu already rescanned when fetching the tag path
+            (let ((imenu-auto-rescan nil))
+              ;; make a copy since this tag-path will be saved as cache, and the two modifications made here
+              ;; make it impossible to find the current position in `treemacs--find-index-pos'
+              (-let [tag-path (copy-sequence tag-path)]
+                ;; the target tag still has its position marker attached
+                (setcar tag-path (car (car tag-path)))
+                ;; the tag path also needs its file
+                (setcdr tag-path (cons ,buffer-file (cdr tag-path)))
+                (treemacs--goto-tag-button-at tag-path)))
+            (hl-line-highlight)
+            (treemacs--evade-image)
+            (when treemacs-recenter-after-tag-follow
+              (treemacs--maybe-recenter)))))))))
 
 (defun treemacs--follow-tag-at-point ()
   "Follow the tag at point in the treemacs view."
@@ -268,7 +276,7 @@ PROJECT: Project Struct"
         (imenu-unavailable (ignore e))
         (error (treemacs-log "Encountered error while following tag at point: %s" e))))))
 
-(defsubst treemacs--setup-tag-follow-mode ()
+(defun treemacs--setup-tag-follow-mode ()
   "Setup tag follow mode."
   (treemacs-follow-mode -1)
   (--each (buffer-list)
@@ -278,7 +286,7 @@ PROJECT: Project Struct"
   (setq treemacs--tag-follow-timer
         (run-with-idle-timer treemacs-tag-follow-delay t #'treemacs--follow-tag-at-point)))
 
-(defsubst treemacs--tear-down-tag-follow-mode ()
+(defun treemacs--tear-down-tag-follow-mode ()
   "Tear down tag follow mode."
   (remove-hook 'first-change-hook #'treemacs--reset-imenu-cache)
   (when treemacs--tag-follow-timer

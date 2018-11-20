@@ -394,7 +394,7 @@ Note that this does *not* take `scroll-margin' into account."
        ,(concat prefix "require" name)
        2)
      ("Inline Functions"
-      ,(concat prefix (rx (? "cl-") "defsubst") name)
+      ,(concat prefix (rx (? "cl-") (or "defsubst" "define-inline")) name)
       2)
      ("Customizations"
       ,(concat prefix "defcustom" name)
