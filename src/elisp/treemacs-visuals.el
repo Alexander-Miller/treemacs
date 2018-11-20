@@ -107,19 +107,16 @@
 Fetch the current theme's background & hl-line colors and inject them into
 `treemacs--created-icons'. Also called as advice after `load-theme', hence the
 ignored argument."
-  (let ((default-background (face-attribute 'default :background nil t))
-        (hl-line-background (face-attribute 'hl-line :background nil t))
-        (changed? nil))
+  (let* ((default-background (face-attribute 'default :background nil t))
+         (hl-line-background (face-attribute 'hl-line :background nil t))
+         (icon               (car (treemacs--created-icons)))
+         (icon-background    (image-property (get-text-property 0 'img-unselected icon) :background))
+         (icon-hl-background (image-property (get-text-property 0 'img-selected icon) :background)))
     (when (eq default-background 'unspecified-bg)
       (setq default-background "#2d2d31"))
-    (unless (equal treemacs--not-selected-icon-background default-background)
-      (setq treemacs--not-selected-icon-background default-background
-            changed? t))
-    (unless (equal treemacs--selected-icon-background hl-line-background)
-      (setq treemacs--selected-icon-background hl-line-background
-            changed? t))
     ;; make sure we only change all the icons' colors when we have to
-    (when changed?
+    (unless (and (string= default-background icon-background)
+                 (string= hl-line-background icon-hl-background))
       (--each (treemacs--created-icons)
         (progn
           (treemacs--set-img-property
