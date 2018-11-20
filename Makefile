@@ -21,6 +21,7 @@ compile: prepare
 	@echo Updating external dependencies...
 	@$(CASK) install
 	@$(CASK) update
+	@touch .cask
 
 prepare: .cask
 
