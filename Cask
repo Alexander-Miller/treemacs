@@ -15,5 +15,6 @@
  (depends-on "projectile")
  (depends-on "magit")
  (depends-on "with-editor")
+ (depends-on "buttercup")
  (depends-on "el-mock")
  (depends-on "ert-runner"))

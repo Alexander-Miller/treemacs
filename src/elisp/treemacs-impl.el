@@ -488,7 +488,7 @@ That is, directories (and their descendants) that are in the reopen cache, but
 are not being shown on account of `treemacs-show-hidden-files' being nil."
   (if treemacs-show-hidden-files
       dirs
-    (-let [root (treemacs--find-project-for-path (car dirs))]
+    (-let [root (treemacs-project->path (treemacs--find-project-for-path (car dirs)))]
       (--filter (not (--any (s-matches? treemacs-dotfiles-regex it)
                             (f-split (substring it (length root)))))
                 dirs))))

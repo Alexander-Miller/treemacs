@@ -55,12 +55,12 @@ These paths are used to give tag nodes a unique key in the shadow tree."
      (-if-let (path (treemacs-button-get ,btn :path))
          path
        (let ((lbl (treemacs--get-label-of ,btn))
-             (,btn (treemacs-button-get ,btn :parent))
+             (node (treemacs-button-get ,btn :parent))
              (ret))
-         (while (and ,btn (null (treemacs-button-get ,btn :path)))
-           (push (treemacs--get-label-of ,btn) ret)
-           (setq ,btn (treemacs-button-get ,btn :parent)))
-         (push (treemacs-button-get ,btn :path) ret)
+         (while (and node (null (treemacs-button-get node :path)))
+           (push (treemacs--get-label-of node) ret)
+           (setq node (treemacs-button-get node :parent)))
+         (push (treemacs-button-get node :path) ret)
          (cons lbl ret))))))
 
 (defun treemacs--partition-imenu-index (index default-name)

@@ -1,14 +1,14 @@
 MAKEFLAGS += k
 
 CASK = cask
-TEST_COMMAND = ert-runner --verbose --reporter ert
 
 EMACS ?= emacs
 
-NO_MISSING_COLOR_WARNING = "(defvar treemacs-no-load-time-warnings t)"
+NO_COLOR_WARNING_FLAG = --eval "(defvar treemacs-no-load-time-warnings t)"
 SRCDIR = src/elisp
-EMACSFLAGS = -Q -batch -L $(SRCDIR) --eval $(NO_MISSING_COLOR_WARNING)
+EMACSFLAGS = -Q -batch -L $(SRCDIR) $(NO_COLOR_WARNING_FLAG)
 COMPILE_COMMAND = -f batch-byte-compile $(SRCDIR)/*.el
+TEST_COMMAND = buttercup -L . $(NO_COLOR_WARNING_FLAG)
 
 .PHONY: test compile clean lint prepare
 
@@ -26,10 +26,7 @@ compile: prepare
 prepare: .cask
 
 test: prepare
-	@echo Running test suite in GUI mode
-	@$(CASK) exec $(TEST_COMMAND) --win
-	@echo Running test suite in TUI mode
-	@$(CASK) exec $(TEST_COMMAND) --no-win
+	@$(CASK) exec $(TEST_COMMAND)
 
 clean:
 	@rm -f $(SRCDIR)/*.elc
