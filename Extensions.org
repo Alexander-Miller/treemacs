@@ -2,14 +2,19 @@
 
 * Content                                                                            :TOC:noexport:
 - [[#treemacs-extension-tutorial][Treemacs Extension Tutorial]]
+   - [[#try-it][Try it]]
    - [[#extensions-for-projects][Extensions for Projects]]
    - [[#extension-for-directories][Extension for Directories]]
    - [[#extensions-at-the-top-level][Extensions at the Top level]]
+   - [[#extensions-beyond-treemacs][Extensions beyond Treemacs]]
    - [[#node-navigation-and-updates][Node Navigation and Updates]]
    - [[#setting-the-working-directory][Setting the Working Directory]]
    - [[#about-properties][About Properties]]
 
 * Treemacs Extension Tutorial
+** Try it
+The code in this file is loadable with ~org-babel-load-file~, you can see tehe results by calling
+~showcase-display-buffer-list~.
 ** Extensions for Projects
 
 First our dependencies:
@@ -187,6 +192,44 @@ example will be able to be passed to ~treemacs-define-root-extension~.
 #+END_SRC
 
 Note that neither predicates, nor the use of a ~'bottom~ position have yet been implemented.
+
+** Extensions beyond Treemacs
+
+Finally you can also used the extensions api as a generalized set of building block for tree structures, to be used in
+any other buffer. First let's define an appropriate extension. We will re-use the ~buffer-root~ code from above, except
+this time we'll mark it as a ~:project~ and call it ~buffer-root-top~.
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-expandable-node buffers-root-top
+    :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
+    :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
+    :query-function (showcase--get-buffer-groups)
+    :render-action
+    (treemacs-render-node
+     :icon treemacs-icon-buffer-group-closed
+     :label-form (symbol-name (car item))
+     :state treemacs-buffer-group-closed-state
+     :face 'font-lock-keyword-face
+     :key-form (car item)
+     :more-properties (:buffers (cdr item)))
+    :project-marker t
+    :root-label "Buffers"
+    :root-face 'font-lock-type-face
+    :root-key-form 'Buffers)
+#+END_SRC
+
+With this we have all we need to display the buffer overview in any buffer of our choice. The required setup is minial,
+we just need to display such a buffer and call ~treemacs-initialize~ inside it, and the extension can be used:
+
+#+BEGIN_SRC emacs-lisp
+  (defun showcase-display-buffer-list ()
+    (interactive)
+    (let* ((buffer (get-buffer-create "*Showcase Buffer List*"))
+           (window (display-buffer-in-side-window buffer '((side . right)))))
+      (select-window window)
+      (treemacs-initialize)
+      (treemacs-BUFFERS-ROOT-TOP-extension)))
+#+END_SRC
 
 ** Node Navigation and Updates
 ~TODO~

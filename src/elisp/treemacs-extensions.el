@@ -24,8 +24,13 @@
 (require 's)
 (require 'treemacs-rendering)
 (require 'treemacs-impl)
+(require 'treemacs-fringe-indicator)
 (eval-when-compile
+  (require 'treemacs-macros)
   (require 'cl-lib))
+
+(treemacs-import-functions-from "treemacs-mode"
+  treemacs-mode)
 
 (defmacro treemacs--build-extension-addition (name)
   "Internal building block.
@@ -400,21 +405,35 @@ additional keys."
           (-let [ext-name (intern (format "treemacs-%s-extension" (upcase (symbol-name name))))]
             (put ext-name :defined-in (or load-file-name (buffer-name)))
             `(defun ,ext-name (&rest _)
-               (-let [pr (make-treemacs-project
-                          :name ,root-label
-                          :path ,root-key-form)]
-                 (insert ,closed-icon-name)
-                 (treemacs--set-project-position pr (point-marker))
-                 (insert (propertize ,root-label
-                                     'button '(t)
-                                     'category 'default-button
-                                     'face ,root-face
-                                     :custom t
-                                     :key ,root-key-form
-                                     :path (list pr)
-                                     :depth 0
-                                     :project pr
-                                     :state ,closed-state-name)))))))))
+               (treemacs-with-writable-buffer
+                (-let [pr (make-treemacs-project
+                           :name ,root-label
+                           :path ,root-key-form)]
+                  (insert ,closed-icon-name)
+                  (treemacs--set-project-position pr (point-marker))
+                  (insert (propertize ,root-label
+                                      'button '(t)
+                                      'category 'default-button
+                                      'face ,root-face
+                                      :custom t
+                                      :key ,root-key-form
+                                      :path (list pr)
+                                      :depth 0
+                                      :project pr
+                                      :state ,closed-state-name))))))))))
+
+(defun treemacs-initialize ()
+  "Initialize treemacs in an external buffer for extension use."
+  (treemacs-with-writable-buffer
+   (erase-buffer))
+  ;; make sure the fringe indicator is enabled later, otherwise treemacs attempts
+  ;; to move it right after the `treemacs-mode' call
+  ;; the indicator cannot be created before either since the major-mode activation
+  ;; wipes out buffer-local variables' values
+  (-let [treemacs-fringe-indicator-mode nil]
+    (treemacs-mode))
+  (when treemacs-fringe-indicator-mode
+    (treemacs--enable-fringe-indicator)))
 
 (provide 'treemacs-extensions)
 

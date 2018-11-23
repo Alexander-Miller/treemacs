@@ -517,8 +517,6 @@ Add a project for ROOT if it's non-nil."
       ('none
        (treemacs--setup-buffer)
        (treemacs-mode)
-       (treemacs--reset-index)
-       (treemacs--reset-project-positions)
        (unless current-workspace
          (treemacs--find-workspace)
          (setq current-workspace (treemacs-current-workspace))

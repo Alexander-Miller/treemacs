@@ -29,6 +29,8 @@
 (require 'treemacs-impl)
 (require 'treemacs-icons)
 (require 'treemacs-persistence)
+(require 'treemacs-structure)
+(require 'treemacs-workspaces)
 (eval-and-compile (require 'treemacs-macros))
 
 (treemacs-import-functions-from  "treemacs"
@@ -317,7 +319,9 @@ Used as a post command hook."
   (treemacs--adjust-icons-to-window-system)
   (treemacs--setup-icon-highlight)
   (treemacs--setup-icon-background-colors)
-  (treemacs--setup-mode-line))
+  (treemacs--setup-mode-line)
+  (treemacs--reset-index)
+  (treemacs--reset-project-positions))
 
 (provide 'treemacs-mode)
 
