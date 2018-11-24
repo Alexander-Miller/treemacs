@@ -84,6 +84,16 @@
        (plist-put (cdr ,image) ,property ,value)
        ,value))))
 
+(define-inline treemacs--get-img-property (image property)
+  "Return the value of PROPERTY in IMAGE."
+  ;; code aken from emacs 26
+  (declare (side-effect-free t))
+  (inline-letevals (image property)
+    (inline-quote
+     (plist-get (cdr ,image) ,property))))
+(gv-define-setter treemacs--get-img-property (val img prop)
+  `(plist-put (cdr ,img) ,prop ,val))
+
 (define-inline treemacs--forget-last-highlight ()
   "Set `treemacs--last-highlight' to nil."
   (inline-quote (setq treemacs--last-highlight nil)))
@@ -110,8 +120,8 @@ ignored argument."
   (let* ((default-background (face-attribute 'default :background nil t))
          (hl-line-background (face-attribute 'hl-line :background nil t))
          (icon               (car (treemacs--created-icons)))
-         (icon-background    (image-property (get-text-property 0 'img-unselected icon) :background))
-         (icon-hl-background (image-property (get-text-property 0 'img-selected icon) :background)))
+         (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected icon) :background))
+         (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected icon) :background)))
     (when (eq default-background 'unspecified-bg)
       (setq default-background "#2d2d31"))
     ;; make sure we only change all the icons' colors when we have to
