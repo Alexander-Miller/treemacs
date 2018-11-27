@@ -421,7 +421,6 @@ BUFFER: Buffer"
                (-let [path (treemacs-button-get btn :path)]
                  (when (and (= depth (treemacs-button-get btn :depth))
                             (not (treemacs-button-get btn :no-git)))
-                   (treemacs-button-put btn 'mouse-face 'std::test-face)
                    (treemacs-button-put btn 'face
                                (treemacs--get-button-face path git-info (treemacs-button-get btn :default-face)))))))))))))
 
