@@ -284,6 +284,9 @@ user is supposed to select keybindings for functions like ~treemacs-find-file~ b
 
 You can find an exhaustive overview of all functions, their keybindings and functions you need to bind yourself [[#keymap][below]].
 
+The following ~use-package~ snippet includes a list of /all/ of treemacs' configuration variables in their default
+setting. Setting them all yourself is not necessary, they are only listed here to encourage discoverability.
+
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
     :ensure t
@@ -307,6 +310,7 @@ You can find an exhaustive overview of all functions, their keybindings and func
             treemacs-is-never-other-window      nil
             treemacs-max-git-entries            5000
             treemacs-no-png-images              nil
+            treemacs-no-delete-other-windows    t
             treemacs-project-follow-cleanup     nil
             treemacs-persist-file               (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
             treemacs-recenter-after-file-follow nil
@@ -395,6 +399,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-max-git-entries            | 5000                                        | Maximum number of git status entries treemacs will process. Anything above that number will be ignored.                                                                                    |
 | treemacs-show-cursor                | nil                                         | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                          |
 | treemacs-git-command-pipe           | ""                                          | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                               |
+| treemacs-no-delete-other-windows    | t                                           | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                |
 
 ** Faces
 Treemacs defines and uses the following faces:

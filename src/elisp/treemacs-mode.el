@@ -282,7 +282,8 @@ Used as a post command hook."
   (setq buffer-read-only    t
         truncate-lines      t
         indent-tabs-mode    nil
-        desktop-save-buffer nil)
+        desktop-save-buffer nil
+        window-size-fixed   (when treemacs--width-is-locked 'width))
 
   (unless treemacs-show-cursor
     (setq cursor-type nil))

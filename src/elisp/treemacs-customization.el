@@ -46,6 +46,12 @@
   :prefix "treemacs-"
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
+(defgroup treemacs-window nil
+  "Customizations for the behaviour of the treemacs window."
+  :group 'treemacs
+  :prefix "treemacs-"
+  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
+
 (defcustom treemacs-indentation 2
   "The number of spaces each level is indented in the file tree.
 Indentation is created by repeating `treemacs-indentation-string'."
@@ -57,20 +63,6 @@ Indentation is created by repeating `treemacs-indentation-string'."
 Indentation is created by repeating this string `treemacs-indentation' many
 times."
   :type 'string
-  :group 'treemacs)
-
-(defcustom treemacs-width 35
-  "Width of the treemacs window."
-  :type 'integer
-  :group 'treemacs)
-
-(defcustom treemacs-display-in-side-window t
-  "When non-nil treemacs will use a dedicated side-window.
-On the one hand this will alleviate issues of unequally sized window splits when
-treemacs is visible (since Emacs does not understand that treemacs has fixed
-window size). On the other hand it may lead to issues with other packages like
-shell-pop, as making treemacs a side-window makes it unsplittable."
-  :type 'boolean
   :group 'treemacs)
 
 (defcustom treemacs-show-hidden-files t
@@ -296,28 +288,10 @@ To disable all refresh messages use `treemacs-silent-refresh'."
   :type 'boolean
   :group 'treemacs)
 
-(defcustom treemacs-is-never-other-window nil
-  "When non-nil treemacs will never be used as `other-window'.
-This can prevent other packages from opening other buffers in the treemacs
-window. It also means treemacs is never selected by calls to `other-window'."
-  :type 'boolean
-  :group 'treemacs)
-
-(defcustom treemacs-position 'left
-  "Position of treemacs buffer.
-
-Valid values are
- * left,
- * right."
-  :type '(choice (const left)
-                 (const right))
-  :group 'treemacs)
-
 (defcustom treemacs-file-follow-delay 0.2
   "Delay in seconds of idle time for treemacs to follow the selected window."
   :type 'number
   :group 'treemacs)
-
 
 (defcustom treemacs-tag-follow-delay 1.5
   "Delay in seconds of inactivity for `treemacs-tag-follow-mode' to trigger."
@@ -350,10 +324,6 @@ This is done by calling `recenter' after `treemacs-tag-follow-mode' moves to a
 new file."
   :type 'boolean
   :group 'treemacs)
-
-
-
-
 
 (defcustom treemacs-pulse-on-success t
   "When non-nil treemacs will pulse the current line as a success indicator.
@@ -530,6 +500,50 @@ additional filter statement (for example `| grep -v \"/vendor_dir/\"') can be us
 to reduce the size of the output to a manageable volume for treemacs."
   :type 'string
   :group 'treemacs-git)
+
+(defcustom treemacs-is-never-other-window nil
+  "When non-nil treemacs will never be used as `other-window'.
+This can prevent other packages from opening other buffers in the treemacs
+window. It also means treemacs is never selected by calls to `other-window'."
+  :type 'boolean
+  :group 'treemacs-window)
+
+(defcustom treemacs-width 35
+  "Width of the treemacs window."
+  :type 'integer
+  :group 'treemacs-window)
+
+(defcustom treemacs-display-in-side-window t
+  "When non-nil treemacs will use a dedicated side-window.
+On the one hand this will alleviate issues of unequally sized window splits when
+treemacs is visible (since Emacs does not quite understand that treemacs has
+fixed window size). On the other hand it may lead to issues with other packages
+like shell-pop, as making treemacs a side-window makes it unsplittable."
+  :type 'boolean
+  :group 'treemacs-window)
+
+(defcustom treemacs-no-delete-other-windows t
+  "When non-nil treemacs will have the `no-delete-other-windows' parameter.
+This parameter prevents the treemacs window from closing when calling
+`delete-other-windows' or when a command like `magit-status' would launch a new
+fullscreen buffer.
+Note that treemacs has its own delete-windows command with
+`treemacs-delete-other-windows' that behaves the same as `delete-other-windows',
+but won't close treemacs itself.
+This parameter was only introduced in Emacs 26. On Emacs 25 its effect is
+included in `treemacs-display-in-side-window'."
+  :type 'boolean
+  :group 'treemacs-window)
+
+(defcustom treemacs-position 'left
+  "Position of treemacs buffer.
+
+Valid values are
+ * left,
+ * right."
+  :type '(choice (const left)
+                 (const right))
+  :group 'treemacs)
 
 (defcustom treemacs-pre-refresh-hook nil
   "Hooks to run right before the refresh process for a project kicks off.

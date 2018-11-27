@@ -908,10 +908,10 @@ PROJECT Project Struct"
        ;; apparently keeping the hook around can lead to a feeback loop together with helms
        ;; auto-resize mode as seen in https://github.com/Alexander-Miller/treemacs/issues/76
        (let (window-configuration-change-hook)
-         ;; Reset the treemacs window width to its default - required after window deletions
-         (when treemacs--width-is-locked
-           (treemacs--set-width treemacs-width))
-         ;; Prevent treemacs from being used as other-window
+         (set-window-parameter w 'no-delete-other-windows treemacs-no-delete-other-windows)
+         (when treemacs-display-in-side-window
+           (set-window-parameter w 'window-side treemacs-position)
+           (set-window-parameter w 'window-slot 0))
          (when treemacs-is-never-other-window
            (set-window-parameter w 'no-other-window t)))))))
 
