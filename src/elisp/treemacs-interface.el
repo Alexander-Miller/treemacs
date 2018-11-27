@@ -34,6 +34,7 @@
 (require 'treemacs-mouse-interface)
 (require 'treemacs-customization)
 (require 'treemacs-workspaces)
+(require 'treemacs-persistence)
 (require 'treemacs-extensions)
 (eval-and-compile
   (require 'cl-lib)
@@ -887,6 +888,52 @@ Only works with a single project in the workspace."
       (with-no-warnings (org-reveal))
       (goto-char 0)
       (forward-line))))
+
+(defun treemacs-move-project-up ()
+  "Switch position of the project at point and the one above it."
+  (interactive)
+  (cl-block body
+    (let* ((workspace (treemacs-current-workspace))
+           (projects  (treemacs-workspace->projects workspace))
+           (project1  (treemacs-project-at-point))
+           (index1    (or (treemacs-return (null project1) "There is nothing to move here.")
+                          (-elem-index project1 projects)))
+           (index2    (1- index1))
+           (project2  (or (treemacs-return (> 0 index2) "There is no project to transpose above.")
+                          (nth index2 projects)))
+           (bounds1  (treemacs--get-bounds-of-project project1))
+           (bounds2  (treemacs--get-bounds-of-project project2)))
+      (treemacs-with-writable-buffer
+       (transpose-regions
+        (car bounds1) (cdr bounds1)
+        (car bounds2) (cdr bounds2)))
+      (setf (nth index1 projects) project2
+            (nth index2 projects) project1)
+      (treemacs--persist)
+      (recenter))))
+
+(defun treemacs-move-project-down ()
+  "Switch position of the project at point and the one below it."
+  (interactive)
+  (cl-block body
+    (let* ((workspace (treemacs-current-workspace))
+           (projects  (treemacs-workspace->projects workspace))
+           (project1  (treemacs-project-at-point))
+           (index1    (or (treemacs-return (null project1) "There is nothing to move here.")
+                          (-elem-index project1 projects)))
+           (index2    (1+ index1))
+           (project2  (or (treemacs-return (>= index2 (length projects)) "There is no project to transpose below.")
+                          (nth index2 projects)))
+           (bounds1  (treemacs--get-bounds-of-project project1))
+           (bounds2  (treemacs--get-bounds-of-project project2)))
+      (treemacs-with-writable-buffer
+       (transpose-regions
+        (car bounds1) (cdr bounds1)
+        (car bounds2) (cdr bounds2)))
+      (setf (nth index1 projects) project2
+            (nth index2 projects) project1)
+      (treemacs--persist)
+      (recenter))))
 
 (provide 'treemacs-interface)
 

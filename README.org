@@ -566,6 +566,8 @@ By default Treemacs's keymap looks as follows:
 | C-p c c       | treemacs-collapse-project                   | Collapse project at point.                                                                                     |
 | C-p c o/S-TAB | treemacs-collapse-all-projects              | Collapse all projects.                                                                                         |
 | C-p c o       | treemacs-collapse-all-projects              | Collapse all projects except the project at point.                                                             |
+| <M-Up>        | treemacs-move-project-up                    | Switch positions of project at point and the one above it.                                                     |
+| <M-Down>      | treemacs-move-project-down                  | Switch positions of project at point and the one below it.                                                     |
 | th            | treemacs-toggle-show-dotfiles               | Toggle the hiding and displaying of dotfiles.                                                                  |
 | tw            | treemacs-toggle-fixed-width                 | Toggle whether the treemacs window should have a fixed width. See also treemacs-width.                         |
 | tf            | treemacs-follow-mode                        | Toggle ~treemacs-follow-mode~.                                                                                 |

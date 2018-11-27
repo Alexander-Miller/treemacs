@@ -8,6 +8,7 @@
  - Changed ~treemacs-follow-mode~ to run with an idle timer and added ~treemacs-file-follow-delay~
    to control the delay.
  - Added ~treemacs-display-in-side-window~.
+ - Added ~treemacs-move-project-up~ and ~-down~ to change the order of projects.
  - Bug fixes.
 ** 2.2
  - Reduced minimum required emacs version to 25.2.

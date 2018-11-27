@@ -338,6 +338,18 @@ Return nil when `treemacs-current-button' is nil."
    (-when-let (btn (treemacs-current-button))
      (treemacs-project-of-node btn))))
 
+(defun treemacs--get-bounds-of-project (project)
+  "Get the bounds a PROJECT in the current buffer.
+Returns a cons cell of buffer positions at the very start and end of the
+PROJECT, excluding newlines."
+  (interactive)
+  (save-excursion
+    (goto-char (treemacs-project->position project))
+    (let* ((start (point-at-bol))
+           (next  (treemacs--next-non-child-button (treemacs-project->position project)))
+           (end   (if next (-> next (button-start) (previous-button) (button-end)) (point-max))))
+      (cons start end))))
+
 (provide 'treemacs-workspaces)
 
 ;;; treemacs-workspaces.el ends here
