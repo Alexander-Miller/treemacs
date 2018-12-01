@@ -936,7 +936,7 @@ The second test not apply if `treemacs-show-hidden-files' is t."
       (-filter #'treemacs--reject-ignored-files files)
     (-filter #'treemacs--reject-ignored-and-dotfiles files)))
 
-(defun treemacs--std-ignore-file-predicate (file _)
+(define-inline treemacs--std-ignore-file-predicate (file _)
   "The default predicate to detect ignored files.
 Will return t when FILE
 1) starts with '.#' (lockfiles)
@@ -944,13 +944,25 @@ Will return t when FILE
 3) ends with '~' (backup files)
 4) is surrounded with # (auto save files)
 5) is '.' or '..' (default dirs)"
-  (s-matches? (rx bol
-                  (or (seq (or ".#" "flycheck_") (1+ any))
-                      (seq (1+ any) "~")
-                      (seq "#" (1+ any) "#")
-                      (or "." ".."))
-                  eol)
-              file))
+  (declare (side-effect-free t) (pure t))
+  (inline-letevals (file)
+    (inline-quote
+     (s-matches? (rx bol
+                     (or (seq (or ".#" "flycheck_") (1+ any))
+                         (seq (1+ any) "~")
+                         (seq "#" (1+ any) "#")
+                         (or "." ".."))
+                     eol)
+                 ,file))))
+
+(define-inline treemacs--mac-ignore-file-predicate (file _)
+  "Ignore FILE if it is .DS_Store and .localized.
+Will be added to `treemacs-ignored-file-predicates' on Macs."
+  (declare (side-effect-free t) (pure t))
+  (inline-letevals (file)
+    (inline-quote
+     (or (string= ,file ".DS_Store")
+         (string= ,file ".localized")))))
 
 (define-inline treemacs-current-visibility ()
   "Return whether the current visibility state of the treemacs buffer.

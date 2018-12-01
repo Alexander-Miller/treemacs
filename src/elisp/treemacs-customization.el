@@ -185,7 +185,9 @@ treemacs views containing hundreds or even thousands of nodes."
   :group 'treemacs)
 
 (defcustom treemacs-ignored-file-predicates
-  '(treemacs--std-ignore-file-predicate)
+  (pcase system-type
+    ('darwin '(treemacs--std-ignore-file-predicate treemacs--mac-ignore-file-predicate))
+    (_       '(treemacs--std-ignore-file-predicate)))
   "List of predicates to test for files and directories ignored by Emacs.
 
 Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles)
@@ -198,7 +200,9 @@ file which returns t for *any* function in this list counts as ignored.
 By default this list contains `treemacs--std-ignore-file-predicate' which
 filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and
 therefore should not be directly overwritten, but added to and removed from
-instead."
+instead.
+Additionally `treemacs--mac-ignore-file-predicate' is also included on
+Mac-derived operating systems (when `system-type' is `darwin')."
   :type 'list
   :group 'treemacs)
 
