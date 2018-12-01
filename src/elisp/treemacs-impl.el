@@ -179,6 +179,7 @@ Returns nil when point is between projects."
        (-let [p (next-single-property-change point-at-bol 'button nil (point-at-eol))]
          (when (get-char-property p 'button)
            (copy-marker p t)))))))
+(defalias 'treemacs-node-at-point #'treemacs-current-button)
 
 (define-inline treemacs-button-put (button prop val)
   "Set BUTTON's PROP property to VAL.
