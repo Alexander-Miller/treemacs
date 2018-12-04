@@ -2,14 +2,22 @@
 #+STARTUP: content
 
 * Changelog
-** Current master
+** 2.3
  - Added ~treemacs-single-click-expand-action~ for single leftclick node expansion.
  - Added ~deferred~ variant of ~treemacs-git-mode~.
- - Changed ~treemacs-follow-mode~ to run with an idle timer and added ~treemacs-file-follow-delay~
-   to control the delay.
+ - Added ~treemacs-show-cursor~ to keep the cursor visible.
  - Added ~treemacs-display-in-side-window~.
  - Added ~treemacs-move-project-up~ and ~-down~ to change the order of projects.
+ - Added ~treemacs-git-command-pipe~ to append filters to the git status command.
+ - Added ~treemacs-move-project-up/down~ to change the order of projects.
+ - Added preliminary version of a rightclick menu.
+ - Changed ~treemacs-follow-mode~ to run with an idle timer and added ~treemacs-file-follow-delay~
+   to control the delay.
+ - Switch to org-mode syntax as persistence format (in preparation for making it editable).
+ - Started using vscode icons.
+ - Introduce extension API.
  - Bug fixes.
+ - Performance improvements.
 ** 2.2
  - Reduced minimum required emacs version to 25.2.
  - Integrated symlinks with git-mode (symlinks will always be resolved).
