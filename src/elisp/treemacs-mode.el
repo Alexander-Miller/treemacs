@@ -190,6 +190,7 @@ to it will instead show a blank."
       (define-key map (kbd "?")         #'treemacs-helpful-hydra)
       (define-key map [mouse-1]         #'treemacs-leftclick-action)
       (define-key map [double-mouse-1]  #'treemacs-doubleclick-action)
+      (define-key map [mouse-3]         #'treemacs-rightclick-menu)
       (define-key map [tab]             #'treemacs-TAB-action)
       (define-key map [?\t]             #'treemacs-TAB-action)
       (define-key map [return]          #'treemacs-RET-action)
