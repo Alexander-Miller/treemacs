@@ -112,18 +112,21 @@ should be placed under."
         (setq buff existing-buffer)
       (cl-letf (((symbol-function 'run-mode-hooks) (symbol-function 'ignore)))
         (setq buff (find-file-noselect file))))
-    (when (buffer-live-p buff)
-      (with-current-buffer buff
-        (when (eq major-mode 'emacs-lisp-mode)
-          (setq-local imenu-generic-expression treemacs-elisp-imenu-expression))
-        (setq result (and (or imenu-generic-expression imenu-create-index-function) (imenu--make-index-alist t))
-              mode major-mode))
-      (unless existing-buffer (kill-buffer buff))
-      (when result
-        (when (string= "*Rescan*" (car (car result)))
-          (setq result (cdr result)))
-        (unless (equal result '(nil))
-          (treemacs--post-process-index result mode))))))
+    (condition-case e
+        (when (buffer-live-p buff)
+          (with-current-buffer buff
+            (when (eq major-mode 'emacs-lisp-mode)
+              (setq-local imenu-generic-expression treemacs-elisp-imenu-expression))
+            (setq result (and (or imenu-generic-expression imenu-create-index-function) (imenu--make-index-alist t))
+                  mode major-mode))
+          (unless existing-buffer (kill-buffer buff))
+          (when result
+            (when (string= "*Rescan*" (car (car result)))
+              (setq result (cdr result)))
+            (unless (equal result '(nil))
+              (treemacs--post-process-index result mode))))
+      (imenu-unavailable (ignore e))
+      (error (prog1 nil (treemacs-log "Encountered error while following tag at point: %s" e))))))
 
 (define-inline treemacs--insert-tag-leaf (item prefix parent depth)
   "Return the text to insert for a tag leaf ITEM.
