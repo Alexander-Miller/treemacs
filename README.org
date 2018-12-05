@@ -8,7 +8,7 @@
 
 * Treemacs - a tree layout file explorer for Emacs                                   :noexport:
 
-[[file:screenshot.png]]
+[[file:screenshots/screenshot.png]]
 
 * Content                                                                            :TOC:noexport:
 - [[#quick-feature-overview][Quick Feature Overview]]
