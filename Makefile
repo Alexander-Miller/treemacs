@@ -5,9 +5,10 @@ CASK = cask
 EMACS ?= emacs
 
 NO_COLOR_WARNING_FLAG = --eval "(defvar treemacs-no-load-time-warnings t)"
-SRCDIR = src/elisp
-EMACSFLAGS = -Q -batch -L $(SRCDIR) $(NO_COLOR_WARNING_FLAG)
-COMPILE_COMMAND = -f batch-byte-compile $(SRCDIR)/*.el
+SRC_DIR = src/elisp
+EXTRA_DIR = src/extra
+EMACSFLAGS = -Q -batch -L $(SRC_DIR) -L $(EXTRA_DIR) $(NO_COLOR_WARNING_FLAG)
+COMPILE_COMMAND = -f batch-byte-compile $(SRC_DIR)/*.el $(EXTRA_DIR)/*.el
 TEST_COMMAND = buttercup -L . $(NO_COLOR_WARNING_FLAG)
 
 .PHONY: test compile clean lint prepare
@@ -29,6 +30,7 @@ test: prepare
 	@$(CASK) exec $(TEST_COMMAND)
 
 clean:
-	@rm -f $(SRCDIR)/*.elc
+	@rm -f $(SRC_DIR)/*.elc
+	@rm -f $(EXTRA_DIR)/*.elc
 
 lint: compile clean
