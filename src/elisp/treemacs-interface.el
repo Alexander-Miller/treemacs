@@ -819,18 +819,18 @@ Only works with a single project in the workspace."
       (unless btn
         (setq btn (previous-button (point))))
       (let* ((project (-> btn (treemacs--nearest-path) (treemacs--find-project-for-path)))
-             (root (treemacs-project->path project))
-             (new-root (treemacs--parent root))
+             (old-root (treemacs-project->path project))
+             (new-root (treemacs--parent old-root))
              (new-name (if (f-root? new-root)
                            "/"
                          (file-name-nondirectory new-root)))
              (treemacs--no-messages t)
              (treemacs-pulse-on-success nil))
-        (unless (treemacs-is-path root :same-as new-root)
-          (treemacs-remove-project-from-workspace)
+        (unless (treemacs-is-path old-root :same-as new-root)
+          (treemacs-do-remove-project-from-workspace project)
           (treemacs-do-add-project-to-workspace new-root new-name)
           (treemacs-goto-file-node new-root)
-          (treemacs-toggle-node))))))
+          (treemacs-goto-file-node old-root))))))
 
 (defun treemacs-root-down ()
   "Move treemacs' root into the directory at point.
@@ -847,7 +847,7 @@ Only works with a single project in the workspace."
          (let ((new-root (treemacs-button-get btn :path))
                (treemacs--no-messages t)
                (treemacs-pulse-on-success nil))
-           (treemacs-remove-project-from-workspace)
+           (treemacs-do-remove-project-from-workspace (treemacs-project-at-point))
            (treemacs-do-add-project-to-workspace new-root (file-name-nondirectory new-root))
            (treemacs-goto-file-node new-root)
            (treemacs-toggle-node)))

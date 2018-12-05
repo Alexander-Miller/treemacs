@@ -284,15 +284,19 @@ PROJECT: Project Struct"
       (goto-char project-btn)
       (when (treemacs-project->is-expanded? project)
         (treemacs--collapse-root-node project-btn t)))
+    (treemacs--remove-project-from-current-workspace project)
     (kill-whole-line)
-    (-let [is-last? (treemacs-project->is-last? project)]
-      (if is-last?
-          (treemacs-previous-project)
-        (kill-whole-line)
-        (treemacs-next-project)))
+    (cond
+     ;; happens with single tree ad-hoc navigation
+     ((treemacs-workspace->is-empty?)
+      (ignore))
+     ((treemacs-project->is-last? project)
+      (treemacs-previous-project))
+     (t
+      (kill-whole-line)
+      (treemacs-next-project)))
     (treemacs--forget-last-highlight)
     (delete-trailing-whitespace)
-    (treemacs--remove-project-from-current-workspace project)
     (--when-let (treemacs-get-local-window)
       (with-selected-window it
         (recenter)))
