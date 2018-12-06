@@ -28,6 +28,7 @@ def main():
 
     output += b'('
     iter_count = 0
+
     for item in proc.stdout:
         if item.startswith(b' '):
             item = item[1:]
@@ -71,5 +72,7 @@ def main():
             break
     output += b')'
     STDOUT.write(output)
+
+    sys.exit(proc.poll())
 
 main()
