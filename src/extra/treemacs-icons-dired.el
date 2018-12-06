@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((treemacs "0"))
+;; Package-Requires: ((treemacs "0")(emacs "25.2"))
 ;; Package-Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
@@ -85,6 +85,7 @@ This will make sure the icons' background colors will align with `hl-line-mode'.
 ;;;###autoload
 (define-minor-mode treemacs-icons-dired-mode
   "Display treemacs icons for each files in a dired buffer."
+  :require 'treemacs-icons-dired
   :init-value nil
   :global     t
   (if (and (display-graphic-p)
