@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 'treemacs)
+(require 'hl-line)
 (require 'dired)
 
 (defvar-local treemacs-icons-dired-displayed nil
@@ -56,7 +57,7 @@
 (defun treemacs-icons-dired--update-icon-selection ()
   "Highlight current icon, unhighlight `treemacs--last-highlight'.
 This will make sure the icons' background colors will align with `hl-line-mode'."
-  (when (eq major-mode 'dired-mode)
+  (when (and hl-line-mode (eq major-mode 'dired-mode))
     (condition-case e
         (progn
           (treemacs--evade-image)
