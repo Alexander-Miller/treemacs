@@ -88,9 +88,9 @@ Insert VAR into `treemacs-icon-hash' for each of the given file EXTENSIONS."
   `(progn
      (defvar ,var nil)
      (setq ,var
-           (if (treemacs--is-image-creation-impossible?)
-               treemacs-icon-fallback-text
-             (eval-when-compile
+           (eval-when-compile
+             (if (treemacs--is-image-creation-impossible?)
+                 treemacs-icon-fallback-text
                ;; need to defvar here or the compiler will complain
                (defvar treemacs--icon-size nil)
                (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
