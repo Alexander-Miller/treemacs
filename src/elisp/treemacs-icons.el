@@ -89,19 +89,19 @@ Insert VAR into `treemacs-icon-hash' for each of the given file EXTENSIONS."
      (defvar ,var nil)
      (setq ,var
            (if (treemacs--is-image-creation-impossible?)
-               (eval-when-compile
-                 ;; need to defvar here or the compiler will complain
-                 (defvar treemacs--icon-size nil)
-                 (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
-                        (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
-                   (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
-                   (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
-                   (concat (propertize " "
-                                       'display image-unselected
-                                       'img-selected image-selected
-                                       'img-unselected image-unselected)
-                           " ")))
-             treemacs-icon-fallback-text))
+               treemacs-icon-fallback-text
+             (eval-when-compile
+               ;; need to defvar here or the compiler will complain
+               (defvar treemacs--icon-size nil)
+               (let* ((image-unselected (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name)))
+                      (image-selected   (treemacs--create-image (f-join treemacs-dir "icons/" ,file-name))))
+                 (treemacs--set-img-property image-selected   :background treemacs--selected-icon-background)
+                 (treemacs--set-img-property image-unselected :background treemacs--not-selected-icon-background)
+                 (concat (propertize " "
+                                     'display image-unselected
+                                     'img-selected image-selected
+                                     'img-unselected image-unselected)
+                         " ")))))
      (push ,var treemacs--created-icons)
      (--each (quote ,extensions) (ht-set! treemacs-icons-hash it ,var))
      ,var))
