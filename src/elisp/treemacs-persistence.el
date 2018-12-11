@@ -153,16 +153,7 @@ ITER: Treemacs-Iter struct"
             (if (and (>= (length str-list) 3)
                      (--any? (s-matches? treemacs--persist-kv-regex it) str-list))
                 (setq treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list str-list)))
-              ;; read state based on the system used before the current ini-format
-              ;; should be removed after enough time has passed
-              (-when-let (workspace (-> treemacs-persist-file (f-read 'utf-8) (read) (car)))
-                (dolist (project (treemacs-workspace->projects workspace))
-                  (unless (-> project (treemacs-project->path) (f-exists?))
-                    (treemacs-log (format "Project at %s does not exist and was removed from the workspace."
-                                          (propertize (treemacs-project->path project) 'face 'font-lock-string-face)))
-                    (setf (treemacs-workspace->projects workspace)
-                          (delete project (treemacs-workspace->projects workspace)))))
-                (setq treemacs--workspaces (list workspace))))))
+              (treemacs-log "Persist file exists, but does not seem to contain any saved state."))))
       (error (treemacs-log "Error '%s' when loading the persisted workspace." e)))))
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
