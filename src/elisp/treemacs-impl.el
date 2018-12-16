@@ -943,7 +943,8 @@ Will return t when FILE
 2) starts with 'flycheck_' (flycheck temp files)
 3) ends with '~' (backup files)
 4) is surrounded with # (auto save files)
-5) is '.' or '..' (default dirs)"
+5) is '.git'
+6) is '.' or '..' (default dirs)"
   (declare (side-effect-free t) (pure t))
   (inline-letevals (file)
     (inline-quote
@@ -951,6 +952,7 @@ Will return t when FILE
                      (or (seq (or ".#" "flycheck_") (1+ any))
                          (seq (1+ any) "~")
                          (seq "#" (1+ any) "#")
+                         ".git"
                          (or "." ".."))
                      eol)
                  ,file))))
