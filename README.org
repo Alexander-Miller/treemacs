@@ -32,6 +32,7 @@
       - [[#treemacs-evil][treemacs-evil]]
       - [[#treemacs-projectile][treemacs-projectile]]
    - [[#tramp-support][Tramp Support]]
+   - [[#treemacs-as-a-framework][Treemacs as a Framework]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
    - [[#variables][Variables]]
@@ -271,6 +272,9 @@ also enable navigation with j/k instead of n/p.
 Allows to quickly add your projectile projects to the treemacs workspace by calling ~treemacs-projectile~.
 ** Tramp Support
 Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
+** Treemacs as a Framework
+Treemacs can be extended to display arbitrary nodes as well as be used as a general rendering backend for any tree-like
+structures. [[file:Extensions.org][See here]] for an extended tutorial and demonstration.
 * Installation
 Treemacs is included in Spacemacs (for now only on the dev branch). If you are using the development version of
 Spacemacs you can simply add treemacs to ~dotspacemacs-configuration-layers~ to replace the default NeoTree. Check ~SPC
