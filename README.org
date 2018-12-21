@@ -32,6 +32,7 @@
       - [[#treemacs-evil][treemacs-evil]]
       - [[#treemacs-projectile][treemacs-projectile]]
    - [[#tramp-support][Tramp Support]]
+   - [[#org-support][Org support]]
    - [[#treemacs-as-a-framework][Treemacs as a Framework]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
@@ -272,6 +273,8 @@ also enable navigation with j/k instead of n/p.
 Allows to quickly add your projectile projects to the treemacs workspace by calling ~treemacs-projectile~.
 ** Tramp Support
 Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
+** Org support
+Treemacs supports storing links to its file nodes by means of ~org-store-link~.
 ** Treemacs as a Framework
 Treemacs can be extended to display arbitrary nodes as well as be used as a general rendering backend for any tree-like
 structures. [[file:Extensions.org][See here]] for an extended tutorial and demonstration.

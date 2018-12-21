@@ -2,6 +2,9 @@
 #+STARTUP: content
 
 * Changelog
+** Current master
+ - Add support for using ~org-store-link~ inside treemacs.
+ - Bug fixes
 ** 2.3
  - Added ~treemacs-single-click-expand-action~ for single leftclick node expansion.
  - Added ~deferred~ variant of ~treemacs-git-mode~.

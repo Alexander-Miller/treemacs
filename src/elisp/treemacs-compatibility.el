@@ -75,6 +75,21 @@ width of the new window when the treemacs window is visible."
         (set-window-parameter w 'window-side nil)))))
 (advice-add 'split-window-right :around #'treemacs--split-window-advice)
 
+(with-eval-after-load 'org
+  (defun treemacs-store-org-link ()
+    "Store an `org-mode' link for the node at point."
+    (when (eq major-mode 'treemacs-mode)
+      (-when-let* ((btn (treemacs-current-button))
+                   (file (treemacs--nearest-path btn)))
+        (-let [link (format "file:%s" (abbreviate-file-name file))]
+          (with-no-warnings
+            (org-add-link-props
+             :link link
+             :description (treemacs--filename file)))
+          link))))
+  (with-no-warnings
+    (org-link-set-parameters "treemacs" :store #'treemacs-store-org-link)))
+
 (provide 'treemacs-compatibility)
 
 ;;; treemacs-compatibility.el ends here
