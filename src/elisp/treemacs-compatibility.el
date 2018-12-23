@@ -88,7 +88,9 @@ width of the new window when the treemacs window is visible."
              :description (treemacs--filename file)))
           link))))
   (with-no-warnings
-    (org-link-set-parameters "treemacs" :store #'treemacs-store-org-link)))
+    (if (fboundp 'org-link-set-parameters)
+        (org-link-set-parameters "treemacs" :store #'treemacs-store-org-link)
+      (add-hook 'org-store-link-functions #'treemacs-store-org-link))))
 
 (provide 'treemacs-compatibility)
 
