@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((treemacs "2.1") (magit "2.13.0") (with-editor "2.7.3"))
+;; Package-Requires: ((treemacs "0.0") (magit "2.13.0") (with-editor "2.7.3"))
 ;; Package-Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
