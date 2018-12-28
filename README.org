@@ -28,11 +28,12 @@
    - [[#tag-view][Tag View]]
       - [[#ggtags][ggtags]]
    - [[#current-directory-awareness][Current-Directory Awareness]]
+   - [[#tramp-support][Tramp Support]]
+   - [[#org-support][Org support]]
    - [[#additional-packages][Additional Packages]]
       - [[#treemacs-evil][treemacs-evil]]
       - [[#treemacs-projectile][treemacs-projectile]]
-   - [[#tramp-support][Tramp Support]]
-   - [[#org-support][Org support]]
+      - [[#treemacs-icons-dired][treemacs-icons-dired]]
    - [[#treemacs-as-a-framework][Treemacs as a Framework]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
@@ -263,6 +264,10 @@ Treemacs can show the tags produced by ggtags if you switch a buffer's imenu ind
 Treemacs always sets the ~default-directory~ variable based on the (nearest) path at the current node, falling back to
 your home directory when there is no node or path at point. That means that various commands like ~find-file~,
 ~magit-status~ or ~helm-projectile-ag~ will correctly act based on the current directory or project context.
+** Tramp Support
+Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
+** Org support
+Treemacs supports storing links to its file nodes by means of ~org-store-link~.
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 
@@ -271,10 +276,9 @@ Must be installed and loaded if you use evil. The keybindings and the cursor wil
 also enable navigation with j/k instead of n/p.
 *** treemacs-projectile
 Allows to quickly add your projectile projects to the treemacs workspace by calling ~treemacs-projectile~.
-** Tramp Support
-Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
-** Org support
-Treemacs supports storing links to its file nodes by means of ~org-store-link~.
+*** treemacs-icons-dired
+Allows you to use treemacs icons in dired buffers with ~treemacs-icons-dired-mode~:
+[[file:screenshots/dired-icons.png]]
 ** Treemacs as a Framework
 Treemacs can be extended to display arbitrary nodes as well as be used as a general rendering backend for any tree-like
 structures. [[file:Extensions.org][See here]] for an extended tutorial and demonstration.
