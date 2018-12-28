@@ -365,6 +365,11 @@ setting. Setting them all yourself is not necessary, they are only listed here t
   (use-package treemacs-projectile
     :after treemacs projectile
     :ensure t)
+
+  (use-package treemacs-icons-dired
+    :after treemacs dired
+    :ensure t
+    :config (treemacs-icons-dired-mode))
 #+END_SRC
 
 * Configuration
