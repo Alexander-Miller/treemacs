@@ -34,7 +34,8 @@
 
 (defun treemacs-icons-dired--display ()
   "Display the icons of files in a dired buffer."
-  (when (and (not treemacs-icons-dired-displayed)
+  (when (and (display-graphic-p)
+             (not treemacs-icons-dired-displayed)
              dired-subdir-alist)
     (setq-local treemacs-icons-dired-displayed t)
     (treemacs-with-writable-buffer
@@ -88,8 +89,7 @@ This will make sure the icons' background colors will align with hl-line mode."
   :require 'treemacs-icons-dired
   :init-value nil
   :global     t
-  (if (and (display-graphic-p)
-           treemacs-icons-dired-mode)
+  (if treemacs-icons-dired-mode
       (progn
         (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
         (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
