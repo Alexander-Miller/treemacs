@@ -127,6 +127,8 @@ ignored argument."
     ;; make sure we only change all the icons' colors when we have to
     (unless (and (string= default-background icon-background)
                  (string= hl-line-background icon-hl-background))
+      (setf treemacs--selected-icon-background hl-line-background
+            treemacs--not-selected-icon-background default-background)
       (--each (treemacs--created-icons)
         (progn
           (treemacs--set-img-property
