@@ -200,7 +200,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-markdown     "markdown.png"         "md")
   (treemacs--setup-icon treemacs-icon-asciidoc     "asciidoc.png"         "adoc" "asciidoc")
   (treemacs--setup-icon treemacs-icon-rust         "rust.png"             "rs")
-  (treemacs--setup-icon treemacs-icon-image        "image.png"            "jpg" "jpeg" "bmp" "svg" "png" "xpm")
+  (treemacs--setup-icon treemacs-icon-image        "image.png"            "jpg" "jpeg" "bmp" "svg" "png" "xpm" "gif")
   (treemacs--setup-icon treemacs-icon-emacs        "emacs.png"            "el" "elc")
   (treemacs--setup-icon treemacs-icon-clojure      "clojure.png"          "clj" "cljs" "cljc")
   (treemacs--setup-icon treemacs-icon-typescript   "typescript.png"       "ts" "tsx")
