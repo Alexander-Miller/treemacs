@@ -226,6 +226,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-docker       "docker.png"           "dockerfile")
   (treemacs--setup-icon treemacs-icon-vagrant      "vagrant.png"          "vagrantfile")
   (treemacs--setup-icon treemacs-icon-jinja2       "jinja2.png"           "j2" "jinja2")
+  (treemacs--setup-icon treemacs-icon-video        "video.png"            "webm" "mp4" "avi" "mkv" "flv" "mov" "wmv" "mpg" "mpeg" "mpv")
   (treemacs--setup-icon treemacs-icon-makefile     "vsc/makefile.png"     "makefile")
   (treemacs--setup-icon treemacs-icon-license      "vsc/license.png"      "license")
   (treemacs--setup-icon treemacs-icon-zip          "vsc/zip.png"          "zip" "7z" "tar" "gz" "rar")

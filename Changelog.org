@@ -6,6 +6,7 @@
  - Add support for using ~org-store-link~ inside treemacs.
  - Introduce the ~treemacs-icons-dired~ package.
  - Add ability to control workspaces and projects by editing an org-mode file.
+ - New Icons
  - Bug fixes
 ** 2.3
  - Added ~treemacs-single-click-expand-action~ for single leftclick node expansion.
