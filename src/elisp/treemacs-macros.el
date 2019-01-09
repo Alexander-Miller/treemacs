@@ -283,14 +283,13 @@ it on the same line."
       ,@final-form)))
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
-  "Run BODY once locally in every treemacs buffer."
+  "Run BODY once locally in every treemacs buffer (and its frame)."
   (declare (debug t))
-  `(dolist (frame->buffer treemacs--buffer-access)
-     (-let [(--frame-- . --buffer--) frame->buffer]
-       (when (buffer-live-p --buffer--)
-         (with-selected-frame --frame--
-             (with-current-buffer --buffer--
-               ,@body))))))
+  `(pcase-dolist (`(,--frame-- . ,--buffer--) treemacs--buffer-access)
+     (when (buffer-live-p --buffer--)
+       (with-selected-frame --frame--
+         (with-current-buffer --buffer--
+           ,@body)))))
 
 (defmacro treemacs--defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.
@@ -332,8 +331,8 @@ Entry variables will bound based on NAMES which is a list of two elements."
       (lambda (,key-name ,val-name) ,@body)
       ,table)))
 
-(defmacro treemacs-return (predicate &optional error-msg &rest error-args)
-  "Simplifies the common pattern of returning from a `cl-block' named 'body'.
+(defmacro treemacs-error-return (predicate &optional error-msg &rest error-args)
+  "Simplifies the pattern of returning an error from a `cl-block' named 'body'.
 Supports two calling conventions:
 First by providing all arguments. The block will only be left when PREDICATE
 returns non-nil, ERROR-MSG and ERROR-ARGS will be passed to
@@ -349,6 +348,13 @@ the block is left directly with the given message being passed to
     `(when ,predicate
        (cl-return-from body
          (treemacs-pulse-on-failure ,error-msg ,@error-args)))))
+
+(defmacro treemacs-return-if (predicate ret)
+  "Simplifies the pattern of returning from a `cl-block' named 'body'.
+When PREDICATE returns non-nul RET will be returned."
+  (declare (indent 1) (debug (form sexp)))
+  `(when ,predicate
+     (cl-return-from body ,ret)))
 
 (cl-defmacro treemacs-first-child-node-where (btn &rest predicate)
   "Among the *direct* children of BTN find the first child matching PREDICATE.

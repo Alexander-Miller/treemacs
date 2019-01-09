@@ -107,7 +107,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
              (dir (if (f-directory? location) location (f-dirname location)))
              (project (treemacs--find-project-for-path dir)))
         (cl-block body
-          (treemacs-return (null project)
+          (treemacs-error-return (null project)
             "Bookmark at %s does not fall under any project in the workspace."
             (propertize location 'face 'font-lock-string-face))
           (pcase (treemacs-current-visibility)
@@ -160,11 +160,11 @@ visiting a file or Emacs cannot find any tags for the current file."
            (project (treemacs--find-project-for-buffer))
            (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
            (treemacs-window nil))
-      (treemacs-return (null buffer-file)
+      (treemacs-error-return (null buffer-file)
         "Current buffer is not visiting a file.")
-      (treemacs-return (null index)
+      (treemacs-error-return (null index)
         "Current buffer has no tags.")
-      (treemacs-return (null project)
+      (treemacs-error-return (null project)
         "%s does not fall under any project in the workspace."
         (propertize buffer-file 'face 'font-lock-string-face))
       (save-selected-window

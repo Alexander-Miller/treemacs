@@ -359,20 +359,20 @@ likewise be updated."
   (cl-block body
     (-let [btn (treemacs-current-button)]
       (unless btn
-        (treemacs-return "Found nothing to rename here."))
+        (treemacs-error-return "Found nothing to rename here."))
       (let* ((old-path (treemacs-button-get btn :path))
              (project (treemacs--find-project-for-path old-path))
              (new-path nil)
              (new-name nil)
              (dir nil))
         (unless old-path
-          (treemacs-return "Found nothing to rename here."))
+          (treemacs-error-return "Found nothing to rename here."))
         (unless (file-exists-p old-path)
-          (treemacs-return "The file to be renamed does not exist."))
+          (treemacs-error-return "The file to be renamed does not exist."))
         (setq new-name (read-string "New name: " (file-name-nondirectory old-path))
               dir      (f-dirname old-path)
               new-path (f-join dir new-name))
-        (treemacs-return (file-exists-p new-path)
+        (treemacs-error-return (file-exists-p new-path)
           "A file named %s already exists."
           (propertize new-name 'face font-lock-string-face))
         (treemacs--without-filewatch (rename-file old-path new-path))
@@ -610,7 +610,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
 (defun treemacs-next-project ()
   "Move to the next project root node."
   (interactive)
-  (-let [pos (next-single-char-property-change (point-at-eol) :project)]
+  (-let [pos (treemacs--next-project-pos)]
     (if (or (= pos (point))
             (= pos (point-max)))
         (treemacs-pulse-on-failure "There is no next project to move to.")
@@ -813,7 +813,7 @@ Only works with a single project in the workspace."
   (interactive)
   (cl-block body
     (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
-      (treemacs-return
+      (treemacs-error-return
           "Ad-hoc navigation is only possible when there is but a single project in the workspace."))
     (-let [btn (treemacs-current-button)]
       (unless btn
@@ -837,7 +837,7 @@ Only works with a single project in the workspace."
 Only works with a single project in the workspace."
   (interactive)
   (cl-block body
-    (treemacs-return (/= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
+    (treemacs-error-return (/= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
       "Ad-hoc navigation is only possible when there is but a single project in the workspace.")
     (treemacs-unless-let (btn (treemacs-current-button))
         (treemacs-pulse-on-failure
@@ -896,10 +896,10 @@ Only works with a single project in the workspace."
     (let* ((workspace (treemacs-current-workspace))
            (projects  (treemacs-workspace->projects workspace))
            (project1  (treemacs-project-at-point))
-           (index1    (or (treemacs-return (null project1) "There is nothing to move here.")
+           (index1    (or (treemacs-error-return (null project1) "There is nothing to move here.")
                           (-elem-index project1 projects)))
            (index2    (1- index1))
-           (project2  (or (treemacs-return (> 0 index2) "There is no project to transpose above.")
+           (project2  (or (treemacs-error-return (> 0 index2) "There is no project to transpose above.")
                           (nth index2 projects)))
            (bounds1  (treemacs--get-bounds-of-project project1))
            (bounds2  (treemacs--get-bounds-of-project project2)))
@@ -919,10 +919,10 @@ Only works with a single project in the workspace."
     (let* ((workspace (treemacs-current-workspace))
            (projects  (treemacs-workspace->projects workspace))
            (project1  (treemacs-project-at-point))
-           (index1    (or (treemacs-return (null project1) "There is nothing to move here.")
+           (index1    (or (treemacs-error-return (null project1) "There is nothing to move here.")
                           (-elem-index project1 projects)))
            (index2    (1+ index1))
-           (project2  (or (treemacs-return (>= index2 (length projects)) "There is no project to transpose below.")
+           (project2  (or (treemacs-error-return (>= index2 (length projects)) "There is no project to transpose below.")
                           (nth index2 projects)))
            (bounds1  (treemacs--get-bounds-of-project project1))
            (bounds2  (treemacs--get-bounds-of-project project2)))
@@ -934,6 +934,43 @@ Only works with a single project in the workspace."
             (nth index2 projects) project1)
       (treemacs--persist)
       (recenter))))
+
+(defun treemacs-edit-workspaces ()
+  "Edit your treemacs workspaces and projects as an `org-mode' file."
+  (interactive)
+  (require 'org)
+  (require 'outline)
+  (treemacs--persist)
+  (switch-to-buffer (get-buffer-create "*Edit Treemacs Workspaces*"))
+  (erase-buffer)
+  (org-mode)
+  (insert "#+TITLE: Edit Treemacs Workspaces & Projects\n")
+  (when treemacs-show-edit-workspace-help
+    (insert "# Call ~treemacs-finish-edit~ when done.\n")
+    (insert "# [[http://www.THERE-IS-NO-DOCUMENTATION-YET.com][Click here for detailed documentation.]]\n\n"))
+  (insert-file-contents treemacs-persist-file)
+  (with-no-warnings
+    (outline-show-all))
+  (goto-char 0))
+
+(defun treemacs-finish-edit ()
+  "Finish editing your workspaces and apply the change."
+  (interactive)
+  (cl-block body
+    (widen)
+    (-let [lines (treemacs--read-persist-lines (buffer-string))]
+      (treemacs-error-return (null (buffer-string))
+        "The buffer is empty, there is nothing here to save.")
+      (pcase (treemacs--validate-persist-lines lines)
+        (`(error ,error-msg)
+         (treemacs-error-return "Cannot finish edit:\n%s" error-msg))
+        ('success
+         (f-write (apply #'concat (--map (concat it "\n") lines)) 'utf-8 treemacs-persist-file)
+         (kill-buffer)
+         (treemacs--restore)
+         (treemacs--consolidate-projects)
+         (-some-> (get-buffer "*Edit Treemacs Workspaces*") (kill-buffer))
+         (treemacs-log "Edit completed successfully."))))))
 
 (provide 'treemacs-interface)
 

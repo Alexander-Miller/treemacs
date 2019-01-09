@@ -70,6 +70,12 @@ times."
   :type 'boolean
   :group 'treemacs)
 
+(defcustom treemacs-show-edit-workspace-help t
+  "When non-nil the workspace-edit buffer will display a short help greeting.
+See also `treemacs-edit-workspaces'."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs-TAB-actions-config
   '((root-node-open   . treemacs-toggle-node)
     (root-node-closed . treemacs-toggle-node)

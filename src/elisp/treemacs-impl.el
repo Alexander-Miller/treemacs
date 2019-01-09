@@ -52,7 +52,8 @@
   treemacs--expand-root-node
   treemacs--collapse-root-node
   treemacs--expand-dir-node
-  treemacs--collapse-dir-node)
+  treemacs--collapse-dir-node
+  treemacs--render-projects)
 
 (treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--start-watching
@@ -100,10 +101,6 @@
 
 (treemacs-import-functions-from "treemacs-visuals"
   treemacs-pulse-on-failure)
-
-(treemacs-import-functions-from "treemacs-extensions"
-  treemacs--apply-root-top-extensions
-  treemacs--apply-root-bottom-extensions)
 
 (declare-function treemacs-mode "treemacs-mode")
 
@@ -510,8 +507,7 @@ buffer."
   "Initialize a treemacs buffer from the current workspace.
 Add a project for ROOT if it's non-nil."
   (let ((origin-buffer (current-buffer))
-        (current-workspace (treemacs-current-workspace))
-        (separator (if treemacs-space-between-root-nodes "\n\n" "\n")))
+        (current-workspace (treemacs-current-workspace)))
     (pcase (treemacs-current-visibility)
       ('visible (treemacs--select-visible-window))
       ('exists (treemacs--select-not-visible-window))
@@ -527,15 +523,7 @@ Add a project for ROOT if it's non-nil."
            (-> (treemacs--read-first-project-path)
                (treemacs--canonical-path)
                (treemacs-do-add-project-to-workspace))
-         (treemacs-with-writable-buffer
-          (treemacs--apply-root-top-extensions current-workspace)
-          (let* ((projects (treemacs-workspace->projects current-workspace))
-                 (last-index (1- (length projects))))
-            (--each projects
-              (treemacs--add-root-element it)
-              (unless (= it-index last-index)
-                (insert separator))))
-          (treemacs--apply-root-bottom-extensions current-workspace)))
+         (treemacs--render-projects (treemacs-workspace->projects current-workspace)))
        (goto-char 2)))
     (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root)))
     (with-no-warnings (setq treemacs--ready-to-follow t))
@@ -618,7 +606,7 @@ IS-FILE?: Bool"
                                          curr-path
                                        (f-dirname curr-path)))))
       (when (f-exists? path-to-create)
-        (treemacs-return t
+        (treemacs-error-return t
           "%s already exists."
           (propertize path-to-create 'face 'font-lock-string-face)))
       (treemacs--without-filewatch
@@ -860,7 +848,7 @@ This function is called by `treemacs-goto-node' when PATH identifies a file
 name.
 
 PATH: Filepath
-PROJECT Project Struct"
+PROJECT: Project Struct"
   (unless project (setq project (treemacs--find-project-for-path path)))
   (let* (;; go back here if the search fails
          (start (prog1 (point) (goto-char (treemacs-project->position project))))

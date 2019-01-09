@@ -40,6 +40,8 @@
   treemacs--stop-watching)
 
 (treemacs-import-functions-from "treemacs-extensions"
+  treemacs--apply-root-top-extensions
+  treemacs--apply-root-bottom-extensions
   treemacs--apply-project-top-extensions
   treemacs--apply-project-bottom-extensions
   treemacs--apply-directory-top-extensions
@@ -549,6 +551,19 @@ PROJECT: Project Struct"
                :state 'root-node-closed
                :path (treemacs-project->path project)
                :depth 0)))
+
+(defun treemacs--render-projects (projects)
+  "Actually render the given PROJECTS in the current buffer."
+  (treemacs-with-writable-buffer
+   (let ((current-workspace (treemacs-current-workspace))
+         (separator (if treemacs-space-between-root-nodes "\n\n" "\n")) )
+     (treemacs--apply-root-top-extensions current-workspace)
+     (let* ((last-index (1- (length projects))))
+       (--each projects
+         (treemacs--add-root-element it)
+         (unless (= it-index last-index)
+           (insert separator))))
+     (treemacs--apply-root-bottom-extensions current-workspace))))
 
 (provide 'treemacs-rendering)
 

@@ -31,8 +31,7 @@
   (require 'inline)
   (require 'treemacs-macros))
 
-;; TODO: inline when the backwards compatible parts in `treemacs--restore' are removed
-(defvar treemacs--persist-kv-regex
+(defconst treemacs--persist-kv-regex
   (rx bol
       (? " ")
       "- "
@@ -41,6 +40,14 @@
       (1+ (or (syntax word) (syntax symbol) (syntax punctuation) space))
       eol)
   "The regular expression to match org's \"key :: value\" lines.")
+
+(defconst treemacs--persist-workspace-name-regex
+  (rx bol "* " (1+ any) eol)
+  "The regular expression to match lines with workspace names.")
+
+(defconst treemacs--persist-project-name-regex
+  (rx bol "** " (1+ any) eol)
+  "The regular expression to match lines with projects names.")
 
 (treemacs--defstruct treemacs-iter list)
 
@@ -74,9 +81,8 @@ ITER: Treemacs-Iter struct."
   "Read a list of workspaces from the lines in ITER.
 
 ITER: Treemacs-Iter struct."
-  (let ((workspaces nil)
-        (workspace-regex (rx bol "* " (1+ any) eol)))
-    (while (s-matches? workspace-regex (treemacs-iter->peek iter))
+  (let (workspaces)
+    (while (s-matches? treemacs--persist-workspace-name-regex (treemacs-iter->peek iter))
       (-let [workspace (make-treemacs-workspace)]
         (setf (treemacs-workspace->name workspace)
               (substring (treemacs-iter->next! iter) 2)
@@ -89,9 +95,8 @@ ITER: Treemacs-Iter struct."
   "Read a list of projects from ITER until another section is found.
 
 ITER: Treemacs-Iter struct"
-  (-let ((projects nil)
-         (project-regex (rx bol "** " (1+ any) eol)))
-    (while (s-matches? project-regex (treemacs-iter->peek iter))
+  (let (projects)
+    (while (s-matches? treemacs--persist-project-name-regex (treemacs-iter->peek iter))
       (let ((kv-lines nil)
             (project (make-treemacs-project)))
         (setf (treemacs-project->name project)
@@ -106,7 +111,7 @@ ITER: Treemacs-Iter struct"
             (-let [(key val) (s-split " :: " kv-line)]
               (pcase (s-trim key)
                 ("- path"
-                 (setf (treemacs-project->path project) val))
+                 (setf (treemacs-project->path project) (treemacs--canonical-path val)))
                 (_
                  (treemacs-log "Encountered unknown project key-value in line [%s]" kv-line)))))
           (if (-> project (treemacs-project->path) (file-exists-p) (not))
@@ -128,7 +133,7 @@ ITER: Treemacs-Iter struct"
               (no-kill nil))
           (--if-let (get-file-buffer treemacs-persist-file)
               (setq buffer it)
-            (setq buffer (find-file-noselect treemacs-persist-file :no-warn :literally)
+            (setq buffer (find-file-noselect treemacs-persist-file :no-warn)
                   no-kill t))
           (with-current-buffer buffer
             (dolist (ws (treemacs-workspaces))
@@ -142,18 +147,72 @@ ITER: Treemacs-Iter struct"
             (unless no-kill (kill-buffer))))
       (error (treemacs-log "Error '%s' when persisting workspace." e)))))
 
+(defun treemacs--read-persist-lines (&optional txt)
+  "Read the relevant lines from given TXT or `treemacs-persist-file'."
+  (-when-let (str (-some-> (or txt (when (file-exists-p treemacs-persist-file)
+                                     (f-read treemacs-persist-file)))
+                           (s-trim)
+                           (s-lines)))
+    (--filter (or (s-matches? treemacs--persist-kv-regex it)
+                  (s-matches? treemacs--persist-project-name-regex it)
+                  (s-matches? treemacs--persist-workspace-name-regex it))
+              str)))
+
+(cl-defun treemacs--validate-persist-lines (lines &optional (context :start))
+  "Recursively verify the make-up of the given LINES, based on their CONTEXT.
+Lines must start with a workspace name, followed by a project name, followed by
+the project's path property, followed by either the next project or the next
+workspace.
+
+LINES: List of Strings
+CONTEXT: Keyword"
+  (cl-block body
+    (treemacs-unless-let (line (car lines))
+        (pcase context
+          (:property
+           (cl-return-from body 'success))
+          (:start
+           (cl-return-from body
+             (list 'error "Input is empty")))
+          (_
+           (cl-return-from body
+             (list 'error "Cannot end with a project or workspace name"))))
+      (pcase context
+        (:start
+         (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
+           `(error ,(format "First line '%s' is not a workspace name" line)))
+         (treemacs--validate-persist-lines (cdr lines) :workspace))
+        (:workspace
+         (treemacs-return-if (not (s-matches? treemacs--persist-project-name-regex line))
+           `(error ,(format "Line '%s' after workspace name is not a project name" line)))
+         (treemacs--validate-persist-lines (cdr lines) :project))
+        (:project
+         (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
+           `(error ,(format "Line '%s' after project name is not a path declaration" line)))
+         (treemacs--validate-persist-lines (cdr lines) :property))
+        (:property
+         (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
+               (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
+           (cond
+            (line-is-workspace-name
+             (treemacs--validate-persist-lines (cdr lines) :workspace))
+            (line-is-project-name
+             (treemacs--validate-persist-lines (cdr lines) :project))
+            (t
+             (treemacs-return-if (-none? #'identity (list line-is-workspace-name line-is-project-name))
+               `(error ,(format "Line '%s' after property must be the name of the next project or workspace" line)))))))))))
+
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs-persist-file'."
   (unless (treemacs--should-not-run-persistence?)
     (condition-case e
-        (when (file-exists-p treemacs-persist-file)
-          (-let [str-list (--reject (or (string= it "")
-                                        (s-starts-with? "#+STARTUP:" it))
-                                    (-> treemacs-persist-file (f-read) (s-lines)))]
-            (if (and (>= (length str-list) 3)
-                     (--any? (s-matches? treemacs--persist-kv-regex it) str-list))
-                (setq treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list str-list)))
-              (treemacs-log "Persist file exists, but does not seem to contain any saved state."))))
+        (-when-let (lines (treemacs--read-persist-lines))
+          (pcase (treemacs--validate-persist-lines lines)
+            ('success
+             (setf treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list lines))
+                   (treemacs-current-workspace) (car treemacs--workspaces)))
+            (`(error ,error-msg)
+             (treemacs-log "Could not restore saved state, found the following error:\n%s." error-msg))))
       (error (treemacs-log "Error '%s' when loading the persisted workspace." e)))))
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)

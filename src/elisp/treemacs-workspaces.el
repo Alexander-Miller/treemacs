@@ -32,13 +32,15 @@
 (treemacs-import-functions-from "treemacs-rendering"
   treemacs--collapse-root-node
   treemacs--expand-root-node
-  treemacs--add-root-element)
+  treemacs--add-root-element
+  treemacs--render-projects)
 
 (treemacs-import-functions-from "treemacs-interface"
   treemacs-previous-project
   treemacs-next-project)
 
 (treemacs-import-functions-from "treemacs-persistence"
+  treemacs--restore
   treemacs--persist)
 
 (treemacs--defstruct treemacs-project name path)
@@ -113,6 +115,12 @@ This function can be used with `setf'."
          (with-current-buffer buffer
            (when (equal treemacs--project-of-buffer ,project)
              (setq treemacs--project-of-buffer nil))))))))
+
+(define-inline treemacs--next-project-pos ()
+  "Get the position of the next project.
+Will return `point-max' if there is no next project."
+  (declare (side-effect-free t))
+  (inline-quote (next-single-char-property-change (point-at-eol) :project)))
 
 (define-inline treemacs--reset-project-positions ()
   "Reset `treemacs--project-positions'."
@@ -353,6 +361,56 @@ PROJECT, excluding newlines."
            (next  (treemacs--next-non-child-button (treemacs-project->position project)))
            (end   (if next (-> next (button-start) (previous-button) (button-end)) (point-max))))
       (cons start end))))
+
+(defun treemacs--consolidate-projects ()
+  "Correct treemacs buffers' content after the workspace was edited."
+  (treemacs-run-in-every-buffer
+   (let* ((current-file (--when-let (treemacs-current-button) (treemacs--nearest-path it)))
+          (current-workspace (treemacs-current-workspace))
+          ;; gather both the projects actually in the workspace ...
+          (projects-in-workspace (-> current-workspace (treemacs-workspace->projects)))
+          (projects-in-buffer))
+     (goto-char 0)
+     ;; ... as well as the projects currently show in the buffer
+     (push (treemacs-project-at-point) projects-in-buffer)
+     (let (next-pos)
+       (while (/= (point-max)
+                  (setq next-pos (treemacs--next-project-pos)))
+         (goto-char next-pos)
+         (push (treemacs-project-at-point) projects-in-buffer)))
+     ;; figure out which ones have been deleted and and remove them from the shadow index
+     (dolist (project-in-buffer projects-in-buffer)
+       (unless (--first (treemacs-is-path (treemacs-project->path project-in-buffer)
+                                          :same-as
+                                          (treemacs-project->path it))
+                        projects-in-workspace)
+         (treemacs-on-collapse (treemacs-project->path project-in-buffer) :purge)
+         (setq projects-in-buffer (delete project-in-buffer projects-in-buffer))))
+     (treemacs-with-writable-buffer
+      (treemacs--forget-last-highlight)
+      ;; delete everything's that's visible and render it again - the order of projects could
+      ;; have been changed
+      (erase-buffer)
+      (treemacs--render-projects projects-in-workspace)
+      (goto-char 0)
+      ;; re-expand the projects that were expanded before the consolidation
+      (let (next-pos)
+        (-let [btn (treemacs-current-button)]
+          (when (treemacs-get-from-shadow-index (treemacs-button-get btn :path))
+            (treemacs--expand-root-node btn)))
+        (while (/= (point-max)
+                   (setq next-pos (treemacs--next-project-pos)))
+          (goto-char next-pos)
+          (-let [btn (treemacs-current-button)]
+            (when (treemacs-get-from-shadow-index (treemacs-button-get btn :path))
+              (treemacs--expand-root-node btn))))))
+     ;; go back to the previous position
+     (if (and current-file
+              (treemacs-is-path current-file :in-workspace))
+         (treemacs-goto-file-node current-file)
+       (goto-char 0)
+       (treemacs--evade-image))
+     (hl-line-highlight))))
 
 (provide 'treemacs-workspaces)
 
