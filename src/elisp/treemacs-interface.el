@@ -941,7 +941,7 @@ Only works with a single project in the workspace."
   (require 'org)
   (require 'outline)
   (treemacs--persist)
-  (switch-to-buffer (get-buffer-create "*Edit Treemacs Workspaces*"))
+  (switch-to-buffer (get-buffer-create treemacs--org-edit-buffer-name))
   (erase-buffer)
   (org-mode)
   (insert "#+TITLE: Edit Treemacs Workspaces & Projects\n")
@@ -958,6 +958,7 @@ Only works with a single project in the workspace."
   (interactive)
   (cl-block body
     (widen)
+    (whitespace-cleanup)
     (-let [lines (treemacs--read-persist-lines (buffer-string))]
       (treemacs-error-return-if (null (buffer-string))
         "The buffer is empty, there is nothing here to save.")
@@ -969,7 +970,7 @@ Only works with a single project in the workspace."
          (kill-buffer)
          (treemacs--restore)
          (treemacs--consolidate-projects)
-         (-some-> (get-buffer "*Edit Treemacs Workspaces*") (kill-buffer))
+         (-some-> (get-buffer treemacs--org-edit-buffer-name) (kill-buffer))
          (treemacs-log "Edit completed successfully."))))))
 
 (provide 'treemacs-interface)

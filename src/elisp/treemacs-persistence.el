@@ -31,6 +31,9 @@
   (require 'inline)
   (require 'treemacs-macros))
 
+(defconst treemacs--org-edit-buffer-name "*Edit Treemacs Workspaces*"
+  "The name of the buffer used to edit treemacs' workspace.")
+
 (defconst treemacs--persist-kv-regex
   (rx bol
       (? " ")
@@ -189,7 +192,11 @@ CONTEXT: Keyword"
         (:project
          (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
            `(error ,(format "Line '%s' after project name is not a path declaration" line)))
-         (treemacs--validate-persist-lines (cdr lines) :property))
+         (-let [path (cadr (s-split " :: " line))]
+           (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
+                                    (not (file-exists-p path)))
+             `(error ,(format "File '%s' does not exist" path)))
+           (treemacs--validate-persist-lines (cdr lines) :property)))
         (:property
          (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
                (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
