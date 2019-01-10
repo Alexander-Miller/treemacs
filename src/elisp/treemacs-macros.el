@@ -331,27 +331,25 @@ Entry variables will bound based on NAMES which is a list of two elements."
       (lambda (,key-name ,val-name) ,@body)
       ,table)))
 
-(defmacro treemacs-error-return (predicate &optional error-msg &rest error-args)
-  "Simplifies the pattern of returning an error from a `cl-block' named 'body'.
-Supports two calling conventions:
-First by providing all arguments. The block will only be left when PREDICATE
-returns non-nil, ERROR-MSG and ERROR-ARGS will be passed to
-`treemacs-pulse-on-failure'.
-Second by providing a single string argument. In this case no test is made and
-the block is left directly with the given message being passed to
+(defmacro treemacs-error-return (error-msg &rest msg-args)
+  "Simplifies the pattern of an early failure in a `cl-block' named 'body'.
+Will pass ERROR-MSG and MSG-ARGS to `treemacs-pulse-on-failure'."
+  (declare (indent 1) (debug (form body)))
+  `(cl-return-from body
+     (treemacs-pulse-on-failure ,error-msg ,@msg-args)))
+
+(defmacro treemacs-error-return-if (predicate error-msg &rest msg-args)
+  "Simplifies the pattern of an early failure in a `cl-block' named 'body'.
+When PREDICATE returns non-nil value will pass ERROR-MSG and MSG-ARGS to
 `treemacs-pulse-on-failure'."
-  (declare (indent 1))
-  (if (and (stringp predicate)
-           (null error-msg))
-      `(cl-return-from body
-         (treemacs-pulse-on-failure ,predicate))
-    `(when ,predicate
-       (cl-return-from body
-         (treemacs-pulse-on-failure ,error-msg ,@error-args)))))
+  (declare (indent 1) (debug (form sexp body)))
+  `(when ,predicate
+     (cl-return-from body
+       (treemacs-pulse-on-failure ,error-msg ,@msg-args))))
 
 (defmacro treemacs-return-if (predicate ret)
-  "Simplifies the pattern of returning from a `cl-block' named 'body'.
-When PREDICATE returns non-nul RET will be returned."
+  "Simplifies the pattern of an early return from a `cl-block' named 'body'.
+When PREDICATE returns non-nil RET will be returned."
   (declare (indent 1) (debug (form sexp)))
   `(when ,predicate
      (cl-return-from body ,ret)))

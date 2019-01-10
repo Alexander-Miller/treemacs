@@ -365,14 +365,14 @@ likewise be updated."
              (new-path nil)
              (new-name nil)
              (dir nil))
-        (unless old-path
-          (treemacs-error-return "Found nothing to rename here."))
-        (unless (file-exists-p old-path)
-          (treemacs-error-return "The file to be renamed does not exist."))
+        (treemacs-error-return-if (null old-path)
+          "Found nothing to rename here.")
+        (treemacs-error-return-if (not (file-exists-p old-path))
+          "The file to be renamed does not exist.")
         (setq new-name (read-string "New name: " (file-name-nondirectory old-path))
               dir      (f-dirname old-path)
               new-path (f-join dir new-name))
-        (treemacs-error-return (file-exists-p new-path)
+        (treemacs-error-return-if (file-exists-p new-path)
           "A file named %s already exists."
           (propertize new-name 'face font-lock-string-face))
         (treemacs--without-filewatch (rename-file old-path new-path))
@@ -837,8 +837,8 @@ Only works with a single project in the workspace."
 Only works with a single project in the workspace."
   (interactive)
   (cl-block body
-    (treemacs-error-return (/= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
-      "Ad-hoc navigation is only possible when there is but a single project in the workspace.")
+    (treemacs-error-return-if (/= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
+      "Free navigation is only possible when there is but a single project in the workspace.")
     (treemacs-unless-let (btn (treemacs-current-button))
         (treemacs-pulse-on-failure
             "There is no directory to move into here.")
@@ -896,10 +896,10 @@ Only works with a single project in the workspace."
     (let* ((workspace (treemacs-current-workspace))
            (projects  (treemacs-workspace->projects workspace))
            (project1  (treemacs-project-at-point))
-           (index1    (or (treemacs-error-return (null project1) "There is nothing to move here.")
+           (index1    (or (treemacs-error-return-if (null project1) "There is nothing to move here.")
                           (-elem-index project1 projects)))
            (index2    (1- index1))
-           (project2  (or (treemacs-error-return (> 0 index2) "There is no project to transpose above.")
+           (project2  (or (treemacs-error-return-if (> 0 index2) "There is no project to transpose above.")
                           (nth index2 projects)))
            (bounds1  (treemacs--get-bounds-of-project project1))
            (bounds2  (treemacs--get-bounds-of-project project2)))
@@ -959,7 +959,7 @@ Only works with a single project in the workspace."
   (cl-block body
     (widen)
     (-let [lines (treemacs--read-persist-lines (buffer-string))]
-      (treemacs-error-return (null (buffer-string))
+      (treemacs-error-return-if (null (buffer-string))
         "The buffer is empty, there is nothing here to save.")
       (pcase (treemacs--validate-persist-lines lines)
         (`(error ,error-msg)

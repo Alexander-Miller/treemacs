@@ -93,21 +93,21 @@ fashion to `treemacs-find-file'.
 
 With a prefix argument ARG treemacs will also open the bookmarked location."
   (interactive "P")
-  (-let [bookmarks
-            (cl-loop
-             for b in bookmark-alist
-             for name = (car b)
-             for location = (bookmark-location b)
-             when (or (f-file? location) (f-directory? location))
-             collect (propertize name 'location location))]
-    (if (null bookmarks)
-        (treemacs-log "Didn't find any bookmarks pointing to files.")
+  (cl-block body
+    (-let [bookmarks
+           (cl-loop
+            for b in bookmark-alist
+            for name = (car b)
+            for location = (bookmark-location b)
+            when (or (f-file? location) (f-directory? location))
+            collect (propertize name 'location location))]
+      (treemacs-error-return-if (null bookmarks)
+        (treemacs-log "Didn't find any bookmarks pointing to files."))
       (let* ((bookmark (completing-read "Bookmark: " bookmarks))
              (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
              (dir (if (f-directory? location) location (f-dirname location)))
              (project (treemacs--find-project-for-path dir)))
-        (cl-block body
-          (treemacs-error-return (null project)
+          (treemacs-error-return-if (null project)
             "Bookmark at %s does not fall under any project in the workspace."
             (propertize location 'face 'font-lock-string-face))
           (pcase (treemacs-current-visibility)
@@ -116,7 +116,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
             ('none    (treemacs--init)))
           (treemacs-goto-file-node location project)
           (treemacs-pulse-on-success)
-          (when arg (treemacs-visit-node-no-split)))))))
+          (when arg (treemacs-visit-node-no-split))))))
 
 ;;;###autoload
 (defun treemacs-find-file (&optional arg)
@@ -160,11 +160,11 @@ visiting a file or Emacs cannot find any tags for the current file."
            (project (treemacs--find-project-for-buffer))
            (index (when buffer-file (treemacs--flatten&sort-imenu-index)))
            (treemacs-window nil))
-      (treemacs-error-return (null buffer-file)
+      (treemacs-error-return-if (null buffer-file)
         "Current buffer is not visiting a file.")
-      (treemacs-error-return (null index)
+      (treemacs-error-return-if (null index)
         "Current buffer has no tags.")
-      (treemacs-error-return (null project)
+      (treemacs-error-return-if (null project)
         "%s does not fall under any project in the workspace."
         (propertize buffer-file 'face 'font-lock-string-face))
       (save-selected-window

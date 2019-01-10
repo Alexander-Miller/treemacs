@@ -605,10 +605,8 @@ IS-FILE?: Bool"
                             (f-slash (if (f-dir? curr-path)
                                          curr-path
                                        (f-dirname curr-path)))))
-      (when (f-exists? path-to-create)
-        (treemacs-error-return t
-          "%s already exists."
-          (propertize path-to-create 'face 'font-lock-string-face)))
+      (treemacs-error-return-if (file-exists-p path-to-create)
+        "%s already exists." (propertize path-to-create 'face 'font-lock-string-face))
       (treemacs--without-filewatch
        (if is-file?
            (-let [dir (f-dirname path-to-create)]
