@@ -940,36 +940,36 @@
     (it "Fails when first line is not a workspace name"
       (-let [lines '("X")]
         (expect (treemacs--validate-persist-lines lines)
-                :to-equal '(error  "First line 'X' is not a workspace name"))))
+                :to-equal '(error "X" "First item must be a workspace name"))))
 
     (it "Fails when line after workspace name is not a project name"
       (-let [lines '("* X" "Y")]
         (expect (treemacs--validate-persist-lines lines)
-                :to-equal '(error  "Line 'Y' after workspace name is not a project name"))))
+                :to-equal '(error  "Y" "Workspace name must be followed by project name"))))
 
     (it "Fails when line after project name is not a property"
       (-let [lines '("* X" "** Y" "Z")]
         (expect (treemacs--validate-persist-lines lines)
-                :to-equal '(error  "Line 'Z' after project name is not a path declaration"))))
+                :to-equal '(error  "Z" "Project name must be followed by path declaration"))))
 
     (it "Fails when line after path is not a project or workspace"
       (-let [lines '("* X" "** Y" " - path :: Z" "A")]
         (expect (treemacs--validate-persist-lines lines)
-                :to-equal '(error  "Line 'A' after property must be the name of the next project or workspace"))))
+                :to-equal '(error "A" "Path property must be followed by the next workspace or project"))))
 
     (it "Fails when line end at workspace name"
       (-let [lines '("* X")]
         (expect (treemacs--validate-persist-lines lines)
-                :to-equal '(error  "Cannot end with a project or workspace name"))))
+                :to-equal '(error :end "Cannot end with a project or workspace name"))))
 
     (it "Fails when line end at project name"
       (-let [lines '("* X" "** X")]
         (expect (treemacs--validate-persist-lines lines)
-                :to-equal '(error  "Cannot end with a project or workspace name"))))
+                :to-equal '(error :end  "Cannot end with a project or workspace name"))))
 
     (it "Fails when input is empty"
       (expect (treemacs--validate-persist-lines nil)
-              :to-equal '(error  "Input is empty")))))
+              :to-equal '(error :start "Input is empty")))))
 
 (provide 'test-treemacs)
 
