@@ -957,6 +957,7 @@ Only works with a single project in the workspace."
   "Finish editing your workspaces and apply the change."
   (interactive)
   (cl-block body
+    (treemacs--org-edit-remove-validation-msg)
     (widen)
     (whitespace-cleanup)
     (-let [lines (treemacs--read-persist-lines (buffer-string))]
