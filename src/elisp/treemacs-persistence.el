@@ -151,15 +151,15 @@ ITER: Treemacs-Iter struct"
       (error (treemacs-log "Error '%s' when persisting workspace." e)))))
 
 (defun treemacs--read-persist-lines (&optional txt)
-  "Read the relevant lines from given TXT or `treemacs-persist-file'."
-  (-when-let (str (-some-> (or txt (when (file-exists-p treemacs-persist-file)
+  "Read the relevant lines from given TXT or `treemacs-persist-file'.
+Will read all lines, except those that start with # or contain only whitespace."
+  (-when-let (lines (-some-> (or txt (when (file-exists-p treemacs-persist-file)
                                      (f-read treemacs-persist-file)))
                            (s-trim)
                            (s-lines)))
-    (--filter (or (s-matches? treemacs--persist-kv-regex it)
-                  (s-matches? treemacs--persist-project-name-regex it)
-                  (s-matches? treemacs--persist-workspace-name-regex it))
-              str)))
+    (--reject (or (s-blank-str? it)
+                  (s-starts-with? "#" it))
+              lines)))
 
 (cl-defun treemacs--validate-persist-lines (lines &optional (context :start))
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.

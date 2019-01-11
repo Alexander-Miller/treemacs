@@ -971,6 +971,20 @@
       (expect (treemacs--validate-persist-lines nil)
               :to-equal '(error :start "Input is empty")))))
 
+(describe "treemacs--read-persist-lines"
+
+  (it "Ignores commentes"
+    (expect (treemacs--read-persist-lines "#\n#\n#") :to-be nil))
+
+  (it "Ignores blanks"
+    (expect (treemacs--read-persist-lines "   \n \n \t \t   ") :to-be nil))
+
+  (it "Reads everything else"
+    (expect (treemacs--read-persist-lines
+             (concat "#Foo: Bar\n" "\n" "* Workspace\n" "\t\n" "** Project\n" "#Comment\n" " - path :: /x\n"))
+            :to-equal
+            '("* Workspace" "** Project" " - path :: /x"))))
+
 (provide 'test-treemacs)
 
 ;;; test-treemacs.el ends here
