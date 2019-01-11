@@ -422,8 +422,6 @@ PROJECT, excluding newlines."
       (:start
        (goto-char 0)
        (forward-line (if treemacs-show-edit-workspace-help 4 2)))
-      (:end
-       (goto-char (point-max)))
       (_
        (goto-char 0)
        (search-forward line)))

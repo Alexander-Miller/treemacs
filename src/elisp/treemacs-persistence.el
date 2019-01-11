@@ -165,7 +165,7 @@ Will read all lines, except those that start with # or contain only whitespace."
                   (s-starts-with? "#" it))
               lines)))
 
-(cl-defun treemacs--validate-persist-lines (lines &optional (context :start))
+(cl-defun treemacs--validate-persist-lines (lines &optional (context :start) (prev nil))
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.
 Lines must start with a workspace name, followed by a project name, followed by
 the project's path property, followed by either the next project or the next
@@ -173,7 +173,10 @@ workspace.
 
 A successful validation returns just the symbol 'success, in case of an error a
 list of 3 items is returned: the symbol 'error, the exact line where the error
-happened, and the error message.
+happened, and the error message. In some circumstances (for example when a
+project is missing a path property) it makes sense to display the error not in
+the currently looked at line, but the one above, which is why the previously
+looked at line PREV is given as well.
 
 In this case a list is returned. The first item is the symbol 'error. The second
 item is the exact line where the error was found. This allows to find the error's
@@ -193,37 +196,37 @@ CONTEXT: Keyword"
                (list 'error :start (as-warning "Input is empty"))))
             (_
              (cl-return-from body
-               (list 'error :end (as-warning "Cannot end with a project or workspace name")))))
+               (list 'error prev (as-warning "Cannot end with a project or workspace name")))))
         (pcase context
           (:start
            (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
              `(error ,line ,(as-warning "First item must be a workspace name")))
-           (treemacs--validate-persist-lines (cdr lines) :workspace))
+           (treemacs--validate-persist-lines (cdr lines) :workspace line))
           (:workspace
            (treemacs-return-if (not (s-matches? treemacs--persist-project-name-regex line))
              `(error ,line ,(as-warning "Workspace name must be followed by project name")))
-           (treemacs--validate-persist-lines (cdr lines) :project))
+           (treemacs--validate-persist-lines (cdr lines) :project line))
           (:project
            (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
-             `(error ,line ,(as-warning "Project name must be followed by path declaration")))
+             `(error ,prev ,(as-warning "Project name must be followed by path declaration")))
            (-let [path (cadr (s-split " :: " line))]
              ;; path not existing is only a hard error when org-editing, when loading on boot
              ;; it's just a warning and the project will be ignored
              (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
                                       (not (file-exists-p path)))
                `(error ,line ,(format (as-warning "File '%s' does not exist") (propertize path 'face 'font-lock-string-face))))
-             (treemacs--validate-persist-lines (cdr lines) :property)))
+             (treemacs--validate-persist-lines (cdr lines) :property line)))
           (:property
            (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
                  (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
              (cond
               (line-is-workspace-name
-               (treemacs--validate-persist-lines (cdr lines) :workspace))
+               (treemacs--validate-persist-lines (cdr lines) :workspace line))
               (line-is-project-name
-               (treemacs--validate-persist-lines (cdr lines) :project))
+               (treemacs--validate-persist-lines (cdr lines) :project line))
               (t
                (treemacs-return-if (-none? #'identity (list line-is-workspace-name line-is-project-name))
-                 `(error ,line ,(as-warning "Path property must be followed by the next workspace or project"))))))))))))
+                 `(error ,prev ,(as-warning "Path property must be followed by the next workspace or project"))))))))))))
 
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs-persist-file'."
