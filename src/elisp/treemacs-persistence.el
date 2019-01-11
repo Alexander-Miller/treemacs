@@ -34,6 +34,10 @@
 (defconst treemacs--org-edit-buffer-name "*Edit Treemacs Workspaces*"
   "The name of the buffer used to edit treemacs' workspace.")
 
+(defconst treemacs--last-error-persist-file
+  (f-join user-emacs-directory ".cache" "treemacs-persist-at-last-error")
+  "File that stores the treemacs state as it was during the last load error.")
+
 (defconst treemacs--persist-kv-regex
   (rx bol
       (? " ")
@@ -224,20 +228,36 @@ CONTEXT: Keyword"
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs-persist-file'."
   (unless (treemacs--should-not-run-persistence?)
-    (condition-case e
-        (-when-let (lines (treemacs--read-persist-lines))
+    (-when-let (lines (treemacs--read-persist-lines))
+      (condition-case e
           (pcase (treemacs--validate-persist-lines lines)
             ('success
              (setf treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list lines))
                    (treemacs-current-workspace) (car treemacs--workspaces)))
             (`(error ,line ,error-msg)
-             (treemacs-log "Could not restore saved state, %s:\n%s"
+             (treemacs--write-error-persist-state lines (format "'%s' in line '%s'" error-msg line))
+             (treemacs-log "Could not restore saved state, %s:\n%s\n%s"
                            (pcase line
                              (:start "found error in the first line")
                              (:end "found error in the last line")
                              (other (format "found error in line '%s'" other)))
-                           error-msg))))
-      (error (treemacs-log "Error '%s' when loading the persisted workspace." e)))))
+                           error-msg
+                           (format "Broken state was saved to %s"
+                                   (propertize treemacs--last-error-persist-file 'face 'font-lock-string-face)))))
+        (error
+         (progn
+           (treemacs--write-error-persist-state lines e)
+           (treemacs-log "Error '%s' when loading the persisted workspace.\n%s"
+                         e
+                         (format "Broken state was saved to %s"
+                                 (propertize treemacs--last-error-persist-file 'face 'font-lock-string-face)))))))))
+
+(defun treemacs--write-error-persist-state (lines error)
+  "Write broken state LINES and ERROR to `treemacs--last-error-persist-file'."
+  (-let [txt (concat (format "# State when last error occured on %s\n" (format-time-string "%F %T"))
+                     (format "# Error was %s\n\n" error)
+                     (apply #'concat (--map (concat it "\n") lines)))]
+    (f-write txt 'utf-8 treemacs--last-error-persist-file)))
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
 
