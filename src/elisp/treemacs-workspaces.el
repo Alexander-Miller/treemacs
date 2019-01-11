@@ -49,6 +49,9 @@
 
 (defvar treemacs--workspaces (list (make-treemacs-workspace :name "Default Workspace")))
 
+(defvar-local treemacs--org-err-ov nil
+  "The overlay that will display validations when org-editing.")
+
 (defvar-local treemacs--project-positions nil)
 
 (defvar-local treemacs--project-of-buffer nil
@@ -411,6 +414,30 @@ PROJECT, excluding newlines."
        (goto-char 0)
        (treemacs--evade-image))
      (hl-line-highlight))))
+
+(defun treemacs--org-edit-display-validation-msg (message line)
+  "Display an inline validation MESSAGE in LINE when org-editing."
+  (save-excursion
+    (pcase line
+      (:start
+       (goto-char 0)
+       (forward-line (if treemacs-show-edit-workspace-help 4 2)))
+      (:end
+       (goto-char (point-max)))
+      (_
+       (goto-char 0)
+       (search-forward line)))
+    (setf treemacs--org-err-ov (make-overlay (point-at-eol) (point-at-eol)))
+    (overlay-put treemacs--org-err-ov 'after-string
+                 (concat (propertize " ← " 'face 'error) message))
+    (add-hook 'after-change-functions #'treemacs--org-edit-remove-validation-msg nil :local)))
+
+(defun treemacs--org-edit-remove-validation-msg (&rest _)
+  "Remove the validation message overlay."
+  (when (and treemacs--org-err-ov
+             (overlayp treemacs--org-err-ov))
+    (delete-overlay treemacs--org-err-ov))
+  (remove-hook 'after-change-functions #'treemacs--org-edit-remove-validation-msg :local))
 
 (provide 'treemacs-workspaces)
 

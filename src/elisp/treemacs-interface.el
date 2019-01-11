@@ -963,8 +963,8 @@ Only works with a single project in the workspace."
       (treemacs-error-return-if (null (buffer-string))
         "The buffer is empty, there is nothing here to save.")
       (pcase (treemacs--validate-persist-lines lines)
-        (`(error ,error-msg)
-         (treemacs-error-return "Cannot finish edit:\n%s" error-msg))
+        (`(error ,err-line ,err-msg)
+         (treemacs--org-edit-display-validation-msg err-msg err-line))
         ('success
          (f-write (apply #'concat (--map (concat it "\n") lines)) 'utf-8 treemacs-persist-file)
          (kill-buffer)
