@@ -260,6 +260,9 @@ to it will instead show a blank."
               ((memq 'moody-mode-line-buffer-identification
                      (default-value 'mode-line-format))
                '(:eval (moody-tab " Treemacs " 10 'down)))
+              ((fboundp 'doom-modeline-def-modeline)
+               (doom-modeline-def-modeline 'treemacs '(bar " " major-mode))
+               (doom-modeline 'treemacs))
               (t
                '(" Treemacs ")))))
 
