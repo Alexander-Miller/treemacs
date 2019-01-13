@@ -195,6 +195,25 @@ treemacs buffer for this frame."
       (locate-file (list treemacs-dir))
       (find-file-existing)))
 
+;;;###autoload
+(defun treemacs-edit-workspaces ()
+  "Edit your treemacs workspaces and projects as an `org-mode' file."
+  (interactive)
+  (require 'org)
+  (require 'outline)
+  (treemacs--persist)
+  (switch-to-buffer (get-buffer-create treemacs--org-edit-buffer-name))
+  (erase-buffer)
+  (org-mode)
+  (insert "#+TITLE: Edit Treemacs Workspaces & Projects\n")
+  (when treemacs-show-edit-workspace-help
+    (insert "# Call ~treemacs-finish-edit~ when done.\n")
+    (insert "# [[http://www.THERE-IS-NO-DOCUMENTATION-YET.com][Click here for detailed documentation.]]\n\n"))
+  (insert-file-contents treemacs-persist-file)
+  (with-no-warnings
+    (outline-show-all))
+  (goto-char 0))
+
 (provide 'treemacs)
 
 ;;; treemacs.el ends here
