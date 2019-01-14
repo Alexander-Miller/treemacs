@@ -29,15 +29,19 @@
 (require 'projectile)
 
 ;;;###autoload
-(defun treemacs-projectile ()
-  "Add one of `projectile-known-projects' to the treemacs workspace."
+(defun treemacs-projectile (&optional arg)
+  "Add one of `projectile-known-projects' to the treemacs workspace.
+With a prefix ARG was for the name of the project instead of using the name of
+the project's root directory."
   (interactive)
   (if (and (bound-and-true-p projectile-known-projects)
            (listp projectile-known-projects)
            projectile-known-projects)
-      (-let [projects (--reject (treemacs-is-path it :in-workspace (treemacs-current-workspace))
-                                (-map #'treemacs--unslash projectile-known-projects))]
-        (treemacs--init (completing-read "Project: " projects)))
+      (let* ((projects (--reject (treemacs-is-path it :in-workspace (treemacs-current-workspace))
+                                 (-map #'treemacs--unslash projectile-known-projects)))
+             (project (completing-read "Project: " projects)))
+        (treemacs--init project
+                        (unless arg (treemacs--filename project))))
     (treemacs-pulse-on-failure "It looks like projectile does not know any projects.")))
 
 (define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
@@ -47,10 +51,11 @@
 This version will read a directory based on the current project root instead of
 the current dir."
   (when (treemacs-workspace->is-empty?)
-    (read-directory-name "Project root: "
-                         (condition-case _
-                             (projectile-project-root)
-                           (error nil)))))
+    (file-truename
+     (read-directory-name "Project root: "
+                          (condition-case _
+                              (projectile-project-root)
+                            (error nil))))))
 
 (provide 'treemacs-projectile)
 

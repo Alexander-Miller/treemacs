@@ -250,7 +250,7 @@ Return values may be as follows:
 PATH: Filepath
 NAME: String"
   (cl-block body
-    (setq path (treemacs--canonical-path path))
+    (setq path (-> path (file-truename) (treemacs--canonical-path)))
     (-when-let (project (treemacs--find-project-for-path path))
         (cl-return-from body
           `(duplicate-project ,project)))

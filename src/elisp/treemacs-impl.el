@@ -503,9 +503,9 @@ buffer."
         (push btn ret)))
     (nreverse ret)))
 
-(defun treemacs--init (&optional root)
+(defun treemacs--init (&optional root name)
   "Initialize a treemacs buffer from the current workspace.
-Add a project for ROOT if it's non-nil."
+Add a project for ROOT and NAME if they are non-nil."
   (let ((origin-buffer (current-buffer))
         (current-workspace (treemacs-current-workspace)))
     (pcase (treemacs-current-visibility)
@@ -525,7 +525,7 @@ Add a project for ROOT if it's non-nil."
                (treemacs-do-add-project-to-workspace))
          (treemacs--render-projects (treemacs-workspace->projects current-workspace)))
        (goto-char 2)))
-    (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root)))
+    (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root) name))
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
@@ -1014,7 +1014,7 @@ This function is extracted here specifically so that treemacs-projectile can
 overwrite it so as to present the project root instead of the current dir as the
 first choice."
   (when (treemacs-workspace->is-empty?)
-    (read-directory-name "Project root: ")))
+    (file-truename (read-directory-name "Project root: "))))
 
 (defun treemacs--sort-value-selection ()
   "Interactive selection for a new `treemacs-sorting' value.
