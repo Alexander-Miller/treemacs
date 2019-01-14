@@ -618,6 +618,7 @@ By default Treemacs's keymap looks as follows:
 | b             | treemacs-add-bookmark                       | Bookmark the currently selected files's, dir's or tag's location.                                              |
 | h             | treemacs-root-up                            | Move treemacs' root one level upward. Only works with a single project in the workspace.                       |
 | l             | treemacs-root-down                          | Move treemacs' root into the directory at point. Only works with a single project in the workspace.            |
+| H             | treemacs-collapse-parent-node               | Collapse the parent of the node at point.                                                                     |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting to

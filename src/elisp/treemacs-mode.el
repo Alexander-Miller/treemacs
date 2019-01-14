@@ -111,6 +111,7 @@ to it will instead show a blank."
              (key-add-project    (treemacs--find-keybind #'treemacs-add-project-to-workspace))
              (key-remove-project (treemacs--find-keybind #'treemacs-remove-project-from-workspace))
              (key-rename-project (treemacs--find-keybind #'treemacs-rename-project))
+             (key-close-above    (treemacs--find-keybind #'treemacs-collapse-parent-node))
              (hydra-str
               (format
                "
@@ -126,6 +127,7 @@ to it will instead show a blank."
 %s up next window   │ %s open ace horizontal │                    │                         │                       │
                         │ %s open ace vertical   │                    │                         │                       │
                         │ %s open externally     │                    │                         │                       │
+                        │ %s close parent        │                    │                         │                       │
 "
                title
                column-nav               column-nodes          column-files           column-toggles          column-projects          column-misc
@@ -138,6 +140,7 @@ to it will instead show a blank."
                (car key-up-next-w)      (car key-open-ace-h)
                                         (car key-open-ace-v)
                                         (car key-open-ext)
+                                        (car key-close-above)
                )))
           (eval
            `(defhydra treemacs--helpful-hydra (:exit nil :hint nil :columns 5)
@@ -177,6 +180,7 @@ to it will instead show a blank."
               (,(cdr key-add-project)    #'treemacs-add-project-to-workspace)
               (,(cdr key-remove-project) #'treemacs-remove-project-from-workspace)
               (,(cdr key-rename-project) #'treemacs-rename-project)
+              (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
               ("?" nil "Exit"))))
         (treemacs--helpful-hydra/body))
     (treemacs-log "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
@@ -244,6 +248,7 @@ to it will instead show a blank."
       (define-key map (kbd "C-k")       #'treemacs-previous-project)
       (define-key map (kbd "h")         #'treemacs-root-up)
       (define-key map (kbd "l")         #'treemacs-root-down)
+      (define-key map (kbd "H")         #'treemacs-collapse-parent-node)
       map)
     "Keymap for `treemacs-mode'."))
 
@@ -260,7 +265,8 @@ to it will instead show a blank."
               ((memq 'moody-mode-line-buffer-identification
                      (default-value 'mode-line-format))
                '(:eval (moody-tab " Treemacs " 10 'down)))
-              ((fboundp 'doom-modeline-def-modeline)
+              ((and (fboundp 'doom-modeline)
+                    (fboundp 'doom-modeline-def-modeline))
                (doom-modeline-def-modeline 'treemacs '(bar " " major-mode))
                (doom-modeline 'treemacs))
               (t

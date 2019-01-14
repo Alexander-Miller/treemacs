@@ -956,6 +956,20 @@ Only works with a single project in the workspace."
          (-some-> (get-buffer treemacs--org-edit-buffer-name) (kill-buffer))
          (treemacs-log "Edit completed successfully."))))))
 
+(defun treemacs-collapse-parent-node (arg)
+  "Close the parent of the node at point.
+Prefix ARG will be passed on to the closing function
+\(see `treemacs-toggle-node'.\)"
+  (interactive "P")
+  (-if-let* ((btn (treemacs-current-button))
+             (parent (button-get btn :parent)))
+      (progn
+        (goto-char parent)
+        (treemacs-toggle-node arg)
+        (treemacs--evade-image))
+    (treemacs-pulse-on-failure
+        (if btn "Already at root." "There is nothing to close here."))))
+
 (provide 'treemacs-interface)
 
 ;;; treemacs-interface.el ends here

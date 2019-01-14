@@ -62,6 +62,7 @@
 (define-key evil-treemacs-state-map (kbd "b")   #'treemacs-add-bookmark)
 (define-key evil-treemacs-state-map (kbd "?")   #'treemacs-helpful-hydra)
 (define-key evil-treemacs-state-map (kbd "RET") #'treemacs-RET-action)
+(define-key evil-treemacs-state-map (kbd "H")   #'treemacs-collapse-parent-node)
 
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yr")     #'treemacs-copy-project-root)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yy")     #'treemacs-copy-path-at-point)
