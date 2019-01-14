@@ -21,11 +21,12 @@
 ;;; Code:
 
 (require 'xref)
+(require 'easymenu)
+(require 'hl-line)
 (require 'treemacs-impl)
 (require 'treemacs-tags)
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)
-(require 'easymenu)
 (eval-and-compile (require 'treemacs-macros))
 
 (defun treemacs-leftclick-action (event)
@@ -186,44 +187,55 @@ ignore any prefix argument."
 (defun treemacs-rightclick-menu (event)
   "Show a contextual right click menu based on click EVENT."
   (interactive "e")
-  (goto-char (posn-point (cadr event)))
-  (let* ((node    (treemacs-node-at-point))
-         (project (treemacs-project-at-point))
-         (menu
-          (easy-menu-create-menu
-           "Treemacs"
-           `(["Open"   treemacs-visit-node-no-split :visible (not (null ,node))]
-             ("Open With" :visible (not (null ,node))
-              ["Open Directly"              treemacs-visit-node-no-split]
-              ["Open With Vertical Split"   treemacs-visit-node-vertical-split]
-              ["Open With Horizontal Split" treemacs-visit-node-horizontal-split])
-             ("File Management"
-              ["Rename"           treemacs-rename :visible (not (null ,node))]
-              ["Delete"           treemacs-delete :visible (not (null ,node))]
-              ["Create File"      treemacs-create-file]
-              ["Create Directory" treemacs-create-dir])
-             ("Projects"
-              ["Add Project"            treemacs-add-project]
-              ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
-              ["Remove Project"         treemacs-remove-project-from-workspace :visible (not (null ,project))]
-              ["Rename Project"         treemacs-rename-project                :visible (not (null ,project))])
-             ("Toggles"
-              ["Dotfile Visibility" treemacs-toggle-show-dotfiles]
-              [,(format "Follow-Mode (Currently %s)"
-                        (if treemacs-follow-mode "Enabled" "Disabled"))
-               treemacs-follow-mode]
-              [,(format "Filewatch-Mode (Currently %s)"
-                        (if treemacs-filewatch-mode "Enabled" "Disabled"))
-               treemacs-filewatch-mode]
-              [,(format "Fringe-Indicator-Mode (Currently %s)"
-                        (if treemacs-fringe-indicator-mode "Enabled" "Disabled"))
-               treemacs-fringe-indicator-mode])
-             ("Help"
-              ["Show Helpful Hydra"     treemacs-helpful-hydra]
-              ["Show Active Extensions" treemacs-show-extensions]
-              ["Show Changelog"         treemacs-show-changelog]))))
-         (choice (x-popup-menu event menu)))
-    (when choice (call-interactively (lookup-key menu (apply 'vector choice))))))
+  (treemacs-without-following
+   (unless (eq major-mode 'treemacs-mode)
+     ;; no when-let - the window must exist or this function would not be called
+     (select-window (treemacs-get-local-window)))
+   (goto-char (posn-point (cadr event)))
+   (hl-line-highlight)
+   ;; need this timer workaround because otherwise point and hl-line
+   ;; don't move properly
+   (run-with-idle-timer
+    0.001 nil
+    (lambda ()
+      (let* ((node    (treemacs-node-at-point))
+             (project (treemacs-project-at-point))
+             (menu
+              (easy-menu-create-menu
+               "Treemacs"
+               `(["Open"   treemacs-visit-node-no-split :visible (not (null ,node))]
+                 ("Open With" :visible (not (null ,node))
+                  ["Open Directly"              treemacs-visit-node-no-split]
+                  ["Open With Vertical Split"   treemacs-visit-node-vertical-split]
+                  ["Open With Horizontal Split" treemacs-visit-node-horizontal-split])
+                 ("File Management"
+                  ["Rename"           treemacs-rename :visible (not (null ,node))]
+                  ["Delete"           treemacs-delete :visible (not (null ,node))]
+                  ["Create File"      treemacs-create-file]
+                  ["Create Directory" treemacs-create-dir])
+                 ("Projects"
+                  ["Add Project"            treemacs-add-project]
+                  ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
+                  ["Remove Project"         treemacs-remove-project-from-workspace :visible (not (null ,project))]
+                  ["Rename Project"         treemacs-rename-project                :visible (not (null ,project))])
+                 ("Toggles"
+                  ["Dotfile Visibility" treemacs-toggle-show-dotfiles]
+                  [,(format "Follow-Mode (Currently %s)"
+                            (if treemacs-follow-mode "Enabled" "Disabled"))
+                   treemacs-follow-mode]
+                  [,(format "Filewatch-Mode (Currently %s)"
+                            (if treemacs-filewatch-mode "Enabled" "Disabled"))
+                   treemacs-filewatch-mode]
+                  [,(format "Fringe-Indicator-Mode (Currently %s)"
+                            (if treemacs-fringe-indicator-mode "Enabled" "Disabled"))
+                   treemacs-fringe-indicator-mode])
+                 ("Help"
+                  ["Show Helpful Hydra"     treemacs-helpful-hydra]
+                  ["Show Active Extensions" treemacs-show-extensions]
+                  ["Show Changelog"         treemacs-show-changelog])
+                 )))
+             (choice (x-popup-menu event menu)))
+        (when choice (call-interactively (lookup-key menu (apply 'vector choice)))))))))
 
 (provide 'treemacs-mouse-interface)
 
