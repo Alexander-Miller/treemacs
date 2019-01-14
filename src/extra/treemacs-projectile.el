@@ -37,11 +37,23 @@ the project's root directory."
   (if (and (bound-and-true-p projectile-known-projects)
            (listp projectile-known-projects)
            projectile-known-projects)
-      (let* ((projects (--reject (treemacs-is-path it :in-workspace (treemacs-current-workspace))
+      (let* ((projects (--reject (treemacs-is-path (treemacs--canonical-path it) :in-workspace (treemacs-current-workspace))
                                  (-map #'treemacs--unslash projectile-known-projects)))
-             (project (completing-read "Project: " projects)))
-        (treemacs--init project
-                        (unless arg (treemacs--filename project))))
+             (path (completing-read "Project: " projects))
+             (name (unless arg (treemacs--filename path))))
+        (if (treemacs-workspace->is-empty?)
+            (treemacs--init path name)
+          (save-selected-window
+            (treemacs-select-window)
+            ;; not casing the full error list since some are excluded
+            (pcase (treemacs-do-add-project-to-workspace path name)
+              (`(success ,project)
+               (treemacs-pulse-on-success "Added project %s to the workspace."
+                 (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))
+              (`(duplicate-name ,duplicate)
+               (goto-char (treemacs-project->position duplicate))
+               (treemacs-pulse-on-failure "A project with the name %s already exists."
+                 (propertize (treemacs-project->name duplicate) 'face 'font-lock-type-face)))))))
     (treemacs-pulse-on-failure "It looks like projectile does not know any projects.")))
 
 (define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
