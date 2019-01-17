@@ -198,44 +198,58 @@ ignore any prefix argument."
    (run-with-idle-timer
     0.001 nil
     (lambda ()
-      (let* ((node    (treemacs-node-at-point))
-             (project (treemacs-project-at-point))
-             (menu
-              (easy-menu-create-menu
-               "Treemacs"
-               `(["Open"   treemacs-visit-node-no-split :visible (not (null ,node))]
-                 ("Open With" :visible (not (null ,node))
-                  ["Open Directly"              treemacs-visit-node-no-split]
-                  ["Open With Vertical Split"   treemacs-visit-node-vertical-split]
-                  ["Open With Horizontal Split" treemacs-visit-node-horizontal-split])
-                 ("File Management"
-                  ["Rename"           treemacs-rename :visible (not (null ,node))]
-                  ["Delete"           treemacs-delete :visible (not (null ,node))]
-                  ["Create File"      treemacs-create-file]
-                  ["Create Directory" treemacs-create-dir])
-                 ("Projects"
-                  ["Add Project"            treemacs-add-project]
-                  ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
-                  ["Remove Project"         treemacs-remove-project-from-workspace :visible (not (null ,project))]
-                  ["Rename Project"         treemacs-rename-project                :visible (not (null ,project))])
-                 ("Toggles"
-                  ["Dotfile Visibility" treemacs-toggle-show-dotfiles]
-                  [,(format "Follow-Mode (Currently %s)"
-                            (if treemacs-follow-mode "Enabled" "Disabled"))
-                   treemacs-follow-mode]
-                  [,(format "Filewatch-Mode (Currently %s)"
-                            (if treemacs-filewatch-mode "Enabled" "Disabled"))
-                   treemacs-filewatch-mode]
-                  [,(format "Fringe-Indicator-Mode (Currently %s)"
-                            (if treemacs-fringe-indicator-mode "Enabled" "Disabled"))
-                   treemacs-fringe-indicator-mode])
-                 ("Help"
-                  ["Show Helpful Hydra"     treemacs-helpful-hydra]
-                  ["Show Active Extensions" treemacs-show-extensions]
-                  ["Show Changelog"         treemacs-show-changelog])
-                 )))
-             (choice (x-popup-menu event menu)))
-        (when choice (call-interactively (lookup-key menu (apply 'vector choice)))))))))
+      (cl-labels ((check (value) (not (null value))))
+        (let* ((node    (treemacs-node-at-point))
+               (state   (-some-> node (treemacs-button-get :state)))
+               (project (treemacs-project-at-point))
+               (menu
+                (easy-menu-create-menu
+                 nil
+                 `(("New"
+                    ["New File"      treemacs-create-file]
+                    ["New Directory" treemacs-create-dir])
+                   ["Open"   treemacs-visit-node-no-split :visible ,(check node)]
+                   ("Open With" :visible ,(not (null node))
+                    ["Open Directly"                    treemacs-visit-node-no-split]
+                    ["Open With Vertical Split"         treemacs-visit-node-vertical-split]
+                    ["Open With Horizontal Split"       treemacs-visit-node-horizontal-split]
+                    ["Open With Ace"                    treemacs-visit-node-ace]
+                    ["Open With Ace & Vertical Split"   treemacs-visit-node-ace-vertical-split]
+                    ["Open With Ace & Horizontal Split" treemacs-visit-node-ace-horizontal-split])
+                   ["Open Tags"  treemacs-toggle-node :visible ,(check (memq state '(file-node-closed tag-node-closed)))]
+                   ["Close Tags" treemacs-toggle-node :visible ,(check (memq state '(file-node-open tag-node-open)))]
+
+                   ["--" #'ignore                      :visible ,(check node)]
+                   ["Rename"           treemacs-rename :visible ,(check node)]
+                   ["Delete"           treemacs-delete :visible ,(check node)]
+
+                   ["--" #'ignore t]
+                   ("Projects"
+                    ;; TODO(2019/01/17): Edit with Org
+                    ["Add Project"            treemacs-add-project]
+                    ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
+                    ["Remove Project"         treemacs-remove-project-from-workspace :visible ,(check project)]
+                    ["Rename Project"         treemacs-rename-project                :visible ,(check project)])
+                   ("Toggles"
+                    [,(format "Dotfile Visibility (Currently %s)"
+                              (if treemacs-show-hidden-files "Enabled" "Disabled"))
+                     treemacs-toggle-show-dotfiles]
+                    [,(format "Follow-Mode (Currently %s)"
+                              (if treemacs-follow-mode "Enabled" "Disabled"))
+                     treemacs-follow-mode]
+                    [,(format "Filewatch-Mode (Currently %s)"
+                              (if treemacs-filewatch-mode "Enabled" "Disabled"))
+                     treemacs-filewatch-mode]
+                    [,(format "Fringe-Indicator-Mode (Currently %s)"
+                              (if treemacs-fringe-indicator-mode "Enabled" "Disabled"))
+                     treemacs-fringe-indicator-mode])
+                   ("Help"
+                    ["Show Helpful Hydra"     treemacs-helpful-hydra]
+                    ["Show Active Extensions" treemacs-show-extensions]
+                    ["Show Changelog"         treemacs-show-changelog]))))
+               (choice (x-popup-menu event menu)))
+          (when choice (call-interactively (lookup-key menu (apply 'vector choice))))
+          (hl-line-highlight)))))))
 
 (provide 'treemacs-mouse-interface)
 
