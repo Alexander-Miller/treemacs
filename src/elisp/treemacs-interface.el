@@ -79,7 +79,7 @@ everything that was expanded below that node.
 
 Since tags cannot be opened or closed a goto definition action will called on
 them instead."
-  (interactive)
+  (interactive "P")
   (treemacs-do-for-button-state
    :on-root-node-open   (treemacs--collapse-root-node btn arg)
    :on-root-node-closed (treemacs--expand-root-node btn)
@@ -154,7 +154,7 @@ This function's exact configuration is stored in `treemacs-TAB-actions-config'."
   "Select previous node at the same depth as currently selected node, if possible."
   (interactive)
   (or (-some-> (treemacs-current-button)
-               (treemacs--prev-neighbour-of)
+               (treemacs--prev-non-child-button)
                (goto-char))
       (treemacs-pulse-on-failure)))
 
@@ -400,10 +400,10 @@ itself, using $HOME when there is no path at or near pooint to grab."
   "Toggle the hiding and displaying of dotfiles."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
-  (--each (-map #'cdr treemacs--buffer-access) (treemacs--do-refresh it 'all))
-  (treemacs-log (concat "Dotfiles will now be "
-                        (if treemacs-show-hidden-files
-                            "displayed." "hidden."))))
+  (treemacs-run-in-every-buffer
+   (treemacs--do-refresh (current-buffer) 'all))
+  (treemacs-log "Dotfiles will now be %s"
+                (if treemacs-show-hidden-files "displayed." "hidden.")))
 
 (defun treemacs-toggle-fixed-width ()
   "Toggle whether the treemacs buffer should have a fixed width.
@@ -741,9 +741,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
   (interactive)
   (treemacs-unless-let (btn (treemacs-current-button))
       (treemacs-log "There is nothing to refresh.")
-    (treemacs--do-refresh (current-buffer) (treemacs-project-of-node btn))
-    (unless (pos-visible-in-window-p)
-      (recenter))))
+    (treemacs--do-refresh (current-buffer) (treemacs-project-of-node btn))))
 
 (defun treemacs-collapse-project (&optional arg)
   "Close the project at point.

@@ -380,7 +380,7 @@ Will also perform cleanup if the buffer is dead."
          (setq next (next-button (button-end next))))
        (when (and next (= depth (treemacs-button-get next :depth))) next)))))
 
-(define-inline treemacs--prev-neighbour-of (btn)
+(define-inline treemacs--prev-non-child-button (btn)
   "Get the previous same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
   (inline-letevals (btn)
@@ -1073,7 +1073,7 @@ Will refresh every project when PROJECT is 'all."
        (treemacs--cancel-refresh-timer)
        (run-hook-with-args
         'treemacs-pre-refresh-hook
-        project curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+        project curr-win-line curr-btn curr-state curr-file curr-tagpath)
 
        (if (eq 'all project)
            (-each (treemacs-workspace->projects (treemacs-current-workspace)) #'treemacs-project->refresh!)
@@ -1081,7 +1081,7 @@ Will refresh every project when PROJECT is 'all."
 
      (run-hook-with-args
       'treemacs-post-refresh-hook
-      project curr-line curr-btn curr-state curr-file curr-tagpath curr-winstart)
+      project curr-win-line curr-btn curr-state curr-file curr-tagpath)
 
      (unless treemacs-silent-refresh
        (treemacs-log "Refresh complete.")))))

@@ -244,24 +244,44 @@ attempt first to keep point on the same file/tag, and if that does not work keep
 it on the same line."
   (declare (debug (form body)))
   `(treemacs-without-following
-    (let* ((curr-line      (line-number-at-pos)) ;; TODO(2018/10/29): line in *window*
-           (curr-btn       (treemacs-current-button))
-           (curr-node-path (when curr-btn (treemacs-button-get curr-btn :path)))
-           (curr-state     (when curr-btn (treemacs-button-get curr-btn :state)))
-           (curr-file      (when curr-btn (treemacs--nearest-path curr-btn)))
-           (curr-tagpath   (when curr-btn (treemacs--tags-path-of curr-btn)))
-           (curr-winstart  (window-start (get-buffer-window))))
+    (let* ((curr-btn       (treemacs-current-button))
+           (next-path      (-some-> curr-btn (treemacs--next-non-child-button) (button-get :path)))
+           (prev-path      (-some-> curr-btn (treemacs--prev-non-child-button) (button-get :path)))
+           (curr-node-path (-some-> curr-btn (treemacs-button-get :path)))
+           (curr-state     (-some-> curr-btn (treemacs-button-get :state)))
+           (curr-file      (-some-> curr-btn (treemacs--nearest-path)))
+           (curr-tagpath   (-some-> curr-btn (treemacs--tags-path-of)))
+           (curr-window    (treemacs-get-local-window))
+           (curr-win-line  (when curr-window
+                             (with-selected-window curr-window
+                               (count-lines (window-start) (point))))) )
       ,main-form
       ;; try to stay at the same file/tag
       ;; if the tag no longer exists move to the tag's owning file node
-      ;; if the file no longer exists try to stay in the same visual line
       (pcase curr-state
         ((or 'root-node-open 'root-node-closed 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
+         ;; stay on the same file
          (if (and (file-exists-p curr-file)
                   (or treemacs-show-hidden-files
                       (not (s-matches? treemacs-dotfiles-regex (treemacs--filename curr-file)))))
              (treemacs-goto-file-node curr-file)
-           (treemacs-without-messages (with-no-warnings (goto-line curr-line)))))
+           ;; file we were on is no longer visible
+           ;; try dodging to our immediate neighbours, if they are no longer visible either
+           ;; keep going up
+           (cl-labels
+               ((can-move-to (it) (and (file-exists-p it)
+                                       (or treemacs-show-hidden-files
+                                           (not (s-matches? treemacs-dotfiles-regex (treemacs--filename it)))))))
+             (cond
+              ((and next-path (can-move-to next-path))
+               (treemacs-goto-file-node next-path))
+              ((and prev-path (can-move-to prev-path))
+               (treemacs-goto-file-node prev-path))
+              (t
+               (-let [detour (treemacs--parent curr-file)]
+                 (while (not (can-move-to detour))
+                   (setf detour (treemacs--parent detour)))
+                 (treemacs-goto-file-node detour)))))))
         ((or 'tag-node-open 'tag-node-closed 'tag-node)
          ;; no correction needed, if the tag does not exist point is left at the next best node
          (treemacs--goto-tag-button-at curr-tagpath))
@@ -274,13 +294,10 @@ it on the same line."
              (treemacs-goto-node curr-node-path)
            (error (ignore)))))
       (treemacs--evade-image)
-      (set-window-start (get-buffer-window) curr-winstart)
-
-      ;; this part seems to fix the issue of point being reset to the top
-      ;; when the buffer is refreshed without the window being selected
-      (-when-let (w (get-buffer-window (buffer-name) t))
-        (set-window-point w (point)))
-      ,@final-form)))
+      ,@final-form
+      (when curr-win-line
+        (with-selected-window curr-window
+          (recenter curr-win-line))))))
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer (and its frame)."

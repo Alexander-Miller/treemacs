@@ -562,15 +562,14 @@ This hook runs *before* that happens. It runs with treemacs as the
 `current-buffer' and receives as its arguments all the information that treemacs
 collects for its refresh process:
  * The project being refreshed (might be 'all)
- * The current line number.
+ * The current screen-line number (can be nil).
  * The current button. Might be nil if point is on the header line.
  * The current button's state. See also `treemacs-valid-button-states'. Is nil
    if the current button is nil.
  * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
    point is on the header.
  * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
-   nil if the current button is nil.
- * The start position of the current window, as given by `window-start'."
+   nil if the current button is nil."
   :type 'hook
   :group 'treemacs-hooks)
 
@@ -583,15 +582,14 @@ collects for its refresh process. Note that these values were collected at the
 start of the refresh, and may now be longer valid (for example the current
 button's position will be wrong, even if it wasn't deleted outright):
  * The project being refreshed (might be 'all)
- * The current line number.
+ * The current screen-line number (can be nil).
  * The current button. Might be nil if point was on the header line.
  * The current button's state. See also `treemacs-valid-button-states'. Is nil
    if the current button is nil.
  * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
    point was on the header.
  * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
-   nil if the current button is nil.
- * The start position of the current window, as given by `window-start'."
+   nil if the current button is nil."
   :type 'hook
   :group 'treemacs-hooks)
 
