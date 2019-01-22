@@ -152,10 +152,10 @@ Every string list consists of the following elements:
   "Parse the output of collpsed dirs FUTURE.
 Splits the output on newlines, splits every line on // and swallows the first
 newline."
-  (-some->
-   future
-   (pfuture-await-to-finish)
-   (read)))
+  (when future
+    (-let [output (pfuture-await-to-finish future)]
+      (when (= 0 (process-exit-status future))
+        (read output)))))
 
 (define-minor-mode treemacs-git-mode
   "Toggle `treemacs-git-mode'.
