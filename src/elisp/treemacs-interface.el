@@ -962,6 +962,7 @@ Prefix ARG will be passed on to the closing function
   (-if-let* ((btn (treemacs-current-button))
              (parent (button-get btn :parent)))
       (progn
+        (treemacs--forget-last-highlight)
         (goto-char parent)
         (treemacs-toggle-node arg)
         (treemacs--evade-image))
