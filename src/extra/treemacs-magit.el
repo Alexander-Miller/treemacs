@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((treemacs "0.0") (magit "2.90.0"))
+;; Package-Requires: ((emacs "25.2") (treemacs "0.0") (magit "2.90.0"))
 ;; Package-Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
@@ -37,23 +37,23 @@
     (defalias 'if-let* #'if-let)
     (defalias 'when-let* #'when-let)))
 
-(defvar treemacs--magit-timers nil
+(defvar treemacs-magit--timers nil
   "Cached list of roots an update is scheduled for.")
 
-(defun treemacs--magit-schedule-update ()
+(defun treemacs-magit--schedule-update ()
   "Schedule an update to potentially run after 2 seconds of idle time.
 In order for the update to fully run several conditions must be met:
  * A timer for an update for the given dir must not already exist
-   (see `treemacs--magit-timers')
+   (see `treemacs-magit--timers')
  * The dir must be part of a treemacs workspace, and
  * The project must not be set for refresh already."
   (let ((magit-root (magit-toplevel)))
-    (unless (member magit-root treemacs--magit-timers)
-      (push magit-root treemacs--magit-timers)
+    (unless (member magit-root treemacs-magit--timers)
+      (push magit-root treemacs-magit--timers)
       (run-with-idle-timer
        3 nil
        (lambda ()
-         (setf treemacs--magit-timers (delete magit-root treemacs--magit-timers))
+         (setf treemacs-magit--timers (delete magit-root treemacs-magit--timers))
          (treemacs-run-in-every-buffer
           (when-let* ((project (treemacs--find-project-for-path magit-root)))
             (let* ((project-root (treemacs-project->path project))
@@ -62,10 +62,10 @@ In order for the update to fully run several conditions must be met:
                 (treemacs--set-refresh-flags project-root))))))))))
 
 (unless (featurep 'treemacs-magit)
-  (add-hook 'magit-post-commit-hook #'treemacs--magit-schedule-update)
-  (add-hook 'git-commit-post-finish-hook #'treemacs--magit-schedule-update)
-  (add-hook 'magit-post-stage-hook #'treemacs--magit-schedule-update)
-  (add-hook 'magit-post-unstage-hook #'treemacs--magit-schedule-update))
+  (add-hook 'magit-post-commit-hook #'treemacs-magit--schedule-update)
+  (add-hook 'git-commit-post-finish-hook #'treemacs-magit--schedule-update)
+  (add-hook 'magit-post-stage-hook #'treemacs-magit--schedule-update)
+  (add-hook 'magit-post-unstage-hook #'treemacs-magit--schedule-update))
 
 (provide 'treemacs-magit)
 
