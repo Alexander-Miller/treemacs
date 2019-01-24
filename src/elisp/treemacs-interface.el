@@ -409,7 +409,8 @@ itself, using $HOME when there is no path at or near pooint to grab."
   "Toggle whether the treemacs buffer should have a fixed width.
 See also `treemacs-width.'"
   (interactive)
-  (setq treemacs--width-is-locked (not treemacs--width-is-locked))
+  (setq treemacs--width-is-locked (not treemacs--width-is-locked)
+        window-size-fixed (when treemacs--width-is-locked 'width))
   (treemacs-log "Window width has been %s."
                 (propertize (if treemacs--width-is-locked "locked" "unlocked")
                             'face 'font-lock-string-face)))
