@@ -53,13 +53,15 @@ In order for the update to fully run several conditions must be met:
       (run-with-idle-timer
        3 nil
        (lambda ()
-         (setf treemacs-magit--timers (delete magit-root treemacs-magit--timers))
-         (treemacs-run-in-every-buffer
-          (when-let* ((project (treemacs--find-project-for-path magit-root)))
-            (let* ((project-root (treemacs-project->path project))
-                   (dom-node (treemacs-get-from-shadow-index project-root)))
-              (unless (treemacs-shadow-node->refresh-flag dom-node)
-                (treemacs--set-refresh-flags project-root))))))))))
+         (unwind-protect
+             (treemacs-run-in-every-buffer
+              (when-let* ((project (treemacs--find-project-for-path magit-root)))
+                (let* ((project-root (treemacs-project->path project))
+                       (dom-node (treemacs-get-from-shadow-index project-root)))
+                  (when (and dom-node
+                             (null (treemacs-shadow-node->refresh-flag dom-node)))
+                    (treemacs--set-refresh-flags project-root)))))
+           (setf treemacs-magit--timers (delete magit-root treemacs-magit--timers))))))))
 
 (unless (featurep 'treemacs-magit)
   (add-hook 'magit-post-commit-hook #'treemacs-magit--schedule-update)

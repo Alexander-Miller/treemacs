@@ -445,15 +445,18 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
      (treemacs-with-writable-buffer
       ,@(when new-icon
           `((treemacs--button-symbol-switch ,new-icon)))
-      (end-of-line)
-      (forward-button 1)
-      (beginning-of-line)
-      (let* ((pos-start (point))
-             (next (treemacs--next-non-child-button ,button))
-             (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
-        (treemacs-button-put ,button :state ,new-state)
-        (delete-region pos-start pos-end)
-        (delete-trailing-whitespace))
+      (treemacs-button-put ,button :state ,new-state)
+      (-let [next (next-button (point-at-eol))]
+        (if (or (null next)
+                (/= (1+ (treemacs-button-get btn :depth))
+                    (treemacs-button-get (copy-marker next t) :depth)))
+            (delete-trailing-whitespace)
+          (goto-char next)
+          (beginning-of-line)
+          (let* ((pos-start (point))
+                 (next (treemacs--next-non-child-button ,button))
+                 (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
+            (delete-region pos-start pos-end))))
       ,post-close-action)))
 
 (defun treemacs--expand-root-node (btn)
