@@ -148,7 +148,8 @@ Will return `point-max' if there is no next project."
   (declare (side-effect-free t))
   (inline-letevals (project)
     (inline-quote
-     (eq 'root-node-open (treemacs-button-get (treemacs-project->position ,project) :state)))))
+     (eq 'root-node-open
+         (-> ,project (treemacs-project->position) (treemacs-button-get :state))))))
 
 (define-inline treemacs-project->refresh! (project)
   "Refresh PROJECT in the current buffer."
@@ -375,12 +376,13 @@ PROJECT, excluding newlines."
           (projects-in-buffer))
      (goto-char 0)
      ;; ... as well as the projects currently show in the buffer
-     (push (treemacs-project-at-point) projects-in-buffer)
-     (let (next-pos)
-       (while (/= (point-max)
-                  (setq next-pos (treemacs--next-project-pos)))
-         (goto-char next-pos)
-         (push (treemacs-project-at-point) projects-in-buffer)))
+     (unless (s-blank? (buffer-string))
+       (push (treemacs-project-at-point) projects-in-buffer)
+       (let (next-pos)
+         (while (/= (point-max)
+                    (setq next-pos (treemacs--next-project-pos)))
+           (goto-char next-pos)
+           (push (treemacs-project-at-point) projects-in-buffer))))
      ;; figure out which ones have been deleted and and remove them from the shadow index
      (dolist (project-in-buffer projects-in-buffer)
        (unless (--first (treemacs-is-path (treemacs-project->path project-in-buffer)
