@@ -208,7 +208,7 @@ treemacs buffer for this frame."
   (insert "#+TITLE: Edit Treemacs Workspaces & Projects\n")
   (when treemacs-show-edit-workspace-help
     (insert "# Call ~treemacs-finish-edit~ when done.\n")
-    (insert "# [[http://www.THERE-IS-NO-DOCUMENTATION-YET.com][Click here for detailed documentation.]]\n\n"))
+    (insert "# [[https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-and-workspaces][Click here for detailed documentation.]]\n\n"))
   (insert-file-contents treemacs-persist-file)
   (with-no-warnings
     (outline-show-all))

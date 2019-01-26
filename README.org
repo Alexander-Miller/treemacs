@@ -15,6 +15,7 @@
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
    - [[#projects-and-workspaces][Projects and Workspaces]]
+   - [[#conveniently-editing-your-projects-and-workspaces][Conveniently Editing Your Projects and Workspaces]]
    - [[#navigation-without-projects-and-workspaces][Navigation without Projects and Workspaces]]
    - [[#frame-locality][Frame Locality]]
    - [[#mouse-interface][Mouse Interface]]
@@ -126,6 +127,21 @@ treemacs heavily relies on every node having a unique natural key in its absolut
 outweigh the cons, as a multiroot setup allows to work on multiple projects with any combination concern/buffer
 separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for concurrent display not
 only of the file system, but e.g. the currently open buffers.
+** Conveniently Editing Your Projects and Workspaces
+While treemacs offers several single functions, all bound under the ~C-p~ prefix, to add or remove projects, it is also
+possible to make large-scale edits to the layout of your workspace(s) with the same convenience as editing an ~org-mode~
+file. Simply call ~treemacs-edit-workspaces~ and you'll be presented with a buffer representing your current layout.
+Just make your edits and call ~treemacs-finish-edit~ and you're done.
+
+The format is quite simple: level 1 headlines are names of workspaces, level 2 headlines are names of projects under a
+workspace, and every project's path is given as a description list, starting with a ~-~ (and an optional leading space).
+Empty lines and lines starting with ~#~ are ignored, and everything else leads to an error.
+
+You needn't worry about making mistakes either. If there's something wrong when you call ~treemacs-finish-edit~ then
+treemacs will point you at the incorrect line and tell you what's missing:
+
+[[file:screenshots/workspace-edit.png]]
+
 ** Navigation without Projects and Workspaces
 If a strict workspace and project structure, as described above, is too stringent for your use-case you can, under
 certain circumstances, use treemacs to freely navigate through your your file system, similar to dired: When your
@@ -618,7 +634,7 @@ By default Treemacs's keymap looks as follows:
 | b             | treemacs-add-bookmark                       | Bookmark the currently selected files's, dir's or tag's location.                                              |
 | h             | treemacs-root-up                            | Move treemacs' root one level upward. Only works with a single project in the workspace.                       |
 | l             | treemacs-root-down                          | Move treemacs' root into the directory at point. Only works with a single project in the workspace.            |
-| H             | treemacs-collapse-parent-node               | Collapse the parent of the node at point.                                                                     |
+| H             | treemacs-collapse-parent-node               | Collapse the parent of the node at point.                                                                      |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting to
