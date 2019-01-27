@@ -119,16 +119,18 @@ Also pass additional DATA to predicate function.")
 (treemacs--build-extension-addition "directory")
 (treemacs--build-extension-removal "directory")
 (treemacs--build-extension-application "directory")
-(treemacs--build-extension-addition "root")
-(treemacs--build-extension-removal "root")
+(treemacs--build-extension-addition "top-level")
+(treemacs--build-extension-removal "top-level")
+(define-obsolete-function-alias 'treemacs-define-root-extension #'treemacs-define-top-level-extension "v2.4")
+(define-obsolete-function-alias 'treemacs-remove-root-extension #'treemacs-remove-top-level-extension "v2.4")
 
 ;; slighty non-standard application for root extensions
 (defun treemacs--apply-root-top-extensions (workspace)
   "Apply the top extensions for NODE of type `root' for the current WORKSPACE."
-  (let* ((len (1- (length treemacs--root-bottom-extensions)))
+  (let* ((len (1- (length treemacs--top-level-bottom-extensions)))
          (more-than-one? (> len 0))
          (separator (if treemacs-space-between-root-nodes "\n\n" "\n")))
-    (--each treemacs--root-top-extensions
+    (--each treemacs--top-level-top-extensions
       (let ((extension (car it))
             (predicate (cdr it)))
         (when (or (null predicate) (funcall predicate workspace))
@@ -139,7 +141,7 @@ Also pass additional DATA to predicate function.")
 (defun treemacs--apply-root-bottom-extensions (workspace)
   "Apply the bottom extensions for NODE of type `root' for the current WORKSPACE."
   (-let [separator (if treemacs-space-between-root-nodes "\n\n" "\n")]
-    (dolist (cell  treemacs--root-bottom-extensions)
+    (dolist (cell  treemacs--top-level-bottom-extensions)
       (insert separator)
       (let ((extension (car cell))
             (predicate (cdr cell)))
@@ -242,6 +244,7 @@ type."
           render-action
           ret-action
           project-marker
+          top-level-marker
           root-marker
           root-label
           root-face
@@ -275,17 +278,19 @@ ROOT-FACE is its face.
 ROOT-KEY-FORM is the form that will give the root node its unique key, the same
 way as the KEY-FORM argument in `treemacs-render-node'.
 
-PROJECT-MARKER works much the same way as ROOT-MARKER (and is mutually
+TOP-LEVEL-MARKER works much the same way as ROOT-MARKER (and is mutually
 exclusive with it). The difference is that it declares the node defined here to
 a top-level element with nothing above it, like a project, instead of a
 top-level node *inside* a project. Other than that things work the same. Setting
-PROJECT-MARKER will define a function named `treemacs-${NAME}-extension' that
+TOP-LEVEL-MARKER will define a function named `treemacs-${NAME}-extension' that
 can be passed to `treemacs-define-root-extension', and it requires the same
 additional keys."
   (declare (indent 1))
-  (cl-assert (or (when project-marker (not root-marker))
-                 (when root-marker (not project-marker))
-                 (and (not root-marker) (not project-marker)))
+  (when project-marker
+    (warn ":project-marker is obsolete, use :top-level-marker instead."))
+  (cl-assert (or (when (or top-level-marker project-marker) (not root-marker))
+                 (when root-marker (not (or top-level-marker project-marker)))
+                 (and (not root-marker) (not (or top-level-marker project-marker))))
              :show-args "Root and project markers cannot both be set.")
   (cl-assert (and icon-open icon-closed query-function render-action)
              :show-args "All values (except additional root information) are mandatory")
@@ -399,28 +404,33 @@ additional keys."
                             :parent parent
                             :state ,closed-state-name)))))
 
-       ,(when project-marker
+       ,(when (or top-level-marker project-marker)
           (cl-assert (and root-label root-face root-key-form)
-                     :show-args "Root information must be provided when `:project-marker' is non-nil")
-          (-let [ext-name (intern (format "treemacs-%s-extension" (upcase (symbol-name name))))]
+                     :show-args "Root information must be provided when `:top-level-marker' is non-nil")
+          (let ((ext-name (intern (format "treemacs-%s-extension" (upcase (symbol-name name)))))
+                (project-var-name (intern (format "treemacs-%s-extension-project" (symbol-name name)))))
             (put ext-name :defined-in (or load-file-name (buffer-name)))
-            `(defun ,ext-name (&rest _)
-               (treemacs-with-writable-buffer
-                (-let [pr (make-treemacs-project
-                           :name ,root-label
-                           :path ,root-key-form)]
-                  (insert ,closed-icon-name)
-                  (treemacs--set-project-position pr (point-marker))
-                  (insert (propertize ,root-label
-                                      'button '(t)
-                                      'category 'default-button
-                                      'face ,root-face
-                                      :custom t
-                                      :key ,root-key-form
-                                      :path (list pr)
-                                      :depth 0
-                                      :project pr
-                                      :state ,closed-state-name))))))))))
+            `(progn
+               (defvar-local ,project-var-name nil
+                 ,(format "The project displaying the local %s extension." name))
+               (defun ,ext-name (&rest _)
+                 (treemacs-with-writable-buffer
+                  (-let [pr (make-treemacs-project
+                             :name ,root-label
+                             :path ,root-key-form)]
+                    (insert ,closed-icon-name)
+                    (treemacs--set-project-position pr (point-marker))
+                    (setq-local ,project-var-name pr)
+                    (insert (propertize ,root-label
+                                        'button '(t)
+                                        'category 'default-button
+                                        'face ,root-face
+                                        :custom t
+                                        :key ,root-key-form
+                                        :path (list pr)
+                                        :depth 0
+                                        :project pr
+                                        :state ,closed-state-name)))))))))))
 
 (defun treemacs-initialize ()
   "Initialize treemacs in an external buffer for extension use."

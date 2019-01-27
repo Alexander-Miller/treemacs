@@ -181,21 +181,26 @@ directory predicate takes a file path argument of type string and that the final
 
 ** Extensions at the Top level
 It is also possible to place extensions at the very top of the display tree, on the same level as projects. To make this
-work ~treemacs-define-expandable-node~ must receive not a ~:project-marker~, but a ~:root-marker~. Other than that
+work ~treemacs-define-expandable-node~ must receive not a ~:root-marker~, but a ~:top-level-marker~. Other than that
 nothing changes and the same restrictions apply, but the ~treemacs-BUFFERS-ROOT-extension~ that we've created in our
-example will be able to be passed to ~treemacs-define-root-extension~.
+example will be able to be passed to ~treemacs-define-top-level-extension~.
 
 #+BEGIN_SRC emacs-lisp
-  (treemacs-define-root-extension
+  (treemacs-define-top-level-extension
    :extension #'treemacs-BUFFERS-ROOT-extension
    :position 'top)
 #+END_SRC
+
+Every top-level element in treemacs has its own project struct and extensions are no different. It's even more important
+in top-level extensions since the project object is required not just for internal house-keeping, but is needed to
+address nodes in the given tree. To that end an extensions project is always found in a buffer local variable named
+~treemacs-${name}-extension-project~, where ~${name}~ is the name passed to ~treemacs-define-expandable-node~.
 
 Note that neither predicates, nor the use of a ~'bottom~ position have yet been implemented.
 
 ** Extensions beyond Treemacs
 
-Finally you can also used the extensions api as a generalized set of building block for tree structures, to be used in
+Finally you can also use the extensions api as a generalized set of building block for tree structures, to be used in
 any other buffer. First let's define an appropriate extension. We will re-use the ~buffer-root~ code from above, except
 this time we'll mark it as a ~:project~ and call it ~buffer-root-top~.
 
@@ -212,13 +217,13 @@ this time we'll mark it as a ~:project~ and call it ~buffer-root-top~.
      :face 'font-lock-keyword-face
      :key-form (car item)
      :more-properties (:buffers (cdr item)))
-    :project-marker t
+    :top-level-marker t
     :root-label "Buffers"
     :root-face 'font-lock-type-face
     :root-key-form 'Buffers)
 #+END_SRC
 
-With this we have all we need to display the buffer overview in any buffer of our choice. The required setup is minial,
+With this we have all we need to display the buffer overview in any buffer of our choice. The required setup is minimal,
 we just need to display such a buffer and call ~treemacs-initialize~ inside it, and the extension can be used:
 
 #+BEGIN_SRC emacs-lisp
