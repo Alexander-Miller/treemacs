@@ -171,6 +171,10 @@ If you prefer to expand/collpase nodes with a single mouse click you can also us
   (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action)
 #+END_SRC
 
+A right click popup-menu is also available:
+
+[[file:screenshots/right-click.png]]
+
 ** Follow-mode
 ~treemacs-follow-mode~ is a global minor mode which allows the treemacs view to always move its focus to the currently
 selected file. This is achieved by advising ~select-window~, which is a ubiquitous function, often called multiple times
