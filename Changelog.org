@@ -2,11 +2,12 @@
 #+STARTUP: content
 
 * Changelog
-** Current master
+** 2.4
  - Add support for using ~org-store-link~ inside treemacs.
  - Introduce the ~treemacs-icons-dired~ package.
  - Add ability to control workspaces and projects by editing an org-mode file.
  - Introduce ~treemacs-collapse-parent-node~.
+ - Add mouse right-click menu.
  - New Icons
  - Bug fixes
 ** 2.3
