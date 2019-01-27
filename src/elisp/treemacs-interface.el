@@ -680,6 +680,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
   (treemacs-unless-let (project (treemacs-project-at-point))
       (treemacs-pulse-on-failure "There is no project here.")
     (treemacs-do-remove-project-from-workspace project)
+    (whitespace-cleanup)
     (treemacs-pulse-on-success "Removed project %s from the workspace."
       (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))
 
