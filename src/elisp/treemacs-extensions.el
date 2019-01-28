@@ -194,13 +194,13 @@ when the project is refreshed, but also for compatiblity and integration with
 
 MORE-PROPERTIES is a plist of text properties that can arbitrarily added to the
 node for quick retrieval later."
-  (cl-assert (and icon label-form state face key-form)
-             :show-args "All values except `more-properties' are mandatory")
+  (cl-assert (and icon label-form state key-form)
+             :show-args "All values except `more-properties' and `face' are mandatory")
   `(list prefix ,icon
          (propertize ,label-form
                      'button '(t)
                      'category 'default-button
-                     'face ,face
+                     ,@(when face (list 'face face))
                      'help-echo nil
                      :custom t
                      :state ,state
