@@ -70,9 +70,9 @@ filewatch-mode's mechanics to update the entire project."
   (treemacs-run-in-every-buffer
    (when-let* ((project (treemacs--find-project-for-path magit-root)))
      (let* ((project-root (treemacs-project->path project))
-            (dom-node (treemacs-get-from-shadow-index project-root)))
+            (dom-node (treemacs-find-in-dom project-root)))
        (when (and dom-node
-                  (null (treemacs-shadow-node->refresh-flag dom-node)))
+                  (null (treemacs-dom-node->refresh-flag dom-node)))
          (treemacs--set-refresh-flags project-root))))))
 
 (defun treemacs-magit--extended-git-mode-update (magit-root)
@@ -94,11 +94,11 @@ current git status and just go through the lines as they are right now."
       (ignore status)
       (treemacs--read-git-status-into-hash output ht)
       (treemacs-run-in-every-buffer
-       (let ((dom-node (treemacs-get-from-shadow-index magit-root)))
+       (let ((dom-node (treemacs-find-in-dom magit-root)))
          (when (and dom-node
-                    (null (treemacs-shadow-node->refresh-flag dom-node)))
+                    (null (treemacs-dom-node->refresh-flag dom-node)))
            (save-excursion
-             (goto-char (treemacs-shadow-node->position dom-node))
+             (goto-char (treemacs-dom-node->position dom-node))
              (forward-line 1)
              (let* ((node (treemacs-node-at-point))
                     (start-depth (-some-> node (treemacs-button-get :depth)))

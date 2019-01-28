@@ -26,7 +26,7 @@
 (require 'f)
 (require 'treemacs-customization)
 (require 'treemacs-rendering)
-(require 'treemacs-structure)
+(require 'treemacs-dom)
 (require 'treemacs-async)
 (require 'treemacs-impl)
 (eval-and-compile

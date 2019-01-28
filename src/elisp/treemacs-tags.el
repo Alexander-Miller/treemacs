@@ -32,7 +32,7 @@
 (require 'treemacs-customization)
 (require 'treemacs-faces)
 (require 'treemacs-visuals)
-(require 'treemacs-structure)
+(require 'treemacs-dom)
 (require 'treemacs-icons)
 (eval-and-compile
   (require 'inline)
@@ -48,7 +48,7 @@
 The car of the returned list is the label of BTN while its cdr is the top down
 path starting at the absolute path of the file the tags belong to.
 
-These paths are used to give tag nodes a unique key in the shadow tree."
+These paths are used to give tag nodes a unique key in the dom."
   (declare (side-effect-free t))
   (inline-letevals (btn)
     (inline-quote
@@ -457,22 +457,22 @@ case point will be left at the next highest node available."
   "Reopen previously openeded tags under BTN."
   (save-excursion
     (let* ((tag-path (treemacs--tags-path-of btn))
-           (sh-node (treemacs-get-from-shadow-index tag-path))
+           (sh-node (treemacs-find-in-dom tag-path))
            (children (->> sh-node
-                          (treemacs-shadow-node->children)
-                          (-reject #'treemacs-shadow-node->closed)))
+                          (treemacs-dom-node->children)
+                          (-reject #'treemacs-dom-node->closed)))
            (btns-under-btn (treemacs--get-children-of btn)))
       (dolist (sh-child children)
-        (-if-let (child-btn (--first (equal (treemacs-shadow-node->key sh-child)
+        (-if-let (child-btn (--first (equal (treemacs-dom-node->key sh-child)
                                              (treemacs--tags-path-of it))
                                       btns-under-btn))
             (when (eq 'tag-node-closed (treemacs-button-get child-btn :state))
               (goto-char (button-start child-btn))
               (treemacs--expand-tag-node child-btn))
-          (setf (treemacs-shadow-node->children sh-node)
-                (delete sh-child (treemacs-shadow-node->children sh-node)))
+          (setf (treemacs-dom-node->children sh-node)
+                (delete sh-child (treemacs-dom-node->children sh-node)))
           (treemacs--do-for-all-child-nodes sh-child
-            #'treemacs-shadow-node->remove-from-index!))))))
+            #'treemacs-dom-node->remove-from-dom!))))))
 
 (provide 'treemacs-tags)
 

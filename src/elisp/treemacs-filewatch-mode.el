@@ -29,7 +29,7 @@
 (require 'filenotify)
 (require 'cl-lib)
 (require 'treemacs-impl)
-(require 'treemacs-structure)
+(require 'treemacs-dom)
 (require 'treemacs-tags)
 (eval-and-compile
   (require 'inline)
@@ -142,7 +142,7 @@ An event counts as relevant when
                 (--any? (funcall it (treemacs--filename dir) dir) treemacs-ignored-file-predicates)))))))
 
 (define-inline treemacs--set-refresh-flags (path)
-  "Set refresh flags for PATH in the shadow index of every buffer.
+  "Set refresh flags for PATH in the dom of every buffer.
 Also start the refresh timer if it's not started already."
   (inline-letevals (path)
     (inline-quote
@@ -151,8 +151,8 @@ Also start the refresh timer if it's not started already."
          (ht-remove! treemacs--collapsed-filewatch-index ,path)
          (treemacs--stop-watching ,path))
        (treemacs-run-in-every-buffer
-        (--when-let (treemacs-get-from-shadow-index ,path)
-          (setf (treemacs-shadow-node->refresh-flag it) t))
+        (--when-let (treemacs-find-in-dom ,path)
+          (setf (treemacs-dom-node->refresh-flag it) t))
         (unless treemacs--refresh-timer
           (setq treemacs--refresh-timer
                 (run-at-time (format "%s millisecond" treemacs-file-event-delay) nil
@@ -224,8 +224,8 @@ Reset the refresh flags of every buffer.
 
 Called when filewatch mode is disabled."
   (treemacs-run-in-every-buffer
-   (treemacs--maphash treemacs-shadow-index (_ node)
-     (treemacs-shadow-node->reset-refresh-flag! node)))
+   (treemacs--maphash treemacs-dom (_ node)
+     (treemacs-dom-node->reset-refresh-flag! node)))
   (treemacs--maphash treemacs--filewatch-index (_ watch-info)
     (file-notify-rm-watch (cdr watch-info)))
   (ht-clear! treemacs--filewatch-index)

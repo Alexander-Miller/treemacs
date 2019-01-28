@@ -37,91 +37,91 @@
   treemacs-project->path
   treemacs-current-workspace)
 
-(defvar-local treemacs-shadow-index nil)
+(defvar-local treemacs-dom nil)
 
-(treemacs--defstruct treemacs-shadow-node
+(treemacs--defstruct treemacs-dom-node
   key parent children position closed refresh-flag)
 
-(define-inline treemacs--insert-shadow-node (node)
-  "Insert NODE into the shadow index."
+(define-inline treemacs--insert-into-dom (node)
+  "Insert NODE into the dom."
   (inline-letevals (node)
     (inline-quote
-     (ht-set! treemacs-shadow-index (treemacs-shadow-node->key ,node) ,node))))
+     (ht-set! treemacs-dom (treemacs-dom-node->key ,node) ,node))))
 
-(defun treemacs--reset-index ()
-  "Reset the shadow index and."
-  (setq treemacs-shadow-index (make-hash-table :size 300 :test #'equal)))
+(defun treemacs--reset-dom ()
+  "Reset the dom."
+  (setq treemacs-dom (make-hash-table :size 300 :test #'equal)))
 
-(defun treemacs-shadow-node->print! (node)
+(defun treemacs-dom-node->print! (node)
   "Pretty print NODE.
 Debug function."
   (message
    "Node %s\nChildren: %s\nOwner: %s\nPosition: %s\nClosed: %s"
-   (treemacs-shadow-node->key node)
-   (-map #'treemacs-shadow-node->key (treemacs-shadow-node->children node))
-   (--if-let (treemacs-shadow-node->parent node) (treemacs-shadow-node->key it) "NONE")
-   (--if-let (treemacs-shadow-node->position node) it "NONE")
-   (treemacs-shadow-node->closed node)))
+   (treemacs-dom-node->key node)
+   (-map #'treemacs-dom-node->key (treemacs-dom-node->children node))
+   (--if-let (treemacs-dom-node->parent node) (treemacs-dom-node->key it) "NONE")
+   (--if-let (treemacs-dom-node->position node) it "NONE")
+   (treemacs-dom-node->closed node)))
 
 (define-inline treemacs-get-position-of (key)
   "Get the position of node with KEY, if any."
   (declare (side-effect-free t))
   (inline-letevals (key)
     (inline-quote
-     (--when-let (ht-get treemacs-shadow-index ,key)
-       (treemacs-shadow-node->position it)))))
+     (--when-let (ht-get treemacs-dom ,key)
+       (treemacs-dom-node->position it)))))
 
-(define-inline treemacs-get-from-shadow-index (key)
+(define-inline treemacs-find-in-dom (key)
   "Get node with KEY, if any."
   (declare (side-effect-free t))
   (inline-letevals (key)
     (inline-quote
-     (ht-get treemacs-shadow-index ,key))))
+     (ht-get treemacs-dom ,key))))
 
-(define-inline treemacs-shadow-node->invalidate-pos! (node)
+(define-inline treemacs-dom-node->invalidate-pos! (node)
   "Set the pos field of NODE to nil."
   (inline-letevals (node)
     (inline-quote
-     (setf (treemacs-shadow-node->position ,node) nil))))
+     (setf (treemacs-dom-node->position ,node) nil))))
 
-(define-inline treemacs-shadow-node->reset-refresh-flag! (node)
+(define-inline treemacs-dom-node->reset-refresh-flag! (node)
   "Set the refresh flag of NODE to nil."
   (inline-letevals (node)
     (inline-quote
-     (setf (treemacs-shadow-node->refresh-flag ,node) nil))))
+     (setf (treemacs-dom-node->refresh-flag ,node) nil))))
 
-(define-inline treemacs-shadow-node->remove-from-index! (node)
-  "Remove NODE from the index."
+(define-inline treemacs-dom-node->remove-from-dom! (node)
+  "Remove single NODE from the dom."
   (inline-letevals (node)
     (inline-quote
-     (ht-remove treemacs-shadow-index (treemacs-shadow-node->key ,node)))))
+     (ht-remove treemacs-dom (treemacs-dom-node->key ,node)))))
 
 (define-inline treemacs--on-expanding-existing-node (node pos)
   "Run when existing NODE is expanded.
 Sets its POS info and collpase field to nil."
   (inline-letevals (node pos)
     (inline-quote
-     (setf (treemacs-shadow-node->position ,node) ,pos
-           (treemacs-shadow-node->closed ,node) nil))))
+     (setf (treemacs-dom-node->position ,node) ,pos
+           (treemacs-dom-node->closed ,node) nil))))
 
 (define-inline treemacs--on-expanding-new-node (key pos parent-key)
-  "When node at KEY is expanded and does not yet exist in the index.
+  "When node at KEY is expanded and does not yet exist in the dom.
 Creates a new node for KEY at POS with parent at PARENT-KEY and inserts it in
-the index."
+the dom."
   (inline-letevals (key pos parent-key)
     (inline-quote
-     (let* ((parent (treemacs-get-from-shadow-index ,parent-key))
-            (new-node (make-treemacs-shadow-node :key ,key :parent parent :position ,pos)))
+     (let* ((parent (treemacs-find-in-dom ,parent-key))
+            (new-node (make-treemacs-dom-node :key ,key :parent parent :position ,pos)))
        (when parent
-         (setf (treemacs-shadow-node->children parent) (cons new-node (treemacs-shadow-node->children parent))))
-       (setf (treemacs-shadow-node->parent new-node) parent)
-       (ht-set! treemacs-shadow-index ,key new-node)))))
+         (setf (treemacs-dom-node->children parent) (cons new-node (treemacs-dom-node->children parent))))
+       (setf (treemacs-dom-node->parent new-node) parent)
+       (ht-set! treemacs-dom ,key new-node)))))
 
 (defun treemacs-on-expand (key pos parent-key)
   "Routine to run when a node is expanded.
 Sets up a new node for KEY and POS and parent at PARENT-KEY or resurrects an
 already present node by setting its POS and marking at as no longer closed."
-  (--if-let (ht-get treemacs-shadow-index key)
+  (--if-let (ht-get treemacs-dom key)
       (treemacs--on-expanding-existing-node it pos)
     (treemacs--on-expanding-new-node key pos parent-key)))
 
@@ -129,55 +129,55 @@ already present node by setting its POS and marking at as no longer closed."
   "Recursively iterate over NODE and its children and run F on every one of them."
   (declare (indent 1))
   (funcall f node)
-  (dolist (child (treemacs-shadow-node->children node))
+  (dolist (child (treemacs-dom-node->children node))
     (treemacs--do-for-all-child-nodes child f)))
 
 (define-inline treemacs--on-collapse-of-node-with-children (node purge)
   "Collapse a NODE that has children below it.
-If PURGE is non-nil remove NODE's branch from the shadow tree.
+If PURGE is non-nil remove NODE's branch from the dom.
 Otherwise mark NODE as closed and invalidate the position and refresh data of
 NODE's branch."
   (inline-letevals (node purge)
     (inline-quote
      (if ,purge
-         ;; almost same as if the node did not have children - throw out of index and parent,
+         ;; almost same as if the node did not have children - throw out of dom and parent,
          ;; but remove the children as well
-         (let ((parent (treemacs-shadow-node->parent ,node)))
+         (let ((parent (treemacs-dom-node->parent ,node)))
            (when parent
-             (setf (treemacs-shadow-node->children parent)
-                   (delete ,node (treemacs-shadow-node->children parent))))
+             (setf (treemacs-dom-node->children parent)
+                   (delete ,node (treemacs-dom-node->children parent))))
            (treemacs--do-for-all-child-nodes ,node
-             #'treemacs-shadow-node->remove-from-index!))
+             #'treemacs-dom-node->remove-from-dom!))
        ;; otherwise set the node to be closed and reset lower tiers' pos and refresh info
-       (setf (treemacs-shadow-node->closed ,node) t)
+       (setf (treemacs-dom-node->closed ,node) t)
        (treemacs--do-for-all-child-nodes ,node
          (lambda (it)
-           (treemacs-shadow-node->invalidate-pos! it)
-           (treemacs-shadow-node->reset-refresh-flag! it)))))))
+           (treemacs-dom-node->invalidate-pos! it)
+           (treemacs-dom-node->reset-refresh-flag! it)))))))
 
 (defun treemacs-on-collapse (key &optional purge)
   "Routine to run when node at KEY is closed again or deleted.
 Will remove NODE's parent/child link and invalidate the position and refresh
 data of NODE and all its children. When PURGE is non-nil will instead remove
-NODE and its children from the index."
+NODE and its children from the dom."
   ;; need to check for nil, since this code also runs on deletion of files or closed dirs
-  ;; which were never part of the index
-  (-when-let (node (treemacs-get-from-shadow-index key))
-    (if (null (treemacs-shadow-node->children node))
-        ;; no children - just throw the node out of the index and its parent
-        (-let [parent (treemacs-shadow-node->parent node)]
+  ;; which were never part of the dom
+  (-when-let (node (treemacs-find-in-dom key))
+    (if (null (treemacs-dom-node->children node))
+        ;; no children - just throw the node out of the dom and its parent
+        (-let [parent (treemacs-dom-node->parent node)]
           (when parent
-            (setf (treemacs-shadow-node->children parent)
-                  (delete node (treemacs-shadow-node->children parent))))
-          (ht-remove! treemacs-shadow-index key))
+            (setf (treemacs-dom-node->children parent)
+                  (delete node (treemacs-dom-node->children parent))))
+          (ht-remove! treemacs-dom key))
       (treemacs--on-collapse-of-node-with-children node purge))))
 
 (defun treemacs--on-rename (old-name new-name)
   "Routine to run after a file was renamed from OLD-NAME to NEW-NAME."
-  (-when-let (node (treemacs-get-from-shadow-index old-name))
+  (-when-let (node (treemacs-find-in-dom old-name))
     (treemacs--do-for-all-child-nodes node
       (lambda (it)
-        (let* ((old-key (treemacs-shadow-node->key it))
+        (let* ((old-key (treemacs-dom-node->key it))
                (new-key nil))
           ;; keys of tags are tag paths
           (setq new-key
@@ -185,15 +185,15 @@ NODE and its children from the index."
                     (s-replace old-name new-name old-key)
                   (-let [(tag file . path) old-key]
                     (nconc (list tag (s-replace old-name new-name file)) path))))
-          (ht-remove! treemacs-shadow-index old-key)
-          (ht-set! treemacs-shadow-index new-key it)
-          (setf (treemacs-shadow-node->key it) new-key))))))
+          (ht-remove! treemacs-dom old-key)
+          (ht-set! treemacs-dom new-key it)
+          (setf (treemacs-dom-node->key it) new-key))))))
 
 (define-inline treemacs--invalidate-position-cache ()
-  "Invalidate the position of all nodes in the index."
+  "Invalidate the position of all nodes in the dom."
   (inline-quote
-   (treemacs--maphash treemacs-shadow-index (_ node)
-     (treemacs-shadow-node->invalidate-pos! node))))
+   (treemacs--maphash treemacs-dom (_ node)
+     (treemacs-dom-node->invalidate-pos! node))))
 
 (defun treemacs--recursive-refresh-descent (node)
   "The recursive descent implementation of `treemacs--recursive-refresh'.
@@ -203,32 +203,31 @@ is node marked its children will be recursively investigated instead.
 Additionally all the refreshed nodes are collected and returned so their
 parents' git status can be updated."
   (-let [refreshed-nodes nil]
-    (if (treemacs-shadow-node->refresh-flag node)
+    (if (treemacs-dom-node->refresh-flag node)
         (progn
           (push node refreshed-nodes)
-          (treemacs--refresh-dir (treemacs-shadow-node->key node))
+          (treemacs--refresh-dir (treemacs-dom-node->key node))
           (treemacs--do-for-all-child-nodes node
-            #'treemacs-shadow-node->reset-refresh-flag!))
-      (dolist (child (treemacs-shadow-node->children node))
+            #'treemacs-dom-node->reset-refresh-flag!))
+      (dolist (child (treemacs-dom-node->children node))
         (setq refreshed-nodes
               (nconc refreshed-nodes
                      (treemacs--recursive-refresh-descent child)))))
     refreshed-nodes))
 
 (defun treemacs--recursive-refresh ()
-  "Recursively descend the shadow tree, updating only the refresh-marked nodes.
+  "Recursively descend the dom, updating only the refresh-marked nodes.
 If the root is marked simply reset all refresh flags and run `treemacs-refresh'
 instead."
-  (-let [projects (treemacs-workspace->projects (treemacs-current-workspace))]
-    (dolist (project projects)
-      (-when-let (root-node (-> project (treemacs-project->path) (treemacs-get-from-shadow-index)))
-        (if (treemacs-shadow-node->refresh-flag root-node)
-            (progn
-              (treemacs--do-for-all-child-nodes root-node #'treemacs-shadow-node->reset-refresh-flag!)
-              (treemacs--do-refresh (current-buffer) project))
-          (dolist (root-child (treemacs-shadow-node->children root-node))
-            (treemacs--recursive-refresh-descent root-child)))))))
+  (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
+    (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
+      (if (treemacs-dom-node->refresh-flag root-node)
+          (progn
+            (treemacs--do-for-all-child-nodes root-node #'treemacs-dom-node->reset-refresh-flag!)
+            (treemacs--do-refresh (current-buffer) project))
+        (dolist (root-child (treemacs-dom-node->children root-node))
+          (treemacs--recursive-refresh-descent root-child))))))
 
-(provide 'treemacs-structure)
+(provide 'treemacs-dom)
 
-;;; treemacs-structure.el ends here
+;;; treemacs-dom.el ends here

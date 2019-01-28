@@ -74,14 +74,14 @@
   treemacs--git-status-process-function
   treemacs--collapsed-dirs-process)
 
-(treemacs-import-functions-from "treemacs-structure"
+(treemacs-import-functions-from "treemacs-dom"
   treemacs-on-collapse
-  treemacs-get-from-shadow-index
+  treemacs-find-in-dom
   treemacs-get-position-of
-  treemacs-shadow-node->children
-  treemacs-shadow-node->key
-  treemacs-shadow-node->closed
-  treemacs-shadow-node->position
+  treemacs-dom-node->children
+  treemacs-dom-node->key
+  treemacs-dom-node->closed
+  treemacs-dom-node->position
   treemacs-project-p
   treemacs--on-rename
   treemacs--invalidate-position-cache)
@@ -572,10 +572,10 @@ GIT-INFO is passed through from the previous branch build."
   (treemacs-without-messages
    (dolist (it (-some->>
                 path
-                (treemacs-get-from-shadow-index)
-                (treemacs-shadow-node->children)
-                (-reject #'treemacs-shadow-node->closed)
-                (-map #'treemacs-shadow-node->key)
+                (treemacs-find-in-dom)
+                (treemacs-dom-node->children)
+                (-reject #'treemacs-dom-node->closed)
+                (-map #'treemacs-dom-node->key)
                 (treemacs--maybe-filter-dotfiles)))
      (treemacs--reopen-node (treemacs-goto-node it) git-info))))
 
@@ -656,7 +656,7 @@ failed."
             (depth      (treemacs-button-get ,btn :depth)))
        (goto-char ,btn)
        ;; point is currently on the next closest dir to the followed file we could get
-       ;; from the shadow index, so we expand it to keep going
+       ;; from the dom, so we expand it to keep going
        (pcase (treemacs-button-get ,btn :state)
          ('dir-node-closed (treemacs--expand-dir-node ,btn :git-future git-future))
          ('root-node-closed (treemacs--expand-root-node ,btn)))
@@ -720,26 +720,26 @@ failed."
           (goto-path (copy-sequence ,path))
           (counter (1- (length goto-path)))
           ;; manual as in to be expanded manually after we moved to the next closest node we can find
-          ;; in the shadow index
+          ;; in the dom
           (manual-parts nil)
-          (shadow-node nil))
+          (dom-node nil))
      ;; try to move as close as possible to the followed node, starting with its immediate parent
      ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
      ;; all the while collecting the parts of the path that beed manual expanding
      (while (and (> counter 0)
-                 (null shadow-node))
-       (setq shadow-node (treemacs-get-from-shadow-index goto-path)
+                 (null dom-node))
+       (setq dom-node (treemacs-find-in-dom goto-path)
              counter (1- counter))
        (cond
-        ((null shadow-node)
+        ((null dom-node)
          (push (nth (1+ counter) goto-path) manual-parts)
          (setcdr (nthcdr counter goto-path) nil))
-        ((and shadow-node (null (treemacs-shadow-node->position shadow-node)))
-         (setq shadow-node nil)
+        ((and dom-node (null (treemacs-dom-node->position dom-node)))
+         (setq dom-node nil)
          (push (nth (1+ counter) goto-path) manual-parts)
          (setcdr (nthcdr counter goto-path) nil))))
-     (let* ((btn (if shadow-node
-                     (treemacs-shadow-node->position shadow-node)
+     (let* ((btn (if dom-node
+                     (treemacs-dom-node->position dom-node)
                    (treemacs-project->position project)))
             ;; do the rest manually
             (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
@@ -764,26 +764,26 @@ failed."
           (goto-path (copy-sequence ,path))
           (counter (1- (length goto-path)))
           ;; manual as in to be expanded manually after we moved to the next closest node we can find
-          ;; in the shadow index
+          ;; in the dom
           (manual-parts nil)
-          (shadow-node nil))
+          (dom-node nil))
      ;; try to move as close as possible to the followed node, starting with its immediate parent
      ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
      ;; all the while collecting the parts of the path that beed manual expanding
      (while (and (> (1+ counter) 0)
-                 (null shadow-node))
-       (setq shadow-node (treemacs-get-from-shadow-index (if (cdr goto-path) goto-path (car goto-path)))
+                 (null dom-node))
+       (setq dom-node (treemacs-find-in-dom (if (cdr goto-path) goto-path (car goto-path)))
              counter (1- counter))
        (cond
-        ((null shadow-node)
+        ((null dom-node)
          (push (nth (1+ counter) goto-path) manual-parts)
          (setcdr (nthcdr counter goto-path) nil))
-        ((and shadow-node (null (treemacs-shadow-node->position shadow-node)))
-         (setq shadow-node nil)
+        ((and dom-node (null (treemacs-dom-node->position dom-node)))
+         (setq dom-node nil)
          (push (nth (1+ counter) goto-path) manual-parts)
          (setcdr (nthcdr counter goto-path) nil))))
-     (let* ((btn (if shadow-node
-                     (treemacs-shadow-node->position shadow-node)
+     (let* ((btn (if dom-node
+                     (treemacs-dom-node->position dom-node)
                    (treemacs-project->position project)))
             ;; do the rest manually
             (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
@@ -854,29 +854,29 @@ PROJECT: Project Struct"
          (path-minus-root (->> project (treemacs-project->path) (length) (substring path)))
          ;; the parts of the path that we can try to go to until we arrive at the project root
          (dir-parts (nreverse (s-split (f-path-separator) path-minus-root 'omit-nulls)))
-         ;; the path we try to quickly move to because it's already open and thus in the shadow-index
+         ;; the path we try to quickly move to because it's already open and thus in the dom
          (goto-path (if dir-parts (treemacs--parent path) path))
-         ;; if we try mode than this many times to grab a path location for the shadow index it means
+         ;; if we try mode than this many times to grab a path location for the dom it means
          ;; the file we want to move to is under a *closed* project node
          (counter (length dir-parts))
          ;; manual as in to be expanded manually after we moved to the next closest node we can find
-         ;; in the shadow index
+         ;; in the dom
          (manual-parts nil)
-         (shadow-node nil))
+         (dom-node nil))
     ;; try to move as close as possible to the followed file, starting with its immediate parent
     ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
     ;; all the while collecting the parts of the path that beed manual expanding
     (while (and (> counter 0)
-                (or (null shadow-node)
-                    ;; shadow node might exist, but one of its parents might be null
-                    (null (treemacs-shadow-node->position shadow-node))))
-      (setq shadow-node (treemacs-get-from-shadow-index goto-path)
+                (or (null dom-node)
+                    ;; dom node might exist, but one of its parents might be null
+                    (null (treemacs-dom-node->position dom-node))))
+      (setq dom-node (treemacs-find-in-dom goto-path)
             goto-path (treemacs--parent goto-path)
             counter (1- counter))
       (push (pop dir-parts) manual-parts))
     (let* ((btn (if (= 0 counter)
                     (treemacs-project->position project)
-                  (treemacs-shadow-node->position shadow-node)))
+                  (treemacs-dom-node->position dom-node)))
            ;; do the rest manually - at least the actual file to move to is still left in manual-parts
            (search-result (if manual-parts (save-match-data (treemacs--follow-each-dir btn manual-parts)) btn)))
       (if (eq 'follow-failed search-result)
@@ -1137,11 +1137,11 @@ GOTO-TAG: Bool"
 
 (defun treemacs-is-path-visible? (path)
   "Return whether a node for PATH is displayed in the current buffer.
-The return value, if PATH is visible, is either the shadow node of PATH - if it
-is an expanded directory - or the shadow node of its parent - if it is a dir or
+The return value, if PATH is visible, is either the dom node of PATH - if it
+is an expanded directory - or the dom node of its parent - if it is a dir or
 file below an expanded directory."
-  (or (treemacs-get-from-shadow-index path)
-      (treemacs-get-from-shadow-index (treemacs--parent path))))
+  (or (treemacs-find-in-dom path)
+      (treemacs-find-in-dom (treemacs--parent path))))
 
 (provide 'treemacs-impl)
 

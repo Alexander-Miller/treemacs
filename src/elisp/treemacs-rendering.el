@@ -29,7 +29,7 @@
 (require 'treemacs-icons)
 (require 'treemacs-async)
 (require 'treemacs-customization)
-(require 'treemacs-structure)
+(require 'treemacs-dom)
 (require 'treemacs-workspaces)
 (eval-and-compile
   (require 'treemacs-macros)
@@ -411,7 +411,7 @@ BUFFER: Buffer"
         (run-with-idle-timer 2 nil #'treemacs--resize-git-cache))
       (-let [parent-path (treemacs-button-get parent-btn :path)]
         ;; the node may have been closed or deleted by now
-        (when (and (treemacs-get-from-shadow-index parent-path)
+        (when (and (treemacs-find-in-dom parent-path)
                    (memq (treemacs-button-get parent-btn :state) '(dir-node-open root-node-open)))
           (let ((depth (1+ (treemacs-button-get parent-btn :depth)))
                 (git-info (treemacs--get-or-parse-git-result git-future))

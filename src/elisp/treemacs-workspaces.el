@@ -24,7 +24,7 @@
 (require 'ht)
 (require 'treemacs-impl)
 (require 'treemacs-visuals)
-(require 'treemacs-structure)
+(require 'treemacs-dom)
 (eval-and-compile
   (require 'inline)
   (require 'treemacs-macros))
@@ -271,14 +271,14 @@ NAME: String"
         (if empty-workspace?
             (progn
               (goto-char (point-min))
-              (treemacs--reset-index))
+              (treemacs--reset-dom))
           (goto-char (point-max))
           (when (treemacs-current-button)
             (insert "\n"))
           (when treemacs-space-between-root-nodes
             (insert "\n")))
         (treemacs--add-root-element project)
-        (treemacs--insert-shadow-node (make-treemacs-shadow-node
+        (treemacs--insert-into-dom (make-treemacs-dom-node
                                        :key path :position (treemacs-project->position project)))))
       (treemacs--persist)
       `(success ,project))))
@@ -383,7 +383,7 @@ PROJECT, excluding newlines."
                     (setq next-pos (treemacs--next-project-pos)))
            (goto-char next-pos)
            (push (treemacs-project-at-point) projects-in-buffer))))
-     ;; figure out which ones have been deleted and and remove them from the shadow index
+     ;; figure out which ones have been deleted and and remove them from the dom
      (dolist (project-in-buffer projects-in-buffer)
        (unless (--first (treemacs-is-path (treemacs-project->path project-in-buffer)
                                           :same-as
@@ -401,13 +401,13 @@ PROJECT, excluding newlines."
       ;; re-expand the projects that were expanded before the consolidation
       (let (next-pos)
         (-let [btn (treemacs-current-button)]
-          (when (treemacs-get-from-shadow-index (treemacs-button-get btn :path))
+          (when (treemacs-find-in-dom (treemacs-button-get btn :path))
             (treemacs--expand-root-node btn)))
         (while (/= (point-max)
                    (setq next-pos (treemacs--next-project-pos)))
           (goto-char next-pos)
           (-let [btn (treemacs-current-button)]
-            (when (treemacs-get-from-shadow-index (treemacs-button-get btn :path))
+            (when (treemacs-find-in-dom (treemacs-button-get btn :path))
               (treemacs--expand-root-node btn))))))
      ;; go back to the previous position
      (if (and current-file
