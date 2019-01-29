@@ -934,14 +934,14 @@ Will return t when FILE
   (declare (side-effect-free t) (pure t))
   (inline-letevals (file)
     (inline-quote
-     (s-matches? (rx bol
-                     (or (seq (or ".#" "flycheck_") (1+ any))
-                         (seq (1+ any) "~")
-                         (seq "#" (1+ any) "#")
-                         ".git"
-                         (or "." ".."))
-                     eol)
-                 ,file))))
+     (let ((last (aref ,file (1- (length ,file)))))
+       (or (string-prefix-p ".#" ,file)
+           (and (eq ?# last) (eq ?# (aref ,file 0)))
+           (eq ?~ last)
+           (string-equal ,file ".")
+           (string-equal ,file "..")
+           (string-equal ,file ".git")
+           (string-prefix-p "flycheck_" ,file))))))
 
 (define-inline treemacs--mac-ignore-file-predicate (file _)
   "Ignore FILE if it is .DS_Store and .localized.
@@ -949,8 +949,8 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
   (declare (side-effect-free t) (pure t))
   (inline-letevals (file)
     (inline-quote
-     (or (string= ,file ".DS_Store")
-         (string= ,file ".localized")))))
+     (or (string-equal ,file ".DS_Store")
+         (string-equal ,file ".localized")))))
 
 (define-inline treemacs-current-visibility ()
   "Return whether the current visibility state of the treemacs buffer.

@@ -107,9 +107,6 @@
       (it "Accepts common filename"
         (expect (treemacs--reject-ignored-files "foo.el") :to-be t))
 
-      (it "Accepts empty file"
-        (expect (treemacs--reject-ignored-files "") :to-be t))
-
       (it "Accepts directory"
         (expect (treemacs--reject-ignored-files "~/A/B/C/") :to-be t)))
 
@@ -117,6 +114,9 @@
 
       (it "Fails on nil input"
         (expect (treemacs--reject-ignored-files nil) :to-throw))
+
+      (it "Fails on empty name"
+        (expect (treemacs--reject-ignored-files "") :to-throw))
 
       (it "Rejects Emacs lock file"
         (expect (treemacs--reject-ignored-files "~/A/B/C/.#foo.el") :to-be nil))
@@ -151,9 +151,6 @@
       (it "Accepts common filename"
         (expect (treemacs--reject-ignored-and-dotfiles "foo.el") :to-be t))
 
-      (it "Accepts emtpy file"
-        (expect (treemacs--reject-ignored-and-dotfiles "") :to-be t))
-
       (it "Accepts directory"
         (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/") :to-be t)))
 
@@ -161,6 +158,9 @@
 
       (it "Fails on nil input"
         (expect (treemacs--reject-ignored-and-dotfiles nil) :to-throw))
+
+      (it "Fails on empty name"
+        (expect (treemacs--reject-ignored-and-dotfiles "") :to-throw))
 
       (it "Rejects Emacs lock file"
         (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/.#foo.el") :to-be nil))
