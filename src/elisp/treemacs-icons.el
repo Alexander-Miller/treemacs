@@ -156,7 +156,8 @@ Uses `treemacs-icon-fallback' as fallback."
 (defmacro treemacs--set-icon-save-default (&rest key-values)
   "Pass KEY-VALUES to `setq'.
 Also save the assignments in `treemacs--default-icons-alist'."
-  (cl-assert (= 0 (% (length key-values) 2)))
+  (treemacs-static-assert (= 0 (% (length key-values) 2))
+    "Keys and values must sum to an even number.")
   (let ((key-vals (copy-sequence key-values))
         (assignments))
     (while key-vals

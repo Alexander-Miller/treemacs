@@ -45,6 +45,17 @@ Creates a list of `declare-function' statements."
       (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
       (format ,msg ,@args))))
 
+(defmacro treemacs-static-assert (predicate error-msg &rest error-args)
+  "Assert for macros that triggers at expansion time.
+Tests PREDICATE and, if it evaluates to nil, throws an error with ERROR-MSG and
+ERROR-ARGS. Basically the same thing as `cl-assert', but does not (seem to)
+interfere with auto-completion."
+  (declare (indent 1))
+  `(unless ,predicate
+     (error (apply #'format
+                   (concat "[Treemacs] " ,error-msg)
+                   (list ,@error-args)))))
+
 (defmacro treemacs-with-writable-buffer (&rest body)
   "Temporarily turn off read-ony mode to execute BODY."
   (declare (debug t))
@@ -408,12 +419,10 @@ also `treemacs--canonical-path').
 
 Even if LEFT or RIGHT should be a form and not a variable it is guaranteed that
 they will be evaluated only once."
-  (cl-assert (memq op '(:same-as :in :parent-of :in-project :in-workspace))
-             :show-args
-             "Invalid treemacs-is-path operator: `%s'" op)
-  (cl-assert (or (eq op :in-workspace) right)
-             :show-args
-             "Missing right side argument.")
+  (treemacs-static-assert (memq op '(:same-as :in :parent-of :in-project :in-workspace))
+    "Invalid treemacs-is-path operator: `%s'" op)
+  (treemacs-static-assert (or (eq op :in-workspace) right)
+    ":in-workspace operator requires right-side argument.")
   (declare (debug (form form form)))
   (macroexp-let2* nil
       ((left left)

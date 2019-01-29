@@ -194,8 +194,8 @@ when the project is refreshed, but also for compatiblity and integration with
 
 MORE-PROPERTIES is a plist of text properties that can arbitrarily added to the
 node for quick retrieval later."
-  (cl-assert (and icon label-form state key-form)
-             :show-args "All values except `more-properties' and `face' are mandatory")
+  (treemacs-static-assert (and icon label-form state key-form)
+    "All values except :more-properties and :face are mandatory")
   `(list prefix ,icon
          (propertize ,label-form
                      'button '(t)
@@ -286,14 +286,16 @@ TOP-LEVEL-MARKER will define a function named `treemacs-${NAME}-extension' that
 can be passed to `treemacs-define-root-extension', and it requires the same
 additional keys."
   (declare (indent 1))
-  (when project-marker
-    (warn ":project-marker is obsolete, use :top-level-marker instead."))
-  (cl-assert (or (when (or top-level-marker project-marker) (not root-marker))
-                 (when root-marker (not (or top-level-marker project-marker)))
-                 (and (not root-marker) (not (or top-level-marker project-marker))))
-             :show-args "Root and project markers cannot both be set.")
-  (cl-assert (and icon-open icon-closed query-function render-action)
-             :show-args "All values (except additional root information) are mandatory")
+  (treemacs-static-assert (not project-marker)
+    ":project-marker is obsolete, use :top-level-marker instead.")
+  ;; TODO(2019/01/29): simplify
+  (treemacs-static-assert
+      (or (when (or top-level-marker project-marker) (not root-marker))
+          (when root-marker (not (or top-level-marker project-marker)))
+          (and (not root-marker) (not (or top-level-marker project-marker))))
+    "Root and top-level markers cannot both be set.")
+  (treemacs-static-assert (and icon-open icon-closed query-function render-action)
+    "All values (except additional root information) are mandatory")
   (let ((open-icon-name    (intern (format "treemacs-icon-%s-open"    (symbol-name name))))
         (closed-icon-name  (intern (format "treemacs-icon-%s-closed"  (symbol-name name))))
         (open-state-name   (intern (format "treemacs-%s-open-state"   (symbol-name name))))
@@ -382,8 +384,8 @@ additional keys."
        (treemacs-define-TAB-action ',closed-state-name #',expand-name)
 
        ,(when root-marker
-          (cl-assert (and root-label root-face root-key-form)
-                     :show-args "Root information must be provided when `:root-marker' is non-nil")
+          (treemacs-static-assert (and root-label root-face root-key-form)
+            ":root-label, :root-face and :root-key-form must be provided when `:root-marker' is non-nil")
           `(cl-defun ,(intern (format "treemacs-%s-extension" (upcase (symbol-name name)))) (parent)
              (-let [depth (1+ (treemacs-button-get parent :depth))]
                (insert
@@ -405,8 +407,8 @@ additional keys."
                             :state ,closed-state-name)))))
 
        ,(when (or top-level-marker project-marker)
-          (cl-assert (and root-label root-face root-key-form)
-                     :show-args "Root information must be provided when `:top-level-marker' is non-nil")
+          (treemacs-static-assert (and root-label root-face root-key-form)
+            ":root-label :root-face :root-key-form must be provided when `:top-level-marker' is non-nil")
           (let ((ext-name (intern (format "treemacs-%s-extension" (upcase (symbol-name name)))))
                 (project-var-name (intern (format "treemacs-%s-extension-project" (symbol-name name)))))
             (put ext-name :defined-in (or load-file-name (buffer-name)))
