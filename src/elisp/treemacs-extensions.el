@@ -214,7 +214,9 @@ node for quick retrieval later."
   "Define a type of node that is a leaf and cannot be further expanded.
 
 Based on the given NAME this macro will define a `treemacs-${name}-state' state
-variable and a `treemacs-${name}-icon' icon variable.
+variable and a `treemacs-${name}-icon' icon variable. If the icon should not be
+static, and should be instead computed every time this node is rendered in its
+parent's :render-action use 'dynamic-icon as a value for ICON.
 
 The ICON is a string that should be created with `treemacs-as-icon'. If the icon
 is for a file you can also use `treemacs-icon-for-file'.
@@ -227,7 +229,8 @@ type."
         (icon-name  (intern (format "treemacs-%s-icon" name))))
     `(progn
        (defvar ,state-name ',state-name)
-       (defvar ,icon-name ,icon)
+       ,(unless (string-equal "(quote dynamic-icon)" (format "%s" icon))
+          `(defvar ,icon-name ,icon))
        ,(when ret-action
           `(treemacs-define-RET-action ,state-name ,ret-action))
        ,(when tab-action
@@ -240,6 +243,8 @@ type."
     (name &key
           icon-open
           icon-closed
+          icon-open-form
+          icon-closed-form
           query-function
           render-action
           ret-action
@@ -252,6 +257,12 @@ type."
   "Define a type of node that can be further expanded.
 
 ICON-OPEN and ICON-CLOSED are strings and must be created by `treemacs-as-icon'.
+They will be defvar'd as 'treemacs-icon-${name}-open/closed'.
+As an alternative to static icons you can also supply ICON-OPEN-FORM and
+ICON-CLOSED-FORM that will be dynamically executed whenever a new icon is
+needed. Keep in mind that, since child nodes are first rendered by their
+parents, a CLOSED-ICON-FORM will need to be repeated in the parent's
+RENDER-ACTION.
 
 QUERY-FUNCTION is a form and will be invoked when the node is expanded. It must
 provide the list of elements that will be rendered with RENDER-ACTION.
@@ -294,8 +305,14 @@ additional keys."
           (when root-marker (not (or top-level-marker project-marker)))
           (and (not root-marker) (not (or top-level-marker project-marker))))
     "Root and top-level markers cannot both be set.")
-  (treemacs-static-assert (and icon-open icon-closed query-function render-action)
+  (treemacs-static-assert (and (or icon-open-form icon-open)
+                               (or icon-closed-form icon-closed)
+                               query-function render-action)
     "All values (except additional root information) are mandatory")
+  (treemacs-static-assert (or (null icon-open) (null icon-open-form))
+    ":icon-open and :icon-open-form are mutually exclusive.")
+  (treemacs-static-assert (or (null icon-closed) (null icon-closed-form))
+    ":icon-closed and :icon-closed-form are mutually exclusive.")
   (let ((open-icon-name    (intern (format "treemacs-icon-%s-open"    (symbol-name name))))
         (closed-icon-name  (intern (format "treemacs-icon-%s-closed"  (symbol-name name))))
         (open-state-name   (intern (format "treemacs-%s-open-state"   (symbol-name name))))
@@ -305,8 +322,10 @@ additional keys."
         (do-expand-name    (intern (format "treemacs--do-expand-%s"   (symbol-name name))))
         (do-collapse-name  (intern (format "treemacs--do-collapse-%s" (symbol-name name)))))
     `(progn
-       (defvar ,open-icon-name ,icon-open)
-       (defvar ,closed-icon-name ,icon-closed)
+       ,(when open-icon-name
+         `(defvar ,open-icon-name ,icon-open))
+       ,(when closed-icon-name
+          `(defvar ,closed-icon-name ,icon-closed))
        (defvar ,open-state-name ',open-state-name)
        (defvar ,closed-state-name ',closed-state-name)
 
@@ -342,7 +361,7 @@ additional keys."
            (treemacs--button-open
             :button btn
             :new-state ',open-state-name
-            :new-icon ,open-icon-name
+            :new-icon ,(if icon-open open-icon-name icon-open-form)
             :immediate-insert t
             :open-action
             (treemacs--create-buttons
@@ -376,7 +395,7 @@ additional keys."
          (treemacs--button-close
           :button btn
           :new-state ',closed-state-name
-          :new-icon ,closed-icon-name
+          :new-icon ,(if icon-closed closed-icon-name icon-closed-form)
           :post-close-action
           (treemacs-on-collapse (treemacs-button-get btn :path))))
 
