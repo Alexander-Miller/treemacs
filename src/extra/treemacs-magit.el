@@ -42,7 +42,7 @@
   "Cached list of roots an update is scheduled for.")
 
 (defun treemacs-magit--schedule-update ()
-  "Schedule an update to potentially run after 2 seconds of idle time.
+  "Schedule an update to potentially run after 3 seconds of idle time.
 In order for the update to fully run several conditions must be met:
  * A timer for an update for the given dir must not already exist
    (see `treemacs-magit--timers')
@@ -58,12 +58,12 @@ In order for the update to fully run several conditions must be met:
            (unwind-protect
                (pcase treemacs-git-mode
                  ('simple
-                  (treemacs-magit--simpe-git-mode-update magit-root))
+                  (treemacs-magit--simple-git-mode-update magit-root))
                  ((or 'extended 'deferred)
                   (treemacs-magit--extended-git-mode-update magit-root)))
              (setf treemacs-magit--timers (delete magit-root treemacs-magit--timers)))))))))
 
-(defun treemacs-magit--simpe-git-mode-update (magit-root)
+(defun treemacs-magit--simple-git-mode-update (magit-root)
   "Update the project at the given MAGIT-ROOT.
 Without the parsing ability of extended git-mode this update uses
 filewatch-mode's mechanics to update the entire project."
@@ -121,10 +121,10 @@ current git status and just go through the lines as they are right now."
                         curr-depth (-some-> node (treemacs-button-get :depth)))))))))))))
 
 (unless (featurep 'treemacs-magit)
-  (add-hook 'magit-post-commit-hook #'treemacs-magit--schedule-update)
+  (add-hook 'magit-post-commit-hook      #'treemacs-magit--schedule-update)
   (add-hook 'git-commit-post-finish-hook #'treemacs-magit--schedule-update)
-  (add-hook 'magit-post-stage-hook #'treemacs-magit--schedule-update)
-  (add-hook 'magit-post-unstage-hook #'treemacs-magit--schedule-update))
+  (add-hook 'magit-post-stage-hook       #'treemacs-magit--schedule-update)
+  (add-hook 'magit-post-unstage-hook     #'treemacs-magit--schedule-update))
 
 (provide 'treemacs-magit)
 
