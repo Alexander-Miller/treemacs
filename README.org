@@ -34,6 +34,7 @@
    - [[#additional-packages][Additional Packages]]
       - [[#treemacs-evil][treemacs-evil]]
       - [[#treemacs-projectile][treemacs-projectile]]
+      - [[#treemacs-magit][treemacs-magit]]
       - [[#treemacs-icons-dired][treemacs-icons-dired]]
    - [[#treemacs-as-a-framework][Treemacs as a Framework]]
 - [[#installation][Installation]]
@@ -296,6 +297,9 @@ Must be installed and loaded if you use evil. The keybindings and the cursor wil
 also enable navigation with j/k instead of n/p.
 *** treemacs-projectile
 Allows to quickly add your projectile projects to the treemacs workspace by calling ~treemacs-projectile~.
+*** treemacs-magit
+A small utility package to fill the small gaps left by using filewatch-mode and git-mode in conjunction with magit: it
+will inform treemacs about (un)staging of files and commits happening in magit.
 *** treemacs-icons-dired
 Allows you to use treemacs icons in dired buffers with ~treemacs-icons-dired-mode~:
 [[file:screenshots/dired-icons.png]]
@@ -390,6 +394,10 @@ setting. Setting them all yourself is not necessary, they are only listed here t
     :after treemacs dired
     :ensure t
     :config (treemacs-icons-dired-mode))
+
+  (use-package treemacs-magit
+    :after treemacs magit
+    :ensure t)
 #+END_SRC
 
 * Configuration

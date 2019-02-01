@@ -2,6 +2,8 @@
 #+STARTUP: content
 
 * Changelog
+** Current master
+ - Added ~treemacs-magit~ helper package.
 ** 2.4
  - Add support for using ~org-store-link~ inside treemacs.
  - Introduce the ~treemacs-icons-dired~ package.
