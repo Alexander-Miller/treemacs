@@ -200,7 +200,7 @@ node for quick retrieval later."
          (propertize ,label-form
                      'button '(t)
                      'category 'default-button
-                     ,@(when face (list 'face face))
+                     ,@(when face `((quote face) ,face))
                      'help-echo nil
                      :custom t
                      :state ,state
