@@ -229,7 +229,7 @@ type."
         (icon-name  (intern (format "treemacs-%s-icon" name))))
     `(progn
        (defvar ,state-name ',state-name)
-       ,(unless (string-equal "(quote dynamic-icon)" (format "%s" icon))
+       ,(unless (equal icon (quote 'dynamic-icon))
           `(defvar ,icon-name ,icon))
        ,(when ret-action
           `(treemacs-define-RET-action ,state-name ,ret-action))
@@ -432,26 +432,52 @@ additional keys."
                 (project-var-name (intern (format "treemacs-%s-extension-project" (symbol-name name)))))
             (put ext-name :defined-in (or load-file-name (buffer-name)))
             `(progn
-               (defvar-local ,project-var-name nil
-                 ,(format "The project displaying the local %s extension." name))
-               (defun ,ext-name (&rest _)
-                 (treemacs-with-writable-buffer
-                  (-let [pr (make-treemacs-project
-                             :name ,root-label
-                             :path ,root-key-form)]
-                    (insert ,closed-icon-name)
-                    (treemacs--set-project-position pr (point-marker))
-                    (setq-local ,project-var-name pr)
-                    (insert (propertize ,root-label
-                                        'button '(t)
-                                        'category 'default-button
-                                        'face ,root-face
-                                        :custom t
-                                        :key ,root-key-form
-                                        :path (list pr)
-                                        :depth 0
-                                        :project pr
-                                        :state ,closed-state-name)))))))))))
+               ,(if (equal top-level-marker (quote 'variadic))
+                    `(defun ,ext-name (items)
+                       (let ((separator (if treemacs-space-between-root-nodes "\n\n" "\n"))
+                             (last-index (1- (length items))))
+                         (treemacs-with-writable-buffer
+                          (--each items
+                            (let* ((extension-label (car it))
+                                   (extension-key (cdr it))
+                                   (pr (make-treemacs-project
+                                        :name extension-label
+                                        :path extension-key)))
+                              (insert ,closed-icon-name)
+                              (treemacs--set-project-position pr (point-marker))
+                              (insert (propertize extension-label
+                                                  'button '(t)
+                                                  'category 'default-button
+                                                  'face ,root-face
+                                                  :custom t
+                                                  :key ,root-key-form
+                                                  :path (list extension-key)
+                                                  :depth 0
+                                                  :project pr
+                                                  :state ,closed-state-name))
+                              (unless (= it-index last-index)
+                                (insert separator)))))))
+                  `(progn
+                     (defvar-local ,project-var-name nil
+                       ,(format "The project displaying the local %s extension." name))
+                     (defun ,ext-name (&rest _)
+                       (treemacs-with-writable-buffer
+                        (-let [pr (make-treemacs-project
+                                   :name ,root-label
+                                   :path ,root-key-form)]
+                          (insert ,closed-icon-name)
+                          (treemacs--set-project-position pr (point-marker))
+                          (setq-local ,project-var-name pr)
+                          (insert (propertize ,root-label
+                                              'button '(t)
+                                              'category 'default-button
+                                              'face ,root-face
+                                              :custom t
+                                              :key ,root-key-form
+                                              :path (list pr)
+                                              :depth 0
+                                              :project pr
+                                              :state ,closed-state-name)))))))))))))
 
 (defun treemacs-initialize ()
   "Initialize treemacs in an external buffer for extension use."
