@@ -440,7 +440,7 @@ additional keys."
                                                   'category 'default-button
                                                   'face ,root-face
                                                   :custom t
-                                                  :key ,root-key-form
+                                                  :key extension-key
                                                   :path (list extension-key)
                                                   :depth 0
                                                   :project pr
@@ -456,7 +456,7 @@ additional keys."
                                    :name ,root-label
                                    :path ,root-key-form)]
                           (insert ,closed-icon-name)
-                          (treemacs--set-project-position pr (point-marker))
+                          (treemacs--set-project-position ,root-key-form (point-marker))
                           (setq-local ,project-var-name pr)
                           (insert (propertize ,root-label
                                               'button '(t)
@@ -464,7 +464,7 @@ additional keys."
                                               'face ,root-face
                                               :custom t
                                               :key ,root-key-form
-                                              :path (list pr)
+                                              :path (list ,root-key-form)
                                               :depth 0
                                               :project pr
                                               :state ,closed-state-name)))))))))))))

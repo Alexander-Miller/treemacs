@@ -710,12 +710,13 @@ failed."
          ,btn)))))
 
 (define-inline treemacs--goto-custom-top-level-node (path)
-  "Move to the project extension node at PATH."
+  "Move to the top-level extension node at PATH."
   (inline-letevals (path)
     (inline-quote
-     (let* ((project (car ,path))
+     (let* ((root-key (car ,path))
             ;; go back here if the search fails
-            (start (prog1 (point) (goto-char (treemacs-project->position project))))
+            ;; the root key isn't really a project, it's just the :root-key-form
+            (start (prog1 (point) (goto-char (treemacs-project->position root-key))))
             ;; making a copy since the variable is a reference to a node actual path
             ;; and will be changed in-place here
             (goto-path (copy-sequence ,path))
@@ -741,7 +742,7 @@ failed."
            (setcdr (nthcdr counter goto-path) nil))))
        (let* ((btn (if dom-node
                        (treemacs-dom-node->position dom-node)
-                     (treemacs-project->position project)))
+                     (treemacs-project->position root-key)))
               ;; do the rest manually
               (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
          (if (eq 'follow-failed search-result)
