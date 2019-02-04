@@ -709,49 +709,50 @@ failed."
              (setq index (1+ index))))
          ,btn)))))
 
-(define-inline treemacs--goto-custom-top-node (path)
+(define-inline treemacs--goto-custom-top-level-node (path)
   "Move to the project extension node at PATH."
-  (inline-quote ;; TODO(2018/11/19): leteval test
-   (let* ((project (car ,path))
-          ;; go back here if the search fails
-          (start (prog1 (point) (goto-char (treemacs-project->position project))))
-          ;; making a copy since the variable is a reference to a node actual path
-          ;; and will be changed in-place here
-          (goto-path (copy-sequence ,path))
-          (counter (1- (length goto-path)))
-          ;; manual as in to be expanded manually after we moved to the next closest node we can find
-          ;; in the dom
-          (manual-parts nil)
-          (dom-node nil))
-     ;; try to move as close as possible to the followed node, starting with its immediate parent
-     ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
-     ;; all the while collecting the parts of the path that beed manual expanding
-     (while (and (> counter 0)
-                 (null dom-node))
-       (setq dom-node (treemacs-find-in-dom goto-path)
-             counter (1- counter))
-       (cond
-        ((null dom-node)
-         (push (nth (1+ counter) goto-path) manual-parts)
-         (setcdr (nthcdr counter goto-path) nil))
-        ((and dom-node (null (treemacs-dom-node->position dom-node)))
-         (setq dom-node nil)
-         (push (nth (1+ counter) goto-path) manual-parts)
-         (setcdr (nthcdr counter goto-path) nil))))
-     (let* ((btn (if dom-node
-                     (treemacs-dom-node->position dom-node)
-                   (treemacs-project->position project)))
-            ;; do the rest manually
-            (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
-       (if (eq 'follow-failed search-result)
-           (prog1 nil
-             (goto-char start))
-         (goto-char search-result)
-         ;; TODO(2018/10/09): dont do that unless necessary
-         (treemacs--evade-image)
-         (hl-line-highlight)
-         (set-window-point (get-buffer-window) (point))
-         search-result)))))
+  (inline-letevals (path)
+    (inline-quote
+     (let* ((project (car ,path))
+            ;; go back here if the search fails
+            (start (prog1 (point) (goto-char (treemacs-project->position project))))
+            ;; making a copy since the variable is a reference to a node actual path
+            ;; and will be changed in-place here
+            (goto-path (copy-sequence ,path))
+            (counter (1- (length goto-path)))
+            ;; manual as in to be expanded manually after we moved to the next closest node we can find
+            ;; in the dom
+            (manual-parts nil)
+            (dom-node nil))
+       ;; try to move as close as possible to the followed node, starting with its immediate parent
+       ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
+       ;; all the while collecting the parts of the path that beed manual expanding
+       (while (and (> counter 0)
+                   (null dom-node))
+         (setq dom-node (treemacs-find-in-dom goto-path)
+               counter (1- counter))
+         (cond
+          ((null dom-node)
+           (push (nth (1+ counter) goto-path) manual-parts)
+           (setcdr (nthcdr counter goto-path) nil))
+          ((and dom-node (null (treemacs-dom-node->position dom-node)))
+           (setq dom-node nil)
+           (push (nth (1+ counter) goto-path) manual-parts)
+           (setcdr (nthcdr counter goto-path) nil))))
+       (let* ((btn (if dom-node
+                       (treemacs-dom-node->position dom-node)
+                     (treemacs-project->position project)))
+              ;; do the rest manually
+              (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
+         (if (eq 'follow-failed search-result)
+             (prog1 nil
+               (goto-char start))
+           (goto-char search-result)
+           ;; TODO(2018/10/09): dont do that unless necessary
+           (treemacs--evade-image)
+           (hl-line-highlight)
+           (set-window-point (get-buffer-window) (point))
+           search-result))))))
 
 (define-inline treemacs--goto-custom-dir-node (path)
   "Move to the directory extension node at PATH."
@@ -831,8 +832,8 @@ PROJECT Project Struct"
    ((and (stringp path)
          (file-exists-p path))
     (treemacs-goto-file-node path project))
-   ((treemacs-project-p (car path))
-    (treemacs--goto-custom-top-node path))
+   ((eq :custom (car path))
+    (treemacs--goto-custom-top-level-node (cdr path)))
    (t
     (treemacs--goto-custom-dir-node path))))
 

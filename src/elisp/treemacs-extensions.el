@@ -154,16 +154,6 @@ Optionally include MORE-PROPERTIES (like `face' or `display')."
   (declare (indent 1))
   (apply #'propertize string 'icon t more-properties))
 
-(defun treemacs-update-node (path)
-  "Update the node identified by its PATH.
-Throws an error when the node cannot be found. Does nothing if the node is not
-expanded."
-  (treemacs-unless-let (btn (treemacs-goto-node path))
-      (error "Node at path %s cannot be found" path)
-    (when (treemacs-is-node-expanded? btn)
-      (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))
-      (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))))
-
 (cl-defmacro treemacs-render-node
     (&key icon
           label-form
@@ -444,7 +434,7 @@ additional keys."
                                         :name extension-label
                                         :path extension-key)))
                               (insert ,closed-icon-name)
-                              (treemacs--set-project-position pr (point-marker))
+                              (treemacs--set-project-position ,root-key-form (point-marker))
                               (insert (propertize extension-label
                                                   'button '(t)
                                                   'category 'default-button
