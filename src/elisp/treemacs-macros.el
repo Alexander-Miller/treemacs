@@ -265,7 +265,7 @@ it on the same line."
            (curr-window    (treemacs-get-local-window))
            (curr-win-line  (when curr-window
                              (with-selected-window curr-window
-                               (count-lines (window-start) (point))))) )
+                               (1- (count-lines (window-start) (point)))))))
       ,main-form
       ;; try to stay at the same file/tag
       ;; if the tag no longer exists move to the tag's owning file node
