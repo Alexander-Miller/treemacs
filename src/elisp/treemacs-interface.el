@@ -297,6 +297,12 @@ Treemacs knows how to open files on linux, windows and macos."
              (propertize (symbol-name system-type) 'face 'font-lock-string-face))))
     (treemacs-pulse-on-failure "Nothing to open here.")))
 
+(defun treemacs-quit (&optional arg)
+  "Quit treemacs with `bury-buffer'.
+With a prefix ARG call `treemacs-kill-buffer' instead."
+  (interactive "P")
+  (if arg (treemacs-kill-buffer) (bury-buffer)))
+
 (defun treemacs-kill-buffer ()
   "Kill the treemacs buffer."
   (interactive)

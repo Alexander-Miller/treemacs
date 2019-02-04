@@ -205,7 +205,7 @@ to it will instead show a blank."
       (define-key map (kbd "cd")        #'treemacs-create-dir)
       (define-key map (kbd "R")         #'treemacs-rename)
       (define-key map (kbd "u")         #'treemacs-goto-parent-node)
-      (define-key map (kbd "q")         #'bury-buffer)
+      (define-key map (kbd "q")         #'treemacs-quit)
       (define-key map (kbd "Q")         #'treemacs-kill-buffer)
       (define-key map (kbd "ov")        #'treemacs-visit-node-vertical-split)
       (define-key map (kbd "oh")        #'treemacs-visit-node-horizontal-split)

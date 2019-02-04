@@ -630,7 +630,7 @@ By default Treemacs's keymap looks as follows:
 | R             | treemacs-rename                             | Rename node at point.                                                                                          |
 | cf            | treemacs-create-file                        | Create a file.                                                                                                 |
 | cd            | treemacs-create-dir                         | Create a directory.                                                                                            |
-| q             | bury-buffer                                 | Hide the treemacs buffer.                                                                                      |
+| q             | treemacs-quit                               | Hide the treemacs window.                                                                                      |
 | Q             | treemacs-kill-buffer                        | Delete the treemacs buffer.                                                                                    |
 | ov            | treemacs-visit-node-vertical-split          | Open current file or tag by vertically splitting ~next-window~.                                                |
 | oh            | treemacs-visit-node-horizontal-split        | Open current file or tag by horizontally splitting ~next-window~.                                              |
