@@ -31,6 +31,7 @@
 (require 'treemacs)
 (require 'magit)
 (require 'pfuture)
+(require 'seq)
 
 ;; no need for dash for a single when-let
 (eval-when-compile
@@ -89,33 +90,46 @@ current git status and just go through the lines as they are right now."
                       ,treemacs-git-command-pipe)
     :directory magit-root
     :on-success
-    (let ((ht (make-hash-table :size 1000 :test #'equal))
-          (output (pfuture-output-from-buffer pfuture-buffer)))
+    (progn
       (ignore status)
-      (treemacs--read-git-status-into-hash output ht)
-      (treemacs-run-in-every-buffer
-       (let ((dom-node (treemacs-find-in-dom magit-root)))
-         (when (and dom-node
-                    (null (treemacs-dom-node->refresh-flag dom-node)))
-           (save-excursion
-             (goto-char (treemacs-dom-node->position dom-node))
-             (forward-line 1)
-             (let* ((node (treemacs-node-at-point))
-                    (start-depth (-some-> node (treemacs-button-get :depth)))
-                    (curr-depth start-depth)
-                    (path (-some-> node (treemacs-button-get :path))))
-               (treemacs-with-writable-buffer
-                (while (and node
-                            (file-exists-p path)
-                            (>= curr-depth start-depth))
-                  (put-text-property (button-start node) (button-end node) 'face
-                                     (treemacs--get-button-face
-                                      path ht
-                                      (if (memq (treemacs-button-get node :state)
-                                                '(file-node-open file-node-closed))
-                                          'treemacs-git-unmodified-face
-                                        'treemacs-directory-face)))
-                  (forward-line 1)
+      (treemacs-magit--update-callback magit-root pfuture-buffer))))
+
+(defun treemacs-magit--update-callback (magit-root pfuture-buffer)
+  "Run the update as a pfuture callback.
+Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
+  (let ((ht (make-hash-table :size 1000 :test 'equal))
+        (output (pfuture-output-from-buffer pfuture-buffer)))
+    (treemacs--read-git-status-into-hash output ht)
+    (treemacs-run-in-every-buffer
+     (let ((dom-node (or (treemacs-find-in-dom magit-root)
+                         (when-let* ((project
+                                      (seq-find
+                                       (lambda (pr) (treemacs-is-path (treemacs-project->path pr) :in magit-root))
+                                       (treemacs-workspace->projects (treemacs-current-workspace)))))
+                           (treemacs-find-in-dom (treemacs-project->path project))))))
+       (when (and dom-node
+                  (null (treemacs-dom-node->refresh-flag dom-node)))
+         (save-excursion
+           (goto-char (treemacs-dom-node->position dom-node))
+           (forward-line 1)
+           (let* ((node (treemacs-node-at-point))
+                  (start-depth (-some-> node (treemacs-button-get :depth)))
+                  (curr-depth start-depth)
+                  (path (-some-> node (treemacs-button-get :path))))
+             (treemacs-with-writable-buffer
+              (while (and node
+                          (file-exists-p path)
+                          (>= curr-depth start-depth))
+                (put-text-property (button-start node) (button-end node) 'face
+                                   (treemacs--get-button-face
+                                    path ht
+                                    (if (memq (treemacs-button-get node :state)
+                                              '(file-node-open file-node-closed))
+                                        'treemacs-git-unmodified-face
+                                      'treemacs-directory-face)))
+                (forward-line 1)
+                (if (eobp)
+                    (setf node nil)
                   (setf node (treemacs-node-at-point)
                         path (-some-> node (treemacs-button-get :path))
                         curr-depth (-some-> node (treemacs-button-get :depth)))))))))))))
