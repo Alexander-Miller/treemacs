@@ -165,6 +165,11 @@ Not used directly, but as part of `treemacs-without-messages'.")
        path
      (treemacs--parent ,path))))
 
+(define-inline treemacs--delete-line ()
+  "Delete the current line.
+Unlike `kill-whole-line' this won't pollute the kill ring."
+  (delete-region (point-at-bol) (min (point-max) (1+ (point-at-eol)))))
+
 (define-inline treemacs-current-button ()
   "Get the button in the current line.
 Returns nil when point is between projects."
