@@ -275,7 +275,7 @@ A directory is collapsible when its content consists of nothing but another
 directory.
 
 The value determines how many directories can be collapsed at once, both as a
-performance cap and to prevent a too long directory names in the treemacs view.
+performance cap and to prevent too long directory names in the treemacs view.
 
 To minimize this option's impact on display performace the search for
 directories to collapse is done asynchronously in a python script and will thus

@@ -41,12 +41,6 @@ functions.")
 (defvar treemacs--follow-timer nil
   "Idle timer for `treemacs--follow' to run.")
 
-(defun treemacs--idle-follow ()
-  "Start a timer for `treemacs--follow' to run unless it's started already."
-  (unless treemacs--follow-timer
-    (setq treemacs--follow-timer
-          (run-with-idle-timer treemacs-file-follow-delay nil #'treemacs--follow))) )
-
 (defun treemacs--follow ()
   "Move point to the current file in the treemacs buffer.
 Expand directories if needed. Do nothing if current file does not exist in the
@@ -83,51 +77,21 @@ not visible."
                    (when treemacs-recenter-after-file-follow
                      (treemacs--maybe-recenter))))))))))))
 
-;; this is only to stop the compiler from complaining about unknown functions
-(with-eval-after-load 'which-key
-  (declare-function which-key--show-popup "which-key")
-  (declare-function which-key--hide-popup "which-key"))
-
-(defun treemacs--select-window-advice (&rest _)
-  "Advice function for `treemacs-follow-mode'.
-Ignores the original arguments of `select-window' and directly calls
-`treemacs--follow'."
+(defun treemacs--follow-after-buffer-list-update ()
+  "Debounced call to `treemacs--follow'."
   (when treemacs--ready-to-follow
-    (treemacs--idle-follow)))
-
-(defun treemacs--follow-compatibility-advice (original-func &rest args)
-  "Make ORIGINAL-FUNC compatible with `treemacs-follow-mode'.
-Do so by running it and its ARGS through `treemacs-without-following'."
-  (treemacs-without-following
-   (apply original-func args)))
+    (unless treemacs--follow-timer
+      (setq treemacs--follow-timer
+            (run-with-idle-timer treemacs-file-follow-delay nil #'treemacs--follow)))))
 
 (defun treemacs--setup-follow-mode ()
-  "Setup all the advice needed for `treemacs-follow-mode'."
-  (advice-add 'select-window :after #'treemacs--select-window-advice)
-  ;; which key compatibility
-  (progn
-    (when (fboundp 'which-key--show-popup)
-      (advice-add #'which-key--show-popup :around #'treemacs--follow-compatibility-advice))
-    (when (fboundp 'which-key--hide-popup)
-      (advice-add #'which-key--hide-popup :around #'treemacs--follow-compatibility-advice)))
-  ;; winum compatibility
-  (when (fboundp 'winum--update)
-    (advice-add #'winum--update :around #'treemacs--follow-compatibility-advice))
+  "Setup all the hooks needed for `treemacs-follow-mode'."
+  (add-hook 'buffer-list-update-hook #'treemacs--follow-after-buffer-list-update)
   (treemacs--follow))
 
 (defun treemacs--tear-down-follow-mode ()
-  "Remove all the advice added by `treemacs--setup-follow-mode'."
-  (advice-remove 'select-window 'treemacs--select-window-advice)
-  ;; which key compatibility
-  (progn
-    (when (advice-member-p #'treemacs--follow-compatibility-advice #'which-key--show-popup)
-      (advice-remove #'which-key--show-popup #'treemacs--follow-compatibility-advice))
-    (when (advice-member-p #'treemacs--follow-compatibility-advice #'which-key--hide-popup)
-      (advice-remove #'which-key--hide-popup #'treemacs--follow-compatibility-advice)))
-  ;; winum compatibility
-  (when (and (fboundp 'winum--update)
-             (advice-member-p #'treemacs--follow-compatibility-advice #'winum--update))
-    (advice-remove #'winum--update #'treemacs--follow-compatibility-advice)))
+  "Remove the hooks added by `treemacs--setup-follow-mode'."
+  (remove-hook 'buffer-list-update-hook #'treemacs--follow-after-buffer-list-update))
 
 (define-minor-mode treemacs-follow-mode
   "Toggle `treemacs-follow-mode'.
