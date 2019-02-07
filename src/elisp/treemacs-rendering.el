@@ -39,6 +39,13 @@
   treemacs--start-watching
   treemacs--stop-watching)
 
+(treemacs-import-functions-from "treemacs-tags"
+  treemacs--goto-tag-button-at
+  treemacs--tags-path-of)
+
+(treemacs-import-functions-from "treemacs-interface"
+  treemacs-TAB-action)
+
 (treemacs-import-functions-from "treemacs-extensions"
   treemacs--apply-root-top-extensions
   treemacs--apply-root-bottom-extensions
@@ -158,7 +165,7 @@ DEFAULT: Face"
                  ('mod-time-asc #'treemacs--sort-mod-time-asc)
                  ('mod-time-desc #'treemacs--sort-mod-time-desc)
                  (_ (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting))))
-              (entries (-> ,dir (directory-files t nil t) (treemacs--filter-files-to-be-shown)))
+              (entries (-> ,dir (directory-files :absolute-names nil :no-sort) (treemacs--filter-files-to-be-shown)))
               (dirs-files (-separate #'file-directory-p entries)))
          (list (sort (cl-first dirs-files) sort-func)
                (sort (cl-second dirs-files) sort-func)))))))
@@ -597,6 +604,44 @@ expanded."
       (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))
       (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))
       (hl-line-highlight))))
+
+(defun treemacs-delete-single-node (path &optional project)
+  "Delete single node at given PATH and PROJECT.
+Does nothing when the given node is not visible. Must be run in a treemacs
+buffer.
+
+This will also take care of all the necessary house-keeping like making sure
+child nodes are deleted as well and everything is removed from the dom.
+
+If multiple nodes are to be deleted it is more efficient to make multiple calls
+to `treemacs-do-delete-single-node' wrapped in `treemacs-save-position' instead.
+
+PATH: Node Path
+Project: Project Struct"
+  (treemacs-save-position
+    (treemacs-do-delete-single-node path project)))
+
+(define-inline treemacs-do-delete-single-node (path &optional project)
+  "Actual implementation of single node deletion.
+Will delete node at given PATH and PROJECT. See also
+`treemacs-delete-single-node'.
+
+PATH: Node Path
+Project: Project Struct"
+  (inline-letevals (path project)
+    (inline-quote
+     (when (treemacs-is-path-visible? ,path)
+       (-let [pos nil]
+         (--when-let (treemacs-find-in-dom ,path)
+           (setf pos (treemacs-dom-node->position it))
+           (when (treemacs-is-node-expanded? pos)
+             (goto-char pos)
+             (treemacs-TAB-action :purge))
+           (treemacs-dom-node->remove-from-dom! it))
+         (unless pos (treemacs-goto-node ,path ,project))
+         (treemacs-with-writable-buffer
+          (treemacs--delete-line)))
+       (hl-line-highlight)))))
 
 (provide 'treemacs-rendering)
 
