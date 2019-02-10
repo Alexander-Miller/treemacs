@@ -75,7 +75,7 @@ not visible."
                            (goto-char project-pos)
                            (treemacs--collapse-root-node project-pos)))))
                    (when treemacs-recenter-after-file-follow
-                     (treemacs--maybe-recenter))))))))))))
+                     (treemacs--maybe-recenter treemacs-recenter-after-file-follow))))))))))))
 
 (defun treemacs--follow-after-buffer-list-update ()
   "Debounced call to `treemacs--follow'."

@@ -257,7 +257,7 @@ PROJECT: Project Struct"
             (hl-line-highlight)
             (treemacs--evade-image)
             (when treemacs-recenter-after-tag-follow
-              (treemacs--maybe-recenter)))))))))
+              (treemacs--maybe-recenter treemacs-recenter-after-tag-follow)))))))))
 
 (defun treemacs--follow-tag-at-point ()
   "Follow the tag at point in the treemacs view."

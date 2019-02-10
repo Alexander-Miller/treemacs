@@ -325,34 +325,36 @@ setting. Setting them all yourself is not necessary, they are only listed here t
       (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
     (progn
-      (setq treemacs-collapse-dirs              (if (executable-find "python") 3 0)
-            treemacs-deferred-git-apply-delay   0.5
-            treemacs-display-in-side-window     t
-            treemacs-file-event-delay           5000
-            treemacs-file-follow-delay          0.2
-            treemacs-follow-after-init          t
-            treemacs-follow-recenter-distance   0.1
-            treemacs-git-command-pipe           ""
-            treemacs-goto-tag-strategy          'refetch-index
-            treemacs-indentation                2
-            treemacs-indentation-string         " "
-            treemacs-is-never-other-window      nil
-            treemacs-max-git-entries            5000
-            treemacs-no-png-images              nil
-            treemacs-no-delete-other-windows    t
-            treemacs-project-follow-cleanup     nil
-            treemacs-persist-file               (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-            treemacs-recenter-after-file-follow nil
-            treemacs-recenter-after-tag-follow  nil
-            treemacs-show-cursor                nil
-            treemacs-show-hidden-files          t
-            treemacs-silent-filewatch           nil
-            treemacs-silent-refresh             nil
-            treemacs-sorting                    'alphabetic-desc
-            treemacs-space-between-root-nodes   t
-            treemacs-tag-follow-cleanup         t
-            treemacs-tag-follow-delay           1.5
-            treemacs-width                      35)
+      (setq treemacs-collapse-dirs                 (if (executable-find "python") 3 0)
+            treemacs-deferred-git-apply-delay      0.5
+            treemacs-display-in-side-window        t
+            treemacs-file-event-delay              5000
+            treemacs-file-follow-delay             0.2
+            treemacs-follow-after-init             t
+            treemacs-git-command-pipe              ""
+            treemacs-goto-tag-strategy             'refetch-index
+            treemacs-indentation                   2
+            treemacs-indentation-string            " "
+            treemacs-is-never-other-window         nil
+            treemacs-max-git-entries               5000
+            treemacs-no-png-images                 nil
+            treemacs-no-delete-other-windows       t
+            treemacs-project-follow-cleanup        nil
+            treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+            treemacs-recenter-distance             0.1
+            treemacs-recenter-after-file-follow    nil
+            treemacs-recenter-after-tag-follow     nil
+            treemacs-recenter-after-project-jump   'always
+            treemacs-recenter-after-project-expand 'on-distance
+            treemacs-show-cursor                   nil
+            treemacs-show-hidden-files             t
+            treemacs-silent-filewatch              nil
+            treemacs-silent-refresh                nil
+            treemacs-sorting                       'alphabetic-desc
+            treemacs-space-between-root-nodes      t
+            treemacs-tag-follow-cleanup            t
+            treemacs-tag-follow-delay              1.5
+            treemacs-width                         35)
 
       ;; The default width and height of the icons is 22 pixels. If you are
       ;; using a Hi-DPI display, uncomment this to double the icon size.
@@ -398,46 +400,48 @@ setting. Setting them all yourself is not necessary, they are only listed here t
 ** Variables
 Treemacs offers the following configuration options (~describe-variable~ will usually offers more details):
 
-| Variable                            | Default                                     | Description                                                                                                                                                                                |
-|-------------------------------------+---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| treemacs-indentation                | 2                                           | The number of times each level is indented in the file tree.                                                                                                                               |
-| treemacs-indentation-string         | " "                                         | The string that is used to create indentation.                                                                                                                                             |
-| treemacs-width                      | 35                                          | Width of the treemacs window.                                                                                                                                                              |
-| treemacs-show-hidden-files          | t                                           | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                        |
-| treemacs-follow-after-init          | nil                                         | When t follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                            |
-| treemacs-sorting                    | alphabetic-asc                              | Indicates how treemacs will sort its files and directories. (Files will always be shown after directories.)                                                                                |
-| treemacs-ignored-file-predicates    | (treemacs--std-ignore-file-predicate)       | List of predicates to test for files and directories ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer.                                                         |
-| treemacs-pre-file-insert-predicates | nil                                         | List of predicates to test for files and directories not to be rendered. Unlike ~treemacs-ignored-file-predicates~ these predicates apply when files' git status information is available. |
-| treemacs-file-event-delay           | 5000                                        | How long (in milliseconds) to collect file events before refreshing. See also ~treemacs-filewatch-mode~.                                                                                   |
-| treemacs-goto-tag-strategy          | refetch-index                               | Indicates how to move to a tag when its buffer is dead.                                                                                                                                    |
-| treemacs-RET-actions-config         | Prefers visiting nodes over closing/opening | Alist defining the behaviour of ~treemacs-RET-action~.                                                                                                                                     |
-| treemacs-TAB-actions-config         | Prefers closing/opening nodes over visiting | Alist defining the behaviour of ~treemacs-TAB-action~.                                                                                                                                     |
-| treemacs-collapse-dirs              | 0                                           | Collapse this many directories into one, when possible. A directory is collapsible when its content consists of nothing but another directory.                                             |
-| treemacs-silent-refresh             | nil                                         | When non-nil a completed refresh will not be announced with a log message. This applies both to manual refreshing as well as automatic (due to ~treemacs-filewatch-mode~).                 |
-| treemacs-silent-filewatch           | nil                                         | When non-nil a refresh due to ~filewatch-mode~ will cause no log message.                                                                                                                  |
-| treemacs-is-never-other-window      | nil                                         | Prevents treemacs from being selected with ~other-window~.                                                                                                                                 |
-| treemacs-position                   | left                                        | Position of treemacs buffer. Valid values are ~left~, ~right~.                                                                                                                             |
-| treemacs-tag-follow-delay           | 1.5                                         | Delay in seconds of inactivity for ~treemacs-tag-follow-mode~ to trigger.                                                                                                                  |
-| treemacs-tag-follow-cleanup         | t                                           | When non-nil ~treemacs-tag-follow-mode~ will keep only the current file's tags visible.                                                                                                    |
-| treemacs-project-follow-cleanup     | nil                                         | When non-nil ~treemacs-follow-mode~ will keep only the current project expanded and all others closed.                                                                                     |
-| treemacs-no-png-images              | nil                                         | When non-nil treemacs will use TUI string icons even when running in a GUI.                                                                                                                |
-| treemacs-python-executable          | (executable-find "python")                  | Python binary used by treemacs. Should only need changing if python2 is the default and you want treemacs to use python3 for the extended version of ~treemacs-git-mode~.                  |
-| treemacs-recenter-after-file-follow | nil                                         | When non-nil ~recenter~ will be called when ~treemacs-follow-mode~ moves to a new file.                                                                                                    |
-| treemacs-recenter-after-tag-follow  | nil                                         | When non-nil ~recenter~ will be called when ~treemacs-tag-follow-mode~ moves to a new tag.                                                                                                 |
-| treemacs-follow-recenter-distance   | 0.1                                         | Minimum distance from window top/bottom (0.1 = 10%) before treemacs calls ~recenter~ in tag/file-follow-mode.                                                                              |
-| treemacs-pulse-on-success           | t                                           | When non-nil treemacs will pulse the current line as a success indicator, e.g. when creating a file.                                                                                       |
-| treemacs-pulse-on-failure           | t                                           | When non-nil treemacs will pulse the current line as a failure indicator, e.g. when failing to find a file's tags.                                                                         |
-| treemacs-elisp-imenu-expression     | [too large to list]                         | The imenu expression treemacs uses in elisp buffers.                                                                                                                                       |
-| treemacs-persist-file               | "~/.emacs.d/.cache/treemacs-persist"        | Path to the file treemacs uses to persist its state.                                                                                                                                       |
-| treemacs-space-between-root-nodes   | t                                           | When non-nil treemacs will separate root nodes with an empty line.                                                                                                                         |
-| treemacs--fringe-indicator-bitmap   | [vertical bar]                              | The fringe bitmap used by the fringe-indicator minor mode.                                                                                                                                 |
-| treemacs-deferred-git-apply-delay   | 0.5                                         | Seconds of idle time for git highlighting to apply when using the deferred ~treemacs-git-mode~.                                                                                            |
-| treemacs-file-follow-delay          | 0.2                                         | Delay in seconds of idle time for treemacs to follow the selected window.                                                                                                                  |
-| treemacs-display-in-side-window     | t                                           | When non-nil treemacs will use a dedicated [[https://www.gnu.org/software/emacs/draft/manual/html_node/elisp/Side-Windows.html][side-window]].                                                                                                                                    |
-| treemacs-max-git-entries            | 5000                                        | Maximum number of git status entries treemacs will process. Anything above that number will be ignored.                                                                                    |
-| treemacs-show-cursor                | nil                                         | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                          |
-| treemacs-git-command-pipe           | ""                                          | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                               |
-| treemacs-no-delete-other-windows    | t                                           | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                |
+| Variable                               | Default                                     | Description                                                                                                                                                                                |
+|----------------------------------------+---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| treemacs-indentation                   | 2                                           | The number of times each level is indented in the file tree.                                                                                                                               |
+| treemacs-indentation-string            | " "                                         | The string that is used to create indentation.                                                                                                                                             |
+| treemacs-width                         | 35                                          | Width of the treemacs window.                                                                                                                                                              |
+| treemacs-show-hidden-files             | t                                           | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                        |
+| treemacs-follow-after-init             | nil                                         | When t follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                            |
+| treemacs-sorting                       | alphabetic-asc                              | Indicates how treemacs will sort its files and directories. (Files will always be shown after directories.)                                                                                |
+| treemacs-ignored-file-predicates       | (treemacs--std-ignore-file-predicate)       | List of predicates to test for files and directories ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer.                                                         |
+| treemacs-pre-file-insert-predicates    | nil                                         | List of predicates to test for files and directories not to be rendered. Unlike ~treemacs-ignored-file-predicates~ these predicates apply when files' git status information is available. |
+| treemacs-file-event-delay              | 5000                                        | How long (in milliseconds) to collect file events before refreshing. See also ~treemacs-filewatch-mode~.                                                                                   |
+| treemacs-goto-tag-strategy             | refetch-index                               | Indicates how to move to a tag when its buffer is dead.                                                                                                                                    |
+| treemacs-RET-actions-config            | Prefers visiting nodes over closing/opening | Alist defining the behaviour of ~treemacs-RET-action~.                                                                                                                                     |
+| treemacs-TAB-actions-config            | Prefers closing/opening nodes over visiting | Alist defining the behaviour of ~treemacs-TAB-action~.                                                                                                                                     |
+| treemacs-collapse-dirs                 | 0                                           | Collapse this many directories into one, when possible. A directory is collapsible when its content consists of nothing but another directory.                                             |
+| treemacs-silent-refresh                | nil                                         | When non-nil a completed refresh will not be announced with a log message. This applies both to manual refreshing as well as automatic (due to ~treemacs-filewatch-mode~).                 |
+| treemacs-silent-filewatch              | nil                                         | When non-nil a refresh due to ~filewatch-mode~ will cause no log message.                                                                                                                  |
+| treemacs-is-never-other-window         | nil                                         | Prevents treemacs from being selected with ~other-window~.                                                                                                                                 |
+| treemacs-position                      | left                                        | Position of treemacs buffer. Valid values are ~left~, ~right~.                                                                                                                             |
+| treemacs-tag-follow-delay              | 1.5                                         | Delay in seconds of inactivity for ~treemacs-tag-follow-mode~ to trigger.                                                                                                                  |
+| treemacs-tag-follow-cleanup            | t                                           | When non-nil ~treemacs-tag-follow-mode~ will keep only the current file's tags visible.                                                                                                    |
+| treemacs-project-follow-cleanup        | nil                                         | When non-nil ~treemacs-follow-mode~ will keep only the current project expanded and all others closed.                                                                                     |
+| treemacs-no-png-images                 | nil                                         | When non-nil treemacs will use TUI string icons even when running in a GUI.                                                                                                                |
+| treemacs-python-executable             | (executable-find "python")                  | Python binary used by treemacs. Should only need changing if python2 is the default and you want treemacs to use python3 for the extended version of ~treemacs-git-mode~.                  |
+| treemacs-recenter-after-file-follow    | nil                                         | Decides if and when to call ~recenter~ when ~treemacs-follow-mode~ moves to a new file.                                                                                                    |
+| treemacs-recenter-after-tag-follow     | nil                                         | Decides if and when to call ~recenter~ when ~treemacs-tag-follow-mode~ moves to a new tag.                                                                                                 |
+| treemacs-recenter-after-project-jump   | 'always                                     | Decides if and when to call ~recenter~ when navigating between projects.                                                                                                                   |
+| treemacs-recenter-after-project-expand | 'on-distance                                | Decides if and when to call ~recenter~ when expanding a project node.                                                                                                                      |
+| treemacs-recenter-distance             | 0.1                                         | Minimum distance from window top/bottom (0.1 = 10%) before treemacs calls ~recenter~ in tag/file-follow-mode.                                                                              |
+| treemacs-pulse-on-success              | t                                           | When non-nil treemacs will pulse the current line as a success indicator, e.g. when creating a file.                                                                                       |
+| treemacs-pulse-on-failure              | t                                           | When non-nil treemacs will pulse the current line as a failure indicator, e.g. when failing to find a file's tags.                                                                         |
+| treemacs-elisp-imenu-expression        | [too large to list]                         | The imenu expression treemacs uses in elisp buffers.                                                                                                                                       |
+| treemacs-persist-file                  | "~/.emacs.d/.cache/treemacs-persist"        | Path to the file treemacs uses to persist its state.                                                                                                                                       |
+| treemacs-space-between-root-nodes      | t                                           | When non-nil treemacs will separate root nodes with an empty line.                                                                                                                         |
+| treemacs--fringe-indicator-bitmap      | [vertical bar]                              | The fringe bitmap used by the fringe-indicator minor mode.                                                                                                                                 |
+| treemacs-deferred-git-apply-delay      | 0.5                                         | Seconds of idle time for git highlighting to apply when using the deferred ~treemacs-git-mode~.                                                                                            |
+| treemacs-file-follow-delay             | 0.2                                         | Delay in seconds of idle time for treemacs to follow the selected window.                                                                                                                  |
+| treemacs-display-in-side-window        | t                                           | When non-nil treemacs will use a dedicated [[https://www.gnu.org/software/emacs/draft/manual/html_node/elisp/Side-Windows.html][side-window]].                                                                                                                                    |
+| treemacs-max-git-entries               | 5000                                        | Maximum number of git status entries treemacs will process. Anything above that number will be ignored.                                                                                    |
+| treemacs-show-cursor                   | nil                                         | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                          |
+| treemacs-git-command-pipe              | ""                                          | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                               |
+| treemacs-no-delete-other-windows       | t                                           | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                |
 
 ** Faces
 Treemacs defines and uses the following faces:

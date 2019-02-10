@@ -322,17 +322,51 @@ flooded with their tags."
   :group 'treemacs)
 
 (defcustom treemacs-recenter-after-file-follow nil
-  "When non-nil the view will be centered when follow mode is active.
-This is done by calling `recenter' after `treemacs-follow-mode' moves to a new
-file."
-  :type 'boolean
+  "Decides when to recenter view after following a file.
+Possible values are:
+ * nil: never recenter
+ * 'always: always recenter
+ * 'on-distance: recenter based on `treemacs-recenter-distance'"
+  :type '(choice (const :tag "Always" always)
+                 (const :tag "Based on Distance" on-distance)
+                 (const :tag "Never" nil))
   :group 'treemacs)
 
 (defcustom treemacs-recenter-after-tag-follow nil
-  "When non-nil the view will be centered when tag follow mode is active.
-This is done by calling `recenter' after `treemacs-tag-follow-mode' moves to a
-new file."
-  :type 'boolean
+  "Decides when to recenter view after following a tag.
+Possible values are:
+ * nil: never recenter
+ * 'always: always recenter
+ * 'on-distance: recenter based on `treemacs-recenter-distance'"
+  :type '(choice (const :tag "Always" always)
+                 (const :tag "Based on Distance" on-distance)
+                 (const :tag "Never" nil))
+  :group 'treemacs)
+
+(defcustom treemacs-recenter-after-project-jump 'always
+  "Decides when to recenter view after moving between projects.
+Specifically applies to calling `treemacs-next-project' and
+`treemacs-previous-project'.
+
+Possible values are:
+ * nil: never recenter
+ * 'always: always recenter
+ * 'on-distance: recenter based on `treemacs-recenter-distance'"
+  :type '(choice (const :tag "Always" always)
+                 (const :tag "Based on Distance" on-distance)
+                 (const :tag "Never" nil))
+  :group 'treemacs)
+
+(defcustom treemacs-recenter-after-project-expand 'on-distance
+  "Decides when to recenter view after expanding a project root node.
+
+Possible values are:
+ * nil: never recenter
+ * 'always: always recenter
+ * 'on-distance: recenter based on `treemacs-recenter-distance'"
+  :type '(choice (const :tag "Always" always)
+                 (const :tag "Based on Distance" on-distance)
+                 (const :tag "Never" nil))
   :group 'treemacs)
 
 (defcustom treemacs-pulse-on-success t
@@ -348,6 +382,7 @@ This applies to actions like treemacs not finding any tags it can show when
   :type 'boolean
   :group 'treemacs)
 
+(make-obsolete-variable 'treemacs-follow-recenter-distance 'treemacs-recenter-distance "v2.5")
 (defcustom treemacs-follow-recenter-distance 0.1
   "Minimum distance from the top/bottom for (tag-)follow mode to recenter.
 Treemacs will be calling `recenter' after following a file/tag if the distance
@@ -359,6 +394,29 @@ window height of 40 lines that means point being within the first or last 4
 lines of the treemacs window.
 Will only take effect if `treemacs-recenter-after-tag-follow' and/or
 `treemacs-recenter-after-file-follow' is non-nil.
+
+Note that this does *not* take `scroll-margin' into account."
+  :type 'float
+  :group 'treemacs)
+
+(defcustom treemacs-recenter-distance 0.1
+  "Minimum distance from a window's top/bottom for treemacs to call `recenter'.
+This value will apply when any one of the following options is set to
+`on-distance':
+
+ * treemacs-recenter-after-tag-follow
+ * treemacs-recenter-after-file-follow
+ * treemacs-recenter-after-project-jump
+ * treemacs-recenter-after-project-expand
+
+In that case a call to `recenter' will be made when the distance between point
+and the top/bottom of the treemacs window is less then this many lines. The
+value is not an absolute line count, but a relative floating-point percentage,
+with 0.0 being 0% and 1.0 being 100%.
+This means that, for example, when this variable is set to 0.1 `recenter' will
+be called within a 10% distance of the treemacs window's top/bottom. For a
+window height of 40 lines that means point being within the first or last 4
+lines of the treemacs window.
 
 Note that this does *not* take `scroll-margin' into account."
   :type 'float

@@ -4,6 +4,10 @@
 * Changelog
 ** Current master
  - Added ~treemacs-magit~ helper package.
+ - Added ~treemacs-recenter-after-project-jump~ option.
+ - Added ~treemacs-recenter-after-project-expand~ option.
+ - ~recenter-after-x~ can now be set to ~always~ or ~on-distance~.
+ - Replaced ~treemacs-follow-recenter-distance~ with ~treemacs-recenter-distance~.
 ** 2.4
  - Add support for using ~org-store-link~ inside treemacs.
  - Introduce the ~treemacs-icons-dired~ package.

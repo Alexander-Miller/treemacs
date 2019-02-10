@@ -621,7 +621,8 @@ For slower scrolling see `treemacs-previous-line-other-window'"
     (if (or (= pos (point))
             (= pos (point-max)))
         (treemacs-pulse-on-failure "There is no next project to move to.")
-      (goto-char pos))))
+      (goto-char pos)
+      (treemacs--maybe-recenter treemacs-recenter-after-project-jump))))
 
 (defun treemacs-previous-project ()
   "Move to the next project root node."
@@ -630,7 +631,8 @@ For slower scrolling see `treemacs-previous-line-other-window'"
     (if (or (= pos (point))
             (= pos (point-min)))
         (treemacs-pulse-on-failure "There is no previous project to move to.")
-      (goto-char pos))))
+      (goto-char pos)
+      (treemacs--maybe-recenter treemacs-recenter-after-project-jump))))
 
 (defun treemacs-rename-project ()
   "Give the project at point a new name."
@@ -763,7 +765,7 @@ With a prefix ARG also forget about all the nodes opened in the project."
       (treemacs--forget-last-highlight)
       (goto-char btn)
       (treemacs--collapse-root-node btn arg)
-      (treemacs--maybe-recenter))))
+      (treemacs--maybe-recenter 'on-distance))))
 
 (defun treemacs-collapse-all-projects (&optional arg)
   "Collapses all projects.
@@ -776,7 +778,7 @@ With a prefix ARG also forget about all the nodes opened in the projects."
         (when (eq 'root-node-open (treemacs-button-get pos :state))
           (goto-char pos)
           (treemacs--collapse-root-node pos arg)))))
-  (treemacs--maybe-recenter))
+  (treemacs--maybe-recenter 'on-distance))
 
 (defun treemacs-collapse-other-projects (&optional arg)
   "Collapses all projects except the project at point.
@@ -792,7 +794,7 @@ With a prefix ARG also forget about all the nodes opened in the projects."
             (when (eq 'root-node-open (treemacs-button-get pos :state))
               (goto-char pos)
               (treemacs--collapse-root-node pos arg)))))))
-  (treemacs--maybe-recenter))
+  (treemacs--maybe-recenter 'on-distance))
 
 (defun treemacs-peek ()
   "Peek at the content of the node at point.
