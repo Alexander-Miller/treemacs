@@ -504,7 +504,8 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
      :post-open-action
      (progn
        (treemacs-on-expand path btn nil)
-       (treemacs--start-watching path)))))
+       (treemacs--start-watching path)
+       (treemacs--maybe-recenter treemacs-recenter-after-project-expand)))))
 
 (defun treemacs--collapse-root-node (btn &optional recursive)
   "Collapse the given root BTN.
