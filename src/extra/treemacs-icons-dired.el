@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((treemacs "0.0") (emacs "25.2"))
+;; Package-Requires: ((treemacs "0.0") (emacs "25.2") (cl-lib "0.5"))
 ;; Package-Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
@@ -28,9 +28,14 @@
 (require 'treemacs)
 (require 'hl-line)
 (require 'dired)
+(require 'cl-lib)
+(require 'pcase)
 
 (defvar-local treemacs-icons-dired-displayed nil
   "Flags whether icons have been added.")
+
+(defvar-local treemacs-icons-dired--covered-subdirs nil
+  "List of subdirs icons were already added for.")
 
 (defun treemacs-icons-dired--display ()
   "Display the icons of files in a dired buffer."
@@ -38,21 +43,51 @@
              (not treemacs-icons-dired-displayed)
              dired-subdir-alist)
     (setq-local treemacs-icons-dired-displayed t)
+    (pcase-dolist (`(,path . ,pos) dired-subdir-alist)
+      (treemacs-icons-dired--display-icons-for-subdir path pos))))
+
+(defun treemacs-icons-dired--display-icons-for-subdir (path pos)
+  "Display icons for subdir PATH at given POS."
+  (unless (member path treemacs-icons-dired--covered-subdirs)
+    (add-to-list 'treemacs-icons-dired--covered-subdirs path)
     (treemacs-with-writable-buffer
      (save-excursion
-       (goto-char (point-min))
+       (goto-char pos)
        (forward-line 4)
-       (while (not (eobp))
-         (when  (dired-move-to-filename nil)
-           (let* ((file (dired-get-filename nil t))
-                  (icon (if (file-directory-p file)
-                            treemacs-icon-closed
-                          (treemacs-icon-for-file file))))
-             (insert icon)
-             (forward-line 1))))))))
+       (cl-block loop
+         (while (not (eobp))
+           (if (dired-move-to-filename nil)
+               (let* ((file (dired-get-filename nil t))
+                      (icon (if (file-directory-p file)
+                                treemacs-icon-closed
+                              (treemacs-icon-for-file file))))
+                 (insert icon))
+             (cl-return-from loop))
+           (forward-line 1) ))))))
+
+(defun treemacs-icons-dired--insert-subdir-advice (&rest args)
+  "Advice to dired & dired+ insert-subdir commands.
+Will add icons for the subdir in the `car' of ARGS."
+  (let* ((path (car args))
+         (pos (cdr (assoc path dired-subdir-alist))))
+    (when pos
+      (treemacs-icons-dired--display-icons-for-subdir path pos))))
+
+(advice-add #'dired-insert-subdir :after #'treemacs-icons-dired--insert-subdir-advice)
+(with-eval-after-load 'dired+
+  (when (fboundp 'diredp-insert-subdirs)
+    (advice-add #'diredp-insert-subdirs :after #'treemacs-icons-dired--insert-subdir-advice)))
+
+(defun treemacs-icons-dired--kill-subdir-advice (&rest _args)
+  "Advice to dired kill-subdir commands.
+Will remove the killed subdir from `treemacs-icons-dired--covered-subdirs'."
+  (setf treemacs-icons-dired--covered-subdirs (delete (dired-current-directory) treemacs-icons-dired--covered-subdirs)))
+
+(advice-add #'dired-kill-subdir :before #'treemacs-icons-dired--kill-subdir-advice)
 
 (defun treemacs-icons-dired--reset (&rest _args)
-  "Reset `treemacs-icons-dired--display' when the buffer is reverted."
+  "Reset metadata on revert."
+  (setq-local treemacs-icons-dired--covered-subdirs nil)
   (setq-local treemacs-icons-dired-displayed nil))
 
 (defun treemacs-icons-dired--update-icon-selection ()
