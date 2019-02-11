@@ -464,7 +464,7 @@ additional keys."
                                               'face ,root-face
                                               :custom t
                                               :key ,root-key-form
-                                              :path (list ,root-key-form)
+                                              :path (list :custom ,root-key-form)
                                               :depth 0
                                               :project pr
                                               :state ,closed-state-name)))))))))))))
