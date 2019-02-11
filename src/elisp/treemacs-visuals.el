@@ -149,7 +149,8 @@ ignored argument."
             (let* ((pos (max (point-at-bol) (- (button-start btn) 2)))
                    (img-selected (get-text-property pos 'img-selected)))
               (treemacs-with-writable-buffer
-               (when treemacs--last-highlight
+               (when (and treemacs--last-highlight
+                          (> (point-max) treemacs--last-highlight))
                  (let* ((last-pos (- (button-start treemacs--last-highlight) 2))
                         (img-unselected (get-text-property last-pos 'img-unselected)))
                    (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
