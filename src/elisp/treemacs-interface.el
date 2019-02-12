@@ -638,26 +638,29 @@ For slower scrolling see `treemacs-previous-line-other-window'"
   "Give the project at point a new name."
   (interactive)
   (treemacs-with-writable-buffer
-   (treemacs-unless-let (project (treemacs-project-at-point))
-       (treemacs-pulse-on-failure "There is no project here.")
-     (let* ((old-name (treemacs-project->name project))
-            (project-btn (treemacs-project->position project))
-            (state (treemacs-button-get project-btn :state))
-            (new-name (read-string "New name: " (treemacs-project->name project))))
-       (treemacs-save-position
-        (progn
-          (setf (treemacs-project->name project) new-name)
-          (treemacs--forget-last-highlight)
-          ;; after renaming, delete and redisplay the project
-          (goto-char (button-end project-btn))
-          (delete-region (point-at-bol) (point-at-eol))
-          (treemacs--add-root-element project)
-          (when (eq state 'root-node-open)
-            (treemacs--collapse-root-node (treemacs-project->position project))
-            (treemacs--expand-root-node (treemacs-project->position project))))
-        (treemacs-pulse-on-success "Renamed project %s to %s."
-          (propertize old-name 'face 'font-lock-type-face)
-          (propertize new-name 'face 'font-lock-type-face))))))
+   (cl-block body
+     (treemacs-unless-let (project (treemacs-project-at-point))
+         (treemacs-pulse-on-failure "There is no project here.")
+       (let* ((old-name (treemacs-project->name project))
+              (project-btn (treemacs-project->position project))
+              (state (treemacs-button-get project-btn :state))
+              (new-name (read-string "New name: " (treemacs-project->name project))))
+         (treemacs-save-position
+          (progn
+            (treemacs-return-if (string-equal old-name new-name)
+              (treemacs-pulse-on-failure "The new name is the same as the old name."))
+            (setf (treemacs-project->name project) new-name)
+            (treemacs--forget-last-highlight)
+            ;; after renaming, delete and redisplay the project
+            (goto-char (button-end project-btn))
+            (delete-region (point-at-bol) (point-at-eol))
+            (treemacs--add-root-element project)
+            (when (eq state 'root-node-open)
+              (treemacs--collapse-root-node (treemacs-project->position project))
+              (treemacs--expand-root-node (treemacs-project->position project))))
+          (treemacs-pulse-on-success "Renamed project %s to %s."
+            (propertize old-name 'face 'font-lock-type-face)
+            (propertize new-name 'face 'font-lock-type-face)))))))
   (treemacs--evade-image))
 
 (defun treemacs-add-project-to-workspace (path)
