@@ -77,6 +77,18 @@ is a marker pointing to POS."
   (inline-letevals (pos)
     (inline-quote (copy-marker ,pos t))))
 
+(define-inline treemacs--current-screen-line ()
+  "Get the current screen line in the selected window."
+  (inline-quote
+   (max 1 (count-screen-lines (window-start) (point-at-eol)))))
+
+(define-inline treemacs--lines-in-window ()
+  "Determine the number of lines visible in the current (treemacs) window.
+A simple call to something like `window-screen-lines' is insufficient becase
+the height of treemacs' icons must be taken into account."
+  (/ (- (window-pixel-height) (window-mode-line-height))
+     (max treemacs--icon-size (frame-char-height))))
+
 (define-inline treemacs--sort-alphabetic-asc (f1 f2)
   "Sort F1 and F2 alphabetically asc."
   (declare (pure t) (side-effect-free t))
@@ -504,8 +516,10 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
      :post-open-action
      (progn
        (treemacs-on-expand path btn nil)
-       (treemacs--start-watching path)
-       (treemacs--maybe-recenter treemacs-recenter-after-project-expand)))))
+       (treemacs--start-watching path)))
+    ;; in the post-open-action point is right at the end of the close-button's
+    ;; save-recursion, we need to be back at the root for the recenter calculation
+    (treemacs--maybe-recenter treemacs-recenter-after-project-expand)))
 
 (defun treemacs--collapse-root-node (btn &optional recursive)
   "Collapse the given root BTN.
@@ -643,6 +657,22 @@ Project: Project Struct"
          (treemacs-with-writable-buffer
           (treemacs--delete-line)))
        (hl-line-highlight)))))
+
+(defun treemacs--maybe-recenter (when)
+  "Potentially recenter based on value of WHEN.
+Recenter indiscriminately when WHEN is 'always. Otherwise recentering depends
+on the distance between `point' and the window top/bottom being smaller than
+`treemacs-recenter-distance'."
+  (pcase when
+    ('always (recenter))
+    ((guard (memq when '(t on-distance))) ;; t for backward compatibility, remove eventually
+     (let* ((current-line (float (treemacs--current-screen-line)))
+            (all-lines (float (treemacs--lines-in-window)))
+            (distance-from-top (/ current-line all-lines))
+            (distance-from-bottom (- 1.0 distance-from-top)))
+       (when (or (> treemacs-recenter-distance distance-from-top)
+                 (> treemacs-recenter-distance distance-from-bottom))
+         (recenter))))))
 
 (provide 'treemacs-rendering)
 

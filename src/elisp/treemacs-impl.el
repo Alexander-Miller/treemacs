@@ -48,6 +48,7 @@
   treemacs-refresh)
 
 (treemacs-import-functions-from "treemacs-rendering"
+  treemacs--current-screen-line
   treemacs--add-root-element
   treemacs--expand-root-node
   treemacs--collapse-root-node
@@ -1093,22 +1094,6 @@ Will refresh every project when PROJECT is 'all."
 
      (unless treemacs-silent-refresh
        (treemacs-log "Refresh complete.")))))
-
-(defun treemacs--maybe-recenter (when)
-  "Potentially recenter based on value of WHEN.
-Recenter indiscriminately when WHEN is 'always. Otherwise recentering depends
-on the distance between `point' and the window top/bottom being smaller than
-`treemacs-recenter-distance'."
-  (pcase when
-    ('always (recenter))
-    ((guard (memq when '(t on-distance))) ;; t for backward compatibility, remove eventually
-     (let* ((current-line (float (count-lines (window-start) (point))))
-            (all-lines (float (window-height)))
-            (distance-from-top (/ current-line all-lines))
-            (distance-from-bottom (- 1.0 distance-from-top)))
-       (when (or (> treemacs-recenter-distance distance-from-top)
-                 (> treemacs-recenter-distance distance-from-bottom))
-         (recenter))))))
 
 (defun treemacs--setup-peek-buffer (btn &optional goto-tag?)
   "Setup the peek buffer and window for BTN.
