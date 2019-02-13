@@ -308,7 +308,8 @@ it on the same line."
       ,@final-form
       (when curr-win-line
         (with-selected-window curr-window
-          (recenter curr-win-line))))))
+          ;; recenter starts counting at 0
+          (recenter (1- curr-win-line)))))))
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer (and its frame)."
