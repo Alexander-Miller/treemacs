@@ -185,48 +185,49 @@ The third item is a line error that describes
 
 LINES: List of Strings
 CONTEXT: Keyword"
-  (cl-block body
-    (cl-labels ((as-warning (txt) (propertize txt 'face 'warning)))
-      (treemacs-unless-let (line (car lines))
-          (pcase context
-            (:property
-             (cl-return-from body 'success))
-            (:start
-             (cl-return-from body
-               (list 'error :start (as-warning "Input is empty"))))
-            (_
-             (cl-return-from body
-               (list 'error prev (as-warning "Cannot end with a project or workspace name")))))
-        (pcase context
-          (:start
-           (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
-             `(error ,line ,(as-warning "First item must be a workspace name")))
-           (treemacs--validate-persist-lines (cdr lines) :workspace line))
-          (:workspace
-           (treemacs-return-if (not (s-matches? treemacs--persist-project-name-regex line))
-             `(error ,line ,(as-warning "Workspace name must be followed by project name")))
-           (treemacs--validate-persist-lines (cdr lines) :project line))
-          (:project
-           (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
-             `(error ,prev ,(as-warning "Project name must be followed by path declaration")))
-           (-let [path (cadr (s-split " :: " line))]
-             ;; path not existing is only a hard error when org-editing, when loading on boot
-             ;; it's just a warning and the project will be ignored
-             (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
-                                      (not (file-exists-p path)))
-               `(error ,line ,(format (as-warning "File '%s' does not exist") (propertize path 'face 'font-lock-string-face))))
-             (treemacs--validate-persist-lines (cdr lines) :property line)))
-          (:property
-           (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
-                 (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
-             (cond
-              (line-is-workspace-name
-               (treemacs--validate-persist-lines (cdr lines) :workspace line))
-              (line-is-project-name
-               (treemacs--validate-persist-lines (cdr lines) :project line))
-              (t
-               (treemacs-return-if (-none? #'identity (list line-is-workspace-name line-is-project-name))
-                 `(error ,prev ,(as-warning "Path property must be followed by the next workspace or project"))))))))))))
+  (treemacs-block
+   (cl-labels ((as-warning (txt) (propertize txt 'face 'warning)))
+     (treemacs-unless-let (line (car lines))
+         (pcase context
+           (:property
+            (treemacs-return
+              'success))
+           (:start
+            (treemacs-return
+              (list 'error :start (as-warning "Input is empty"))))
+           (_
+            (treemacs-return
+              (list 'error prev (as-warning "Cannot end with a project or workspace name")))))
+       (pcase context
+         (:start
+          (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
+            `(error ,line ,(as-warning "First item must be a workspace name")))
+          (treemacs--validate-persist-lines (cdr lines) :workspace line))
+         (:workspace
+          (treemacs-return-if (not (s-matches? treemacs--persist-project-name-regex line))
+            `(error ,line ,(as-warning "Workspace name must be followed by project name")))
+          (treemacs--validate-persist-lines (cdr lines) :project line))
+         (:project
+          (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
+            `(error ,prev ,(as-warning "Project name must be followed by path declaration")))
+          (-let [path (cadr (s-split " :: " line))]
+            ;; path not existing is only a hard error when org-editing, when loading on boot
+            ;; it's just a warning and the project will be ignored
+            (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
+                                     (not (file-exists-p path)))
+              `(error ,line ,(format (as-warning "File '%s' does not exist") (propertize path 'face 'font-lock-string-face))))
+            (treemacs--validate-persist-lines (cdr lines) :property line)))
+         (:property
+          (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
+                (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
+            (cond
+             (line-is-workspace-name
+              (treemacs--validate-persist-lines (cdr lines) :workspace line))
+             (line-is-project-name
+              (treemacs--validate-persist-lines (cdr lines) :project line))
+             (t
+              (treemacs-return-if (-none? #'identity (list line-is-workspace-name line-is-project-name))
+                `(error ,prev ,(as-warning "Path property must be followed by the next workspace or project"))))))))))))
 
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs-persist-file'."

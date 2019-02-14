@@ -606,27 +606,27 @@ IS-FILE?: Bool"
         (curr-path (--if-let (treemacs-current-button)
                        (treemacs--nearest-path it)
                      (f-expand "~"))))
-    (cl-block body
-      (setq path-to-create (read-file-name
-                            (if is-file?"Create File: " "Create Directory: ")
-                            (f-slash (if (f-dir? curr-path)
-                                         curr-path
-                                       (f-dirname curr-path)))))
-      (treemacs-error-return-if (file-exists-p path-to-create)
-        "%s already exists." (propertize path-to-create 'face 'font-lock-string-face))
-      (treemacs--without-filewatch
-       (if is-file?
-           (-let [dir (f-dirname path-to-create)]
-             (unless (f-exists? dir)
-               (make-directory dir t))
-             (f-touch path-to-create))
-         (make-directory path-to-create t)))
-      (-when-let (project (treemacs--find-project-for-path path-to-create))
-        (treemacs-without-messages (treemacs--do-refresh (current-buffer) project))
-        (treemacs-goto-file-node (treemacs--canonical-path path-to-create) project)
-        (recenter))
-      (treemacs-pulse-on-success
-          "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
+    (treemacs-block
+     (setq path-to-create (read-file-name
+                           (if is-file?"Create File: " "Create Directory: ")
+                           (f-slash (if (f-dir? curr-path)
+                                        curr-path
+                                      (f-dirname curr-path)))))
+     (treemacs-error-return-if (file-exists-p path-to-create)
+       "%s already exists." (propertize path-to-create 'face 'font-lock-string-face))
+     (treemacs--without-filewatch
+      (if is-file?
+          (-let [dir (f-dirname path-to-create)]
+            (unless (f-exists? dir)
+              (make-directory dir t))
+            (f-touch path-to-create))
+        (make-directory path-to-create t)))
+     (-when-let (project (treemacs--find-project-for-path path-to-create))
+       (treemacs-without-messages (treemacs--do-refresh (current-buffer) project))
+       (treemacs-goto-file-node (treemacs--canonical-path path-to-create) project)
+       (recenter))
+     (treemacs-pulse-on-success
+         "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
 
 (define-inline treemacs--follow-path-elements (btn items)
   "Starting at BTN follow (goto and open) every single element in ITEMS.

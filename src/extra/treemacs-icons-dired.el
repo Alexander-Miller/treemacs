@@ -54,16 +54,16 @@
      (save-excursion
        (goto-char pos)
        (forward-line 4)
-       (cl-block loop
-         (while (not (eobp))
-           (if (dired-move-to-filename nil)
-               (let* ((file (dired-get-filename nil t))
-                      (icon (if (file-directory-p file)
-                                treemacs-icon-closed
-                              (treemacs-icon-for-file file))))
-                 (insert icon))
-             (cl-return-from loop))
-           (forward-line 1) ))))))
+       (treemacs-block
+        (while (not (eobp))
+          (if (dired-move-to-filename nil)
+              (let* ((file (dired-get-filename nil t))
+                     (icon (if (file-directory-p file)
+                               treemacs-icon-closed
+                             (treemacs-icon-for-file file))))
+                (insert icon))
+            (treemacs-return nil))
+          (forward-line 1) ))))))
 
 (defun treemacs-icons-dired--insert-subdir-advice (&rest args)
   "Advice to dired & dired+ insert-subdir commands.

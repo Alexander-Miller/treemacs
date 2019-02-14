@@ -333,16 +333,16 @@ additional keys."
        (defun ,expand-name (&optional _)
          ,(format "Expand treemacs nodes of type `%s'." name)
          (interactive)
-         (cl-block body
-           (-let [btn (treemacs-current-button)]
-             (when (null btn)
-               (cl-return-from body
-                 (treemacs-pulse-on-failure "There is nothing to do here.")))
-             (when (not (eq ',closed-state-name (treemacs-button-get btn :state)))
-               (cl-return-from body
-                 (treemacs-pulse-on-failure "This function cannot expand a node of type '%s'."
-                   (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
-             (,do-expand-name btn))))
+         (treemacs-block
+          (-let [btn (treemacs-current-button)]
+            (when (null btn)
+              (treemacs-return
+                (treemacs-pulse-on-failure "There is nothing to do here.")))
+            (when (not (eq ',closed-state-name (treemacs-button-get btn :state)))
+              (treemacs-return
+                (treemacs-pulse-on-failure "This function cannot expand a node of type '%s'."
+                  (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
+            (,do-expand-name btn))))
 
        (defun ,do-expand-name (btn)
          ,(format "Execute expansion of treemacs nodes of type `%s'." name)
@@ -369,16 +369,16 @@ additional keys."
        (defun ,collapse-name (&optional _)
          ,(format "Collapse treemacs nodes of type `%s'." name)
          (interactive)
-         (cl-block body
-           (-let [btn (treemacs-current-button)]
-             (when (null btn)
-               (cl-return-from body
-                 (treemacs-pulse-on-failure "There is nothing to do here.")))
-             (when (not (eq ',open-state-name (treemacs-button-get btn :state)))
-               (cl-return-from body
-                 (treemacs-pulse-on-failure "This function cannot collapse a node of type '%s'."
-                   (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
-             (,do-collapse-name btn))))
+         (treemacs-block
+          (-let [btn (treemacs-current-button)]
+            (when (null btn)
+              (treemacs-return
+                (treemacs-pulse-on-failure "There is nothing to do here.")))
+            (when (not (eq ',open-state-name (treemacs-button-get btn :state)))
+              (treemacs-return
+                (treemacs-pulse-on-failure "This function cannot collapse a node of type '%s'."
+                  (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
+            (,do-collapse-name btn))))
 
        (defun ,do-collapse-name (btn)
          ,(format "Collapse treemacs nodes of type `%s'." name)

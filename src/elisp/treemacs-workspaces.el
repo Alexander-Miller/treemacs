@@ -186,19 +186,17 @@ Return values may be as follows:
 * If everything went well:
   - the symbol `success'
   - the created workspace"
-  (cl-block body
-    (-let [name (read-string "Workspace name: ")]
-      (when (treemacs--is-name-invalid? name)
-        (cl-return-from body
-          `(invalid-name ,name)))
-      (-when-let (ws (--first (string= name (treemacs-workspace->name it))
-                              treemacs--workspaces))
-        (cl-return-from body
-          `(duplicate-name ,ws)))
-      (-let [workspace (make-treemacs-workspace :name name)]
-        (add-to-list 'treemacs--workspaces workspace :append)
-        (treemacs--persist)
-        `(success ,workspace)))))
+  (treemacs-block
+   (-let [name (read-string "Workspace name: ")]
+     (when (treemacs--is-name-invalid? name)
+       (treemacs-return `(invalid-name ,name)))
+     (-when-let (ws (--first (string= name (treemacs-workspace->name it))
+                             treemacs--workspaces))
+       (treemacs-return `(duplicate-name ,ws)))
+     (-let [workspace (make-treemacs-workspace :name name)]
+       (add-to-list 'treemacs--workspaces workspace :append)
+       (treemacs--persist)
+       `(success ,workspace)))))
 
 (defun treemacs-do-remove-workspace (&optional ask-to-confirm)
   "Delete a workspace.
@@ -214,21 +212,21 @@ Return values may be as follows:
   - the symbol `success'
   - the deleted workspace
   - the list of the remaining workspaces"
-  (cl-block body
-    (when (= 1 (length treemacs--workspaces))
-      (cl-return-from body 'only-one-workspace))
-    (let* ((names->workspaces (--map (cons (treemacs-workspace->name it) it) treemacs--workspaces))
-           (name (completing-read "Delete: " names->workspaces nil t))
-           (to-delete (cdr (assoc name names->workspaces))))
-      (when (and ask-to-confirm
-                 (not (yes-or-no-p (format "Delete workspace %s and all its projects?"
-                                           (propertize (treemacs-workspace->name to-delete)
-                                                       'face 'font-lock-type-face)))))
-        (cl-return-from body 'user-cancel))
-      ;; TODO re-render
-      (setq treemacs--workspaces (delete to-delete treemacs--workspaces))
-      (treemacs--persist)
-      `(success ,to-delete ,treemacs--workspaces))))
+  (treemacs-block
+   (treemacs-return-if (= 1 (length treemacs--workspaces))
+     'only-one-workspace)
+   (let* ((names->workspaces (--map (cons (treemacs-workspace->name it) it) treemacs--workspaces))
+          (name (completing-read "Delete: " names->workspaces nil t))
+          (to-delete (cdr (assoc name names->workspaces))))
+     (when (and ask-to-confirm
+                (not (yes-or-no-p (format "Delete workspace %s and all its projects?"
+                                          (propertize (treemacs-workspace->name to-delete)
+                                                      'face 'font-lock-type-face)))))
+       (treemacs-return 'user-cancel))
+     ;; TODO re-render
+     (setq treemacs--workspaces (delete to-delete treemacs--workspaces))
+     (treemacs--persist)
+     `(success ,to-delete ,treemacs--workspaces))))
 
 (defun treemacs-do-add-project-to-workspace (path &optional name)
   "Add project at PATH to the current workspace.
@@ -250,38 +248,35 @@ Return values may be as follows:
 
 PATH: Filepath
 NAME: String"
-  (cl-block body
-    (setq path (-> path (file-truename) (treemacs--canonical-path)))
-    (-when-let (project (treemacs--find-project-for-path path))
-        (cl-return-from body
-          `(duplicate-project ,project)))
-    (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
-           (project (make-treemacs-project :name name :path path))
-           (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
-      (when (treemacs--is-name-invalid? name)
-        (cl-return-from body
-          `(invalid-name ,name)))
-      (-when-let (double (--first (string= name (treemacs-project->name it))
-                                  (treemacs-workspace->projects (treemacs-current-workspace))))
-        (cl-return-from body
-          `(duplicate-name ,double)))
-      (treemacs--add-project-to-current-workspace project)
-      (treemacs-run-in-every-buffer
-       (treemacs-with-writable-buffer
-        (if empty-workspace?
-            (progn
-              (goto-char (point-min))
-              (treemacs--reset-dom))
-          (goto-char (point-max))
-          (when (treemacs-current-button)
-            (insert "\n"))
-          (when treemacs-space-between-root-nodes
-            (insert "\n")))
-        (treemacs--add-root-element project)
-        (treemacs--insert-into-dom (make-treemacs-dom-node
-                                       :key path :position (treemacs-project->position project)))))
-      (treemacs--persist)
-      `(success ,project))))
+  (treemacs-block
+   (setq path (-> path (file-truename) (treemacs--canonical-path)))
+   (-when-let (project (treemacs--find-project-for-path path))
+     (treemacs-return `(duplicate-project ,project)))
+   (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
+          (project (make-treemacs-project :name name :path path))
+          (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
+     (treemacs-return-if (treemacs--is-name-invalid? name)
+       `(invalid-name ,name))
+     (-when-let (double (--first (string= name (treemacs-project->name it))
+                                 (treemacs-workspace->projects (treemacs-current-workspace))))
+       (treemacs-return `(duplicate-name ,double)))
+     (treemacs--add-project-to-current-workspace project)
+     (treemacs-run-in-every-buffer
+      (treemacs-with-writable-buffer
+       (if empty-workspace?
+           (progn
+             (goto-char (point-min))
+             (treemacs--reset-dom))
+         (goto-char (point-max))
+         (when (treemacs-current-button)
+           (insert "\n"))
+         (when treemacs-space-between-root-nodes
+           (insert "\n")))
+       (treemacs--add-root-element project)
+       (treemacs--insert-into-dom (make-treemacs-dom-node
+                                   :key path :position (treemacs-project->position project)))))
+     (treemacs--persist)
+     `(success ,project))))
 (defalias 'treemacs-add-project-at #'treemacs-do-add-project-to-workspace)
 (with-no-warnings
   (make-obsolete #'treemacs-add-project-at #'treemacs-do-add-project-to-workspace "v.2.2.1"))
@@ -325,18 +320,17 @@ Return values may be as follows:
 * If everything went well:
   - the symbol `success'
   - the selected workspace"
-  (cl-block body
-    (when (= 1 (length treemacs--workspaces))
-      (cl-return-from body
-        'only-one-workspace))
-    (let* ((workspaces (->> treemacs--workspaces
-                            (--reject (eq it (treemacs-current-workspace)))
-                            (--map (cons (treemacs-workspace->name it) it))))
-           (name (completing-read "Switch to: " workspaces nil t))
-           (selected (cdr (--first (string= (car it) name) workspaces))))
-      (setf (treemacs-current-workspace) selected)
-      (cl-return-from body
-        `(success ,selected)))))
+  (treemacs-block
+   (treemacs-return-if (= 1 (length treemacs--workspaces))
+     'only-one-workspace)
+   (let* ((workspaces (->> treemacs--workspaces
+                           (--reject (eq it (treemacs-current-workspace)))
+                           (--map (cons (treemacs-workspace->name it) it))))
+          (name (completing-read "Switch to: " workspaces nil t))
+          (selected (cdr (--first (string= (car it) name) workspaces))))
+     (setf (treemacs-current-workspace) selected)
+     (treemacs-return
+       `(success ,selected)))))
 
 (defun treemacs--is-name-invalid? (name)
   "Validate the NAME of a project or workspace.

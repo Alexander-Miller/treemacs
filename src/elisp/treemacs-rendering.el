@@ -469,13 +469,13 @@ BUFFER: Buffer"
 (defun treemacs--resize-git-cache ()
   "Cuts `treemacs--git-cache' back down to size.
 Specifically its size will be reduced to half of `treemacs--git-cache-max-size'."
-  (cl-block body
-    (let* ((size (ht-size treemacs--git-cache))
-           (count (- size (/ treemacs--git-cache-max-size 2))))
-      (treemacs--maphash treemacs--git-cache (key _)
-        (ht-remove! treemacs--git-cache key)
-        (when (>= 0 (cl-decf count))
-          (cl-return-from body))))))
+  (treemacs-block
+   (let* ((size (ht-size treemacs--git-cache))
+          (count (- size (/ treemacs--git-cache-max-size 2))))
+     (treemacs--maphash treemacs--git-cache (key _)
+       (ht-remove! treemacs--git-cache key)
+       (when (>= 0 (cl-decf count))
+         (treemacs-return :done))))))
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
   "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
