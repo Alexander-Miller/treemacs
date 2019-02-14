@@ -1132,6 +1132,13 @@ GOTO-TAG: Bool"
           (with-selected-window window
             (switch-to-buffer buffer-to-restore)))))))
 
+(define-inline treemacs-is-node-file-or-dir? (node)
+  "Return t when NODE is a file or directory."
+  (inline-letevals (node)
+    (inline-quote
+     (memq (treemacs-button-get node :state)
+           '(file-node-open file-node-closed dir-node-open dir-node-closed)))))
+
 (defun treemacs-is-path-visible? (path)
   "Return whether a node for PATH is displayed in the current buffer.
 The return value, if PATH is visible, is either the dom node of PATH - if it

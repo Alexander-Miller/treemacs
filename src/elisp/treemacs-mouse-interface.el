@@ -219,9 +219,10 @@ ignore any prefix argument."
                    ["Open Tags"  treemacs-toggle-node :visible ,(check (memq state '(file-node-closed tag-node-closed)))]
                    ["Close Tags" treemacs-toggle-node :visible ,(check (memq state '(file-node-open tag-node-open)))]
 
-                   ["--" #'ignore                      :visible ,(check node)]
-                   ["Rename"           treemacs-rename :visible ,(check node)]
-                   ["Delete"           treemacs-delete :visible ,(check node)]
+                   ["--" #'ignore                         :visible ,(check node)]
+                   ["Rename"           treemacs-rename    :visible ,(check node)]
+                   ["Delete"           treemacs-delete    :visible ,(check node)]
+                   ["Copy"             treemacs-copy-file :visible ,(check node)]
 
                    ["--" #'ignore t]
                    ("Projects"

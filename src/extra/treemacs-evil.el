@@ -66,6 +66,7 @@
 
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yr")     #'treemacs-copy-project-root)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yy")     #'treemacs-copy-path-at-point)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "yf")     #'treemacs-copy-file)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "gr")     #'treemacs-refresh)
 (evil-define-key 'treemacs treemacs-mode-map [down-mouse-1] #'ignore)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "h")      #'treemacs-root-up)

@@ -640,6 +640,7 @@ By default Treemacs's keymap looks as follows:
 | P             | treemacs-peek                               | Peek at the file (or tag) at point without fully opening it.                                                   |
 | yy            | treemacs-copy-path-at-point                 | Copy the absolute path of the node at point.                                                                   |
 | yr            | treemacs-copy-project-root                  | Copy the absolute path of the project root for the node at point.                                              |
+| yf            | treemacs-copy-file                          | Copy the file at point.                                                                                        |
 | s             | treemacs-resort                             | Set a new value for ~treemacs-sorting~.                                                                        |
 | b             | treemacs-add-bookmark                       | Bookmark the currently selected files's, dir's or tag's location.                                              |
 | h             | treemacs-root-up                            | Move treemacs' root one level upward. Only works with a single project in the workspace.                       |
