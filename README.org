@@ -281,6 +281,8 @@ your home directory when there is no node or path at point. That means that vari
 ~magit-status~ or ~helm-projectile-ag~ will correctly act based on the current directory or project context.
 ** Tramp Support
 Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
+
+However tramp support has some restrictions: ~treemacs-use-collapsed-directories~ has no effect on remote directories.
 ** Org support
 Treemacs supports storing links to its file nodes by means of ~org-store-link~.
 ** Additional Packages
