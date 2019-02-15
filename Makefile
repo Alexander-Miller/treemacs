@@ -13,7 +13,7 @@ LINT_DIR = /tmp/treemacs
 LINT_FLAG = --eval "(setq byte-compile-dest-file-function (lambda (f) (concat \"$(LINT_DIR)\" (file-name-nondirectory f) \"c\")))"
 TEST_COMMAND = buttercup -L . $(NO_COLOR_WARNING_FLAG)
 
-.PHONY: test compile clean lint prepare prepare-lint
+.PHONY: test compile clean lint prepare .prepare-lint
 
 .ONESHELL:
 
@@ -36,9 +36,9 @@ clean:
 	@rm -f $(EXTRA_DIR)/*.elc
 
 lint: EMACSFLAGS += $(LINT_FLAG)
-lint: prepare-lint compile
+lint: .prepare-lint compile
 	@rm -rf $(LINT_DIR)
 
-prepare-lint:
+.prepare-lint:
 	@rm -rf $(LINT_DIR)
 	@mkdir -p $(LINT_DIR)
