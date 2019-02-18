@@ -152,7 +152,7 @@ A treemacs buffer is built when after calling `treemacs-init' or
   "Indicates how treemacs will sort its files and directories.
 Files will still always be shown after directories.
 
-Valid values are
+Valid values are:
  * alphabetic-asc,
  * alphabetic-desc,
  * alphabetic-case-insensitive-asc,
@@ -160,7 +160,11 @@ Valid values are
  * size-asc,
  * size-desc,
  * mod-time-asc,
- * mod-time-desc.
+ * mod-time-desc
+ * a custom function
+
+In the latter case it must be a function that can be passed to `sort' to sort
+absolute filepaths. For an example see `treemacs--sort-alphabetic-asc'
 
 Note about performance:
 Treemacs does its best to optimize its performance critical path, it does so
@@ -169,8 +173,8 @@ Deciding on the order in which its nodes are inserted is a part of this path. As
 such certain tradeoffs need to be accounted far.
 
 In plaintext: some sort settings are much slower than others. Alphabetic sorting
-\(the default) is fastest and causes no additional overhead (even when
-foregoing sorting altogether).
+\(the default) is fastest and causes no additional overhead (even when compared
+against foregoing sorting altogether).
 
 Modification time sorting takes the middle, being ca. 4x slower than alphabetic.
 Sorting by size is slowest, being ca. 5-6x slower than alphabetic. It also

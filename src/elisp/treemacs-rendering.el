@@ -176,7 +176,7 @@ DEFAULT: Face"
                  ('size-desc #'treemacs--sort-size-desc)
                  ('mod-time-asc #'treemacs--sort-mod-time-asc)
                  ('mod-time-desc #'treemacs--sort-mod-time-desc)
-                 (_ (error "[Treemacs] Unknown treemacs-sorting value '%s'" treemacs-sorting))))
+                 (other other)))
               (entries (-> ,dir (directory-files :absolute-names nil :no-sort) (treemacs--filter-files-to-be-shown)))
               (dirs-files (-separate #'file-directory-p entries)))
          (list (sort (cl-first dirs-files) sort-func)
