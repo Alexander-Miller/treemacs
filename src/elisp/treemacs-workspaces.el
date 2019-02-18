@@ -292,16 +292,19 @@ PROJECT: Project Struct"
       (when (treemacs-project->is-expanded? project)
         (treemacs--collapse-root-node project-btn t)))
     (treemacs--remove-project-from-current-workspace project)
-    (treemacs--delete-line)
-    (cond
-     ;; happens with single tree ad-hoc navigation
-     ((treemacs-workspace->is-empty?)
-      (ignore))
-     ((treemacs-project->is-last? project)
-      (treemacs-previous-project))
-     (t
+    ;; check project being last first before deleting it, otherwise the result
+    ;; can be wrong
+    (-let [is-last? (treemacs-project->is-last? project)]
       (treemacs--delete-line)
-      (treemacs-next-project)))
+      (cond
+       ;; happens with single tree ad-hoc navigation
+       ((treemacs-workspace->is-empty?)
+        (ignore))
+       (is-last?
+        (treemacs-previous-project))
+       (t
+        (treemacs--delete-line)
+        (treemacs-next-project))))
     (treemacs--forget-last-highlight)
     (delete-trailing-whitespace)
     (--when-let (treemacs-get-local-window)
