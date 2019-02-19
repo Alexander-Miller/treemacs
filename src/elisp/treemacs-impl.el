@@ -96,6 +96,7 @@
   treemacs-do-add-project-to-workspace
   treemacs-project->is-expanded?
   treemacs-project->path
+  treemacs-project->name
   treemacs-project->refresh!
   treemacs-project->position
   treemacs--find-project-for-path)
@@ -1153,6 +1154,65 @@ is an expanded directory - or the dom node of its parent - if it is a dir or
 file below an expanded directory."
   (or (treemacs-find-in-dom path)
       (treemacs-find-in-dom (treemacs--parent path))))
+
+(defun treemacs--copy-or-move (action)
+  "Internal implementation for copying and moving files.
+ACTION will be either `:copy' or `:move', depenting on whether we are calling
+from `treemacs-copy-file' or `treemacs-move-file'."
+  (let ((no-node-msg)
+        (wrong-type-msg)
+        (prompt)
+        (action-function)
+        (finish-msg))
+    (pcase action
+      (:copy
+       (setf no-node-msg "There is nothing to copy here."
+             wrong-type-msg "Only files and directories can be copied."
+             prompt "Copy to: "
+             action-function #'f-copy
+             finish-msg "Copied %s to %s"))
+      (:move
+       (setf no-node-msg "There is nothing to move here."
+             wrong-type-msg "Only files and directories can be moved."
+             prompt "Move to: "
+             action-function #'f-move
+             finish-msg "Moved %s to %s")))
+    (treemacs-block
+     (treemacs-unless-let (node (treemacs-node-at-point))
+         (treemacs-error-return no-node-msg)
+       (treemacs-error-return-if (not (treemacs-is-node-file-or-dir? node))
+         wrong-type-msg)
+       (let* ((source (treemacs-button-get node :path))
+              (destination (read-directory-name prompt nil default-directory :must-match))
+              (filename (treemacs--filename source))
+              (move-to-on-success (f-join destination filename)))
+         (when (file-exists-p (f-join destination filename))
+           (let* ((filename-no-ext (f-no-ext filename))
+                  (filename-ext (f-ext filename))
+                  (copy-template (if filename-ext " (Copy %s)." " (Copy %s)"))
+                  (new-name (concat filename-no-ext (format copy-template 1) filename-ext))
+                  (new-dest (f-join destination new-name)))
+             ;; if even "destfile (Copy 1).ext" already exists try "destfile (Copy 2).ext" etc.
+             (-let [n 1]
+               (while (file-exists-p new-dest)
+                 (cl-incf n)
+                 (setf new-dest (f-join destination (concat filename-no-ext (format copy-template n) filename-ext)))))
+             (setf destination new-dest
+                   move-to-on-success destination)))
+         (when (eq action :move)
+           ;; do the deletion *before* moving the file, otherwise it will no longer exist and treemacs will
+           ;; not recognize it as a file path
+           (treemacs-do-delete-single-node source))
+         (treemacs--without-filewatch
+          (funcall action-function source destination))
+         ;; no waiting for filewatch, if we copied to an expanded directory refresh it immediately
+         (-let [parent (treemacs--parent move-to-on-success)]
+           (when (treemacs-is-path-visible? parent)
+             (treemacs-update-node parent)))
+         (treemacs-goto-file-node move-to-on-success)
+         (treemacs-pulse-on-success finish-msg
+           (propertize filename 'face 'font-lock-string-face)
+           (propertize destination 'face 'font-lock-string-face)))))))
 
 (provide 'treemacs-impl)
 

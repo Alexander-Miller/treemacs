@@ -105,6 +105,7 @@ to it will instead show a blank."
              (key-copy-path      (treemacs--find-keybind #'treemacs-copy-path-at-point))
              (key-copy-root      (treemacs--find-keybind #'treemacs-copy-project-root))
              (key-copy-file      (treemacs--find-keybind #'treemacs-copy-file))
+             (key-move-file      (treemacs--find-keybind #'treemacs-move-file))
              (key-resort         (treemacs--find-keybind #'treemacs-resort))
              (key-bookmark       (treemacs--find-keybind #'treemacs-add-bookmark))
              (key-down-next-w    (treemacs--find-keybind #'treemacs-next-line-other-window))
@@ -124,7 +125,7 @@ to it will instead show a blank."
 %s next neighbour   │ %s open no split       │ %s rename      │ %s git mode         │ %s rename project │ %s copy path
 %s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                       │ %s copy root
 %s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                       │ %s re-sort
-%s down next window │ %s open ace            │                    │ %s fringe indicator │                       │ %s bookmark
+%s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                       │ %s bookmark
 %s up next window   │ %s open ace horizontal │                    │                         │                       │
                         │ %s open ace vertical   │                    │                         │                       │
                         │ %s open externally     │                    │                         │                       │
@@ -137,7 +138,7 @@ to it will instead show a blank."
                (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-rename-project) (car key-copy-path)
                (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles)                          (car key-copy-root)
                (car key-goto-parent)    (car key-open-vert)   (car key-copy-file)    (car key-toggle-width)                           (car key-resort)
-               (car key-down-next-w)    (car key-open-ace)                           (car key-fringe-mode)                            (car key-bookmark)
+               (car key-down-next-w)    (car key-open-ace)    (car key-move-file)    (car key-fringe-mode)                            (car key-bookmark)
                (car key-up-next-w)      (car key-open-ace-h)
                                         (car key-open-ace-v)
                                         (car key-open-ext)
@@ -175,6 +176,7 @@ to it will instead show a blank."
               (,(cdr key-copy-path)      #'treemacs-copy-path-at-point)
               (,(cdr key-copy-root)      #'treemacs-copy-project-root)
               (,(cdr key-copy-file)      #'treemacs-copy-file)
+              (,(cdr key-move-file)      #'treemacs-move-file)
               (,(cdr key-git-mode)       #'treemacs-git-mode)
               (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
               (,(cdr key-resort)         #'treemacs-resort)
@@ -235,6 +237,7 @@ to it will instead show a blank."
       (define-key map (kbd "yy")        #'treemacs-copy-path-at-point)
       (define-key map (kbd "yr")        #'treemacs-copy-project-root)
       (define-key map (kbd "yf")        #'treemacs-copy-file)
+      (define-key map (kbd "m")         #'treemacs-move-file)
       (define-key map (kbd "g")         #'treemacs-refresh)
       (define-key map (kbd "s")         #'treemacs-resort)
       (define-key map (kbd "b")         #'treemacs-add-bookmark)

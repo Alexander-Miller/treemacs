@@ -356,39 +356,15 @@ itself, using $HOME when there is no path at or near point to grab."
   (interactive)
   (treemacs--create-file/dir t))
 
+(defun treemacs-move-file ()
+  "Move file (or directory) at point."
+  (interactive)
+  (treemacs--copy-or-move :move))
+
 (defun treemacs-copy-file ()
   "Copy file (or directory) at point."
   (interactive)
-  (treemacs-block
-   (treemacs-unless-let (node (treemacs-node-at-point))
-       (treemacs-error-return "There is nothing to copy here.")
-     (treemacs-error-return-if (not (treemacs-is-node-file-or-dir? node))
-       "Only files and directories can be copied.")
-     (let* ((source (treemacs-button-get node :path))
-            (destination (read-directory-name "Copy to: " nil default-directory :must-match))
-            (filename (treemacs--filename source))
-            (move-to-on-success (f-join destination filename)))
-       (when (file-exists-p (f-join destination filename))
-         (let* ((filename-no-ext (f-no-ext filename))
-                (filename-ext (f-ext filename))
-                (new-name (concat filename-no-ext " (Copy 1)." filename-ext))
-                (new-dest (f-join destination new-name)))
-           ;; if even "destfile (Copy 1).ext" already exists try "destfile (Copy 2).ext" etc.
-           (-let [n 1]
-             (while (file-exists-p new-dest)
-               (cl-incf n)
-               (setf new-dest (f-join destination (concat filename-no-ext (format " (Copy %s)." n) filename-ext)))))
-           (setf destination new-dest
-                 move-to-on-success destination)))
-       (f-copy source destination)
-       ;; no waiting for filewatch, if we copied to an expanded directory refresh it immediately
-       (-let [parent (treemacs--parent move-to-on-success)]
-         (when (treemacs-is-path-visible? parent)
-           (treemacs-update-node parent)))
-       (treemacs-goto-file-node move-to-on-success)
-       (treemacs-pulse-on-success "Copied %s to %s"
-         (propertize filename 'face 'font-lock-string-face)
-         (propertize destination 'face 'font-lock-string-face))))))
+  (treemacs--copy-or-move :copy))
 
 (cl-defun treemacs-rename ()
   "Rename the currently selected node.
