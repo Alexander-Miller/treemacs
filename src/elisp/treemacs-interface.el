@@ -719,12 +719,19 @@ For slower scrolling see `treemacs-previous-line-other-window'"
 (with-no-warnings
   (make-obsolete #'treemacs-add-project #'treemacs-add-project-to-workspace "v2.2.1"))
 
-(defun treemacs-remove-project-from-workspace ()
-  "Remove the project at point from the current workspace."
-  (interactive)
-  (treemacs-unless-let (project (treemacs-project-at-point))
-      (treemacs-pulse-on-failure "There is no project here.")
-    (treemacs-do-remove-project-from-workspace project)
+(defun treemacs-remove-project-from-workspace (&optional arg)
+  "Remove the project at point from the current workspace.
+With a prefix ARG select project to remove by name."
+  (interactive "P")
+  (let ((project (treemacs-project-at-point))
+        (save-pos))
+    (when (or arg (null project))
+      (setf project (treemacs--select-project-by-name)
+            save-pos (not (equal project (treemacs-project-at-point)))))
+    (if save-pos
+        (treemacs-save-position
+         (treemacs-do-remove-project-from-workspace project))
+      (treemacs-do-remove-project-from-workspace project))
     (whitespace-cleanup)
     (treemacs-pulse-on-success "Removed project %s from the workspace."
       (propertize (treemacs-project->name project) 'face 'font-lock-type-face))))

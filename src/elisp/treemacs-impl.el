@@ -245,6 +245,13 @@ button type on every call."
       (recentf-add-file new-file)
       (recentf-remove-if-non-kept old-file))))
 
+(defun treemacs--select-project-by-name ()
+  "Interactively choose a project from the current workspace."
+  (let* ((projects (--map (cons (treemacs-project->name it) it)
+                          (-> (treemacs-current-workspace) (treemacs-workspace->projects))))
+         (selection (completing-read "Project: " projects)))
+    (cdr (assoc selection projects))))
+
 (defun treemacs-get-local-window ()
   "Return the window displaying the treemacs buffer in the current frame.
 Returns nil if no treemacs buffer is visible."
