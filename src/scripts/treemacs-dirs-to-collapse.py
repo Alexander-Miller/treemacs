@@ -38,7 +38,7 @@ if sys.platform == 'win32':
         else:
             return joined
 else:
-    def join_dirs(d1, d2, _):
+    def join_dirs(d1, d2, *_):
         return join(d1, d2)
 
 if LIMIT <= 0:
