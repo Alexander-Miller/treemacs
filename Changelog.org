@@ -3,6 +3,7 @@
 
 * Changelog
 ** Current master
+** v2.5
  - Added ~treemacs-magit~ helper package.
  - Added ~treemacs-recenter-after-project-jump~ option.
  - Added ~treemacs-recenter-after-project-expand~ option.
