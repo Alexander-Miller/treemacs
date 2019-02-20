@@ -97,9 +97,7 @@ current git status and just go through the lines as they are right now."
 (defun treemacs-magit--update-callback (magit-root pfuture-buffer)
   "Run the update as a pfuture callback.
 Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
-  (let ((ht (make-hash-table :size 1000 :test 'equal))
-        (output (pfuture-output-from-buffer pfuture-buffer)))
-    (treemacs--read-git-status-into-hash output ht)
+  (let ((ht (read (pfuture-output-from-buffer pfuture-buffer))))
     (treemacs-run-in-every-buffer
      (let ((dom-node (or (treemacs-find-in-dom magit-root)
                          (when-let* ((project

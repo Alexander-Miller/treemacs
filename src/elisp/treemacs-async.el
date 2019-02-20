@@ -74,13 +74,11 @@ The real parsing and formatting is done by the python process. All that's really
 left to do is pick up the cons list and put it in a hash table.
 
 GIT-FUTURE: Pfuture"
-  (-let [git-info-hash (make-hash-table :test #'equal :size 1000)]
-    (when git-future
-      (pfuture-await-to-finish git-future)
-      (when (= 0 (process-exit-status git-future))
-        (-let [git-output (pfuture-result git-future)]
-          (treemacs--read-git-status-into-hash git-output git-info-hash))))
-    git-info-hash))
+  (when git-future
+    (pfuture-await-to-finish git-future)
+    (when (= 0 (process-exit-status git-future))
+      (-let [git-output (pfuture-result git-future)]
+        (read git-output)))))
 
 (define-inline treemacs--read-git-status-into-hash (output ht)
   "Read given OUTPUT into given hash table HT."

@@ -8,25 +8,23 @@ GIT_ROOT  = str.encode(sys.argv[1])
 LIMIT     = int(sys.argv[2])
 GIT_CMD   = "git status --porcelain --ignored . " + sys.argv[3]
 STDOUT    = sys.stdout.buffer
-OPEN      = b'("'
-CLOSE     = b'")'
-CONS      = b'" . "'
+QUOTE      = b'"'
 output    = b""
+ht_size   = 0
 
 def print_all_untracked_files(path):
-    global output
+    global output, ht_size
     for item in listdir(path):
         full_path = join(path, item)
-        output += OPEN + b'?' + CONS + full_path + CLOSE
+        output += QUOTE + full_path + QUOTE + QUOTE + b'?' + QUOTE
+        ht_size += 1
         if isdir(full_path):
             print_all_untracked_files(full_path)
 
 def main():
-    global output
+    global output, ht_size
     proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100)
     dirs = {}
-
-    output += b'('
     iter_count = 0
 
     for item in proc.stdout:
@@ -48,10 +46,11 @@ def main():
         # filename is a directory, final slash must be removed
         if full_root.endswith(b'/'):
             full_root = full_root[:-1]
-            output += OPEN + state + CONS + full_root + CLOSE
+            output += QUOTE + full_root + QUOTE + QUOTE + state[0:1] + QUOTE
             dirs[full_root] = True
         else:
-            output += OPEN + state + CONS + full_root + CLOSE
+            output += QUOTE + full_root + QUOTE + QUOTE + state[0:1] + QUOTE
+        ht_size += 1
         # for files deeper down in the file hierarchy also print all their directories
         # if ./foo/bar/baz.el is changed then ./foo and ./foo/bar must be shown as changed as well
         if b'/' in filename and state != b"!!":
@@ -63,15 +62,21 @@ def main():
                 # directories should not be printed more than once, which would happen if
                 # e.g. both ./foo/x and ./foo/y have changes
                 if full_dirname not in dirs:
-                    output += OPEN + b'M' + CONS + full_dirname + CLOSE
+                    output += QUOTE + full_dirname + QUOTE + QUOTE + b'M' + QUOTE
+                    ht_size += 1
                     dirs[full_dirname] = True
         if state.startswith(b'?') and isdir(full_root):
             print_all_untracked_files(full_root)
         iter_count += 1
         if iter_count >= LIMIT:
             break
-    output += b')'
-    STDOUT.write(output)
+    elisp_ht = b"#s(hash-table size " + \
+        bytes(str(ht_size), 'utf-8') + \
+        b" test equal rehash-size 1.5 rehash-threshold 0.8125 data (" + \
+        output + \
+        b"))"
+    STDOUT.write(elisp_ht)
+
 
     sys.exit(proc.poll())
 

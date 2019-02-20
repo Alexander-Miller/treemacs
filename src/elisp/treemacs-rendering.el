@@ -152,12 +152,12 @@ DEFAULT: Face"
   (inline-letevals (path git-info default)
     (inline-quote
      (pcase (ht-get ,git-info ,path)
-       (?M 'treemacs-git-modified-face)
-       (?U 'treemacs-git-conflict-face)
-       (?? 'treemacs-git-untracked-face)
-       (?! 'treemacs-git-ignored-face)
-       (?A 'treemacs-git-added-face)
-       (?R 'treemacs-git-renamed-face)
+       ("M" 'treemacs-git-modified-face)
+       ("U" 'treemacs-git-conflict-face)
+       ("?" 'treemacs-git-untracked-face)
+       ("!" 'treemacs-git-ignored-face)
+       ("A" 'treemacs-git-added-face)
+       ("R" 'treemacs-git-renamed-face)
        (_  ,default)))))
 
 (define-inline treemacs--get-dir-content (dir)
