@@ -223,6 +223,7 @@ ignore any prefix argument."
                    ["Rename"           treemacs-rename    :visible ,(check node)]
                    ["Delete"           treemacs-delete    :visible ,(check node)]
                    ["Copy"             treemacs-copy-file :visible ,(check node)]
+                   ["Move"             treemacs-move-file :visible ,(check node)]
 
                    ["--" #'ignore t]
                    ("Projects"
