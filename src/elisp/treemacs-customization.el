@@ -361,15 +361,18 @@ Possible values are:
                  (const :tag "Never" nil))
   :group 'treemacs)
 
-(defcustom treemacs-recenter-after-project-expand 'on-distance
+(defcustom treemacs-recenter-after-project-expand 'on-visibility
   "Decides when to recenter view after expanding a project root node.
 
 Possible values are:
  * nil: never recenter
  * 'always: always recenter
- * 'on-distance: recenter based on `treemacs-recenter-distance'"
+ * 'on-distance: recenter based on `treemacs-recenter-distance'
+ * 'on-visibility: recenter only when the newly rendered lines don't fit the
+   current screen"
   :type '(choice (const :tag "Always" always)
                  (const :tag "Based on Distance" on-distance)
+                 (const :tag "Based on Visibility" on-visibility)
                  (const :tag "Never" nil))
   :group 'treemacs)
 

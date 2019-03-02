@@ -234,17 +234,19 @@ and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
 and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
   `(save-excursion
-     (treemacs-with-writable-buffer
-      (treemacs-button-put ,button :state ,new-state)
-      (beginning-of-line)
-      ,@(when new-icon
-          `((treemacs--button-symbol-switch ,new-icon)))
-      (end-of-line)
-      ,@(if immediate-insert
-            `((progn
-                (insert (apply #'concat ,open-action))))
-          `(,open-action))
-      ,post-open-action)))
+     (-let [p (point)]
+       (treemacs-with-writable-buffer
+        (treemacs-button-put ,button :state ,new-state)
+        (beginning-of-line)
+        ,@(when new-icon
+            `((treemacs--button-symbol-switch ,new-icon)))
+        (end-of-line)
+        ,@(if immediate-insert
+              `((progn
+                  (insert (apply #'concat ,open-action))))
+            `(,open-action))
+        ,post-open-action)
+       (count-lines p (point)))))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
   "Building block macro for creating buttons from a list of items.
@@ -504,22 +506,20 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
          (git-path (if (treemacs-button-get btn :symlink) (file-truename path) path))
          (git-future (treemacs--git-status-process-function git-path))
          (collapse-future (treemacs--collapsed-dirs-process path)))
-    (treemacs--button-open
-     :immediate-insert nil
-     :button btn
-     :new-state 'root-node-open
-     :open-action
-     (progn
-       (treemacs--apply-project-top-extensions btn project)
-       (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
-       (treemacs--apply-project-bottom-extensions btn project))
-     :post-open-action
-     (progn
-       (treemacs-on-expand path btn nil)
-       (treemacs--start-watching path)))
-    ;; in the post-open-action point is right at the end of the close-button's
-    ;; save-recursion, we need to be back at the root for the recenter calculation
-    (treemacs--maybe-recenter treemacs-recenter-after-project-expand)))
+    (treemacs--maybe-recenter treemacs-recenter-after-project-expand
+      (treemacs--button-open
+       :immediate-insert nil
+       :button btn
+       :new-state 'root-node-open
+       :open-action
+       (progn
+         (treemacs--apply-project-top-extensions btn project)
+         (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
+         (treemacs--apply-project-bottom-extensions btn project))
+       :post-open-action
+       (progn
+         (treemacs-on-expand path btn nil)
+         (treemacs--start-watching path))))))
 
 (defun treemacs--collapse-root-node (btn &optional recursive)
   "Collapse the given root BTN.
@@ -658,21 +658,31 @@ Project: Project Struct"
           (treemacs--delete-line)))
        (hl-line-highlight)))))
 
-(defun treemacs--maybe-recenter (when)
+(defun treemacs--maybe-recenter (when &optional lines)
   "Potentially recenter based on value of WHEN.
-Recenter indiscriminately when WHEN is 'always. Otherwise recentering depends
-on the distance between `point' and the window top/bottom being smaller than
-`treemacs-recenter-distance'."
-  (pcase when
-    ('always (recenter))
-    ((guard (memq when '(t on-distance))) ;; t for backward compatibility, remove eventually
-     (let* ((current-line (float (treemacs--current-screen-line)))
-            (all-lines (float (treemacs--lines-in-window)))
-            (distance-from-top (/ current-line all-lines))
-            (distance-from-bottom (- 1.0 distance-from-top)))
-       (when (or (> treemacs-recenter-distance distance-from-top)
-                 (> treemacs-recenter-distance distance-from-bottom))
-         (recenter))))))
+
+WHEN can take the following values:
+
+ * always: Recenter indiscriminately,
+ * on-distance: Recentering depends on the distance between `point' and the
+   window top/bottom being smaller than `treemacs-recenter-distance'.
+ * on-visibility: Special case for projects: recentering depends on whether the
+   newly rendered number of LINES fits the view."
+  (declare (indent 1))
+  (when (treemacs-is-treemacs-window? (selected-window))
+    (let* ((current-line (float (treemacs--current-screen-line)))
+           (all-lines (float (treemacs--lines-in-window))))
+      (pcase when
+        ('always (recenter))
+        ('on-visibility
+         (when (> lines (- all-lines current-line))
+           (recenter 0)))
+        ((guard (memq when '(t on-distance))) ;; TODO(2019/02/20): t for backward compatibility, remove eventually
+         (let* ((distance-from-top (/ current-line all-lines))
+                (distance-from-bottom (- 1.0 distance-from-top)))
+           (when (or (> treemacs-recenter-distance distance-from-top)
+                     (> treemacs-recenter-distance distance-from-bottom))
+             (recenter))))))))
 
 (provide 'treemacs-rendering)
 
