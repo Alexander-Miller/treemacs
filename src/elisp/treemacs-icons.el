@@ -259,7 +259,8 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-perl         "vsc/perl.png"         "pl" "pm" "perl")
   (treemacs--setup-icon treemacs-icon-vim          "vsc/vim.png"          "vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc")
   (treemacs--setup-icon treemacs-icon-depend       "vsc/dependencies.png" "cask")
-  (treemacs--setup-icon treemacs-icon-r            "vsc/r.png"            "r"))
+  (treemacs--setup-icon treemacs-icon-r            "vsc/r.png"            "r")
+  (treemacs--setup-icon treemacs-icon-reason       "vsc/reason.png"       "re" "rei"))
 
 (defun treemacs--setup-icons ()
   "Create and define all icons-related caches, hashes and stashes."
