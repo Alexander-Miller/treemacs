@@ -661,7 +661,7 @@ Project: Project Struct"
           (treemacs--delete-line)))
        (hl-line-highlight)))))
 
-(defun treemacs--maybe-recenter (when &optional lines)
+(defun treemacs--maybe-recenter (when &optional new-lines)
   "Potentially recenter based on value of WHEN.
 
 WHEN can take the following values:
@@ -670,7 +670,7 @@ WHEN can take the following values:
  * on-distance: Recentering depends on the distance between `point' and the
    window top/bottom being smaller than `treemacs-recenter-distance'.
  * on-visibility: Special case for projects: recentering depends on whether the
-   newly rendered number of LINES fits the view."
+   newly rendered number of NEW-LINES fits the view."
   (declare (indent 1))
   (when (treemacs-is-treemacs-window? (selected-window))
     (let* ((current-line (float (treemacs--current-screen-line)))
@@ -678,8 +678,11 @@ WHEN can take the following values:
       (pcase when
         ('always (recenter))
         ('on-visibility
-         (when (> lines (- all-lines current-line))
-           (recenter 0)))
+         (-let [lines-left (- all-lines current-line)]
+           (when (> new-lines lines-left)
+             ;; if possible recenter only as much as is needed to bring all new lines
+             ;; into view
+             (recenter (max 0 (round (- current-line (- new-lines lines-left))))))))
         ((guard (memq when '(t on-distance))) ;; TODO(2019/02/20): t for backward compatibility, remove eventually
          (let* ((distance-from-top (/ current-line all-lines))
                 (distance-from-bottom (- 1.0 distance-from-top)))
