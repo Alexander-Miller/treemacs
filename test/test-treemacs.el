@@ -993,10 +993,10 @@
                   (treemacs--collapsed-dirs-process)
                   (treemacs--parse-collapsed-dirs))
               :to-equal
-              '(("/home/a/Documents/git/treemacs/test/testdir1"
+              `((,(f-join treemacs-dir "test/testdir1")
                  "/testdir2/testdir3"
-                 "/home/a/Documents/git/treemacs/test/testdir1/testdir2"
-                 "/home/a/Documents/git/treemacs/test/testdir1/testdir2/testdir3")))))
+                 ,(f-join treemacs-dir "test/testdir1/testdir2")
+                 ,(f-join treemacs-dir "test/testdir1/testdir2/testdir3"))))))
 
   (it "Returns nil when there is nothing to flatten"
     (-let [treemacs-collapse-dirs 3]
