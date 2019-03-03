@@ -79,6 +79,7 @@ is a marker pointing to POS."
 
 (define-inline treemacs--current-screen-line ()
   "Get the current screen line in the selected window."
+  (declare (side-effect-free t))
   (inline-quote
    (max 1 (count-screen-lines (window-start) (point-at-eol)))))
 
@@ -86,8 +87,10 @@ is a marker pointing to POS."
   "Determine the number of lines visible in the current (treemacs) window.
 A simple call to something like `window-screen-lines' is insufficient becase
 the height of treemacs' icons must be taken into account."
-  (/ (- (window-pixel-height) (window-mode-line-height))
-     (max treemacs--icon-size (frame-char-height))))
+  (declare (side-effect-free t))
+  (inline-quote
+   (/ (- (window-pixel-height) (window-mode-line-height))
+      (max treemacs--icon-size (frame-char-height)))))
 
 (define-inline treemacs--sort-alphabetic-asc (f1 f2)
   "Sort F1 and F2 alphabetically asc."
