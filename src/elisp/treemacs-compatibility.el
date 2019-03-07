@@ -21,8 +21,10 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'treemacs-customization)
 (require 'treemacs-impl)
+(require 'treemacs-interface)
 (eval-and-compile (require 'treemacs-macros))
 
 (treemacs-only-during-init
@@ -91,6 +93,13 @@ width of the new window when the treemacs window is visible."
     (if (fboundp 'org-link-set-parameters)
         (org-link-set-parameters "treemacs" :store #'treemacs-store-org-link)
       (add-hook 'org-store-link-functions #'treemacs-store-org-link))))
+
+(with-eval-after-load 'which-key
+  (defun treemacs--fix-width-after-which-key ()
+    (--when-let (treemacs-get-local-window)
+      (with-selected-window it
+        (treemacs-set-width :reset))))
+  (advice-add 'which-key--hide-buffer-side-window :after 'treemacs--fix-width-after-which-key))
 
 (provide 'treemacs-compatibility)
 
