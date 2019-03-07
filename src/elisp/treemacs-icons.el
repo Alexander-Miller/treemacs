@@ -79,8 +79,7 @@ Necessary since root icons are not rectangular."
          (treemacs--size-adjust width height))
        (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
            (create-image ,file-path 'imagemagick nil :ascent 'center :width width :height height)
-         ;; interning the extension lets up pass both png and xpm icons
-         (create-image ,file-path (intern (f-ext ,file-path)) nil :ascent 'center))))))
+         (create-image ,file-path 'png nil :ascent 'center))))))
 
 (defmacro treemacs--setup-icon (var file-name &rest extensions)
   "Define VAR with its display property being the image created from FILE-NAME.
@@ -185,9 +184,9 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
   (treemacs--setup-icon treemacs-icon-closed-png          "dir_closed.png")
   (treemacs--setup-icon treemacs-icon-open-png            "dir_open.png")
   (treemacs--setup-icon treemacs-icon-root-png            "root.png")
-  (treemacs--setup-icon treemacs-icon-tag-leaf-png        "tags-leaf.xpm")
-  (treemacs--setup-icon treemacs-icon-tag-node-closed-png "tags-closed.xpm")
-  (treemacs--setup-icon treemacs-icon-tag-node-open-png   "tags-open.xpm")
+  (treemacs--setup-icon treemacs-icon-tag-leaf-png        "tags-leaf.png")
+  (treemacs--setup-icon treemacs-icon-tag-node-closed-png "tags-closed.png")
+  (treemacs--setup-icon treemacs-icon-tag-node-open-png   "tags-open.png")
   (treemacs--setup-icon treemacs-icon-text                "txt.png")
   (treemacs--setup-icon treemacs-icon-error-png           "error.png")
   (treemacs--setup-icon treemacs-icon-warning-png         "warning.png")

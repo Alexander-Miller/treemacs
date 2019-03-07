@@ -206,8 +206,7 @@ button type on every call."
   (declare (side-effect-free t))
   (inline-letevals (button prop)
     (inline-quote
-     (get-text-property ,button ,prop ;; (marker-buffer ,button) ;; TODO(2018/11/19):
-                        ))))
+     (get-text-property ,button ,prop))))
 
 (define-inline treemacs-is-node-expanded? (btn)
   "Return whether BTN is in an open state."
@@ -642,21 +641,20 @@ Return the button that is found or the symbol `follow-failed' if the search
 failed."
   (inline-letevals (btn items)
     (inline-quote
-     (progn
+     (cl-block search
        (when (treemacs-is-node-collapsed? ,btn)
          (goto-char ,btn)
          (funcall (cdr (assq (treemacs-button-get ,btn :state) treemacs-TAB-actions-config))))
-       (cl-block search
-         (while ,items
-           (let ((item (pop ,items)))
-             (setq ,btn (treemacs-first-child-node-where ,btn
-                          (equal (treemacs-button-get child-btn :key) item)))
-             (unless ,btn
-               (cl-return-from search
-                 'follow-failed))
-             (goto-char ,btn)
-             (when (and ,items (treemacs-is-node-collapsed? ,btn))
-               (funcall (cdr (assq (treemacs-button-get ,btn :state) treemacs-TAB-actions-config)))))))
+       (while ,items
+         (let ((item (pop ,items)))
+           (setq ,btn (treemacs-first-child-node-where ,btn
+                       (equal (treemacs-button-get child-btn :key) item)))
+           (unless ,btn
+             (cl-return-from search
+               'follow-failed))
+           (goto-char ,btn)
+           (when (and ,items (treemacs-is-node-collapsed? ,btn))
+             (funcall (cdr (assq (treemacs-button-get ,btn :state) treemacs-TAB-actions-config))))))
        ,btn))))
 
 (define-inline treemacs--follow-each-dir (btn dir-parts)
@@ -725,10 +723,10 @@ failed."
          ,btn)))))
 
 (define-inline treemacs--goto-custom-top-level-node (path)
-  "Move to the top-level extension node at PATH."
+  "Move to the top level extension node at PATH."
   (inline-letevals (path)
     (inline-quote
-     (let* ((root-key (car ,path))
+     (let* ((root-key (cadr ,path))
             ;; go back here if the search fails
             ;; the root key isn't really a project, it's just the :root-key-form
             (start (prog1 (point) (goto-char (treemacs-project->position root-key))))
@@ -849,7 +847,7 @@ PROJECT Project Struct"
          (file-exists-p path))
     (treemacs-goto-file-node path project))
    ((eq :custom (car path))
-    (treemacs--goto-custom-top-level-node (cdr path)))
+    (treemacs--goto-custom-top-level-node path))
    (t
     (treemacs--goto-custom-dir-node path))))
 

@@ -394,18 +394,19 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
   (declare (indent 1) (debug (sexp body)))
   `(cl-block __search__
      (let* ((child-btn (next-button (button-end ,btn) t))
-            (depth (treemacs-button-get child-btn :depth)))
+            (depth (when child-btn (treemacs-button-get child-btn :depth))))
        (when (equal (treemacs-button-get child-btn :parent) ,btn)
          (if ,@predicate
              (cl-return-from __search__ child-btn)
            (while child-btn
              (setq child-btn (next-button (button-end child-btn)))
-             (-let [child-depth (treemacs-button-get child-btn :depth)]
-               (cond
-                ((= depth child-depth)
-                 (when ,@predicate (cl-return-from __search__ child-btn)) )
-                ((> depth child-depth)
-                 (cl-return-from __search__ nil))))))))))
+             (when child-btn
+               (-let [child-depth (treemacs-button-get child-btn :depth)]
+                 (cond
+                  ((= depth child-depth)
+                   (when ,@predicate (cl-return-from __search__ child-btn)) )
+                  ((> depth child-depth)
+                   (cl-return-from __search__ nil)))))))))))
 
 (defmacro treemacs-block (&rest forms)
   "Put FORMS in a `cl-block' named '__body__'.
