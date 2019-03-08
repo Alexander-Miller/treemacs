@@ -48,6 +48,7 @@
   treemacs-refresh)
 
 (treemacs-import-functions-from "treemacs-rendering"
+  treemacs-do-update-node
   treemacs--current-screen-line
   treemacs--add-root-element
   treemacs--expand-root-node
@@ -1207,7 +1208,7 @@ from `treemacs-copy-file' or `treemacs-move-file'."
          ;; no waiting for filewatch, if we copied to an expanded directory refresh it immediately
          (-let [parent (treemacs--parent move-to-on-success)]
            (when (treemacs-is-path-visible? parent)
-             (treemacs-update-node parent)))
+             (treemacs-do-update-node parent)))
          (treemacs-goto-file-node move-to-on-success)
          (treemacs-pulse-on-success finish-msg
            (propertize filename 'face 'font-lock-string-face)

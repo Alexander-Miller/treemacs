@@ -612,16 +612,34 @@ PROJECT: Project Struct"
            (insert separator))))
      (treemacs--apply-root-bottom-extensions current-workspace))))
 
+(define-inline treemacs-do-update-node (path)
+  "Update the node identified by its PATH.
+Throws an error when the node cannot be found. Does nothing if the node is
+not expanded.
+Same as `treemacs-update-node', but does not take care to either save
+position or assure hl-line highlighting, so it should be used when making
+multiple updates.
+
+PATH: Node Path"
+  (inline-letevals (path)
+    (inline-quote
+     (treemacs-unless-let (btn (treemacs-goto-node ,path))
+         (error "Node at path %s cannot be found" ,path)
+       (when (treemacs-is-node-expanded? btn)
+         (-let [close-func (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)]
+           (funcall close-func)
+           ;; close node again if no new lines were rendered
+           (when (= 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
+             (funcall close-func))))))))
+
 (defun treemacs-update-node (path)
   "Update the node identified by its PATH.
-Throws an error when the node cannot be found. Does nothing if the node is not
-expanded."
-  (treemacs-unless-let (btn (treemacs-goto-node path))
-      (error "Node at path %s cannot be found" path)
-    (when (treemacs-is-node-expanded? btn)
-      (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))
-      (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))
-      (hl-line-highlight))))
+Same as `treemacs-do-update-node', but wraps the call in
+`treemacs-save-position'.
+
+PATH: Node Path"
+  (treemacs-save-position
+   (treemacs-do-update-node path)))
 
 (defun treemacs-delete-single-node (path &optional project)
   "Delete single node at given PATH and PROJECT.
