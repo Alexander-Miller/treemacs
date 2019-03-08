@@ -56,7 +56,7 @@ the project's root directory."
                  (propertize (treemacs-project->name duplicate) 'face 'font-lock-type-face)))))))
     (treemacs-pulse-on-failure "It looks like projectile does not know any projects.")))
 
-(define-key treemacs-mode-map (kbd "C-p p") #'treemacs-projectile)
+(define-key treemacs-project-map (kbd "p") #'treemacs-projectile)
 
 (defun treemacs--read-first-project-path ()
   "Overwrites the original definition from `treemacs-impl'.
