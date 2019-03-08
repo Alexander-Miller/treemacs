@@ -395,7 +395,8 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
   `(cl-block __search__
      (let* ((child-btn (next-button (button-end ,btn) t))
             (depth (when child-btn (treemacs-button-get child-btn :depth))))
-       (when (equal (treemacs-button-get child-btn :parent) ,btn)
+       (when (and child-btn
+                  (equal (treemacs-button-get child-btn :parent) ,btn))
          (if ,@predicate
              (cl-return-from __search__ child-btn)
            (while child-btn
