@@ -49,6 +49,7 @@
 
 (treemacs-import-functions-from "treemacs-rendering"
   treemacs-do-update-node
+  treemacs-do-delete-single-node
   treemacs--current-screen-line
   treemacs--add-root-element
   treemacs--expand-root-node
@@ -583,7 +584,10 @@ GIT-INFO is passed through from the previous branch build."
 
 (defun treemacs--reopen-at (path &optional git-info)
   "Reopen dirs below PATH.
-GIT-INFO is passed through from the previous branch build."
+GIT-INFO is passed through from the previous branch build.
+
+PATH: Node Path
+GIT-INFO: Pfuture|HashMap<String, String>"
   (treemacs-without-messages
    (dolist (it (-some->>
                 path
@@ -592,7 +596,9 @@ GIT-INFO is passed through from the previous branch build."
                 (-reject #'treemacs-dom-node->closed)
                 (-map #'treemacs-dom-node->key)
                 (treemacs--maybe-filter-dotfiles)))
-     (treemacs--reopen-node (treemacs-goto-node it) git-info))))
+     (-if-let (pos (treemacs-goto-node it))
+         (treemacs--reopen-node pos git-info)
+       (treemacs-on-collapse it :purge)))))
 
 (defun treemacs--nearest-path (btn)
   "Return the path property of the current button (or BTN).
