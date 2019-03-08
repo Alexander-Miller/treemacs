@@ -82,15 +82,6 @@ GIT-FUTURE: Pfuture"
           (setf ret (read git-output)))))
     ret))
 
-(define-inline treemacs--read-git-status-into-hash (output ht)
-  "Read given OUTPUT into given hash table HT."
-  (inline-letevals (output ht)
-    (inline-quote
-     (unless (s-blank? ,output)
-       (--each (read ,output)
-         ;; key = path, value = git state char
-         (ht-set! ,ht (cdr it) (aref (car it) 0)))))))
-
 (defun treemacs--git-status-process-simple (path)
   "Start a simple git status process for files under PATH."
   (let* ((default-directory (f-canonical path))
