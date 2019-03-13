@@ -29,6 +29,30 @@
 (require 'projectile)
 
 ;;;###autoload
+(defun treemacs-add-and-display-current-project ()
+  "Open treemacs and add the current projectile project to the workspace.
+If the project is already registered with treemacs just move to its root.
+Display an error if the current buffer is not part of any project."
+  (interactive)
+  (treemacs-block
+   (let ((project (projectile-project-root)))
+     (treemacs-error-return-if (null project)
+       "Not in a project.")
+     (let* ((path (treemacs--canonical-path project))
+            (name (treemacs--filename path)))
+       (unless (treemacs-current-workspace)
+         (treemacs--find-workspace))
+       (if (treemacs-workspace->is-empty?)
+           (progn
+             (treemacs-do-add-project-to-workspace path name)
+             (treemacs-select-window)
+             (treemacs-pulse-on-success))
+         (treemacs-select-window)
+         (if (treemacs-is-path path :in-workspace)
+             (treemacs-goto-file-node path)
+           (treemacs-add-project-to-workspace path name)))))))
+
+;;;###autoload
 (defun treemacs-projectile (&optional arg)
   "Add one of `projectile-known-projects' to the treemacs workspace.
 With a prefix ARG was for the name of the project instead of using the name of

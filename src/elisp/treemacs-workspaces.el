@@ -233,6 +233,9 @@ Return values may be as follows:
 NAME is provided during ad-hoc navigation only.
 Return values may be as follows:
 
+* If the given path is invalid (is nil or does not exist)
+  - the symbol `invalid-path'
+  - a string describing the problem
 * If the project for the given path already exists:
   - the symbol `duplicate-project'
   - the project the PATH falls into
@@ -249,6 +252,10 @@ Return values may be as follows:
 PATH: Filepath
 NAME: String"
   (treemacs-block
+   (treemacs-error-return-if (null path)
+     `(invalid-path "Path is nil."))
+   (treemacs-error-return-if (not (file-exists-p path))
+     `(invalid-path "Path does not exist."))
    (setq path (-> path (file-truename) (treemacs--canonical-path)))
    (-when-let (project (treemacs--find-project-for-path path))
      (treemacs-return `(duplicate-project ,project)))

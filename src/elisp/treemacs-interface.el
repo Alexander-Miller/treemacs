@@ -673,13 +673,24 @@ For slower scrolling see `treemacs-previous-line-other-window'"
            (propertize new-name 'face 'font-lock-type-face)))))))
   (treemacs--evade-image))
 
-(defun treemacs-add-project-to-workspace (path)
-  "Add a projec at given PATH to the current workspace."
+(defun treemacs-add-project-to-workspace (path name)
+  "Add a project at given PATH to the current workspace.
+The PATH's directory name will be used as a NAME for a project. The NAME can
+\(or must) be entered manully with either a prefix arg or if a project with the
+auto-selected name already exists."
   (interactive "DProject root: ")
-  (pcase (treemacs-do-add-project-to-workspace path)
+  (when (or current-prefix-arg
+            (--first (string= name (treemacs-project->name it))
+                     (treemacs-workspace->projects (treemacs-current-workspace))))
+    (setf name (read-string "Project Name: " (treemacs--filename path))))
+  (pcase (treemacs-do-add-project-to-workspace path name)
     (`(success ,project)
      (treemacs-pulse-on-success "Added project %s to the workspace."
        (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))
+    (`(invalid-path ,reason)
+     (treemacs-pulse-on-failure (concat "Path '%s' is invalid: %s")
+       (propertize path 'face 'font-lock-string-face)
+       reason))
     (`(invalid-name ,name)
      (treemacs-pulse-on-failure "Name '%s' is invalid."
        (propertize name 'face 'font-lock-string-face)))

@@ -292,7 +292,7 @@ Next to treemacs itself you can optionally install:
 Must be installed and loaded if you use evil. The keybindings and the cursor will not be setup properly otherwise. It'll
 also enable navigation with j/k instead of n/p.
 *** treemacs-projectile
-Allows to quickly add your projectile projects to the treemacs workspace by calling ~treemacs-projectile~.
+Allows to quickly add your projectile projects to the treemacs workspace.
 *** treemacs-magit
 A small utility package to fill the small gaps left by using filewatch-mode and git-mode in conjunction with magit: it
 will inform treemacs about (un)staging of files and commits happening in magit.
@@ -583,15 +583,18 @@ selecting appropriate values for ~treemacs-indentation~ and ~treemacs-indentatio
 ** Unbound functions
 These functions are not bound to any keys by default. It's left up to users to find the most convenient key binds.
 
-| Action                        | Description                                                                |
-|-------------------------------+----------------------------------------------------------------------------|
-| treemacs                      | Show/Hide/Initialize treemacs.                                             |
-| treemacs-bookmark             | Find a bookmark in treemacs.                                               |
-| treemacs-find-file            | Find and focus the current file in treemacs.                               |
-| treemacs-find-tag             | Find and focus the current tag in treemacs.                                |
-| treemacs-select-window        | Select the treemacs window if it is visible. Call ~treemacs~ if it is not. |
-| treemacs-delete-other-windows | Same as ~delete-other-windows~, but will not delete the treemacs window.   |
-| treemacs-show-changelog       | Opens a buffer showing the changelog.                                      |
+| Action                                   | Description                                                                |
+|------------------------------------------+----------------------------------------------------------------------------|
+| treemacs                                 | Show/Hide/Initialize treemacs.                                             |
+| treemacs-bookmark                        | Find a bookmark in treemacs.                                               |
+| treemacs-find-file                       | Find and focus the current file in treemacs.                               |
+| treemacs-find-tag                        | Find and focus the current tag in treemacs.                                |
+| treemacs-select-window                   | Select the treemacs window if it is visible. Call ~treemacs~ if it is not. |
+| treemacs-delete-other-windows            | Same as ~delete-other-windows~, but will not delete the treemacs window.   |
+| treemacs-show-changelog                  | Opens a buffer showing the changelog.                                      |
+|------------------------------------------+----------------------------------------------------------------------------|
+| treemacs-projectile                      | Add a project from projectile to treemacs.                                 |
+| treemacs-add-and-display-current-project | Add current projectile project to treemacs and open it.                    |
 
 ** Default keymap
 By default Treemacs's keymap looks as follows:
