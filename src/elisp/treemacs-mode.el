@@ -266,7 +266,7 @@ to it will instead show a blank."
       (define-key map (kbd "g")         #'treemacs-refresh)
       (define-key map (kbd "s")         #'treemacs-resort)
       (define-key map (kbd "b")         #'treemacs-add-bookmark)
-      (define-key map (kbd "C-p C-p")   treemacs-project-map)
+      (define-key map (kbd "C-c C-p")   treemacs-project-map)
       (define-key map (kbd "<M-up>")    #'treemacs-move-project-up)
       (define-key map (kbd "<M-down>")  #'treemacs-move-project-down)
       (define-key map (kbd "<backtab>") #'treemacs-collapse-all-projects)
