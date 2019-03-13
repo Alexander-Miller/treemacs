@@ -39,7 +39,7 @@
 
 (declare-function treemacs--helpful-hydra/body "treemacs-mode")
 
-(defun treemacs--find-keybind (func)
+(cl-defun treemacs--find-keybind (func &optional (pad 8))
   "Find the keybind for FUNC in treemacs.
 Return of cons of the key formatted for inclusion in the hydra string, including
 a minimum width for alignment, and the key itself for the hydra heads.
@@ -58,8 +58,8 @@ Prefer evil keybinds, otherwise pick the first result."
               ("<up>"      "UP")
               ("<down>"    "DOWN")
               (_ key)))
-      (cons (s-pad-right 8 " " (format "_%s_:" key)) key))
-    (cons (s-pad-right 8 " " (format "_%s_:" " ")) " ")))
+      (cons (s-pad-right pad " " (format "_%s_:" key)) key))
+    (cons (s-pad-right pad " " (format "_%s_:" " ")) " ")))
 
 (defun treemacs-helpful-hydra ()
   "Summon the helpful hydra to show you the treemacs keymap.
@@ -110,26 +110,26 @@ to it will instead show a blank."
              (key-bookmark       (treemacs--find-keybind #'treemacs-add-bookmark))
              (key-down-next-w    (treemacs--find-keybind #'treemacs-next-line-other-window))
              (key-up-next-w      (treemacs--find-keybind #'treemacs-previous-line-other-window))
-             (key-add-project    (treemacs--find-keybind #'treemacs-add-project-to-workspace))
-             (key-remove-project (treemacs--find-keybind #'treemacs-remove-project-from-workspace))
-             (key-rename-project (treemacs--find-keybind #'treemacs-rename-project))
+             (key-add-project    (treemacs--find-keybind #'treemacs-add-project-to-workspace 12))
+             (key-remove-project (treemacs--find-keybind #'treemacs-remove-project-from-workspace 12))
+             (key-rename-project (treemacs--find-keybind #'treemacs-rename-project 12))
              (key-close-above    (treemacs--find-keybind #'treemacs-collapse-parent-node))
              (hydra-str
               (format
                "
 %s
-%s              │ %s              │ %s    │ %s                │ %s                │ %s
+%s              │ %s              │ %s    │ %s                │ %s                  │ %s
 ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 %s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode      │ %s add project    │ %s refresh
 %s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode   │ %s remove project │ %s (re)set width
 %s next neighbour   │ %s open no split       │ %s rename      │ %s git mode         │ %s rename project │ %s copy path
-%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                         │ %s copy root
-%s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                         │ %s re-sort
-%s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                         │ %s bookmark
-%s up next window   │ %s open ace horizontal │                    │                         │                         │
-                        │ %s open ace vertical   │                    │                         │                         │
-                        │ %s open externally     │                    │                         │                         │
-                        │ %s close parent        │                    │                         │                         │
+%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                           │ %s copy root
+%s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                           │ %s re-sort
+%s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                           │ %s bookmark
+%s up next window   │ %s open ace horizontal │                    │                         │                           │
+                        │ %s open ace vertical   │                    │                         │                           │
+                        │ %s open externally     │                    │                         │                           │
+                        │ %s close parent        │                    │                         │                           │
 "
                title
                column-nav               column-nodes          column-files           column-toggles          column-projects          column-misc
@@ -266,7 +266,7 @@ to it will instead show a blank."
       (define-key map (kbd "g")         #'treemacs-refresh)
       (define-key map (kbd "s")         #'treemacs-resort)
       (define-key map (kbd "b")         #'treemacs-add-bookmark)
-      (define-key map (kbd "C-c p")     treemacs-project-map)
+      (define-key map (kbd "C-p C-p")   treemacs-project-map)
       (define-key map (kbd "<M-up>")    #'treemacs-move-project-up)
       (define-key map (kbd "<M-down>")  #'treemacs-move-project-down)
       (define-key map (kbd "<backtab>") #'treemacs-collapse-all-projects)
