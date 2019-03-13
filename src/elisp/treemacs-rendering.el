@@ -169,7 +169,8 @@ DEFAULT: Face"
     (inline-quote
      ;; `directory-files' is much faster in a temp buffer for whatever reason
      (with-temp-buffer
-       (let* ((sort-func
+       (let* ((file-name-handler-alist '(("\\`/[^/|:]+:" . tramp-autoload-file-name-handler)))
+              (sort-func
                (pcase treemacs-sorting
                  ('alphabetic-asc #'treemacs--sort-alphabetic-asc)
                  ('alphabetic-desc #'treemacs--sort-alphabetic-desc)
