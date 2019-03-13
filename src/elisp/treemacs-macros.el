@@ -458,6 +458,14 @@ they will be evaluated only once."
          `(--first (treemacs-is-path ,left :in-project it)
                    (treemacs-workspace->projects ,ws)))))))
 
+(defmacro treemacs-with-toggle (&rest body)
+  "Building block helper macro.
+If treemacs is currently visible it will be hidden, if it is not visible, or no
+treemacs buffer exists at all, BODY will be executed."
+  `(--if-let (treemacs-get-local-window)
+       (delete-window it)
+     ,@body))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here
