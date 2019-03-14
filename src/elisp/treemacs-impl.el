@@ -158,6 +158,10 @@ Not used directly, but as part of `treemacs-without-messages'.")
 (defvar-local treemacs--width-is-locked t
   "Keeps track of whether the width of the treemacs window is locked.")
 
+(defvar-local treemacs--in-this-buffer nil
+  "Non-nil only in buffers meant to show treemacs.
+Used to show an error message if someone mistakenly actives `treemacs-mode'.")
+
 (defvar treemacs--pre-peek-state nil
   "List of window, buffer to restore and buffer to kill treemacs used for peeking.")
 
@@ -1008,6 +1012,7 @@ Valid states are 'visible, 'exists and 'none."
         (switch-to-buffer buf)))
   (treemacs--forget-last-highlight)
   (set-window-dedicated-p (selected-window) t)
+  (setq-local treemacs--in-this-buffer t)
   (let ((window-size-fixed))
     (treemacs--set-width treemacs-width)))
 

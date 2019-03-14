@@ -471,6 +471,7 @@ additional keys."
 
 (defun treemacs-initialize ()
   "Initialize treemacs in an external buffer for extension use."
+  (setq-local treemacs--in-this-buffer :extension)
   (treemacs-with-writable-buffer
    (erase-buffer))
   ;; make sure the fringe indicator is enabled later, otherwise treemacs attempts

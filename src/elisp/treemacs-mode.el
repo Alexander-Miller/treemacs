@@ -362,6 +362,49 @@ Used as a post command hook."
   (treemacs--reset-dom)
   (treemacs--reset-project-positions))
 
+(defun treemacs--mode-check-advice (mode-activation &rest args)
+  "Verify that `treemacs-mode' is called in the right place.
+Must be run as advice to prevent changing of the major mode.
+Will run original MODE-ACTIVATION and its ARGS only when
+`treemacs--in-this-buffer' is non-nil."
+  (if treemacs--in-this-buffer
+      (apply mode-activation args)
+    (switch-to-buffer (get-buffer-create "*Clippy*"))
+    (erase-buffer)
+    (insert
+     (format
+      "
+ --------------------------------------------------------------------------------------
+ | It looks like you are trying to run treemacs. Would you like some help with that?  |
+ | You have called %s, but this only the major mode for treemacs' buffers, |
+ | it is not meant to be used manually. Instead you should call a function like       |
+ |  * %s,                                                                       |
+ |  * %s, or                                                      |
+ |  * %s                                        |
+ |                                                                                    |
+ | You can safely deleted this buffer.                                                |
+ --------------------------------------------------------------------------------------
+%s
+"
+      (propertize "treemacs-mode" 'face 'font-lock-function-name-face)
+      (propertize "treemacs" 'face 'font-lock-function-name-face)
+      (propertize "treemacs-select-window" 'face 'font-lock-function-name-face)
+      (propertize "treemacs-add-and-display-current-project" 'face 'font-lock-function-name-face)
+      (propertize
+       "     \\
+     \\
+   ____
+   /  \\
+   |  |
+   @  @
+   |  |
+   || |/
+   || ||
+   |\\_/|
+   \\___/" 'face 'font-lock-keyword-face)))))
+
+(advice-add #'treemacs-mode :around #'treemacs--mode-check-advice)
+
 (provide 'treemacs-mode)
 
 ;;; treemacs-mode.el ends here
