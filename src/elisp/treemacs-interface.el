@@ -673,16 +673,18 @@ For slower scrolling see `treemacs-previous-line-other-window'"
            (propertize new-name 'face 'font-lock-type-face)))))))
   (treemacs--evade-image))
 
-(defun treemacs-add-project-to-workspace (path name)
+(defun treemacs-add-project-to-workspace (path &optional name)
   "Add a project at given PATH to the current workspace.
 The PATH's directory name will be used as a NAME for a project. The NAME can
 \(or must) be entered manully with either a prefix arg or if a project with the
 auto-selected name already exists."
   (interactive "DProject root: ")
-  (when (or current-prefix-arg
-            (--first (string= name (treemacs-project->name it))
-                     (treemacs-workspace->projects (treemacs-current-workspace))))
-    (setf name (read-string "Project Name: " (treemacs--filename path))))
+  (let* ((default-name (treemacs--filename path))
+         (double-name (--first (string= default-name (treemacs-project->name it))
+                               (treemacs-workspace->projects (treemacs-current-workspace)))))
+    (if (or current-prefix-arg double-name)
+        (setf name (read-string "Project Name: " (unless double-name (treemacs--filename path))))
+      (setf name default-name)))
   (pcase (treemacs-do-add-project-to-workspace path name)
     (`(success ,project)
      (treemacs-pulse-on-success "Added project %s to the workspace."
@@ -701,7 +703,8 @@ auto-selected name already exists."
     (`(duplicate-name ,duplicate)
      (goto-char (treemacs-project->position duplicate))
      (treemacs-pulse-on-failure "A project with the name %s already exists."
-       (propertize (treemacs-project->name duplicate) 'face 'font-lock-type-face)))))
+       (propertize (treemacs-project->name duplicate) 'face 'font-lock-type-face))))
+  nil)
 (defalias 'treemacs-add-project #'treemacs-add-project-to-workspace)
 (with-no-warnings
   (make-obsolete #'treemacs-add-project #'treemacs-add-project-to-workspace "v2.2.1"))
