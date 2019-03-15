@@ -382,7 +382,7 @@ Will run original MODE-ACTIVATION and its ARGS only when
  |  * %s, or                                                      |
  |  * %s                                        |
  |                                                                                    |
- | You can safely deleted this buffer.                                                |
+ | You can safely delete this buffer.                                                 |
  --------------------------------------------------------------------------------------
 %s
 "
