@@ -119,7 +119,7 @@ GIT-FUTURE: Pfuture"
                           (setq i (1+ i))
                         (ht-set! git-info-hash
                                  (f-join git-root (s-trim-left path))
-                                 (aref (s-trim-left status) 0)))))
+                                 (substring (s-trim-left status) 0 1)))))
                   (setq i (1+ i)))))))))
     git-info-hash))
 
