@@ -1,6 +1,6 @@
 from subprocess import Popen, PIPE
 from os import listdir
-from os.path import isfile, isdir
+from os.path import isdir
 from posixpath import join
 import sys
 
@@ -18,6 +18,8 @@ def print_all_untracked_files(path):
         full_path = join(path, item)
         output += QUOTE + full_path + QUOTE + QUOTE + b'?' + QUOTE
         ht_size += 1
+        if ht_size > LIMIT:
+            break
         if isdir(full_path):
             print_all_untracked_files(full_path)
 
@@ -25,7 +27,6 @@ def main():
     global output, ht_size
     proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100)
     dirs = {}
-    iter_count = 0
 
     for item in proc.stdout:
         if item.startswith(b' '):
@@ -67,8 +68,7 @@ def main():
                     dirs[full_dirname] = True
         if state.startswith(b'?') and isdir(full_root):
             print_all_untracked_files(full_root)
-        iter_count += 1
-        if iter_count >= LIMIT:
+        if ht_size >= LIMIT:
             break
     elisp_ht = b"#s(hash-table size " + \
         bytes(str(ht_size), 'utf-8') + \
