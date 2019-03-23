@@ -340,6 +340,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-indentation-string            " "
             treemacs-is-never-other-window         nil
             treemacs-max-git-entries               5000
+            treemacs-missing-project-action        'ask
             treemacs-no-png-images                 nil
             treemacs-no-delete-other-windows       t
             treemacs-project-follow-cleanup        nil
@@ -442,6 +443,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-file-follow-delay             | 0.2                                         | Delay in seconds of idle time for treemacs to follow the selected window.                                                                                                                  |
 | treemacs-display-in-side-window        | t                                           | When non-nil treemacs will use a dedicated [[https://www.gnu.org/software/emacs/draft/manual/html_node/elisp/Side-Windows.html][side-window]].                                                                                                                                    |
 | treemacs-max-git-entries               | 5000                                        | Maximum number of git status entries treemacs will process. Anything above that number will be ignored.                                                                                    |
+| treemacs-missing-project-action        | ask                                         | When a persisted project is missing from filesystem, ~ask~ will prompt for action, ~keep~ will keep the project in the project list, and ~remove~ will remove it from it without prompt.   |
 | treemacs-show-cursor                   | nil                                         | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                          |
 | treemacs-git-command-pipe              | ""                                          | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                               |
 | treemacs-no-delete-other-windows       | t                                           | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                |

@@ -497,6 +497,16 @@ is enabled, since constantly expanding an entire project is fairly expensive."
   :group 'treemacs
   :type 'string)
 
+(defcustom treemacs-missing-project-action 'ask
+  "Action to perform when a persisted project is not found on the disk.
+If the project is not found, the project can either be kept in the project list,
+or removed from it.  If the project is removed, when projects are persisted, the
+missing project will not appear in the project list next time Emacs is started."
+  :type '(choice (const :tag "Ask whether to remove" ask)
+                 (const :tag "Remove without asking" remove)
+                 (const :tag "Keep without asking" keep))
+  :group 'treemacs)
+
 (defcustom treemacs-space-between-root-nodes t
   "When non-nil treemacs will separate root nodes with an empty line."
   :type 'boolean
