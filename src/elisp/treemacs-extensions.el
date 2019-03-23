@@ -31,6 +31,8 @@
 
 (treemacs-import-functions-from "treemacs-mode"
   treemacs-mode)
+(treemacs-import-functions-from "treemacs-rendering"
+  treemacs--insert-root-separator)
 
 (defmacro treemacs--build-extension-addition (name)
   "Internal building block.
@@ -125,28 +127,33 @@ Also pass additional DATA to predicate function.")
 (define-obsolete-function-alias 'treemacs-remove-root-extension #'treemacs-remove-top-level-extension "v2.4")
 
 ;; slighty non-standard application for root extensions
-(defun treemacs--apply-root-top-extensions (workspace)
-  "Apply the top extensions for NODE of type `root' for the current WORKSPACE."
-  (let* ((len (1- (length treemacs--top-level-bottom-extensions)))
-         (more-than-one? (> len 0))
-         (separator (if treemacs-space-between-root-nodes "\n\n" "\n")))
-    (--each treemacs--top-level-top-extensions
-      (let ((extension (car it))
-            (predicate (cdr it)))
-        (when (or (null predicate) (funcall predicate workspace))
-          (funcall extension)
-          (unless (and (= it-index len) more-than-one?)
-            (insert separator)))))))
+(cl-macrolet
+    ((define-root-extension-application (name variable doc)
+       `(defun ,name (workspace &optional has-previous)
+          ,doc
+          (let ((is-first t))
+            (--each ,variable
+              (let ((extension (car it))
+                    (predicate (cdr it)))
+                (when (or (null predicate) (funcall predicate workspace))
+                  (when (or has-previous (not is-first))
+                    (treemacs--insert-root-separator))
+                  (setq is-first nil)
+                  (funcall extension))))
+            (not is-first)))))
 
-(defun treemacs--apply-root-bottom-extensions (workspace)
-  "Apply the bottom extensions for NODE of type `root' for the current WORKSPACE."
-  (-let [separator (if treemacs-space-between-root-nodes "\n\n" "\n")]
-    (dolist (cell  treemacs--top-level-bottom-extensions)
-      (insert separator)
-      (let ((extension (car cell))
-            (predicate (cdr cell)))
-        (when (or (null predicate) (funcall predicate workspace))
-          (funcall extension))))))
+  (define-root-extension-application
+    treemacs--apply-root-top-extensions
+    treemacs--top-level-top-extensions
+    "Apply the top extensions for NODE of type `root' for the current WORKSPACE.
+
+Returns t if extensions were inserted.")
+  (define-root-extension-application
+    treemacs--apply-root-bottom-extensions
+    treemacs--top-level-bottom-extensions
+    "Apply the bottom extensions for NODE of type `root' for the current WORKSPACE.
+
+Returns t if extensions were inserted."))
 
 (defsubst treemacs-as-icon (string &rest more-properties)
   "Turn STRING into an icon for treemacs.
@@ -424,8 +431,7 @@ additional keys."
             `(progn
                ,(if (equal top-level-marker (quote 'variadic))
                     `(defun ,ext-name (items)
-                       (let ((separator (if treemacs-space-between-root-nodes "\n\n" "\n"))
-                             (last-index (1- (length items))))
+                       (let ((last-index (1- (length items))))
                          (treemacs-with-writable-buffer
                           (--each items
                             (let* ((extension-label (car it))
@@ -446,7 +452,7 @@ additional keys."
                                                   :project pr
                                                   :state ,closed-state-name))
                               (unless (= it-index last-index)
-                                (insert separator)))))))
+                                (treemacs--insert-root-separator)))))))
                   `(progn
                      (defvar-local ,project-var-name nil
                        ,(format "The project displaying the local %s extension." name))

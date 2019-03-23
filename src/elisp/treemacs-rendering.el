@@ -54,6 +54,13 @@
   treemacs--apply-directory-top-extensions
   treemacs--apply-directory-bottom-extensions)
 
+(defvar-local treemacs--projects-end nil
+  "Marker pointing to position at the end of the last project.
+
+If there are no projects, points to the position at the end of any top-level
+extensions positioned to `TOP'. This can always be used as the insertion point
+for new projects.")
+
 (define-inline treemacs--button-at (pos)
   "Return the button at position POS in the current buffer, or nil.
 If the button at POS is a text property button, the return value
@@ -128,6 +135,11 @@ the height of treemacs' icons must be taken into account."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote (file-newer-than-file-p ,f2 ,f1))))
+
+(define-inline treemacs--insert-root-separator ()
+  "Insert a root-level separator at point, moving point after the separator."
+  (inline-quote
+   (insert (if treemacs-space-between-root-nodes "\n\n" "\n"))))
 
 (define-inline treemacs--get-dir-content (dir)
   "Get the content of DIR, separated into sublists of first dirs, then files."
@@ -434,11 +446,14 @@ set to PARENT."
                 (/= (1+ (treemacs-button-get btn :depth))
                     (treemacs-button-get (copy-marker next t) :depth)))
             (delete-trailing-whitespace)
-          (goto-char next)
-          (beginning-of-line)
-          (let* ((pos-start (point))
+          ;; Delete from end of the current line to end of the last sub-button.
+          ;; This will make the EOL of the last button become the EOL of the
+          ;; current button, making the treemacs--projects-end marker track
+          ;; properly when collapsing the last project or a last directory of the
+          ;; last project.
+          (let* ((pos-start (point-at-eol))
                  (next (treemacs--next-non-child-button ,button))
-                 (pos-end (if next (-> next (button-start) (previous-button) (button-end) (1+)) (point-max))))
+                 (pos-end (if next (-> next (button-start) (previous-button) (button-end)) (point-max))))
             (delete-region pos-start pos-end))))
       ,post-close-action)))
 
@@ -542,15 +557,24 @@ PROJECT: Project Struct"
 (defun treemacs--render-projects (projects)
   "Actually render the given PROJECTS in the current buffer."
   (treemacs-with-writable-buffer
-   (let ((current-workspace (treemacs-current-workspace))
-         (separator (if treemacs-space-between-root-nodes "\n\n" "\n")) )
-     (treemacs--apply-root-top-extensions current-workspace)
-     (let* ((last-index (1- (length projects))))
-       (--each projects
-         (treemacs--add-root-element it)
-         (unless (= it-index last-index)
-           (insert separator))))
-     (treemacs--apply-root-bottom-extensions current-workspace))))
+   (unless treemacs--projects-end
+     (setq treemacs--projects-end (make-marker)))
+   (let* ((current-workspace (treemacs-current-workspace))
+          (has-previous (treemacs--apply-root-top-extensions current-workspace)))
+
+     (--each projects
+       (when has-previous (treemacs--insert-root-separator))
+       (setq has-previous t)
+       (treemacs--add-root-element it))
+
+     ;; Set the end marker after inserting the extensions. Otherwise, the
+     ;; extensions would move the marker.
+     (let ((projects-end-point (point)))
+       (treemacs--apply-root-bottom-extensions current-workspace has-previous)
+       ;; If the marker lies at the start of the buffer, expanding extensions would
+       ;; move the marker. Make sure that the marker does not move when doing so.
+       (set-marker-insertion-type treemacs--projects-end has-previous)
+       (set-marker treemacs--projects-end projects-end-point)))))
 
 (define-inline treemacs-do-update-node (path)
   "Update the node identified by its PATH.

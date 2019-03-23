@@ -551,11 +551,13 @@ Add a project for ROOT and NAME if they are non-nil."
          (setq current-workspace (treemacs-current-workspace))
          (run-hook-with-args treemacs-workspace-first-found-functions
                              current-workspace (selected-frame)))
-       (if (treemacs-workspace->is-empty?)
-           (-> (treemacs--read-first-project-path)
-               (treemacs--canonical-path)
-               (treemacs-do-add-project-to-workspace))
-         (treemacs--render-projects (treemacs-workspace->projects current-workspace)))
+       ;; Render the projects even if there are none. This ensures that top-level
+       ;; extensions are always rendered, and the project markers are initialized.
+       (treemacs--render-projects (treemacs-workspace->projects current-workspace))
+       (when (treemacs-workspace->is-empty?)
+         (-> (treemacs--read-first-project-path)
+             (treemacs--canonical-path)
+             (treemacs-do-add-project-to-workspace)))
        (goto-char 2)))
     (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root) name))
     (with-no-warnings (setq treemacs--ready-to-follow t))
