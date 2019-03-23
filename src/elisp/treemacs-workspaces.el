@@ -33,7 +33,8 @@
   treemacs--collapse-root-node
   treemacs--expand-root-node
   treemacs--add-root-element
-  treemacs--render-projects)
+  treemacs--render-projects
+  treemacs--insert-root-separator)
 
 (treemacs-import-functions-from "treemacs-interface"
   treemacs-previous-project
@@ -260,8 +261,7 @@ NAME: String"
    (-when-let (project (treemacs--find-project-for-path path))
      (treemacs-return `(duplicate-project ,project)))
    (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
-          (project (make-treemacs-project :name name :path path))
-          (empty-workspace? (-> (treemacs-current-workspace) (treemacs-workspace->projects) (null))))
+          (project (make-treemacs-project :name name :path path)))
      (treemacs-return-if (treemacs--is-name-invalid? name)
        `(invalid-name ,name))
      (-when-let (double (--first (string= name (treemacs-project->name it))
@@ -270,15 +270,21 @@ NAME: String"
      (treemacs--add-project-to-current-workspace project)
      (treemacs-run-in-every-buffer
       (treemacs-with-writable-buffer
-       (if empty-workspace?
-           (progn
-             (goto-char (point-min))
-             (treemacs--reset-dom))
-         (goto-char (point-max))
-         (when (treemacs-current-button)
-           (insert "\n"))
-         (when treemacs-space-between-root-nodes
-           (insert "\n")))
+       (goto-char treemacs--projects-end)
+       (cond
+        ;; Inserting the first and only button - no need to add spacing
+        ((not (treemacs-current-button)))
+        ;; Inserting before a button. This happens when only bottom extensions exist.
+        ((bolp)
+         (save-excursion (treemacs--insert-root-separator))
+         ;; Unlock the marker - when the marker is at the beginning of the buffer,
+         ;; expanding/collapsing extension nodes would move the marker and it was thus locked.
+         (set-marker-insertion-type treemacs--projects-end t))
+        ;; Inserting after a button (the standard case)
+        ;; We should already be at EOL, but play it safe.
+        (t
+         (end-of-line)
+         (treemacs--insert-root-separator)))
        (treemacs--add-root-element project)
        (treemacs--insert-into-dom (make-treemacs-dom-node
                                    :key path :position (treemacs-project->position project)))))
@@ -297,23 +303,33 @@ PROJECT: Project Struct"
     (-let [project-btn (treemacs-project->position project)]
       (goto-char project-btn)
       (when (treemacs-project->is-expanded? project)
-        (treemacs--collapse-root-node project-btn t)))
-    (treemacs--remove-project-from-current-workspace project)
-    ;; check project being last first before deleting it, otherwise the result
-    ;; can be wrong
-    (-let [is-last? (treemacs-project->is-last? project)]
-      (treemacs--delete-line)
-      (cond
-       ;; happens with single tree ad-hoc navigation
-       ((treemacs-workspace->is-empty?)
-        (ignore))
-       (is-last?
-        (treemacs-previous-project))
-       (t
-        (treemacs--delete-line)
-        (treemacs-next-project))))
+        (treemacs--collapse-root-node project-btn t))
+      (treemacs--remove-project-from-current-workspace project)
+
+      (let ((previous-button (previous-button project-btn))
+            (next-button (next-button project-btn)))
+        (cond
+         ;; Previous button exists. Delete from the end of the current line to
+         ;; the end of the previous button's line. If the treemacs--projects-end
+         ;; is at the EOL of the  it will move to EOL of the previous button.
+         (previous-button
+          (delete-region (button-end previous-button) (point-at-eol))
+          (when next-button (forward-button 1)))
+         ;; Previous project does not exist, but a next button exists. Delete from
+         ;; BOL to the start of the next buttons line.
+         (next-button
+          (when (> next-button treemacs--projects-end)
+            ;; The first item after the deletion will be bottom extensions. Project
+            ;; end will be at its BOL, making it move upon expand/collapse. Lock the marker.
+            (set-marker-insertion-type treemacs--projects-end nil))
+          (delete-region (point-at-bol) (progn (goto-char next-button) (forward-line 0) (point))))
+
+         ;; Neither the previous nor the next button exists. Simply delete the
+         ;; current line.
+         (t
+          (delete-region (point-at-bol) (point-at-eol))))))
+
     (treemacs--forget-last-highlight)
-    (delete-trailing-whitespace)
     (--when-let (treemacs-get-local-window)
       (with-selected-window it
         (recenter)))
