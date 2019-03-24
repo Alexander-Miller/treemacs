@@ -386,7 +386,8 @@ PROJECT, excluding newlines."
          (while (/= (point-max)
                     (setq next-pos (treemacs--next-project-pos)))
            (goto-char next-pos)
-           (push (treemacs-project-at-point) projects-in-buffer))))
+           (unless (treemacs-button-get (treemacs-current-button) :custom)
+             (push (treemacs-project-at-point) projects-in-buffer)))))
      ;; figure out which ones have been deleted and and remove them from the dom
      (dolist (project-in-buffer projects-in-buffer)
        (unless (--first (treemacs-is-path (treemacs-project->path project-in-buffer)
