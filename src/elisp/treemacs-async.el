@@ -63,7 +63,9 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
                        path
                        (treemacs-find-in-dom)
                        (treemacs-dom-node->children)
-                       (-map #'treemacs-dom-node->key)))
+                       (-map #'treemacs-dom-node->key)
+                       ;; Remove extension nodes
+                       (-filter #'stringp)))
            (command `(,treemacs-python-executable
                       "-O" "-S"
                       ,treemacs--git-status.py
