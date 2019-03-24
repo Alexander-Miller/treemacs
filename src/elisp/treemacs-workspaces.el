@@ -136,38 +136,38 @@ Will return `point-max' if there is no next project."
     (inline-quote
      (ht-set! treemacs--project-positions ,project ,position))))
 
-(define-inline treemacs-project->position (project)
+(define-inline treemacs-project->position (self)
   "Return the position of PROJECT in the current buffer."
   (declare (side-effect-free t))
-  (inline-letevals (project)
+  (inline-letevals (self)
     (inline-quote
-     (ht-get treemacs--project-positions ,project))))
+     (ht-get treemacs--project-positions ,self))))
 
-(define-inline treemacs-project->is-expanded? (project)
+(define-inline treemacs-project->is-expanded? (self)
   "Return non-nil if PROJECT is expanded in the current buffer."
   (declare (side-effect-free t))
-  (inline-letevals (project)
+  (inline-letevals (self)
     (inline-quote
      (eq 'root-node-open
-         (-> ,project (treemacs-project->position) (treemacs-button-get :state))))))
+         (-> ,self (treemacs-project->position) (treemacs-button-get :state))))))
 
-(define-inline treemacs-project->refresh! (project)
+(define-inline treemacs-project->refresh! (self)
   "Refresh PROJECT in the current buffer."
-  (inline-letevals (project)
+  (inline-letevals (self)
     (inline-quote
-     (when (treemacs-project->is-expanded? ,project)
-       (let ((root-btn (treemacs-project->position ,project)))
+     (when (treemacs-project->is-expanded? ,self)
+       (let ((root-btn (treemacs-project->position ,self)))
          (goto-char root-btn)
          (treemacs--forget-last-highlight)
          (treemacs--collapse-root-node root-btn)
          (treemacs--expand-root-node root-btn))))))
 
-(define-inline treemacs-project->is-last? (project)
+(define-inline treemacs-project->is-last? (self)
   "Return t when PROJECT's root node is the last in the view."
   (declare (side-effect-free t))
-  (inline-letevals (project)
+  (inline-letevals (self)
     (inline-quote
-     (-> ,project
+     (-> ,self
          (treemacs-project->position)
          (button-end)
          (next-single-property-change :project)

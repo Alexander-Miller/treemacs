@@ -58,25 +58,25 @@
 
 (treemacs--defstruct treemacs-iter list)
 
-(define-inline treemacs-iter->next! (iter)
+(define-inline treemacs-iter->next! (self)
   "Get the next element of iterator ITER.
 
 ITER: Treemacs-Iter struct."
-  (inline-letevals (iter)
+  (inline-letevals (self)
     (inline-quote
-     (let ((head (car (treemacs-iter->list ,iter)))
-           (tail (cdr (treemacs-iter->list ,iter))))
-       (setf (treemacs-iter->list ,iter) tail)
+     (let ((head (car (treemacs-iter->list ,self)))
+           (tail (cdr (treemacs-iter->list ,self))))
+       (setf (treemacs-iter->list ,self) tail)
        head))))
 
-(define-inline treemacs-iter->peek (iter)
+(define-inline treemacs-iter->peek (self)
   "Peek at the first element of ITER.
 
 ITER: Treemacs-Iter struct."
   (declare (side-effect-free t))
-  (inline-letevals (iter)
+  (inline-letevals (self)
     (inline-quote
-     (or (car (treemacs-iter->list ,iter))
+     (or (car (treemacs-iter->list ,self))
          ;; we still need something to make the `s-matches?' calls work
          "__EMPTY__"))))
 

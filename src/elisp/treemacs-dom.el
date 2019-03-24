@@ -52,16 +52,16 @@
   "Reset the dom."
   (setq treemacs-dom (make-hash-table :size 300 :test #'equal)))
 
-(defun treemacs-dom-node->print! (node)
-  "Pretty print NODE.
+(defun treemacs-dom-node->print! (self)
+  "Pretty print SELF.
 Debug function."
   (message
    "Node %s\nChildren: %s\nOwner: %s\nPosition: %s\nClosed: %s"
-   (treemacs-dom-node->key node)
-   (-map #'treemacs-dom-node->key (treemacs-dom-node->children node))
-   (--if-let (treemacs-dom-node->parent node) (treemacs-dom-node->key it) "NONE")
-   (--if-let (treemacs-dom-node->position node) it "NONE")
-   (treemacs-dom-node->closed node)))
+   (treemacs-dom-node->key self)
+   (-map #'treemacs-dom-node->key (treemacs-dom-node->children self))
+   (--if-let (treemacs-dom-node->parent self) (treemacs-dom-node->key it) "NONE")
+   (--if-let (treemacs-dom-node->position self) it "NONE")
+   (treemacs-dom-node->closed self)))
 
 (define-inline treemacs-get-position-of (key)
   "Get the position of node with KEY, if any."
@@ -78,23 +78,23 @@ Debug function."
     (inline-quote
      (ht-get treemacs-dom ,key))))
 
-(define-inline treemacs-dom-node->invalidate-pos! (node)
-  "Set the pos field of NODE to nil."
-  (inline-letevals (node)
+(define-inline treemacs-dom-node->invalidate-pos! (self)
+  "Set the pos field of SELF to nil."
+  (inline-letevals (self)
     (inline-quote
-     (setf (treemacs-dom-node->position ,node) nil))))
+     (setf (treemacs-dom-node->position ,self) nil))))
 
-(define-inline treemacs-dom-node->reset-refresh-flag! (node)
-  "Set the refresh flag of NODE to nil."
-  (inline-letevals (node)
+(define-inline treemacs-dom-node->reset-refresh-flag! (self)
+  "Set the refresh flag of SELF to nil."
+  (inline-letevals (self)
     (inline-quote
-     (setf (treemacs-dom-node->refresh-flag ,node) nil))))
+     (setf (treemacs-dom-node->refresh-flag ,self) nil))))
 
-(define-inline treemacs-dom-node->remove-from-dom! (node)
-  "Remove single NODE from the dom."
-  (inline-letevals (node)
+(define-inline treemacs-dom-node->remove-from-dom! (self)
+  "Remove single SELF from the dom."
+  (inline-letevals (self)
     (inline-quote
-     (ht-remove treemacs-dom (treemacs-dom-node->key ,node)))))
+     (ht-remove treemacs-dom (treemacs-dom-node->key ,self)))))
 
 (define-inline treemacs--on-expanding-existing-node (node pos)
   "Run when existing NODE is expanded.
