@@ -340,6 +340,22 @@ Specialized towards applying MAPPER to ITEMS on a given INTERVAL."
        (cl-incf --loop--))
      (nreverse (nconc --items-- ret))))
 
+(defmacro treemacs--inplace-map-when-unrolled (items interval &rest map-body)
+  "Unrolled in-place mappig operation.
+Applies MAP-BODY to every element in ITEMS at the given INTERVAL."
+  (declare (indent 2))
+  (let ((l (make-symbol "list"))
+        (tail-op (cl-case interval
+                   (2 'cdr)
+                   (3 'cddr)
+                   (4 'cdddr)
+                   (_ (error "Interval %s is not handled yet" interval)))))
+    `(let ((,l ,items))
+       (while ,l
+         (setq ,l (,tail-op ,l))
+         (let ((it (pop ,l)))
+           ,@map-body)))))
+
 (define-inline treemacs--create-branch (root depth git-future collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at DEPTH and uses the eventual outputs of
@@ -416,22 +432,24 @@ set to PARENT."
                (setq dir-strings (cddr dir-strings)))
              (setq dir-strings (nreverse result))))
 
-         (insert
-          (apply #'concat
-                 (treemacs--map-when-unrolled dir-strings 2
-                   (propertize
-                    it 'face
-                    (treemacs--get-button-face
-                     (concat ,root "/" it) git-info 'treemacs-directory-face)))))
+         (treemacs--inplace-map-when-unrolled dir-strings 2
+           (put-text-property
+            0
+            (length it)
+            'face
+            (treemacs--get-button-face (concat ,root "/" it) git-info 'treemacs-directory-face)
+            it))
+         (insert (apply #'concat dir-strings))
 
          (end-of-line)
-
-         (insert
-          (apply #'concat
-                 (treemacs--map-when-unrolled file-strings 3
-                   (propertize it 'face
-                               (treemacs--get-button-face
-                                (concat ,root "/" it) git-info 'treemacs-git-unmodified-face)))))
+         (treemacs--inplace-map-when-unrolled file-strings 3
+           (put-text-property
+            0
+            (length it)
+            'face
+            (treemacs--get-button-face (concat ,root "/" it) git-info 'treemacs-git-unmodified-face)
+            it))
+         (insert (apply #'concat file-strings))
 
          (save-excursion
            (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs ,collapse-process))
