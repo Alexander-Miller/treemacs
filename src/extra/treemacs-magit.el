@@ -82,17 +82,28 @@ This runs due to a commit or stash action, so we know that no files have
 actually been added or deleted. This allows us to forego rebuilding the entire
 project structure just to be sure we caught everything. Instead we grab the
 current git status and just go through the lines as they are right now."
-  (pfuture-callback `(,treemacs-python-executable
-                      "-O" "-S"
-                      ,treemacs--git-status.py
-                      ,magit-root
-                      ,(number-to-string treemacs-max-git-entries)
-                      ,treemacs-git-command-pipe)
-    :directory magit-root
-    :on-success
-    (progn
-      (ignore status)
-      (treemacs-magit--update-callback magit-root pfuture-buffer))))
+  ;; we run a single git process to update every buffer, so we need to gather
+  ;; the visible dirs in every buffer
+  ;; this collection may contain duplicates, but they are removed in python
+  (-let [visible-dirs nil]
+    (treemacs-run-in-every-buffer
+     (dolist (dir (-some->> magit-root
+                            (treemacs-find-in-dom)
+                            (treemacs-dom-node->children)
+                            (-map #'treemacs-dom-node->key)))
+       (push dir visible-dirs)))
+    (pfuture-callback `(,treemacs-python-executable
+                        "-O" "-S"
+                        ,treemacs--git-status.py
+                        ,magit-root
+                        ,(number-to-string treemacs-max-git-entries)
+                        ,treemacs-git-command-pipe
+                        ,@visible-dirs)
+      :directory magit-root
+      :on-success
+      (progn
+        (ignore status)
+        (treemacs-magit--update-callback magit-root pfuture-buffer)))))
 
 (defun treemacs-magit--update-callback (magit-root pfuture-buffer)
   "Run the update as a pfuture callback.

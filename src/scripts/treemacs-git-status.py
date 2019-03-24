@@ -4,70 +4,95 @@ from os.path import isdir
 from posixpath import join
 import sys
 
-GIT_ROOT  = str.encode(sys.argv[1])
-LIMIT     = int(sys.argv[2])
-GIT_CMD   = "git status --porcelain --ignored . " + sys.argv[3]
-STDOUT    = sys.stdout.buffer
-QUOTE      = b'"'
-output    = b""
-ht_size   = 0
+# The script is supplied with the followig command line arguments
+# 1) the repository root - used only for file-joining to an absolute path
+#    the actual working directory is set in emacs
+# 2) `treemacs-max-git-entries`
+# 3) `treemacs-git-command-pipe`
+# 4) a list of expanded directories the script may recurse into to collect
+#    an entry for every untracked/ignored file inside
+#    this list is turned into a set since it is possible that it contains duplicates
+#    when called for magit, see also `treemacs-magit--extended-git-mode-update`
 
-def print_all_untracked_files(path):
+GIT_ROOT     = str.encode(sys.argv[1])
+LIMIT        = int(sys.argv[2])
+GIT_CMD      = "git status --porcelain --ignored . " + sys.argv[3]
+STDOUT       = sys.stdout.buffer
+RECURSE_DIRS = set([str.encode(it[(len(GIT_ROOT)):]) + b"/" for it in sys.argv[4:]]) if len(sys.argv) > 4 else []
+QUOTE        = b'"'
+output       = b""
+ht_size      = 0
+
+def find_recursive_entries(path, state):
     global output, ht_size
     for item in listdir(path):
         full_path = join(path, item)
-        output += QUOTE + full_path + QUOTE + QUOTE + b'?' + QUOTE
+        output += QUOTE + full_path + QUOTE + QUOTE + state + QUOTE
         ht_size += 1
         if ht_size > LIMIT:
             break
         if isdir(full_path):
-            print_all_untracked_files(full_path)
+            find_recursive_entries(full_path)
 
 def main():
     global output, ht_size
     proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100)
-    dirs = {}
+    dirs_added = {}
 
     for item in proc.stdout:
+        # remove final newline
+        item = item[:-1]
+
+        # remove leading space if item was e.g. modified only in the worktree
         if item.startswith(b' '):
             item = item[1:]
         state, filename = item.split(b' ', 1)
+
+        # reduce the state to a single-letter-string
+        state = state[0:1]
 
         # sometimes git outputs quoted filesnames
         if filename.startswith(b'"'):
             filename = filename[1:-1]
 
+        # find the absolute path for the current item
         # renames have the form STATE OLDNAME -> NEWNAME
-        # final newline must be trimmed as well
+        abs_path = None
         if state == b"R":
-            full_root = join(GIT_ROOT, filename.split(b' -> ')[1][:-1])
+            abs_path = join(GIT_ROOT, filename.split(b' -> ')[1])
         else:
-            full_root = join(GIT_ROOT, filename.lstrip()[:-1])
+            abs_path = join(GIT_ROOT, filename.lstrip())
 
         # filename is a directory, final slash must be removed
-        if full_root.endswith(b'/'):
-            full_root = full_root[:-1]
-            output += QUOTE + full_root + QUOTE + QUOTE + state[0:1] + QUOTE
-            dirs[full_root] = True
+        if abs_path.endswith(b'/'):
+            abs_path = abs_path[:-1]
+            output += QUOTE + abs_path + QUOTE + QUOTE + state + QUOTE
+            dirs_added[abs_path] = True
+            ht_size += 1
         else:
-            output += QUOTE + full_root + QUOTE + QUOTE + state[0:1] + QUOTE
-        ht_size += 1
+            output += QUOTE + abs_path + QUOTE + QUOTE + state + QUOTE
+            ht_size += 1
+
         # for files deeper down in the file hierarchy also print all their directories
-        # if ./foo/bar/baz.el is changed then ./foo and ./foo/bar must be shown as changed as well
-        if b'/' in filename and state != b"!!":
+        # if /A/B/C/x is changed then /A and /A/B and /A/B/C must be shown as changed as well
+        if b'/' in filename:
             name_parts = filename.split(b'/')[:-1]
             dirname = b''
             for name_part in name_parts:
                 dirname = join(dirname, name_part)
                 full_dirname = join(GIT_ROOT, dirname.lstrip())
                 # directories should not be printed more than once, which would happen if
-                # e.g. both ./foo/x and ./foo/y have changes
-                if full_dirname not in dirs:
+                # e.g. both /A/B/C/x and /A/B/C/y have changes
+                if full_dirname not in dirs_added:
                     output += QUOTE + full_dirname + QUOTE + QUOTE + b'M' + QUOTE
                     ht_size += 1
-                    dirs[full_dirname] = True
-        if state.startswith(b'?') and isdir(full_root):
-            print_all_untracked_files(full_root)
+                    dirs_added[full_dirname] = True
+        # for untracked and ignored directories we need to find an entry for every single file
+        # they contain
+        # however this applies only for directories that are expanded and whose content is visible
+        if state in [b'?', b'!'] and isdir(abs_path):
+            if filename in RECURSE_DIRS:
+                find_recursive_entries(abs_path, state)
         if ht_size >= LIMIT:
             break
     elisp_ht = b"#s(hash-table size " + \
@@ -76,7 +101,6 @@ def main():
         output + \
         b"))"
     STDOUT.write(elisp_ht)
-
 
     sys.exit(proc.poll())
 

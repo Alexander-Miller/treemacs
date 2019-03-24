@@ -26,6 +26,7 @@
 (require 'pfuture)
 (require 'treemacs-impl)
 (require 'treemacs-customization)
+(require 'treemacs-dom)
 (eval-and-compile
   (require 'inline)
   (require 'treemacs-macros))
@@ -58,14 +59,19 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
     (let* ((file-name-handler-alist nil)
            (git-root (expand-file-name git-root))
            (default-directory path)
-           (future (pfuture-new
-                    treemacs-python-executable
-                    "-O"
-                    "-S"
-                    treemacs--git-status.py
-                    git-root
-                    (number-to-string treemacs-max-git-entries)
-                    treemacs-git-command-pipe)))
+           (open-dirs (-some->>
+                       path
+                       (treemacs-find-in-dom)
+                       (treemacs-dom-node->children)
+                       (-map #'treemacs-dom-node->key)))
+           (command `(,treemacs-python-executable
+                      "-O" "-S"
+                      ,treemacs--git-status.py
+                      ,git-root
+                      ,(number-to-string treemacs-max-git-entries)
+                      ,treemacs-git-command-pipe
+                      ,@open-dirs))
+           (future (apply #'pfuture-new command)))
       future)))
 
 (defun treemacs--parse-git-status-extended (git-future)
