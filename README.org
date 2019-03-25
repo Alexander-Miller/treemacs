@@ -330,6 +330,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
       (setq treemacs-collapse-dirs                 (if (executable-find "python") 3 0)
             treemacs-deferred-git-apply-delay      0.5
             treemacs-display-in-side-window        t
+            treemacs-eldoc-display                 t
             treemacs-file-event-delay              5000
             treemacs-file-follow-delay             0.2
             treemacs-follow-after-init             t
@@ -444,6 +445,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-show-cursor                   | nil                                         | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                          |
 | treemacs-git-command-pipe              | ""                                          | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                               |
 | treemacs-no-delete-other-windows       | t                                           | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                |
+| treemacs-eldoc-display                 | t                                           | Enables eldoc-like display of the file path at point.                                                                                                                                      |
 
 ** Faces
 Treemacs defines and uses the following faces:

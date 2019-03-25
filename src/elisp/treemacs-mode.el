@@ -308,7 +308,10 @@ Used as a post command hook."
                        (treemacs--nearest-path btn))))
       (when (and (stringp path)
                  (file-readable-p path))
-        (setq default-directory (f-slash (if (file-directory-p path) path (file-name-directory path)))))
+        (setq default-directory (f-slash (if (file-directory-p path) path (file-name-directory path))))
+        (when treemacs-eldoc-display
+          (put-text-property 0 (length path) 'face 'font-lock-string-face path)
+          (message path)))
     "/"))
 
 ;;;###autoload

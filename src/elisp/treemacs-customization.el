@@ -58,6 +58,11 @@ Indentation is created by repeating `treemacs-indentation-string'."
   :type 'integer
   :group 'treemacs)
 
+(defcustom treemacs-eldoc-display t
+  "Enables eldoc-like display of the file path at point."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs-indentation-string " "
   "The string that is for indentation in the file tree.
 Indentation is created by repeating this string `treemacs-indentation' many
