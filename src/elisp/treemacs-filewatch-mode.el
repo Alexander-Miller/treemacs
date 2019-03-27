@@ -86,11 +86,15 @@ COLLAPSE: Bool"
            ;; just add current buffer to watch list if path is watched already
            (unless (memq (current-buffer) (car watch-info))
              (setcar watch-info (cons (current-buffer) (car watch-info))))
-         ;; make new entry otherwise and set a new watcher
-         (ht-set! treemacs--filewatch-index
-                  ,path
-                  (cons (list (current-buffer))
-                        (file-notify-add-watch ,path '(change) #'treemacs--filewatch-callback))))))))
+         ;; if the Tramp connection does not support watches, don't show an error
+         ;; every time a watch is started.
+         (treemacs-with-ignored-errors
+          ((file-notify-error "No file notification program found"))
+          ;; make new entry otherwise and set a new watcher
+          (ht-set! treemacs--filewatch-index
+                   ,path
+                   (cons (list (current-buffer))
+                         (file-notify-add-watch ,path '(change) #'treemacs--filewatch-callback)))))))))
 
 (define-inline treemacs--stop-watching (path &optional all)
   "Stop watching PATH for file events.

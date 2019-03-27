@@ -467,6 +467,22 @@ treemacs buffer exists at all, BODY will be executed."
        (delete-window it)
      ,@body))
 
+(defmacro treemacs-with-ignored-errors (ignored-errors &rest body)
+  "Evaluate BODY with specific errors ignored.
+
+IGNORED-ERRORS is a list of errors to ignore.  Each element is a list whose car
+is the error's type, and second item is a regex to match against error messages.
+If any of the IGNORED-ERRORS matches, the error is suppressed and nil returned."
+  (let ((err (gensym)))
+    `(condition-case-unless-debug ,err
+         ,(macroexp-progn body)
+       ,@(mapcar
+          (lambda (ignore-spec)
+            `(,(car ignore-spec)
+              (unless (string-match-p ,(nth 1 ignore-spec) (error-message-string ,err))
+                (signal (car ,err) (cdr ,err)))))
+          ignored-errors))))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here
