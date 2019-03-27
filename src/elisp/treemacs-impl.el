@@ -788,62 +788,49 @@ failed."
             (goto-char start))
         search-result))))
 
-(define-inline treemacs--goto-custom-top-level-node (path)
-  (inline-letevals (path)
-    (inline-quote
-     (-when-let (result (treemacs--find-custom-top-level-node ,path))
-       (treemacs--evade-image)
-       (hl-line-highlight)
-       (set-window-point (get-buffer-window) (point))
-       result))))
-
-(defun treemacs--find-custom-dir-node (path)
-  "Move to the directory extension node at PATH."
-  (let* (;; go back here if the search fails
-         (project (treemacs--find-project-for-path (car path)))
-         (start (prog1 (point) (goto-char (treemacs-project->position project))))
-         ;; making a copy since the variable is a reference to a node actual path
-         ;; and will be changed in-place here
-         (goto-path (copy-sequence path))
-         (counter (1- (length goto-path)))
-         ;; manual as in to be expanded manually after we moved to the next closest node we can find
-         ;; in the dom
-         (manual-parts nil)
-         (dom-node nil))
-    ;; try to move as close as possible to the followed node, starting with its immediate parent
-    ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
-    ;; all the while collecting the parts of the path that beed manual expanding
-    (while (and (> (1+ counter) 0)
-                (null dom-node))
-      (setq dom-node (treemacs-find-in-dom (if (cdr goto-path) goto-path (car goto-path)))
-            counter (1- counter))
-      (cond
-       ((null dom-node)
-        (push (nth (1+ counter) goto-path) manual-parts)
-        (setcdr (nthcdr counter goto-path) nil))
-       ((and dom-node (null (treemacs-dom-node->position dom-node)))
-        (setq dom-node nil)
-        (push (nth (1+ counter) goto-path) manual-parts)
-        (setcdr (nthcdr counter goto-path) nil))))
-    (let* ((btn (if dom-node
-                    (treemacs-dom-node->position dom-node)
-                  (treemacs-project->position project)))
-           ;; do the rest manually
-           (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
-      (if (eq 'follow-failed search-result)
-          (prog1 nil
-            (goto-char start))
-        search-result))))
-
-(define-inline treemacs--goto-custom-dir-node (path)
-  "Move to the directory extension node at PATH."
-  (inline-letevals (path)
-    (inline-quote
-     (-when-let (result (treemacs--find-custom-dir-node ,path))
-       (treemacs--evade-image)
-       (hl-line-highlight)
-       (set-window-point (get-buffer-window) (point))
-       result))))
+(cl-macrolet
+    ((define-find-custom-node (name project-form doc)
+       `(defun ,name (path)
+          ,doc
+          (let* (;; go back here if the search fails
+                 (project (pop path))
+                 (start (prog1 (point) (goto-char (treemacs-project->position project))))
+                 ;; making a copy since the variable is a reference to a node actual path
+                 ;; and will be changed in-place here
+                 (goto-path (copy-sequence path))
+                 (counter (1- (length goto-path)))
+                 ;; manual as in to be expanded manually after we moved to the next closest node we can find
+                 ;; in the dom
+                 (manual-parts nil)
+                 (dom-node nil))
+            ;; try to move as close as possible to the followed node, starting with its immediate parent
+            ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
+            ;; all the while collecting the parts of the path that beed manual expanding
+            (while (and (> (1+ counter) 0)
+                        (null dom-node))
+              (setq dom-node (treemacs-find-in-dom (if (cdr goto-path) goto-path (car goto-path)))
+                    counter (1- counter))
+              (cond
+               ((null dom-node)
+                (push (nth (1+ counter) goto-path) manual-parts)
+                (setcdr (nthcdr counter goto-path) nil))
+               ((and dom-node (null (treemacs-dom-node->position dom-node)))
+                (setq dom-node nil)
+                (push (nth (1+ counter) goto-path) manual-parts)
+                (setcdr (nthcdr counter goto-path) nil))))
+            (let* ((btn (if dom-node
+                            (treemacs-dom-node->position dom-node)
+                          (treemacs-project->position project)))
+                   ;; do the rest manually
+                   (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
+              (if (eq 'follow-failed search-result)
+                  (prog1 nil
+                    (goto-char start))
+                search-result))))))
+  (define-find-custom-node treemacs--find-custom-project-node (pop path)
+    "Move to the project extension node at PATH.")
+  (define-find-custom-node treemacs--find-custom-dir-node (treemacs--find-project-for-path (car path))
+    "Move to the directory extension node at PATH."))
 
 (defun treemacs-find-visible-node (path)
   "Find position of node at PATH.
@@ -900,8 +887,10 @@ PROJECT Project Struct"
     (treemacs-find-file-node path project))
    ((eq :custom (car path))
     (treemacs--find-custom-top-level-node path))
+   ((stringp (car path))
+    (treemacs--find-custom-dir-node path))
    (t
-    (treemacs--find-custom-dir-node path))))
+    (treemacs--find-custom-project-node path))))
 
 (defun treemacs-goto-node (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.
@@ -916,8 +905,10 @@ PROJECT Project Struct"
     (treemacs-goto-file-node path project))
    ((eq :custom (car path))
     (treemacs--goto-custom-top-level-node path))
+   ((stringp (car path))
+    (treemacs--goto-custom-dir-node path))
    (t
-    (treemacs--goto-custom-dir-node path))))
+    (treemacs--goto-custom-project-node path))))
 
 (defun treemacs-find-file-node (path &optional project)
   "Find position of node identified by PATH under PROJECT in the current buffer.
@@ -964,22 +955,35 @@ PROJECT: Project Struct"
             (goto-char start))
         search-result))))
 
-(define-inline treemacs-goto-file-node (path &optional project)
-  "Move point to button identified by PATH under PROJECT in the current buffer.
+(cl-macrolet
+    ((define-goto (name find-function has-project doc)
+       `(define-inline ,name (path ,@(when has-project '(&optional project)))
+          ,doc
+          (inline-letevals (path ,@(when has-project '(project)))
+            (inline-quote
+             (-when-let (result (,find-function ,(quote ,path) ,@(when has-project '(,project))))
+               (treemacs--evade-image)
+               (hl-line-highlight)
+               (set-window-point (get-buffer-window) (point))
+               result))))))
+
+  (define-goto treemacs-goto-file-node treemacs-find-file-node t
+    "Move point to button identified by PATH under PROJECT in the current buffer.
 Relies on `treemacs-find-file-node', and will also set window-point and ensure
 hl-line highlighting.
 
 Called by `treemacs-goto-node' when PATH identifies a file name.
 
 PATH: Filepath
-PROJECT: Project Struct"
-  (inline-letevals (path project)
-    (inline-quote
-     (-when-let (result (treemacs-find-file-node ,path ,project))
-       (treemacs--evade-image)
-       (hl-line-highlight)
-       (set-window-point (get-buffer-window) (point))
-       result))))
+PROJECT: Project Struct")
+
+  (define-goto treemacs--goto-custom-top-level-node treemacs--find-custom-top-level-node nil
+    "Move to the top-level extension node at PATH, returning the button's position.")
+  (define-goto treemacs--goto-custom-dir-node treemacs--find-custom-dir-node nil
+    "Move to the directory extension node at PATH, returning the button's position.")
+  (define-goto treemacs--goto-custom-project-node treemacs--find-custom-project-node nil
+    "Move to the project extension node at PATH, returning the button's position."))
+
 
 (defun treemacs--on-window-config-change ()
   "Collects all tasks that need to run on a window config change."
