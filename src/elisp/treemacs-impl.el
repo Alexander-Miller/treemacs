@@ -718,6 +718,10 @@ failed."
                           ;; technically this should never happen, but better safe than sorry
                           ((null current-btn)
                            (cl-return-from search))
+                          ;; the search matched a custom button - skip those, as they cannot match
+                          ;; and their :paths are not strings, which would cause the following checks
+                          ;; to crash
+                          ((treemacs-button-get current-btn :custom))
                           ;; perfect match - return the node we're at
                           ((treemacs-is-path root :same-as (treemacs-button-get current-btn :path))
                            (cl-return-from search current-btn))
