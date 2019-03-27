@@ -53,7 +53,7 @@
     (treemacs-with-writable-buffer
      (save-excursion
        (goto-char pos)
-       (forward-line 4)
+       (forward-line 2)
        (treemacs-block
         (while (not (eobp))
           (if (dired-move-to-filename nil)
