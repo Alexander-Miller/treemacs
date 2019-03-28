@@ -174,6 +174,16 @@ Used to show an error message if someone mistakenly actives `treemacs-mode'.")
        path
      (treemacs--parent ,path))))
 
+(define-inline treemacs--remove-trailing-newline (str)
+  "Remove final newline in STR."
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (str)
+    (inline-quote
+     (let ((len (1- (length ,str))))
+       (if (= 10 (aref ,str len))
+           (substring ,str 0 len)
+         ,str)))))
+
 (define-inline treemacs--delete-line ()
   "Delete the current line.
 Unlike `kill-whole-line' this won't pollute the kill ring."
@@ -831,6 +841,25 @@ failed."
        (set-window-point (get-buffer-window) (point))
        result))))
 
+(defun treemacs-find-visible-node (path)
+  "Find position of node at PATH.
+Unlike `treemacs-find-node' this will not expand other nodes in the view, but
+only look among those currently visible. The result however is the same: either
+a marker ponting to the found node or nil.
+
+PATH: Node Path"
+  (-let [node (treemacs-find-in-dom path)]
+    ;; just finding a node in the dom is far from enough to be sure it is visible
+    ;; it can still be closed with children, or be one of the children of a closed node
+    (if (and node
+             (treemacs-dom-node->position node)
+             (null (treemacs-dom-node->closed node)))
+        (treemacs-dom-node->position node)
+      (-when-let (parent (treemacs-find-in-dom (treemacs--parent path)))
+        (when (treemacs-dom-node->position parent)
+          (treemacs-first-child-node-where (treemacs-dom-node->position parent)
+            (treemacs-is-path path :same-as (treemacs-button-get child-btn :path))))))))
+
 (defun treemacs-find-node (path &optional project)
   "Find position of node identified by PATH under PROJECT in the current buffer.
 Inspite the signature this function effectively supports two different calling
@@ -1212,17 +1241,17 @@ from `treemacs-copy-file' or `treemacs-move-file'."
         (finish-msg))
     (pcase action
       (:copy
-       (setf no-node-msg "There is nothing to copy here."
-             wrong-type-msg "Only files and directories can be copied."
-             prompt "Copy to: "
+       (setf no-node-msg     "There is nothing to copy here."
+             wrong-type-msg  "Only files and directories can be copied."
+             prompt          "Copy to: "
              action-function #'f-copy
-             finish-msg "Copied %s to %s"))
+             finish-msg      "Copied %s to %s"))
       (:move
-       (setf no-node-msg "There is nothing to move here."
-             wrong-type-msg "Only files and directories can be moved."
-             prompt "Move to: "
+       (setf no-node-msg     "There is nothing to move here."
+             wrong-type-msg  "Only files and directories can be moved."
+             prompt          "Move to: "
              action-function #'f-move
-             finish-msg "Moved %s to %s")))
+             finish-msg      "Moved %s to %s")))
     (treemacs-block
      (treemacs-unless-let (node (treemacs-node-at-point))
          (treemacs-error-return no-node-msg)

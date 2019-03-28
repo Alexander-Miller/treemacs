@@ -78,6 +78,18 @@ Debug function."
     (inline-quote
      (ht-get treemacs-dom ,key))))
 
+(define-inline treemacs-dom-node->all-parents (self)
+  "Get all parent nodes of SELF."
+  (declare (side-effect-free t))
+  (inline-letevals (self)
+    (inline-quote
+     (let ((parent (treemacs-dom-node->parent ,self))
+           (ret))
+       (while parent
+         (push parent ret)
+         (setf parent (treemacs-dom-node->parent parent)))
+       ret))))
+
 (define-inline treemacs-dom-node->invalidate-pos! (self)
   "Set the pos field of SELF to nil."
   (inline-letevals (self)
