@@ -43,6 +43,62 @@
         (f-join treemacs-dir "treemacs-git-status.py")
       (f-join treemacs-dir "src/scripts/treemacs-git-status.py"))))
 
+(defvar treemacs--git-cache-max-size 60
+  "Maximum size for `treemacs--git-cache'.
+If it does reach that size it will be cut back to 30 entries.")
+
+(defvar treemacs--git-cache (make-hash-table :size treemacs--git-cache-max-size :test #'equal)
+  "Stores the results of previous git status calls for directories.
+Its effective type is HashMap<FilePath, HashMap<FilePath, Char>>.
+
+These cached results are used as a standin during immediate rendering when
+`treemacs-git-mode' is set to be deferred, so as to minimize the effect of large
+face changes, epsecially when a full project is refreshed.
+
+Since this table is a global value that can effectively grow indefinitely its
+value is limited by `treemacs--git-cache-max-size'.")
+
+(define-inline treemacs--git-status-face (status default)
+  "Get the git face for the given STATUS.
+Use DEFAULT as default match.
+
+STATUS: String
+DEFAULT: Face"
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (status default)
+    (inline-quote
+     (pcase ,status
+       ("M" 'treemacs-git-modified-face)
+       ("U" 'treemacs-git-conflict-face)
+       ("?" 'treemacs-git-untracked-face)
+       ("!" 'treemacs-git-ignored-face)
+       ("A" 'treemacs-git-added-face)
+       ("R" 'treemacs-git-renamed-face)
+       (_   ,default)))))
+
+(define-inline treemacs--get-node-face (path git-info default)
+  "Return the appropriate face for PATH based on GIT-INFO.
+If there is no git entry for PATH return DEFAULT.
+
+PATH: Filepath
+GIT-INFO: Hashtable
+DEFAULT: Face"
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (path git-info default)
+    (inline-quote
+     (treemacs--git-status-face (ht-get ,git-info ,path) ,default))))
+
+(defun treemacs--resize-git-cache ()
+  "Cuts `treemacs--git-cache' back down to size.
+Specifically its size will be reduced to half of `treemacs--git-cache-max-size'."
+  (treemacs-block
+   (let* ((size (ht-size treemacs--git-cache))
+          (count (- size (/ treemacs--git-cache-max-size 2))))
+     (treemacs--maphash treemacs--git-cache (key _)
+       (ht-remove! treemacs--git-cache key)
+       (when (>= 0 (cl-decf count))
+         (treemacs-return :done))))))
+
 (defun treemacs--git-status-process-function (path)
   "Dummy with PATH.
 Real implementation will be `fset' based on `treemacs-git-mode' value."
@@ -130,6 +186,40 @@ GIT-FUTURE: Pfuture"
                                  (substring (s-trim-left status) 0 1)))))
                   (setq i (1+ i)))))))))
     git-info-hash))
+
+(defun treemacs--apply-deferred-git-state (parent-btn git-future buffer)
+  "Apply the git fontification for direct children of PARENT-BTN.
+GIT-FUTURE is parsed the same way as in `treemacs--create-branch'. Additionally
+since this function is run on an idle timer the BUFFER to work on must be passed
+as well since the user may since select a different buffer, window or frame.
+
+PARENT-BTN: Button
+GIT-FUTURE: Pfuture|HashMap
+BUFFER: Buffer"
+  (when (and (buffer-live-p buffer) git-future)
+    (with-current-buffer buffer
+      ;; cut the cache down to size if it grows too large
+      (when (> (ht-size treemacs--git-cache) treemacs--git-cache-max-size)
+        (run-with-idle-timer 2 nil #'treemacs--resize-git-cache))
+      (-let [parent-path (treemacs-button-get parent-btn :path)]
+        ;; the node may have been closed or deleted by now
+        (when (and (treemacs-find-in-dom parent-path)
+                   (memq (treemacs-button-get parent-btn :state) '(dir-node-open root-node-open)))
+          (let ((depth (1+ (treemacs-button-get parent-btn :depth)))
+                (git-info (treemacs--get-or-parse-git-result git-future))
+                (btn parent-btn))
+            (ht-set! treemacs--git-cache parent-path git-info)
+            (treemacs-with-writable-buffer
+             ;; the depth check ensures that we only iterate over the nodes that are below parent-btn
+             ;; and stop when we've moved on to nodes that are above or belong to the next project
+             (while (and (setq btn (next-button btn))
+                         (>= (treemacs-button-get btn :depth) depth))
+               (-let [path (treemacs-button-get btn :path)]
+                 (when (and (= depth (treemacs-button-get btn :depth))
+                            (not (treemacs-button-get btn :no-git)))
+                   (treemacs-button-put
+                    btn 'face
+                    (treemacs--get-node-face path git-info (treemacs-button-get btn :default-face)))))))))))))
 
 (defun treemacs--collapsed-dirs-process (path)
   "Start a new process to determine dirs to collpase under PATH.

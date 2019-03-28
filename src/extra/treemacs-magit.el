@@ -130,7 +130,7 @@ Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
                           (file-exists-p path)
                           (>= curr-depth start-depth))
                 (put-text-property (button-start node) (button-end node) 'face
-                                   (treemacs--get-button-face
+                                   (treemacs--get-node-face
                                     path ht
                                     (if (memq (treemacs-button-get node :state)
                                               '(file-node-open file-node-closed))
