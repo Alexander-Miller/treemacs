@@ -57,7 +57,8 @@ Will be set by `treemacs--set-default-directory'.")
                    treemacs-previous-project
                    treemacs-goto-parent-node
                    treemacs-TAB-action
-                   treemacs-select-window))
+                   treemacs-select-window
+                   treemacs-leftclick-action))
       (set (intern (symbol-name cmd) ob) t))
     ob)
   "Treemacs' own eldoc obarray.")
