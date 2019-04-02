@@ -477,13 +477,13 @@ reverted by calling ~treemacs-reset-icons~.
 that will separate an icon from the filename.
 
 *** Directory Icons
-These are the 2 icons used for expanded or closed directory nodes. They are stored in the variables ~treemacs-icop-open~
+These are the 2 icons used for expanded or closed directory nodes. They are stored in the variables ~treemacs-icon-open~
 and ~treemacs-icon-closed~. Depending on whether the treemacs instance runs in a GUI or TUI they'll assume different
 values stored in other variables:
 
 | Variable               | Value in GUI               | Value in TUI                |
 |------------------------+----------------------------+-----------------------------|
-| ~treemacs-icop-open~   | ~treemacs-icon-open-png~   | ~treemacs-icon-open-text~   |
+| ~treemacs-icon-open~   | ~treemacs-icon-open-png~   | ~treemacs-icon-open-text~   |
 | ~treemacs-icon-closed~ | ~treemacs-icon-closed-png~ | ~treemacs-icon-closed-text~ |
 
 To change the display of directory nodes you need to overwrite the values of the png/text variables. For example the
