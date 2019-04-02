@@ -445,7 +445,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-show-cursor                   | nil                                         | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                          |
 | treemacs-git-command-pipe              | ""                                          | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                               |
 | treemacs-no-delete-other-windows       | t                                           | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                |
-| treemacs-eldoc-display                 | t                                           | Enables eldoc-like display of the file path at point.                                                                                                                                      |
+| treemacs-eldoc-display                 | t                                           | Enables eldoc display of the file path at point. Requires ~eldoc-mode~.                                                                                                                    |
 
 ** Faces
 Treemacs defines and uses the following faces:

@@ -59,7 +59,8 @@ Indentation is created by repeating `treemacs-indentation-string'."
   :group 'treemacs)
 
 (defcustom treemacs-eldoc-display t
-  "Enables eldoc-like display of the file path at point."
+  "Enables eldoc display of the file path at point.
+Requires eldoc mode to be enabled."
   :type 'boolean
   :group 'treemacs)
 

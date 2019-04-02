@@ -20,6 +20,7 @@
 
 ;;; Code:
 
+(require 'eldoc)
 (require 's)
 (require 'f)
 (require 'hydra)
@@ -38,6 +39,28 @@
   treemacs-version)
 
 (declare-function treemacs--helpful-hydra/body "treemacs-mode")
+
+(defvar-local treemacs--eldoc-msg nil
+  "Message to be output by `treemacs--eldoc-function'.
+Will be set by `treemacs--set-default-directory'.")
+
+(defconst treemacs--eldoc-obarray
+  (-let [ob (make-vector 59 0)]
+    (mapatoms
+     (lambda (cmd) (set (intern (symbol-name cmd) ob) t))
+     eldoc-message-commands)
+    (dolist (cmd '(treemacs-next-line
+                   treemacs-previous-line
+                   treemacs-next-neighbour
+                   treemacs-previous-neighbour
+                   treemacs-next-project
+                   treemacs-previous-project
+                   treemacs-goto-parent-node
+                   treemacs-TAB-action
+                   treemacs-select-window))
+      (set (intern (symbol-name cmd) ob) t))
+    ob)
+  "Treemacs' own eldoc obarray.")
 
 (cl-defun treemacs--find-keybind (func &optional (pad 8))
   "Find the keybind for FUNC in treemacs.
@@ -300,7 +323,7 @@ to it will instead show a blank."
 
 (defun treemacs--set-default-directory ()
   "Set the default directory to the nearest directory of the current node.
-If there is no node at point use \"/\" instead.
+If there is no node at point use \"~/\" instead.
 
 Used as a post command hook."
   (-if-let* ((btn  (treemacs-current-button))
@@ -308,11 +331,16 @@ Used as a post command hook."
                        (treemacs--nearest-path btn))))
       (when (and (stringp path)
                  (file-readable-p path))
-        (setq default-directory (f-slash (if (file-directory-p path) path (file-name-directory path))))
-        (when treemacs-eldoc-display
-          (put-text-property 0 (length path) 'face 'font-lock-string-face path)
-          (message path)))
-    "/"))
+        (setq treemacs--eldoc-msg path
+              default-directory (f-slash (if (file-directory-p path) path (file-name-directory path)))))
+    (setq treemacs--eldoc-msg nil
+          default-directory "~/")))
+
+(defun treemacs--eldoc-function ()
+  "Treemacs' implementation of `eldoc-documentation-function'.
+Will simply return `treemacs--eldoc-msg'."
+  (when (and treemacs-eldoc-display treemacs--eldoc-msg)
+    (propertize treemacs--eldoc-msg 'face 'font-lock-string-face)))
 
 ;;;###autoload
 (define-derived-mode treemacs-mode special-mode "Treemacs"
@@ -337,6 +365,8 @@ Used as a post command hook."
   ;; and make a switch to visual state
   (setq-local double-click-fuzz 15)
   (setq-local show-paren-mode nil)
+  (setq-local eldoc-documentation-function #'treemacs--eldoc-function)
+  (setq-local eldoc-message-commands treemacs--eldoc-obarray)
   (electric-indent-local-mode -1)
   (visual-line-mode -1)
   (font-lock-mode -1)
