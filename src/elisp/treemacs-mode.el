@@ -401,8 +401,12 @@ Will simply return `treemacs--eldoc-msg'."
 Must be run as advice to prevent changing of the major mode.
 Will run original MODE-ACTIVATION and its ARGS only when
 `treemacs--in-this-buffer' is non-nil."
-  (if treemacs--in-this-buffer
-      (apply mode-activation args)
+  (cond
+   (treemacs--in-this-buffer
+    (apply mode-activation args))
+   ((eq major-mode 'treemacs-mode)
+    (ignore "Reactivating the major-mode resets buffer-local variables."))
+   (t
     (switch-to-buffer (get-buffer-create "*Clippy*"))
     (erase-buffer)
     (insert
@@ -410,8 +414,10 @@ Will run original MODE-ACTIVATION and its ARGS only when
       "
  --------------------------------------------------------------------------------------
  | It looks like you are trying to run treemacs. Would you like some help with that?  |
- | You have called %s, but this only the major mode for treemacs' buffers, |
- | it is not meant to be used manually. Instead you should call a function like       |
+ | You have called %s, but that is just the major mode for treemacs'       |
+ | buffers, it is not meant to be used manually.                                      |
+ |                                                                                    |
+ | Instead you should call a function like                                            |
  |  * %s,                                                                       |
  |  * %s, or                                                      |
  |  * %s                                        |
@@ -435,7 +441,7 @@ Will run original MODE-ACTIVATION and its ARGS only when
    || |/
    || ||
    |\\_/|
-   \\___/" 'face 'font-lock-keyword-face)))))
+   \\___/" 'face 'font-lock-keyword-face))))))
 
 (advice-add #'treemacs-mode :around #'treemacs--mode-check-advice)
 
