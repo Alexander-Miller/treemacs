@@ -664,6 +664,25 @@ button's position will be wrong, even if it wasn't deleted outright):
   :type 'hook
   :group 'treemacs-hooks)
 
+(defcustom treemacs-quit-hook nil
+  "Hooks to run when `treemacs-quit' is called.
+The hooks will be run *after* the treemacs buffer was buried."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-kill-hook nil
+  "Hooks to run when `treemacs-kill-buffer' is called.
+The hooks will be run *after* the treemacs buffer was destroyed."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-select-hook nil
+  "Hooks to run when the treemacs window is selected.
+This only applies to commands like `treemacs' or `treemacs-select-window', not
+general window selection commands like `other-window'."
+  :type 'hook
+  :group 'treemacs-hooks)
+
 (defcustom treemacs-workspace-first-found-functions nil
   "Hooks that run when treemacs finds a workspace for the first time.
 Hooks are expected to take 2 arguments: the workspace that was found and the

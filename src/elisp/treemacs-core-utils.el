@@ -304,11 +304,15 @@ Returns nil if no such buffer exists.."
        (assoc (selected-frame))
        (cdr)
        (get-buffer-window)
-       (select-window)))
+       (select-window))
+  (run-hooks 'treemacs-select-hook))
 
 (define-inline treemacs--select-not-visible-window ()
   "Switch to treemacs buffer, given that it not visible."
-  (inline-quote (treemacs--setup-buffer)))
+  (inline-quote
+   (progn
+     (treemacs--setup-buffer)
+     (run-hooks 'treemacs-select-hook))))
 
 (define-inline treemacs--button-symbol-switch (new-sym)
   "Replace icon in current line with NEW-SYM."
@@ -549,7 +553,8 @@ buffer."
   "Initialize a treemacs buffer from the current workspace.
 Add a project for ROOT and NAME if they are non-nil."
   (let ((origin-buffer (current-buffer))
-        (current-workspace (treemacs-current-workspace)))
+        (current-workspace (treemacs-current-workspace))
+        (run-hook? nil))
     (pcase (treemacs-current-visibility)
       ('visible (treemacs--select-visible-window))
       ('exists (treemacs--select-not-visible-window))
@@ -568,12 +573,17 @@ Add a project for ROOT and NAME if they are non-nil."
          (-> (treemacs--read-first-project-path)
              (treemacs--canonical-path)
              (treemacs-do-add-project-to-workspace)))
-       (goto-char 2)))
+       (goto-char 2)
+       (setf run-hook? t)))
     (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root) name))
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
-        (treemacs--follow)))))
+        (treemacs--follow)))
+    ;; The hook should run at the end of the setup, but also only
+    ;; if a new buffer was created, as the other cases are already covered
+    ;; in their respective setup functions.
+    (when run-hook? (run-hooks 'treemacs-select-hook))))
 
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."

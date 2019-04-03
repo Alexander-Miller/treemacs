@@ -301,7 +301,10 @@ Treemacs knows how to open files on linux, windows and macos."
   "Quit treemacs with `bury-buffer'.
 With a prefix ARG call `treemacs-kill-buffer' instead."
   (interactive "P")
-  (if arg (treemacs-kill-buffer) (bury-buffer)))
+  (if arg
+      (treemacs-kill-buffer)
+    (bury-buffer)
+    (run-hooks 'treemacs-quit-hook)))
 
 (defun treemacs-kill-buffer ()
   "Kill the treemacs buffer."
@@ -310,7 +313,8 @@ With a prefix ARG call `treemacs-kill-buffer' instead."
     ;; teardown logic handled in kill hook
     (if (one-window-p)
         (kill-this-buffer)
-      (kill-buffer-and-window))))
+      (kill-buffer-and-window))
+    (run-hooks 'treemacs-kill-hook)))
 
 (defun treemacs-delete (&optional arg)
   "Delete node at point.
