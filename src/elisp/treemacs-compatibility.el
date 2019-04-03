@@ -23,7 +23,7 @@
 
 (require 'dash)
 (require 'treemacs-customization)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-interface)
 (eval-and-compile (require 'treemacs-macros))
 

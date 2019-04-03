@@ -21,7 +21,7 @@
 ;;; Code:
 
 (require 'dash)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-customization)
 (eval-and-compile
   (require 'inline)

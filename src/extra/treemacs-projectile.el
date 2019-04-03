@@ -83,7 +83,7 @@ the project's root directory."
 (define-key treemacs-project-map (kbd "p") #'treemacs-projectile)
 
 (defun treemacs--read-first-project-path ()
-  "Overwrites the original definition from `treemacs-impl'.
+  "Overwrites the original definition from `treemacs-core-utils'.
 This version will read a directory based on the current project root instead of
 the current dir."
   (when (treemacs-workspace->is-empty?)

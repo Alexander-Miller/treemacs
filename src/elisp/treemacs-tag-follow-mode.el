@@ -33,7 +33,7 @@
 (require 'f)
 (require 'hl-line)
 (require 'treemacs-customization)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-tags)
 (require 'treemacs-follow-mode)
 (eval-and-compile

@@ -17,7 +17,7 @@
 
 ;;; Commentary:
 ;;; General purpose macros, and those used in, but defined outside of
-;;; treemacs-impl.el are put here, to prevent using them before their
+;;; treemacs-core-utils.el are put here, to prevent using them before their
 ;;; definition, hopefully preventing issues like #97.
 
 ;;; Code:

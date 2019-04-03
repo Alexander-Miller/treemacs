@@ -28,7 +28,7 @@
 (require 'f)
 (require 'filenotify)
 (require 'cl-lib)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-dom)
 (require 'treemacs-tags)
 (eval-and-compile

@@ -27,7 +27,7 @@
 (require 'imenu)
 (require 'dash)
 (require 'f)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-rendering)
 (require 'treemacs-customization)
 (require 'treemacs-faces)

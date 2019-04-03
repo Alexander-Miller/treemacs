@@ -23,7 +23,7 @@
 (require 'dash)
 (require 's)
 (require 'treemacs-rendering)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-fringe-indicator)
 (eval-when-compile
   (require 'treemacs-macros)

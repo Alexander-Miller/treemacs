@@ -28,7 +28,7 @@
 (require 'treemacs-rendering)
 (require 'treemacs-dom)
 (require 'treemacs-async)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (eval-and-compile
   (require 'treemacs-macros))
 

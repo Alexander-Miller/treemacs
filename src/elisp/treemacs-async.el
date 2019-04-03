@@ -24,7 +24,7 @@
 (require 'ht)
 (require 's)
 (require 'pfuture)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-customization)
 (require 'treemacs-dom)
 (eval-and-compile

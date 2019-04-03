@@ -26,7 +26,7 @@
 (require 'f)
 (require 's)
 (require 'dash)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-rendering)
 (require 'treemacs-follow-mode)

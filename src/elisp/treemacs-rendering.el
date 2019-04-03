@@ -25,7 +25,7 @@
 (require 's)
 (require 'ht)
 (require 'cl-lib)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-icons)
 (require 'treemacs-async)
 (require 'treemacs-customization)

@@ -22,7 +22,7 @@
 
 (require 'dash)
 (require 'ht)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-visuals)
 (require 'treemacs-dom)
 (eval-and-compile

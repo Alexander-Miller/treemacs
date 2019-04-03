@@ -23,7 +23,7 @@
 (require 'xref)
 (require 'easymenu)
 (require 'hl-line)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-tags)
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)

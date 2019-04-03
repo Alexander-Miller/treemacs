@@ -23,7 +23,7 @@
 (require 'ht)
 (require 's)
 (require 'dash)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (eval-and-compile
   (require 'cl-lib)
   (require 'inline)

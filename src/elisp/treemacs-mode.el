@@ -27,7 +27,7 @@
 (require 'treemacs-interface)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-icons)
 (require 'treemacs-persistence)
 (require 'treemacs-dom)

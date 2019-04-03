@@ -23,7 +23,7 @@
 (require 'image)
 (require 'pulse)
 (require 'hl-line)
-(require 'treemacs-impl)
+(require 'treemacs-core-utils)
 (require 'treemacs-customization)
 (require 'treemacs-fringe-indicator)
 (eval-and-compile

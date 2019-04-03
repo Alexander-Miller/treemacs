@@ -1310,6 +1310,6 @@ from `treemacs-copy-file' or `treemacs-move-file'."
            (propertize filename 'face 'font-lock-string-face)
            (propertize destination 'face 'font-lock-string-face)))))))
 
-(provide 'treemacs-impl)
+(provide 'treemacs-core-utils)
 
-;;; treemacs-impl.el ends here
+;;; treemacs-core-utils.el ends here

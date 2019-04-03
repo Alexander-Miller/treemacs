@@ -733,7 +733,7 @@ guidelines that should be met (exceptions confirm the rule):
  - Commit messages should start with a note in brackets that roughly describes the area the commit relates to, for
    example ~[Icons]~ if you add an icon.
  - Code must be in the right place (what with the codebase being split in many small files). If there is no right place
-   it probably goes into treemacs-impl.el which is where all the general implementation details go.
+   it probably goes into treemacs-core-utils.el which is where all the general implementation details go.
  - New features must be documented in the readme (for example mentioning new config options in the [[#variables][Config Table]]).
  - There must not be any compiler warnings.
  - The test suite must pass.
