@@ -333,7 +333,8 @@ Used as a post command hook."
       (when (and (stringp path)
                  (file-readable-p path))
         (setq treemacs--eldoc-msg path
-              default-directory (f-slash (if (file-directory-p path) path (file-name-directory path)))))
+              default-directory (treemacs--add-trailing-slash
+                                 (if (file-directory-p path) path (file-name-directory path)))))
     (setq treemacs--eldoc-msg nil
           default-directory "~/")))
 

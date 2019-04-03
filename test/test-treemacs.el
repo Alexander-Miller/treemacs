@@ -76,6 +76,7 @@
            (expect (treemacs-is-path path :in-project project) :not :to-be-truthy))))
 
   (describe ":in-workspace matcher"
+
     (it "Finds project of path in the workspace"
       (let* ((path "~/C/abc")
              (p1 (make-treemacs-project :name "P1" :path "~/A"))
@@ -191,6 +192,7 @@
   (-let [treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)]
 
     (describe "accept"
+
       (it "accepts change event when git-mode is enabled"
         (let ((treemacs-git-mode t)
               (event '(nil changed "~/A/a")))
@@ -205,6 +207,7 @@
           (expect (treemacs--is-event-relevant? event) :to-be-truthy))))
 
     (describe "reject"
+
       (it "rejects stop-watch event"
         (-let [event '(nil stopped "~/A/a")]
           (expect (treemacs--is-event-relevant? event) :not :to-be-truthy)))
@@ -333,6 +336,7 @@
     (expect (treemacs--parent "/") :to-equal "/")))
 
 (describe "treemacs--get-or-parse-git-result"
+
   (it "Returns an empty table when input is nil"
     (-let [result (treemacs--get-or-parse-git-result nil)]
       (expect result :to-be-truthy)
@@ -418,6 +422,7 @@
         (expect (ht-size treemacs-dom) :to-equal 9)))))
 
 (describe "treemacs-on-collapse"
+
   (it "Does nothing when key is nil"
     (with-temp-buffer
       (setq treemacs-dom (ht))
@@ -986,6 +991,7 @@
             '("* Workspace" "** Project" " - path :: /x"))))
 
 (describe "treemacs--parse-collapsed-dirs"
+
   (it "Finds dirs to flatten in test directory"
     (-let [treemacs-collapse-dirs 3]
       (expect (-> treemacs-dir
@@ -1007,6 +1013,7 @@
               :to-be nil))))
 
 (describe "treemacs--remove-trailing-newline"
+
   (it "Fails on nil input"
     (expect (treemacs--remove-trailing-newline nil)
             :to-throw))
@@ -1028,6 +1035,7 @@
 (describe "treemacs-find-visible-node"
 
   (describe "Successes"
+
     (it "Finds node in the dom"
       (let* ((pos (point-marker))
              (node (make-treemacs-dom-node :position pos :closed nil))
@@ -1053,6 +1061,7 @@
             (expect (eq 'marker (type-of result)) :to-be t))))))
 
   (describe "Failures"
+
     (it "Fails on nil input"
       (expect (treemacs-find-visible-node nil)
               :to-throw))
@@ -1091,6 +1100,23 @@
           (insert-text-button "B2" :path "/other/path" :depth 2 :parent parent-pos)
           (expect (treemacs-find-visible-node path)
                   :to-be nil))))))
+
+(describe "treemacs--add-trailing-slash"
+
+  (it "Fails on nil input"
+    (expect (treemacs--add-trailing-slash nil) :to-throw))
+
+  (it "Fails on blank input"
+    (expect (treemacs--add-trailing-slash "") :to-throw))
+
+  (it "Fails on blank input"
+    (expect (treemacs--add-trailing-slash "") :to-throw))
+
+  (it "Does not add slash if one is already present"
+    (expect (treemacs--add-trailing-slash "/ABC/") :to-equal "/ABC/"))
+
+  (it "Adds a slash when there isn't one"
+    (expect (treemacs--add-trailing-slash "/ABC") :to-equal "/ABC/")))
 
 (provide 'test-treemacs)
 

@@ -434,11 +434,11 @@ also `treemacs--canonical-path').
 
 Even if LEFT or RIGHT should be a form and not a variable it is guaranteed that
 they will be evaluated only once."
+  (declare (debug (form form form)))
   (treemacs-static-assert (memq op '(:same-as :in :parent-of :in-project :in-workspace))
     "Invalid treemacs-is-path operator: `%s'" op)
   (treemacs-static-assert (or (eq op :in-workspace) right)
     ":in-workspace operator requires right-side argument.")
-  (declare (debug (form form form)))
   (macroexp-let2* nil
       ((left left)
        (right right))
@@ -447,9 +447,9 @@ they will be evaluated only once."
        `(string= ,left ,right))
       (:in
        `(or (string= ,left ,right)
-            (s-starts-with? (f-slash ,right) ,left)))
+            (s-starts-with? (treemacs--add-trailing-slash ,right) ,left)))
       (:parent-of
-       `(and (s-starts-with? (f-slash ,left) ,right)
+       `(and (s-starts-with? (treemacs--add-trailing-slash ,left) ,right)
              (not (string= ,left ,right))))
       (:in-project
        `(treemacs-is-path ,left :in (treemacs-project->path ,right)))

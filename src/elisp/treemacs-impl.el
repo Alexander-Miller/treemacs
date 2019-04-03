@@ -184,6 +184,16 @@ Used to show an error message if someone mistakenly actives `treemacs-mode'.")
            (substring ,str 0 len)
          ,str)))))
 
+(define-inline treemacs--add-trailing-slash (str)
+  "Add final slash to STR.
+If STR already has a slash return it unchanged."
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (str)
+    (inline-quote
+     (if (eq ?/ (aref ,str (1- (length ,str))))
+         ,str
+       (concat ,str "/")))))
+
 (define-inline treemacs--delete-line ()
   "Delete the current line.
 Unlike `kill-whole-line' this won't pollute the kill ring."
@@ -640,10 +650,11 @@ IS-FILE?: Bool"
                      (f-expand "~"))))
     (treemacs-block
      (setq path-to-create (read-file-name
-                           (if is-file?"Create File: " "Create Directory: ")
-                           (f-slash (if (f-dir? curr-path)
-                                        curr-path
-                                      (f-dirname curr-path)))))
+                           (if is-file? "Create File: " "Create Directory: ")
+                           (treemacs--add-trailing-slash
+                            (if (f-dir? curr-path)
+                                curr-path
+                              (f-dirname curr-path)))))
      (treemacs-error-return-if (file-exists-p path-to-create)
        "%s already exists." (propertize path-to-create 'face 'font-lock-string-face))
      (treemacs--without-filewatch
