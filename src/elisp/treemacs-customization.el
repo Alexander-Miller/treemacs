@@ -558,7 +558,7 @@ not apply to the simple `treemacs-git-mode.'"
   :type 'number
   :group 'treemacs-git)
 
-(defcustom treemacs-python-executable (executable-find "python")
+(defcustom treemacs-python-executable (executable-find "python3")
   "The python executable used by treemacs.
 An asynchronous python process is used in two optional feaures:
 `treemacs-collapse-dirs' and the extended variant of `treemacs-git-mode'.
