@@ -127,6 +127,12 @@ Will return `point-max' if there is no next project."
   (declare (side-effect-free t))
   (inline-quote (next-single-char-property-change (point-at-eol) :project)))
 
+(define-inline treemacs--prev-project-pos ()
+  "Get the position of the next project.
+Will return `point-min' if there is no next project."
+  (declare (side-effect-free t))
+  (inline-quote (previous-single-char-property-change (point-at-bol) :project)))
+
 (define-inline treemacs--reset-project-positions ()
   "Reset `treemacs--project-positions'."
   (inline-quote
@@ -301,14 +307,15 @@ NAME: String"
 PROJECT: Project Struct"
   (treemacs-run-in-every-buffer
    (treemacs-with-writable-buffer
-    (-let [project-btn (treemacs-project->position project)]
-      (goto-char project-btn)
+    (let* ((project-pos (goto-char (treemacs-project->position project)))
+           (prev-project-pos (move-marker (make-marker) (treemacs--prev-project-pos)))
+           (next-project-pos (move-marker (make-marker) (treemacs--next-project-pos))))
       (when (treemacs-project->is-expanded? project)
-        (treemacs--collapse-root-node project-btn t))
+        (treemacs--collapse-root-node project-pos t))
       (treemacs--remove-project-from-current-workspace project)
 
-      (let ((previous-button (previous-button project-btn))
-            (next-button (next-button project-btn)))
+      (let ((previous-button (previous-button project-pos))
+            (next-button (next-button project-pos)))
         (cond
          ;; Previous button exists. Delete from the end of the current line to
          ;; the end of the previous button's line. If the `treemacs--projects-end'
@@ -328,7 +335,10 @@ PROJECT: Project Struct"
          ;; Neither the previous nor the next button exists. Simply delete the
          ;; current line.
          (t
-          (delete-region (point-at-bol) (point-at-eol))))))
+          (delete-region (point-at-bol) (point-at-eol)))))
+      (if (equal (point-min) prev-project-pos)
+          (goto-char next-project-pos)
+        (goto-char prev-project-pos)))
 
     (treemacs--forget-last-highlight)
     (--when-let (treemacs-get-local-window)

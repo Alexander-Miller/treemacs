@@ -641,7 +641,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
 (defun treemacs-previous-project ()
   "Move to the next project root node."
   (interactive)
-  (-let [pos (previous-single-char-property-change (point-at-bol) :project)]
+  (-let [pos (treemacs--prev-project-pos)]
     (if (or (= pos (point))
             (= pos (point-min)))
         (treemacs-pulse-on-failure "There is no previous project to move to.")
