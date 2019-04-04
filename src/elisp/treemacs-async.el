@@ -254,6 +254,7 @@ FILE: Filepath"
          (current-state (or (-some-> treemacs--git-cache (ht-get parent) (ht-get file)) "0"))
          (cmd `("python" "-S" "-O" ,treemacs--single-file-git-status.py ,file ,current-state ,@parents)))
     (pfuture-callback cmd
+      :directory parent
       :name "Treemacs Update Single File Process"
       :on-success
       (when (buffer-live-p local-buffer)
