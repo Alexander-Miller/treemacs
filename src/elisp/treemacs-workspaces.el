@@ -139,14 +139,14 @@ Will return `point-max' if there is no next project."
      (ht-set! treemacs--project-positions ,project ,position))))
 
 (define-inline treemacs-project->position (self)
-  "Return the position of PROJECT in the current buffer."
+  "Return the position of project SELF in the current buffer."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote
      (ht-get treemacs--project-positions ,self))))
 
 (define-inline treemacs-project->is-expanded? (self)
-  "Return non-nil if PROJECT is expanded in the current buffer."
+  "Return non-nil if project SELF is expanded in the current buffer."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote
@@ -154,7 +154,7 @@ Will return `point-max' if there is no next project."
          (-> ,self (treemacs-project->position) (treemacs-button-get :state))))))
 
 (define-inline treemacs-project->refresh! (self)
-  "Refresh PROJECT in the current buffer."
+  "Refresh project SELF in the current buffer."
   (inline-letevals (self)
     (inline-quote
      (when (treemacs-project->is-expanded? ,self)
@@ -165,7 +165,7 @@ Will return `point-max' if there is no next project."
          (treemacs--expand-root-node root-btn))))))
 
 (define-inline treemacs-project->is-last? (self)
-  "Return t when PROJECT's root node is the last in the view."
+  "Return t when root node of project SELF is the last in the view."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote

@@ -59,9 +59,9 @@
 (treemacs--defstruct treemacs-iter list)
 
 (define-inline treemacs-iter->next! (self)
-  "Get the next element of iterator ITER.
+  "Get the next element of iterator SELF.
 
-ITER: Treemacs-Iter struct."
+SELF: Treemacs-Iter struct."
   (inline-letevals (self)
     (inline-quote
      (let ((head (car (treemacs-iter->list ,self)))
@@ -70,9 +70,9 @@ ITER: Treemacs-Iter struct."
        head))))
 
 (define-inline treemacs-iter->peek (self)
-  "Peek at the first element of ITER.
+  "Peek at the first element of SELF.
 
-ITER: Treemacs-Iter struct."
+SELF: Treemacs-Iter struct."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote
