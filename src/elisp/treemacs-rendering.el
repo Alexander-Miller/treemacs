@@ -61,6 +61,11 @@ If there are no projects, points to the position at the end of any top-level
 extensions positioned to `TOP'. This can always be used as the insertion point
 for new projects.")
 
+(define-inline treemacs--projects-end ()
+  "Importable getter for `treemacs--projects-end'."
+  (declare (side-effect-free t))
+  (inline-quote treemacs--projects-end))
+
 (define-inline treemacs--button-at (pos)
   "Return the button at position POS in the current buffer, or nil.
 If the button at POS is a text property button, the return value

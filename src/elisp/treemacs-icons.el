@@ -56,7 +56,7 @@ Maps icons' names as symbols to their values, so that they can be queried
 via `assq'.")
 
 (define-inline treemacs--created-icons ()
-  "Return `treemacs--created-icons'."
+  "Importable getter for `treemacs--created-icons'."
   (declare (side-effect-free t))
   (inline-quote treemacs--created-icons))
 
