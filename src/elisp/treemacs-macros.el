@@ -256,6 +256,7 @@ it on the same line."
   (declare (debug (form body)))
   `(treemacs-without-following
     (let* ((curr-btn       (treemacs-current-button))
+           (curr-point     (point-marker))
            (next-path      (-some-> curr-btn (treemacs--next-non-child-button) (button-get :path)))
            (prev-path      (-some-> curr-btn (treemacs--prev-non-child-button) (button-get :path)))
            (curr-node-path (-some-> curr-btn (treemacs-button-get :path)))
@@ -297,7 +298,7 @@ it on the same line."
          ;; no correction needed, if the tag does not exist point is left at the next best node
          (treemacs--goto-tag-button-at curr-tagpath))
         ((pred null)
-         (goto-char (point-min)))
+         (goto-char curr-point))
         (_
          ;; point is on a custom node
          ;; TODO(2018/10/30): custom node exists predicate?
