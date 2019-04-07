@@ -1008,13 +1008,24 @@
       (expect 'treemacs--git-status-process-function
               :to-have-been-called-with path))))
 
+(describe "treemacs--process-collapsed-dirs"
+
+  (it "Does nothing with non-local or unreadable paths"
+    (-let [treemacs-collapse-dirs 3]
+      (dolist (status '(local-unreadable remote-readable remote-unreadable remote-disconnected extension))
+        (expect (-> treemacs-dir
+                    (f-join "test")
+                    (treemacs--collapsed-dirs-process (make-treemacs-project :name "P" :path treemacs-dir :path-status status)))
+                :to-equal
+                nil)))))
+
 (describe "treemacs--parse-collapsed-dirs"
 
   (it "Finds dirs to flatten in test directory"
     (-let [treemacs-collapse-dirs 3]
       (expect (-> treemacs-dir
                   (f-join "test")
-                  (treemacs--collapsed-dirs-process)
+                  (treemacs--collapsed-dirs-process (make-treemacs-project :name "P" :path treemacs-dir :path-status 'local-readable))
                   (treemacs--parse-collapsed-dirs))
               :to-equal
               `((,(f-join treemacs-dir "test/testdir1")
@@ -1026,7 +1037,7 @@
     (-let [treemacs-collapse-dirs 3]
       (expect (-> treemacs-dir
                   (f-join "test/testdir1/testdir2")
-                  (treemacs--collapsed-dirs-process)
+                  (treemacs--collapsed-dirs-process (make-treemacs-project :name "P" :path treemacs-dir :path-status 'local-readable))
                   (treemacs--parse-collapsed-dirs))
               :to-be nil))))
 

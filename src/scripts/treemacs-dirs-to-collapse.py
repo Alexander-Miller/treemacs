@@ -8,10 +8,6 @@ ROOT     = sys.argv[1]
 LIMIT    = int(sys.argv[2])
 SHOW_ALL = sys.argv[3] == 't'
 
-if ROOT.startswith("/ssh:") or ROOT.startswith("/scp:"):
-    print("()")
-    sys.exit(0)
-
 # special workaround for windows platforms
 # the default `join' implementation cannot quite deal with windows
 # paths in the form of "C:/A/B" & "C:/A/B/C", joining them as

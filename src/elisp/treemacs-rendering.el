@@ -468,7 +468,7 @@ set to PARENT."
          (project (treemacs-button-get btn :project))
          (git-path (if (treemacs-button-get btn :symlink) (file-truename path) path))
          (git-future (treemacs--git-status-process git-path project))
-         (collapse-future (treemacs--collapsed-dirs-process path)))
+         (collapse-future (treemacs--collapsed-dirs-process path project)))
     (treemacs--maybe-recenter treemacs-recenter-after-project-expand
       (treemacs--button-open
        :immediate-insert nil
@@ -509,7 +509,7 @@ RECURSIVE: Bool"
            (git-future (if (treemacs-button-get btn :symlink)
                            (treemacs--git-status-process (file-truename path) project)
                          (or git-future (treemacs--git-status-process path project))))
-           (collapse-future (treemacs--collapsed-dirs-process path)))
+           (collapse-future (treemacs--collapsed-dirs-process path project)))
       (treemacs--button-open
        :immediate-insert nil
        :button btn
