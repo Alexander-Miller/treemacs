@@ -328,9 +328,10 @@ If there is no node at point use \"~/\" instead.
 
 Used as a post command hook."
   (-if-let* ((btn  (treemacs-current-button))
+             (project (treemacs-project-of-node btn))
              (path (or (treemacs-button-get btn :default-directory)
                        (treemacs--nearest-path btn))))
-      (when (and (stringp path)
+      (when (and (treemacs-project->is-readable? project)
                  (file-readable-p path))
         (setq treemacs--eldoc-msg path
               default-directory (treemacs--add-trailing-slash
