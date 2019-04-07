@@ -293,8 +293,10 @@ FILE: Filepath"
                          file (treemacs--remove-trailing-newline status))
            (treemacs-log "\"%s\"" (treemacs--remove-trailing-newline err-str))))))))
 
-(defun treemacs--collapsed-dirs-process (path)
+(defun treemacs--collapsed-dirs-process (path project)
   "Start a new process to determine dirs to collpase under PATH.
+Only starts the process if PROJECT is locally accessible (i.e. exists, and
+is not remote.)
 Output format is an elisp list of string lists that's read directly.
 Every string list consists of the following elements:
  * The path that is being collapsed
@@ -302,7 +304,8 @@ Every string list consists of the following elements:
  * The single directories being collapsed, to be put under filewatch
    if `treemacs-filewatch-mode' is on."
   (when (and (> treemacs-collapse-dirs 0)
-             treemacs-python-executable)
+             treemacs-python-executable
+             (treemacs-project->is-local-and-readable? project))
     ;; needs to be set or we'll run into trouble when deleting
     ;; haven't taken the time to figure out why, so let's just leave it at that
     (-let [default-directory path]
