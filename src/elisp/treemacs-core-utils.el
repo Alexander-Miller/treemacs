@@ -60,7 +60,6 @@
   treemacs--render-projects)
 
 (treemacs-import-functions-from "treemacs-filewatch-mode"
-  treemacs--start-watching
   treemacs--stop-filewatch-for-current-buffer
   treemacs--stop-watching
   treemacs--cancel-refresh-timer)
@@ -91,7 +90,6 @@
   treemacs--invalidate-position-cache)
 
 (treemacs-import-functions-from "treemacs-workspaces"
-  make-treemacs-project
   treemacs--find-workspace
   treemacs-current-workspace
   treemacs-workspace->projects
