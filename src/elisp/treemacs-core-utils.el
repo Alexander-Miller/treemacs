@@ -325,13 +325,11 @@ Returns nil if no such buffer exists.."
 (defun treemacs-project-of-node (node)
   "Find the project the given NODE belongs to."
   (declare (side-effect-free t))
-  (if (treemacs-button-get node :custom)
-      (-> node (treemacs-button-get :path) (car))
-    (-let [project (treemacs-button-get node :project)]
-      (while (not project)
-        (setq node (treemacs-button-get node :parent)
-              project (treemacs-button-get node :project)))
-      project)))
+  (-let [project (treemacs-button-get node :project)]
+    (while (not project)
+      (setq node (treemacs-button-get node :parent)
+            project (treemacs-button-get node :project)))
+    project))
 
 (define-inline treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point.
