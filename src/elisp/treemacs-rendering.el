@@ -467,7 +467,7 @@ set to PARENT."
   (let* ((path (treemacs-button-get btn :path))
          (project (treemacs-button-get btn :project))
          (git-path (if (treemacs-button-get btn :symlink) (file-truename path) path))
-         (git-future (treemacs--git-status-process-function git-path))
+         (git-future (treemacs--git-status-process git-path project))
          (collapse-future (treemacs--collapsed-dirs-process path)))
     (treemacs--maybe-recenter treemacs-recenter-after-project-expand
       (treemacs--button-open
@@ -504,10 +504,11 @@ RECURSIVE: Bool"
   (if (not (f-readable? (treemacs-button-get btn :path)))
       (treemacs-pulse-on-failure
        "Directory %s is not readable." (propertize (treemacs-button-get btn :path) 'face 'font-lock-string-face))
-    (let* ((path (treemacs-button-get btn :path))
+    (let* ((project (treemacs-project-of-node btn))
+           (path (treemacs-button-get btn :path))
            (git-future (if (treemacs-button-get btn :symlink)
-                           (treemacs--git-status-process-function (file-truename path))
-                         (or git-future (treemacs--git-status-process-function (file-truename path)))))
+                           (treemacs--git-status-process (file-truename path) project)
+                         (or git-future (treemacs--git-status-process path project))))
            (collapse-future (treemacs--collapsed-dirs-process path)))
       (treemacs--button-open
        :immediate-insert nil

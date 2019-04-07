@@ -990,6 +990,24 @@
             :to-equal
             '("* Workspace" "** Project" " - path :: /x"))))
 
+(describe "treemacs--git-status-process"
+
+  (it "Does not call treemacs--git-status-process-function with non-local or unreadable paths"
+    (dolist (status '(local-unreadable remote-readable remote-unreadable remote-disconnected extension))
+      (spy-on 'treemacs--git-status-process-function)
+      (-> treemacs-dir
+          (f-join "test")
+          (treemacs--git-status-process (make-treemacs-project :name "P" :path treemacs-dir :path-status status)))
+      (expect 'treemacs--git-status-process-function
+              :not :to-have-been-called)))
+
+  (it "Calls treemacs--git-status-process-function with local readable path"
+    (spy-on 'treemacs--git-status-process-function)
+    (let ((path (f-join treemacs-dir "test")))
+      (treemacs--git-status-process path (make-treemacs-project :name "P" :path treemacs-dir :path-status 'local-readable))
+      (expect 'treemacs--git-status-process-function
+              :to-have-been-called-with path))))
+
 (describe "treemacs--parse-collapsed-dirs"
 
   (it "Finds dirs to flatten in test directory"

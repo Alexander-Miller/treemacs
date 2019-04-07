@@ -26,6 +26,7 @@
 (require 'pfuture)
 (require 'treemacs-core-utils)
 (require 'treemacs-customization)
+(require 'treemacs-workspaces)
 (require 'treemacs-dom)
 (eval-and-compile
   (require 'inline)
@@ -109,6 +110,12 @@ Specifically its size will be reduced to half of `treemacs--git-cache-max-size'.
   "Dummy with PATH.
 Real implementation will be `fset' based on `treemacs-git-mode' value."
   (ignore path))
+
+(defun treemacs--git-status-process (path project)
+  "Run `treemacs--git-status-process-function' on PATH, if allowed for PROJECT.
+Remote projects are ignored."
+  (when (treemacs-project->is-local-and-readable? project)
+    (treemacs--git-status-process-function path)))
 
 (defun treemacs--git-status-parse-function (_future)
   "Dummy with FUTURE.
