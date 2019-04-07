@@ -67,29 +67,29 @@
 
     (it "Identifies that a path is in a project"
       (let ((path "~/P/A/B/C/D/E/F/file")
-            (project (make-treemacs-project :name "P" :path "~/P/A/B/C")))
+            (project (make-treemacs-project :name "P" :path "~/P/A/B/C" :path-status 'local-readable)))
         (expect (treemacs-is-path path :in-project project) :to-be-truthy)))
 
        (it "Identifies that a path is not in a project"
          (let ((path "~/X/abc")
-               (project (make-treemacs-project :name "P" :path "~/P")))
+               (project (make-treemacs-project :name "P" :path "~/P" :path-status 'local-readable)))
            (expect (treemacs-is-path path :in-project project) :not :to-be-truthy))))
 
   (describe ":in-workspace matcher"
 
     (it "Finds project of path in the workspace"
       (let* ((path "~/C/abc")
-             (p1 (make-treemacs-project :name "P1" :path "~/A"))
-             (p2 (make-treemacs-project :name "P2" :path "~/B"))
-             (p3 (make-treemacs-project :name "P3" :path "~/C"))
+             (p1 (make-treemacs-project :name "P1" :path "~/A" :path-status 'local-readable))
+             (p2 (make-treemacs-project :name "P2" :path "~/B" :path-status 'local-readable))
+             (p3 (make-treemacs-project :name "P3" :path "~/C" :path-status 'local-readable))
              (ws (make-treemacs-workspace :name "WS" :projects (list p1 p2 p3))))
         (expect (treemacs-is-path path :in-workspace ws) :to-be p3)))
 
     (it "Identifies path not in the workspace" ()
         (let* ((path "~/D/abc")
-               (p1 (make-treemacs-project :name "P1" :path "~/A"))
-               (p2 (make-treemacs-project :name "P2" :path "~/B"))
-               (p3 (make-treemacs-project :name "P3" :path "~/C"))
+               (p1 (make-treemacs-project :name "P1" :path "~/A" :path-status 'local-readable))
+               (p2 (make-treemacs-project :name "P2" :path "~/B" :path-status 'local-readable))
+               (p3 (make-treemacs-project :name "P3" :path "~/C" :path-status 'local-readable))
                (ws (make-treemacs-workspace :name "WS" :projects (list p1 p2 p3))))
           (expect (treemacs-is-path path :in-workspace ws) :to-be nil)))))
 
@@ -279,34 +279,34 @@
   (it "Does nothing when dotfiles are shown"
     (let ((treemacs-show-hidden-files t)
           (input '("/home/.A" "/home/B/C" "/home/.A/B" "/home/.A/.B/.C")))
-      (expect (treemacs--with-project (make-treemacs-project :path "/home")
+      (expect (treemacs--with-project (make-treemacs-project :path "/home" :path-status 'local-readable)
                 (treemacs--maybe-filter-dotfiles input))
               :to-equal input)))
 
   (it "Fails on nil input"
     (let ((treemacs-show-hidden-files nil))
-      (expect (treemacs--with-project (make-treemacs-project :path "/home")
+      (expect (treemacs--with-project (make-treemacs-project :path "/home" :path-status 'local-readable)
                 (treemacs--maybe-filter-dotfiles nil))
               :to-throw)))
 
   (it "Filters single dotfile"
     (let ((treemacs-show-hidden-files nil)
           (input '("/home/A/B/C/D/.d")))
-      (expect (treemacs--with-project (make-treemacs-project :path "/home")
+      (expect (treemacs--with-project (make-treemacs-project :path "/home" :path-status 'local-readable)
                 (treemacs--maybe-filter-dotfiles input))
               :to-be nil)))
 
   (it "Filters dotfile based on part"
     (let ((treemacs-show-hidden-files nil)
           (input '("/home/A/B/C/.D/d")))
-      (expect (treemacs--with-project (make-treemacs-project :path "/home")
+      (expect (treemacs--with-project (make-treemacs-project :path "/home" :path-status 'local-readable)
                 (treemacs--maybe-filter-dotfiles input))
               :to-be nil)))
 
   (it "Does not filter dotfile above root"
     (let ((treemacs-show-hidden-files nil)
           (input '("/home/.A/B/C/d")))
-      (expect (treemacs--with-project (make-treemacs-project :path "/home/.A/B")
+      (expect (treemacs--with-project (make-treemacs-project :path "/home/.A/B" :path-status 'local-readable)
                 (make-treemacs-workspace :projects (list ))
                 (treemacs--maybe-filter-dotfiles input))
               :to-equal input)))
@@ -314,7 +314,7 @@
   (it "Filters long input"
     (let ((treemacs-show-hidden-files nil)
           (input '("/home/.A/B/C/d" "/home/.A/B/.C/D/E" "/home/.A/B/C/.d" "/home/.A/B/C/D/E")))
-      (expect (treemacs--with-project (make-treemacs-project :path "/home/.A/B")
+      (expect (treemacs--with-project (make-treemacs-project :path "/home/.A/B" :path-status 'local-readable)
                 (treemacs--maybe-filter-dotfiles input))
               :to-equal '("/home/.A/B/C/d" "/home/.A/B/C/D/E")))))
 
@@ -772,7 +772,7 @@
 (describe "treemacs--find-project-for-path"
 
   (it "Returns nil when input is nil"
-    (treemacs--with-project (make-treemacs-project :path "/A")
+    (treemacs--with-project (make-treemacs-project :path "/A" :path-status 'local-readable)
       (expect (treemacs--find-project-for-path nil) :to-be nil)))
 
   (it "Returns nil when the workspace is empty"
@@ -780,11 +780,11 @@
       (expect (treemacs--find-project-for-path "/A") :to-be nil)))
 
   (it "Returns nil when path does not fit any project"
-    (treemacs--with-project (make-treemacs-project :path "/A/B")
+    (treemacs--with-project (make-treemacs-project :path "/A/B" :path-status 'local-readable)
       (expect (treemacs--find-project-for-path "/A/C") :to-be nil)))
 
   (it "Returns project when path fits"
-    (-let [project (make-treemacs-project :path "/A/B")]
+    (-let [project (make-treemacs-project :path "/A/B" :path-status 'local-readable)]
       (treemacs--with-project project
         (expect (treemacs--find-project-for-path "/A/B/C")
                 :to-equal project)))))

@@ -438,7 +438,8 @@ additional keys."
                                    (extension-key (cdr it))
                                    (pr (make-treemacs-project
                                         :name extension-label
-                                        :path extension-key)))
+                                        :path extension-key
+                                        :path-status 'extension)))
                               (insert ,closed-icon-name)
                               (treemacs--set-project-position ,root-key-form (point-marker))
                               (insert (propertize extension-label
@@ -460,7 +461,8 @@ additional keys."
                        (treemacs-with-writable-buffer
                         (-let [pr (make-treemacs-project
                                    :name ,root-label
-                                   :path ,root-key-form)]
+                                   :path ,root-key-form
+                                   :path-status 'extension)]
                           (insert ,closed-icon-name)
                           (treemacs--set-project-position ,root-key-form (point-marker))
                           (setq-local ,project-var-name pr)

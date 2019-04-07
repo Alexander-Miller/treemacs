@@ -45,7 +45,7 @@
   treemacs--restore
   treemacs--persist)
 
-(treemacs--defstruct treemacs-project name path)
+(treemacs--defstruct treemacs-project name path path-status)
 
 (treemacs--defstruct treemacs-workspace name projects)
 
@@ -138,18 +138,30 @@ Will return `point-min' if there is no next project."
   (inline-quote
    (setq treemacs--project-positions (make-hash-table :test #'equal :size 20))))
 
+(define-inline treemacs-project->key (self)
+  "Get the hash table key of SELF.
+SELF may be a project struct or a root key of a top-level extension."
+  (declare (side-effect-free t))
+  (inline-letevals (self)
+    (inline-quote
+     ;; Top-level extensions are added to the project positions their root-key,
+     ;; not a real project.
+     (if (treemacs-project-p ,self)
+         (treemacs-project->path ,self)
+       ,self))))
+
 (define-inline treemacs--set-project-position (project position)
   "Insert PROJECT's POSITION into `treemacs--project-positions'."
   (inline-letevals (project position)
     (inline-quote
-     (ht-set! treemacs--project-positions ,project ,position))))
+     (ht-set! treemacs--project-positions (treemacs-project->key ,project) ,position))))
 
 (define-inline treemacs-project->position (self)
   "Return the position of project SELF in the current buffer."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote
-     (ht-get treemacs--project-positions ,self))))
+     (ht-get treemacs--project-positions (treemacs-project->key ,self)))))
 
 (define-inline treemacs-project->is-expanded? (self)
   "Return non-nil if project SELF is expanded in the current buffer."
@@ -160,15 +172,24 @@ Will return `point-min' if there is no next project."
          (-> ,self (treemacs-project->position) (treemacs-button-get :state))))))
 
 (define-inline treemacs-project->refresh! (self)
-  "Refresh project SELF in the current buffer."
+  "Refresh project SELF in the current buffer.
+Does not save preserve the current position in the buffer."
   (inline-letevals (self)
     (inline-quote
-     (when (treemacs-project->is-expanded? ,self)
-       (let ((root-btn (treemacs-project->position ,self)))
+     (let ((root-btn (treemacs-project->position ,self))
+           (old-readable (treemacs-project->is-readable? ,self)))
+       (setf (treemacs-project->path-status ,self)
+             (treemacs--get-path-status (treemacs-project->path ,self)))
+       ;; When the path transforms from unreadable or disconnected to readable,
+       ;; update the :symlink status on its button.
+       (when (and (not old-readable) (treemacs-project->is-readable? ,self))
+         (treemacs-button-put root-btn :symlink (file-symlink-p (treemacs-project->path ,self))))
+       (when (treemacs-project->is-expanded? ,self)
          (goto-char root-btn)
          (treemacs--forget-last-highlight)
          (treemacs--collapse-root-node root-btn)
-         (treemacs--expand-root-node root-btn))))))
+         (unless (treemacs-project->is-unreadable? ,self)
+           (treemacs--expand-root-node root-btn)))))))
 
 (define-inline treemacs-project->is-last? (self)
   "Return t when root node of project SELF is the last in the view."
@@ -236,6 +257,62 @@ Return values may be as follows:
      (treemacs--persist)
      `(success ,to-delete ,treemacs--workspaces))))
 
+(defun treemacs--get-path-status (path)
+  "Get the status of PATH.
+
+Returns either
+
+* `local-readable' when PATH is a local readable file or directory,
+* `local-unreadable' when PATH is a local unreadable file or directory,
+* `remote-readable' when PATH is a remote readable file or directory,
+* `remote-unreadable' when PATH is a remote unreadable file or directory,
+* `remote-disconnected' when PATH is remote, but the connection is down, or
+* `extension' when PATH is not a string."
+  (cond
+   ((not (stringp path)) 'extension)
+   ((not (file-remote-p path))
+    (if (file-readable-p path) 'local-readable 'local-unreadable))
+   ((not (file-remote-p path nil t)) 'remote-disconnected)
+   ((file-readable-p path) 'remote-readable)
+   (t 'remote-unreadable)))
+
+(define-inline treemacs-project->is-unreadable? (self)
+  "Return t if the project SELF is definitely unreadable.
+
+If `path-status' of the project is `remote-disconnected', the return value will
+be nil even though the path might still be unreadable.  Does not verify the
+readability, the cached path-state is used."
+  (declare (side-effect-free t))
+  (inline-quote (memq (treemacs-project->path-status ,self)
+                      '(local-unreadable remote-unreadable extension))))
+
+(define-inline treemacs-project->is-readable? (self)
+  "Return t if the project SELF is definitely readable for file operations.
+
+Does not verify the readability - the cached state is used."
+  (declare (side-effect-free t))
+  (inline-quote (memq (treemacs-project->path-status ,self)
+                      '(local-readable remote-readable))))
+
+(define-inline treemacs-project->is-remote? (self)
+  "Return t if the project SELF is remote."
+  (declare (side-effect-free t))
+  (inline-letevals (self)
+    (inline-quote (memq (treemacs-project->path-status ,self)
+                        '(remote-disconnected remote-readable remote-unreadable)))))
+
+(define-inline treemacs-project->is-local? (self)
+  "Return t if the project SELF is local.  Returns nil for extensions."
+  (declare (side-effect-free t))
+  (inline-letevals (self)
+    (inline-quote (memq (treemacs-project->path-status ,self)
+                        '(local-readable local-unreadable)))))
+
+(define-inline treemacs-project->is-local-and-readable? (self)
+  "Return t if the project SELF is local and readable."
+  (declare (side-effect-free t))
+  (inline-quote (eq (treemacs-project->path-status ,self) 'local-readable)))
+
 (defun treemacs-do-add-project-to-workspace (path &optional name)
   "Add project at PATH to the current workspace.
 NAME is provided during ad-hoc navigation only.
@@ -262,41 +339,43 @@ NAME: String"
   (treemacs-block
    (treemacs-error-return-if (null path)
      `(invalid-path "Path is nil."))
-   (treemacs-error-return-if (not (file-exists-p path))
-     `(invalid-path "Path does not exist."))
-   (setq path (-> path (file-truename) (treemacs--canonical-path)))
-   (-when-let (project (treemacs--find-project-for-path path))
-     (treemacs-return `(duplicate-project ,project)))
-   (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
-          (project (make-treemacs-project :name name :path path)))
-     (treemacs-return-if (treemacs--is-name-invalid? name)
-       `(invalid-name ,name))
-     (-when-let (double (--first (string= name (treemacs-project->name it))
-                                 (treemacs-workspace->projects (treemacs-current-workspace))))
-       (treemacs-return `(duplicate-name ,double)))
-     (treemacs--add-project-to-current-workspace project)
-     (treemacs-run-in-every-buffer
-      (treemacs-with-writable-buffer
-       (goto-char (treemacs--projects-end))
-       (cond
-        ;; Inserting the first and only button - no need to add spacing
-        ((not (treemacs-current-button)))
-        ;; Inserting before a button. This happens when only bottom extensions exist.
-        ((bolp)
-         (save-excursion (treemacs--insert-root-separator))
-         ;; Unlock the marker - when the marker is at the beginning of the buffer,
-         ;; expanding/collapsing extension nodes would move the marker and it was thus locked.
-         (set-marker-insertion-type (treemacs--projects-end) t))
-        ;; Inserting after a button (the standard case)
-        ;; We should already be at EOL, but play it safe.
-        (t
-         (end-of-line)
-         (treemacs--insert-root-separator)))
-       (treemacs--add-root-element project)
-       (treemacs--insert-into-dom (make-treemacs-dom-node
-                                   :key path :position (treemacs-project->position project)))))
-     (treemacs--persist)
-     `(success ,project))))
+   (let ((path-status (treemacs--get-path-status path)))
+     (treemacs-error-return-if (not (file-readable-p path))
+       `(invalid-path "Path does not exist."))
+     (setq path (-> path (file-truename) (treemacs--canonical-path)))
+     (-when-let (project (treemacs--find-project-for-path path))
+       (treemacs-return `(duplicate-project ,project)))
+     (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
+            (project (make-treemacs-project :name name :path path :path-status path-status)))
+       (treemacs-return-if (treemacs--is-name-invalid? name)
+         `(invalid-name ,name))
+       (-when-let (double (--first (string= name (treemacs-project->name it))
+                                   (treemacs-workspace->projects (treemacs-current-workspace))))
+         (treemacs-return `(duplicate-name ,double)))
+       (treemacs--add-project-to-current-workspace project)
+       (treemacs-run-in-every-buffer
+        (treemacs-with-writable-buffer
+         (goto-char (treemacs--projects-end))
+         (cond
+          ;; Inserting the first and only button - no need to add spacing
+          ((not (treemacs-current-button)))
+          ;; Inserting before a button. This happens when only bottom extensions exist.
+          ((bolp)
+           (save-excursion (treemacs--insert-root-separator))
+           ;; Unlock the marker - when the marker is at the beginning of the buffer,
+           ;; expanding/collapsing extension nodes would move the marker and it was thus locked.
+           (set-marker-insertion-type (treemacs--projects-end) t))
+          ;; Inserting after a button (the standard case)
+          ;; We should already be at EOL, but play it safe.
+          (t
+           (end-of-line)
+           (treemacs--insert-root-separator)))
+         (treemacs--add-root-element project)
+         (treemacs--insert-into-dom (make-treemacs-dom-node
+                                     :key path :position (treemacs-project->position project)))))
+       (treemacs--persist)
+       `(success ,project)))))
+
 (defalias 'treemacs-add-project-at #'treemacs-do-add-project-to-workspace)
 (with-no-warnings
   (make-obsolete #'treemacs-add-project-at #'treemacs-do-add-project-to-workspace "v.2.2.1"))
