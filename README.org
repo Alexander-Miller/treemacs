@@ -451,19 +451,23 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 
 ** Faces
 Treemacs defines and uses the following faces:
-| Face                              | Based on                     | Description                                                                  |
-|-----------------------------------+------------------------------+------------------------------------------------------------------------------|
-| treemacs-directory-face           | font-lock-function-name-face | Face used for directories.                                                   |
-| treemacs-directory-collapsed-face | treemacs-directory-face      | Face used for collapsed part of directories.                                 |
-| treemacs-file-face                | default                      | Face used for files.                                                         |
-| treemacs-root-face                | font-lock-constant-face      | Face used for project roots.                                                 |
-| treemacs-tags-face                | font-lock-builtin-face       | Face used for tags.                                                          |
-| treemacs-help-title-face          | font-lock-constant-face      | Face used for the title of the helpful hydra.                                |
-| treemacs-help-column-face         | font-lock-keyword-face       | Face used for the column headers of the helpful hydra.                       |
-| treemacs-git-*-face               | various font lock faces      | Faces used by treemacs for various git states.                               |
-| treemacs-term-node-face           | font-lock-string-face        | Face for directory node symbols used by treemacs when it runs in a terminal. |
-| treemacs-on-success-pulse-face    | :fg #111111 :bg #669966      | Pulse face used when pulsing on a successful action.                         |
-| treemacs-on-failure-puse-face     | :fg #111111 :bg #ab3737      | Pulse face used when pulsing on a failed action.                             |
+| Face                                   | Based on                                         | Description                                                                  |
+|----------------------------------------+--------------------------------------------------+------------------------------------------------------------------------------|
+| treemacs-directory-face                | font-lock-function-name-face                     | Face used for directories.                                                   |
+| treemacs-directory-collapsed-face      | treemacs-directory-face                          | Face used for collapsed part of directories.                                 |
+| treemacs-file-face                     | default                                          | Face used for files.                                                         |
+| treemacs-root-face                     | font-lock-constant-face                          | Face used for project roots.                                                 |
+| treemacs-root-unreadable-face          | treemacs-root-face                               | Face used for local unreadable project roots.                                |
+| treemacs-root-remote-face              | font-lock-function-name-face, treemacs-root-face | Face used for readable remote (Tramp) project roots.                         |
+| treemacs-root-remote-unreadable-face   | treemacs-root-unreadable-face                    | Face used for unreadable remote (Tramp) project roots.                       |
+| treemacs-root-remote-disconnected-face | warning, treemacs-root-face                      | Face used for disconnected remote (Tramp) project roots.                     |
+| treemacs-tags-face                     | font-lock-builtin-face                           | Face used for tags.                                                          |
+| treemacs-help-title-face               | font-lock-constant-face                          | Face used for the title of the helpful hydra.                                |
+| treemacs-help-column-face              | font-lock-keyword-face                           | Face used for the column headers of the helpful hydra.                       |
+| treemacs-git-*-face                    | various font lock faces                          | Faces used by treemacs for various git states.                               |
+| treemacs-term-node-face                | font-lock-string-face                            | Face for directory node symbols used by treemacs when it runs in a terminal. |
+| treemacs-on-success-pulse-face         | :fg #111111 :bg #669966                          | Pulse face used when pulsing on a successful action.                         |
+| treemacs-on-failure-puse-face          | :fg #111111 :bg #ab3737                          | Pulse face used when pulsing on a failed action.                             |
 
 ** Evil compatibility
 To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions
