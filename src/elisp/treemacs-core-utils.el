@@ -74,7 +74,7 @@
   treemacs--forget-last-highlight)
 
 (treemacs-import-functions-from "treemacs-async"
-  treemacs--git-status-process-function
+  treemacs--git-status-process
   treemacs--collapsed-dirs-process)
 
 (treemacs-import-functions-from "treemacs-dom"
@@ -699,14 +699,14 @@ failed."
              (funcall (cdr (assq (treemacs-button-get ,btn :state) treemacs-TAB-actions-config))))))
        ,btn))))
 
-(define-inline treemacs--follow-each-dir (btn dir-parts)
+(define-inline treemacs--follow-each-dir (btn dir-parts project)
   "Starting at BTN follow (goto and open) every single dir in DIR-PARTS.
 Return the button that is found or the symbol `follow-failed' if the search
-failed."
-  (inline-letevals (btn dir-parts)
+failed.  PROJECT is used for determining whether Git actions are appropriate."
+  (inline-letevals (btn dir-parts project)
     (inline-quote
      (let* ((root       (treemacs-button-get ,btn :path))
-            (git-future (treemacs--git-status-process-function root))
+            (git-future (treemacs--git-status-process root ,project))
             (last-index (- (length ,dir-parts) 1))
             (depth      (treemacs-button-get ,btn :depth)))
        (goto-char ,btn)
@@ -968,7 +968,7 @@ PROJECT: Project Struct"
                     (treemacs-project->position project)
                   (treemacs-dom-node->position dom-node)))
            ;; do the rest manually - at least the actual file to move to is still left in manual-parts
-           (search-result (if manual-parts (save-match-data (treemacs--follow-each-dir btn manual-parts)) btn)))
+           (search-result (if manual-parts (save-match-data (treemacs--follow-each-dir btn manual-parts project)) btn)))
       (if (eq 'follow-failed search-result)
           (prog1 nil
             (goto-char start))
