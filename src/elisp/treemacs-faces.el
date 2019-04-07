@@ -42,6 +42,26 @@ if the node is 'foo/bar/baz', the face is used for 'foo/bar/'."
   "Face used by treemacs for its root nodes."
   :group 'treemacs-faces)
 
+(defface treemacs-root-unreadable-face
+  '((t :inherit treemacs-root-face :strike-through t))
+  "Face used by treemacs for unreadable root nodes."
+  :group 'treemacs-faces)
+
+(defface treemacs-root-remote-face
+  '((t :inherit (font-lock-function-name-face treemacs-root-face)))
+  "Face used by treemacs for remote (Tramp) root nodes."
+  :group 'treemacs-faces)
+
+(defface treemacs-root-remote-unreadable-face
+  '((t :inherit treemacs-root-unreadable-face))
+  "Face used by treemacs for unreadable remote (Tramp) root nodes."
+  :group 'treemacs-faces)
+
+(defface treemacs-root-remote-disconnected-face
+  '((t :inherit (warning treemacs-root-remote-face)))
+  "Face used by treemacs for disconnected remote (Tramp) root nodes."
+  :group 'treemacs-faces)
+
 (defface treemacs-term-node-face
   '((t :inherit font-lock-string-face))
   "Face used by treemacs in the terminal for directory node symbols."

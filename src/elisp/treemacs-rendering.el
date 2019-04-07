@@ -464,25 +464,35 @@ set to PARENT."
 
 (defun treemacs--expand-root-node (btn)
   "Expand the given root BTN."
-  (let* ((path (treemacs-button-get btn :path))
-         (project (treemacs-button-get btn :project))
-         (git-path (if (treemacs-button-get btn :symlink) (file-truename path) path))
-         (git-future (treemacs--git-status-process git-path project))
-         (collapse-future (treemacs--collapsed-dirs-process path project)))
-    (treemacs--maybe-recenter treemacs-recenter-after-project-expand
-      (treemacs--button-open
-       :immediate-insert nil
-       :button btn
-       :new-state 'root-node-open
-       :open-action
-       (progn
-         (treemacs--apply-project-top-extensions btn project)
-         (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
-         (treemacs--apply-project-bottom-extensions btn project))
-       :post-open-action
-       (progn
-         (treemacs-on-expand path btn nil)
-         (treemacs--start-watching path))))))
+  (let ((project (treemacs-button-get btn :project)))
+    (treemacs-with-writable-buffer
+     (treemacs-project->refresh-path-status! project))
+    (if (treemacs-project->is-unreadable? project)
+        (treemacs-pulse-on-failure
+            (format "%s is not readable."
+                    (propertize (treemacs-project->path project) 'face 'font-lock-string-face)))
+      (let* ((path (treemacs-button-get btn :path))
+             (git-path (if (treemacs-button-get btn :symlink) (file-truename path) path))
+             (git-future (treemacs--git-status-process git-path project))
+             (collapse-future (treemacs--collapsed-dirs-process path project)))
+        (treemacs--maybe-recenter treemacs-recenter-after-project-expand
+          (treemacs--button-open
+           :immediate-insert nil
+           :button btn
+           :new-state 'root-node-open
+           :open-action
+           (progn
+             (treemacs--apply-project-top-extensions btn project)
+             (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
+             (treemacs--apply-project-bottom-extensions btn project))
+           :post-open-action
+           (progn
+             (treemacs-on-expand path btn nil)
+             (treemacs--start-watching path)
+             ;; Performing FS ops on a disconnected Tramp project
+             ;; might have changed the state to connected.
+             (treemacs-with-writable-buffer
+              (treemacs-project->refresh-path-status! project)))))))))
 
 (defun treemacs--collapse-root-node (btn &optional recursive)
   "Collapse the given root BTN.
@@ -543,6 +553,15 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
      (treemacs--stop-watching path)
      (treemacs-on-collapse path recursive))))
 
+(defun treemacs--root-face (project)
+  "Get the face to be used for PROJECT."
+  (cl-case (treemacs-project->path-status project)
+    (local-unreadable 'treemacs-root-unreadable-face)
+    (remote-readable 'treemacs-root-remote-face)
+    (remote-disconnected 'treemacs-root-remote-disconnected-face)
+    (remote-unreadable 'treemacs-root-remote-unreadable-face)
+    (otherwise 'treemacs-root-face)))
+
 (defun treemacs--add-root-element (project)
   "Insert a new root node for the given PROJECT node.
 
@@ -553,7 +572,7 @@ PROJECT: Project Struct"
    (propertize (treemacs-project->name project)
                'button '(t)
                'category 'default-button
-               'face 'treemacs-root-face
+               'face (treemacs--root-face project)
                :project project
                :symlink (when (treemacs-project->is-readable? project)
                           (file-symlink-p (treemacs-project->path project)))
