@@ -554,7 +554,8 @@ PROJECT: Project Struct"
                'category 'default-button
                'face 'treemacs-root-face
                :project project
-               :symlink (file-symlink-p (treemacs-project->path project))
+               :symlink (when (treemacs-project->is-readable? project)
+                          (file-symlink-p (treemacs-project->path project)))
                :state 'root-node-closed
                :path (treemacs-project->path project)
                :depth 0)))

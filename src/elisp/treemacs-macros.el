@@ -271,7 +271,10 @@ it on the same line."
       ;; try to stay at the same file/tag
       ;; if the tag no longer exists move to the tag's owning file node
       (pcase curr-state
-        ((or 'root-node-open 'root-node-closed 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
+        ((or 'root-node-open 'root-node-closed)
+         ;; root nodes are always visible even if deleted.
+         (treemacs-goto-file-node curr-file))
+        ((or 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
          ;; stay on the same file
          (if (and (file-exists-p curr-file)
                   (or treemacs-show-hidden-files
