@@ -812,7 +812,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
        `(defun ,name (path)
           ,doc
           (let* (;; go back here if the search fails
-                 (project (pop path))
+                 (project ,project-form)
                  (start (prog1 (point) (goto-char (treemacs-project->position project))))
                  ;; making a copy since the variable is a reference to a node actual path
                  ;; and will be changed in-place here
