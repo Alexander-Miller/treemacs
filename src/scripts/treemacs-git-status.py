@@ -1,6 +1,6 @@
 from subprocess import Popen, PIPE
 from os import listdir
-from os.path import isdir
+from os.path import isdir, islink
 from posixpath import join
 import sys
 
@@ -31,7 +31,7 @@ def find_recursive_entries(path, state):
         ht_size += 1
         if ht_size > LIMIT:
             break
-        if isdir(full_path):
+        if isdir(full_path) and not islink(full_path):
             find_recursive_entries(full_path, state)
 
 def main():
