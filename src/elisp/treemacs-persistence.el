@@ -232,9 +232,12 @@ CONTEXT: Keyword"
           (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
             `(error ,prev ,(as-warning "Project name must be followed by path declaration")))
           (-let [path (cadr (s-split " :: " line))]
-            ;; path not existing is only a hard error when org-editing, when loading on boot
-            ;; it's just a warning and the project will be ignored
+            ;; Path not existing is only a hard error when org-editing, when loading on boot
+            ;; its significance is determined by the customization setting
+            ;; treemacs-missing-project-action. Remote files are skipped to avoid opening
+            ;; Tramp connections.
             (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
+                                     (not (file-remote-p path))
                                      (not (file-exists-p path)))
               `(error ,line ,(format (as-warning "File '%s' does not exist") (propertize path 'face 'font-lock-string-face))))
             (treemacs--validate-persist-lines (cdr lines) :property line)))
