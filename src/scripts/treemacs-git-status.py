@@ -32,7 +32,7 @@ def find_recursive_entries(path, state):
         if ht_size > LIMIT:
             break
         if isdir(full_path):
-            find_recursive_entries(full_path)
+            find_recursive_entries(full_path, state)
 
 def main():
     global output, ht_size
