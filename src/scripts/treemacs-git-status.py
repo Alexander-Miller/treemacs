@@ -20,14 +20,14 @@ GIT_CMD      = "git status --porcelain --ignored . " + sys.argv[3]
 STDOUT       = sys.stdout.buffer
 RECURSE_DIRS = set([str.encode(it[(len(GIT_ROOT)):]) + b"/" for it in sys.argv[4:]]) if len(sys.argv) > 4 else []
 QUOTE        = b'"'
-output       = b""
+output       = []
 ht_size      = 0
 
 def find_recursive_entries(path, state):
     global output, ht_size
     for item in listdir(path):
         full_path = join(path, item)
-        output += QUOTE + full_path + QUOTE + QUOTE + state + QUOTE
+        output.append(full_path + QUOTE + QUOTE + state)
         ht_size += 1
         if ht_size > LIMIT:
             break
@@ -66,12 +66,9 @@ def main():
         # filename is a directory, final slash must be removed
         if abs_path.endswith(b'/'):
             abs_path = abs_path[:-1]
-            output += QUOTE + abs_path + QUOTE + QUOTE + state + QUOTE
             dirs_added[abs_path] = True
-            ht_size += 1
-        else:
-            output += QUOTE + abs_path + QUOTE + QUOTE + state + QUOTE
-            ht_size += 1
+        output.append(abs_path + QUOTE + QUOTE + state)
+        ht_size += 1
 
         # for files deeper down in the file hierarchy also print all their directories
         # if /A/B/C/x is changed then /A and /A/B and /A/B/C must be shown as changed as well
@@ -84,7 +81,7 @@ def main():
                 # directories should not be printed more than once, which would happen if
                 # e.g. both /A/B/C/x and /A/B/C/y have changes
                 if full_dirname not in dirs_added:
-                    output += QUOTE + full_dirname + QUOTE + QUOTE + b'M' + QUOTE
+                    output.append(full_dirname + QUOTE + QUOTE + b'M')
                     ht_size += 1
                     dirs_added[full_dirname] = True
         # for untracked and ignored directories we need to find an entry for every single file
@@ -95,12 +92,14 @@ def main():
                 find_recursive_entries(abs_path, state)
         if ht_size >= LIMIT:
             break
-    elisp_ht = b"#s(hash-table size " + \
+    STDOUT.write(
+        b"#s(hash-table size " + \
         bytes(str(ht_size), 'utf-8') + \
-        b" test equal rehash-size 1.5 rehash-threshold 0.8125 data (" + \
-        output + \
-        b"))"
-    STDOUT.write(elisp_ht)
+        b" test equal rehash-size 1.5 rehash-threshold 0.8125 data ("
+    )
+    if ht_size > 0:
+      STDOUT.write(QUOTE + (QUOTE + QUOTE).join(output) + QUOTE)
+    STDOUT.write( b"))")
 
     sys.exit(proc.poll())
 
