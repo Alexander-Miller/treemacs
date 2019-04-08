@@ -938,6 +938,11 @@
 
     (it "Succeeds on correctly formed input"
       (-let [lines '("* W1" "** P1" " - path :: a" "** P2" "- path :: b" "* W2" "** P3" " - path :: c")]
+        (expect (treemacs--validate-persist-lines lines) :to-be 'success)))
+
+    (it "Succeeds with non-connectable remotes"
+      (let* ((treemacs--org-edit-buffer-name (buffer-name))
+             (lines '("* W1" "** P1" " - path :: /ftp:anonymous@ftp.invalid:/test-path")))
         (expect (treemacs--validate-persist-lines lines) :to-be 'success))))
 
   (describe "Errors"
