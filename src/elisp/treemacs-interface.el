@@ -59,14 +59,31 @@
   "Goto next line.
 A COUNT argument, moves COUNT lines down."
   (interactive "p")
-  (forward-line count)
+  ;; Move to EOL - if point is in the middle of a button, forward-button
+  ;; just moves to the end of the current button.
+  (goto-char (line-end-position))
+  ;; Don't show the "No more buttons" message.
+  (ignore-errors
+    (forward-button count treemacs-wrap-around))
+  ;; Move to BOL, since the button might not start at BOL, but parts
+  ;; of Treemacs might expect that the point is always at BOL.
+  (forward-line 0)
   (treemacs--evade-image))
 
 (defun treemacs-previous-line (&optional count)
   "Goto previous line.
 A COUNT argument, moves COUNT lines up."
   (interactive "p")
-  (forward-line (- count))
+  ;; Move to the start of line - if point is in the middle of a button,
+  ;; backward-button just moves to the start of the current button.
+  (forward-line 0)
+  ;; Don't show the "No more buttons" message.
+  (ignore-errors
+    (backward-button count treemacs-wrap-around))
+  ;; Move to BOL, since backward-button moves to the end of the button,
+  ;; and the button might not start at BOL, but parts of Treemacs might
+  ;; expect that the point is always at BOL.
+  (forward-line 0)
   (treemacs--evade-image))
 
 (defun treemacs-toggle-node (&optional arg)

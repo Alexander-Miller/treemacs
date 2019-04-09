@@ -512,6 +512,11 @@ missing project will not appear in the project list next time Emacs is started."
   :type 'boolean
   :group 'treemacs)
 
+(defcustom treemacs-wrap-around t
+  "When non-nil treemacs will wrap around buffer edges when moving between lines."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs--fringe-indicator-bitmap
   (if (fboundp 'define-fringe-bitmap)
       (define-fringe-bitmap 'treemacs--fringe-indicator-bitmap
