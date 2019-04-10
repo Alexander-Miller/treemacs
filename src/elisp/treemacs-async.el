@@ -294,7 +294,8 @@ Every string list consists of the following elements:
  * The string to be appened to the collapsed path in the treemacs view
  * The single directories being collapsed, to be put under filewatch
    if `treemacs-filewatch-mode' is on."
-  (when (> treemacs-collapse-dirs 0)
+  (when (and (> treemacs-collapse-dirs 0)
+             treemacs-python-executable)
     ;; needs to be set or we'll run into trouble when deleting
     ;; haven't taken the time to figure out why, so let's just leave it at that
     (-let [default-directory path]
