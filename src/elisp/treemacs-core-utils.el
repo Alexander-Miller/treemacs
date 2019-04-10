@@ -635,15 +635,15 @@ GIT-INFO: Pfuture|HashMap<String, String>"
        (treemacs-on-collapse it :purge)))))
 
 (defun treemacs--nearest-path (btn)
-  "Return the path property of the current button (or BTN).
-If the property is not set keep looking upward, via the :parent' property.
-Useful to e.g. find the path of the file of the currently selected tags entry.
-Must be called from treemacs buffer."
-  (let* ((path (treemacs-button-get btn :path)))
-    (while (null path)
-      (setq btn (treemacs-button-get btn :parent)
-            path (treemacs-button-get btn :path)))
-    path))
+  "Return the file path of the BTN.
+If the `:path' property is not set or not a file, keep looking upward, via the
+`:parent' property.  Useful to e.g. find the path of the file of the currently
+selected tags or extension entry.  Must be called from treemacs buffer."
+  (let ((path (treemacs-button-get btn :path)))
+    (if (stringp path)
+        path
+      (-some-> (treemacs-button-get btn :parent)
+               (treemacs--nearest-path)))))
 
 (defun treemacs--create-file/dir (is-file?)
   "Interactively create either a file or directory, depending on IS-FILE.
