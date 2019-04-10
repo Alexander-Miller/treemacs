@@ -391,12 +391,19 @@ FUTURE: Pfuture process"
        (ht)))))
 
 (treemacs-only-during-init
- (pcase (cons (not (null (executable-find "git")))
-              (not (null (executable-find "python3"))))
-   (`(t . t)
-    (treemacs-git-mode 'deferred))
-   (`(t . _)
-    (treemacs-git-mode 'simple))))
+ (let ((has-git    (not (null (executable-find "git"))))
+       (has-python (not (null (executable-find "python3")))))
+   (pcase (cons has-git has-python)
+     (`(t . t)
+      (treemacs-git-mode 'deferred))
+     (`(t . _)
+      (treemacs-git-mode 'simple)))
+
+   (when has-python
+     (setf treemacs-collapse-dirs 3))
+
+   (unless (or has-python (boundp 'treemacs-no-load-time-warnings))
+     (treemacs-log "Python3 not found, advanced git-mode and directory flattening features will be disabled."))))
 
 (provide 'treemacs-async)
 
