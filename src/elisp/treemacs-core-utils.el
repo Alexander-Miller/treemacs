@@ -782,10 +782,11 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
          ;; in the dom
          (manual-parts nil)
          (dom-node nil))
-    ;; try to move as close as possible to the followed node, starting with its immediate parent
-    ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
-    ;; all the while collecting the parts of the path that beed manual expanding
-    (while (and (> counter 0)
+    ;; Try to move as close as possible to the followed node, starting with its immediate parent
+    ;; keep moving upwards in the path we move to until reaching the root of the project. Root of
+    ;; project is met when counter is one, (not zero like with other nodes), since the root path of
+    ;; top-level extensions is of form (:CUSTOM Root-Key), already containing two elements.
+    (while (and (> counter 1)
                 (null dom-node))
       (setq dom-node (treemacs-find-in-dom goto-path)
             counter (1- counter))
