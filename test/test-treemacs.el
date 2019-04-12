@@ -1143,9 +1143,6 @@
   (it "Fails on blank input"
     (expect (treemacs--add-trailing-slash "") :to-throw))
 
-  (it "Fails on blank input"
-    (expect (treemacs--add-trailing-slash "") :to-throw))
-
   (it "Does not add slash if one is already present"
     (expect (treemacs--add-trailing-slash "/ABC/") :to-equal "/ABC/"))
 
