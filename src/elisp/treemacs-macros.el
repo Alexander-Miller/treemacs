@@ -476,7 +476,7 @@ treemacs buffer exists at all, BODY will be executed."
 IGNORED-ERRORS is a list of errors to ignore.  Each element is a list whose car
 is the error's type, and second item is a regex to match against error messages.
 If any of the IGNORED-ERRORS matches, the error is suppressed and nil returned."
-  (let ((err (gensym)))
+  (let ((err (make-symbol "err")))
     `(condition-case-unless-debug ,err
          ,(macroexp-progn body)
        ,@(mapcar
