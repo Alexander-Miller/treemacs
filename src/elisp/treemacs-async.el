@@ -151,13 +151,12 @@ The real parsing and formatting is done by the python process. All that's really
 left to do is pick up the cons list and put it in a hash table.
 
 GIT-FUTURE: Pfuture"
-  (-let [ret (ht)]
-    (when git-future
-      (pfuture-await-to-finish git-future)
-      (when (= 0 (process-exit-status git-future))
-        (-let [git-output (pfuture-result git-future)]
-          (setf ret (read git-output)))))
-    ret))
+  (or (when git-future
+        (-let [git-output (pfuture-await-to-finish git-future)]
+          (when (= 0 (process-exit-status git-future))
+            (-let [parsed-output (read git-output)]
+              (when (hash-table-p parsed-output) parsed-output)))))
+      (ht)))
 
 (defun treemacs--git-status-process-simple (path)
   "Start a simple git status process for files under PATH."
