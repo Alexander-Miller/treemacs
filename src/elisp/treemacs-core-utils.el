@@ -902,9 +902,8 @@ successful.
 PATH: Filepath | Node Path
 PROJECT Project Struct"
   (cond
-   ((and (stringp path)
-         (file-exists-p path))
-    (treemacs-find-file-node path project))
+   ((stringp path)
+    (when (file-exists-p path) (treemacs-find-file-node path project)))
    ((eq :custom (car path))
     (treemacs--find-custom-top-level-node path))
    ((stringp (car path))
@@ -920,9 +919,8 @@ point.
 PATH: Filepath | Node Path
 PROJECT Project Struct"
   (cond
-   ((and (stringp path)
-         (file-exists-p path))
-    (treemacs-goto-file-node path project))
+   ((stringp path)
+    (when (file-exists-p path) (treemacs-goto-file-node path project)))
    ((eq :custom (car path))
     (treemacs--goto-custom-top-level-node path))
    ((stringp (car path))
