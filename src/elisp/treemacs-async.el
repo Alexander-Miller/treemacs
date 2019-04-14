@@ -155,7 +155,12 @@ GIT-FUTURE: Pfuture"
         (-let [git-output (pfuture-await-to-finish git-future)]
           (when (= 0 (process-exit-status git-future))
             (-let [parsed-output (read git-output)]
-              (when (hash-table-p parsed-output) parsed-output)))))
+              (if (hash-table-p parsed-output)
+                  parsed-output
+                (let ((inhibit-message t))
+                  (treemacs-log "treemacs-git-status.py output: %s" git-output))
+                (treemacs-log "treemacs-git-status.py did not output a valid hash table. See Messages buffer for details.")
+                nil)))))
       (ht)))
 
 (defun treemacs--git-status-process-simple (path)
