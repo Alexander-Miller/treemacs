@@ -603,7 +603,7 @@ These functions are not bound to any keys by default. It's left up to users to f
 | treemacs-show-changelog                  | Opens a buffer showing the changelog.                                      |
 |------------------------------------------+----------------------------------------------------------------------------|
 | treemacs-projectile                      | Add a project from projectile to treemacs.                                 |
-| treemacs-add-and-display-current-project | Add current projectile project to treemacs and open it.                    |
+| treemacs-add-and-display-current-project | Add current project to treemacs and open it.                               |
 
 ** Default keymap
 By default Treemacs's keymap looks as follows:

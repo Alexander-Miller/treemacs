@@ -214,6 +214,32 @@ treemacs buffer for this frame."
     (outline-show-all))
   (goto-char 0))
 
+;;;###autoload
+(defun treemacs-add-and-display-current-project ()
+  "Open treemacs and add the current project root to the workspace.
+The project is determined first by projectile (if treemacs-projectile is
+installed), then by project.el.
+If the project is already registered with treemacs just move point to its root.
+An error message is displayed if the current buffer is not part of any project."
+  (interactive)
+  (treemacs-block
+   (treemacs-unless-let (root (treemacs--find-current-user-project))
+       (treemacs-error-return-if (null root)
+         "Not in a project.")
+     (let* ((path (treemacs--canonical-path root))
+            (name (treemacs--filename path)))
+       (unless (treemacs-current-workspace)
+         (treemacs--find-workspace))
+       (if (treemacs-workspace->is-empty?)
+           (progn
+             (treemacs-do-add-project-to-workspace path name)
+             (treemacs-select-window)
+             (treemacs-pulse-on-success))
+         (treemacs-select-window)
+         (if (treemacs-is-path path :in-workspace)
+             (treemacs-goto-file-node path)
+           (treemacs-add-project-to-workspace path name)))))))
+
 (provide 'treemacs)
 
 ;;; treemacs.el ends here

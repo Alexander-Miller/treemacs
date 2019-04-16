@@ -52,6 +52,9 @@
 
 (defvar treemacs--workspaces (list (make-treemacs-workspace :name "Default Workspace")))
 
+(defvar treemacs--find-user-project-functions (list #'treemacs--default-current-user-project-function)
+  "List of functions to find the user project for the current buffer.")
+
 (defvar-local treemacs--org-err-ov nil
   "The overlay that will display validations when org-editing.")
 
@@ -59,6 +62,11 @@
 
 (defvar-local treemacs--project-of-buffer nil
   "The project that the current buffer falls under, if any.");; TODO invalidate when?
+
+(defun treemacs--default-current-user-project-function ()
+  "Find the current project.el project."
+  (declare (side-effect-free t))
+  (-some-> (project-current) (cdr) (file-truename) (treemacs--canonical-path)))
 
 (define-inline treemacs-workspaces ()
   "Return the list of all workspaces in treemacs."
@@ -561,6 +569,14 @@ PROJECT, excluding newlines."
              (overlayp treemacs--org-err-ov))
     (delete-overlay treemacs--org-err-ov))
   (remove-hook 'after-change-functions #'treemacs--org-edit-remove-validation-msg :local))
+
+(defun treemacs--find-current-user-project ()
+  "Find current project by calling `treemacs--find-user-project-functions'."
+  (declare (side-effect-free t))
+  (treemacs-block
+   (dolist (fun treemacs--find-user-project-functions)
+     (--when-let (funcall fun)
+       (treemacs-return it)))))
 
 (provide 'treemacs-workspaces)
 
