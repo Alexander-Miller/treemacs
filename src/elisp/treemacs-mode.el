@@ -114,6 +114,7 @@ to it will instead show a blank."
              (key-open-ace-h     (treemacs--find-keybind #'treemacs-visit-node-ace-horizontal-split))
              (key-open-ace-v     (treemacs--find-keybind #'treemacs-visit-node-ace-vertical-split))
              (key-open-ext       (treemacs--find-keybind #'treemacs-visit-node-in-external-application))
+             (key-open-mru       (treemacs--find-keybind #'treemacs-visit-node-in-most-recently-used-window))
              (key-create-file    (treemacs--find-keybind #'treemacs-create-file))
              (key-create-dir     (treemacs--find-keybind #'treemacs-create-dir))
              (key-rename         (treemacs--find-keybind #'treemacs-rename))
@@ -152,6 +153,7 @@ to it will instead show a blank."
 %s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                           │ %s bookmark
 %s up next window   │ %s open ace horizontal │                    │                         │                           │
                         │ %s open ace vertical   │                    │                         │                           │
+                        │ %s open mru window     │                    │                         │                           │
                         │ %s open externally     │                    │                         │                           │
                         │ %s close parent        │                    │                         │                           │
 "
@@ -165,6 +167,7 @@ to it will instead show a blank."
                (car key-down-next-w)    (car key-open-ace)    (car key-move-file)    (car key-fringe-mode)                            (car key-bookmark)
                (car key-up-next-w)      (car key-open-ace-h)
                                         (car key-open-ace-v)
+                                        (car key-open-mru)
                                         (car key-open-ext)
                                         (car key-close-above)
                )))
@@ -186,6 +189,7 @@ to it will instead show a blank."
               (,(cdr key-open-ace)       #'treemacs-visit-node-ace)
               (,(cdr key-open-ace-h)     #'treemacs-visit-node-ace-horizontal-split)
               (,(cdr key-open-ace-v)     #'treemacs-visit-node-ace-vertical-split)
+              (,(cdr key-open-mru)       #'treemacs-visit-node-in-most-recently-used-window)
               (,(cdr key-open-ext)       #'treemacs-visit-node-in-external-application)
               (,(cdr key-create-file)    #'treemacs-create-file)
               (,(cdr key-create-dir)     #'treemacs-create-dir)
@@ -235,6 +239,7 @@ to it will instead show a blank."
       (define-key map (kbd "aa")       #'treemacs-visit-node-ace)
       (define-key map (kbd "ah")       #'treemacs-visit-node-ace-horizontal-split)
       (define-key map (kbd "av")       #'treemacs-visit-node-ace-vertical-split)
+      (define-key map (kbd "r")        #'treemacs-visit-node-in-most-recently-used-window)
       (define-key map (kbd "x")        #'treemacs-visit-node-in-external-application)
       map)
     "Keymap for node-visiting commands in `treemacs-mode'.")

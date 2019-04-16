@@ -230,6 +230,20 @@ Stay in current window with a prefix argument ARG."
    :ensure-window-split t
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
+(defun treemacs-visit-node-in-most-recently-used-window (&optional arg)
+  "Open current file or tag in window selected by `get-mru-window'.
+Stay in current window with a prefix argument ARG."
+  (interactive "P")
+  (treemacs--execute-button-action
+   :window (get-mru-window (selected-frame) nil :not-selected)
+   :file-action (find-file (treemacs-safe-button-get btn :path))
+   :dir-action (dired (treemacs-safe-button-get btn :path))
+   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+   :tag-action (treemacs--goto-tag btn)
+   :save-window arg
+   :ensure-window-split t
+   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+
 (defun treemacs-visit-node-ace-horizontal-split (&optional arg)
   "Open current file by horizontally splitting window selected by `ace-window'.
 Stay in current window with a prefix argument ARG."
