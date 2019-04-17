@@ -43,6 +43,23 @@
     (with-current-buffer it
       (evil-treemacs-state))))
 
+(defun treemacs--evil-window-move-compatibility-advice (orig-fun &rest args)
+  "Close Treemacs while moving windows around.
+Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
+  (let* ((treemacs-window (treemacs-get-local-window))
+         (is-active (and treemacs-window (window-live-p treemacs-window))))
+    (when is-active (treemacs))
+    (apply orig-fun args)
+    (when is-active
+      (save-selected-window
+        (treemacs)))))
+
+(dolist (func '(evil-window-move-far-left
+                evil-window-move-far-right
+                evil-window-move-very-top
+                evil-window-move-very-bottom))
+  (advice-add func :around #'treemacs--evil-window-move-compatibility-advice))
+
 (advice-add 'treemacs-leftclick-action   :after #'treemacs--turn-off-visual-state-after-click)
 (advice-add 'treemacs-doubleclick-action :after #'treemacs--turn-off-visual-state-after-click)
 
