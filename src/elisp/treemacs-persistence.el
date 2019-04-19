@@ -160,9 +160,10 @@ ITER: Treemacs-Iter struct"
               (buffer nil)
               (no-kill nil))
           (--if-let (get-file-buffer treemacs-persist-file)
-              (setq buffer it)
+              (setq buffer it
+                    no-kill t)
             (setq buffer (find-file-noselect treemacs-persist-file :no-warn)
-                  no-kill t))
+                  desktop-save-buffer nil))
           (with-current-buffer buffer
             (dolist (ws (treemacs-workspaces))
               (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
