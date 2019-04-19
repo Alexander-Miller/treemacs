@@ -180,9 +180,9 @@ ITER: Treemacs-Iter struct"
   "Read the relevant lines from given TXT or `treemacs-persist-file'.
 Will read all lines, except those that start with # or contain only whitespace."
   (-when-let (lines (-some-> (or txt (when (file-exists-p treemacs-persist-file)
-                                     (f-read treemacs-persist-file)))
-                           (s-trim)
-                           (s-lines)))
+                                       (f-read treemacs-persist-file)))
+                             (s-trim)
+                             (s-lines)))
     (--reject (or (s-blank-str? it)
                   (s-starts-with? "#" it))
               lines)))
@@ -191,7 +191,7 @@ Will read all lines, except those that start with # or contain only whitespace."
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.
 Lines must start with a workspace name, followed by a project name, followed by
 the project's path property, followed by either the next project or the next
-workspace.
+workspace. The previously looked at line type is given by CONTEXT.
 
 A successful validation returns just the symbol 'success, in case of an error a
 list of 3 items is returned: the symbol 'error, the exact line where the error
@@ -199,11 +199,6 @@ happened, and the error message. In some circumstances (for example when a
 project is missing a path property) it makes sense to display the error not in
 the currently looked at line, but the one above, which is why the previously
 looked at line PREV is given as well.
-
-In this case a list is returned. The first item is the symbol 'error. The second
-item is the exact line where the error was found. This allows to find the error's
-location with `search-forward' when org-editing, but is ignored for a boot-load.
-The third item is a line error that describes
 
 LINES: List of Strings
 CONTEXT: Keyword"
@@ -213,13 +208,13 @@ CONTEXT: Keyword"
          (pcase context
            (:property
             (treemacs-return
-              'success))
+             'success))
            (:start
             (treemacs-return
-              (list 'error :start (as-warning "Input is empty"))))
+             (list 'error :start (as-warning "Input is empty"))))
            (_
             (treemacs-return
-              (list 'error prev (as-warning "Cannot end with a project or workspace name")))))
+             (list 'error prev (as-warning "Cannot end with a project or workspace name")))))
        (pcase context
          (:start
           (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
