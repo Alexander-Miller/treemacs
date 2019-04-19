@@ -203,6 +203,7 @@ Will also fill `treemacs-icons-hash' with graphical file icons."
    treemacs-icon-tag-node-open   treemacs-icon-tag-node-open-png)
 
   ;; then create and hash all the extension-based icons
+  (treemacs--setup-icon treemacs-icon-ledger       "ledger.png"           "ledger")
   (treemacs--setup-icon treemacs-icon-yaml         "yaml.png"             "yml" "yaml")
   (treemacs--setup-icon treemacs-icon-shell        "shell.png"            "sh" "zsh" "fish")
   (treemacs--setup-icon treemacs-icon-pdf          "pdf.png"              "pdf")
