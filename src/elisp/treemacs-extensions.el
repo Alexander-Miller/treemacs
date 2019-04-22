@@ -460,6 +460,7 @@ additional keys."
                                                 'button '(t)
                                                 'category 'default-button
                                                 'invisible t
+                                                'skip t
                                                 'cursor-sensor-functions (list (lambda (_ previous-position change)
                                                                                  (when (eq change 'entered)
                                                                                    (if (< previous-position (point))
