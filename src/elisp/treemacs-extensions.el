@@ -294,6 +294,9 @@ TOP-LEVEL-MARKER will define a function named `treemacs-${NAME}-extension' that
 can be passed to `treemacs-define-root-extension', and it requires the same
 additional keys."
   (declare (indent 1))
+  (when (equal top-level-marker (quote 'variadic))
+    (setq icon-open ""
+          icon-closed ""))
   (treemacs-static-assert (not project-marker)
     ":project-marker is obsolete, use :top-level-marker instead.")
   ;; TODO(2019/01/29): simplify
@@ -310,7 +313,8 @@ additional keys."
     ":icon-open and :icon-open-form are mutually exclusive.")
   (treemacs-static-assert (or (null icon-closed) (null icon-closed-form))
     ":icon-closed and :icon-closed-form are mutually exclusive.")
-  (let ((open-icon-name    (intern (format "treemacs-icon-%s-open"    (symbol-name name))))
+  (let ((variadic?         (equal top-level-marker (quote 'variadic)))
+        (open-icon-name    (intern (format "treemacs-icon-%s-open"    (symbol-name name))))
         (closed-icon-name  (intern (format "treemacs-icon-%s-closed"  (symbol-name name))))
         (open-state-name   (intern (format "treemacs-%s-open-state"   (symbol-name name))))
         (closed-state-name (intern (format "treemacs-%s-closed-state" (symbol-name name))))
@@ -344,48 +348,53 @@ additional keys."
           (-let [btn (treemacs-current-button)]
             (when (null btn)
               (treemacs-return
-                (treemacs-pulse-on-failure "There is nothing to do here.")))
+               (treemacs-pulse-on-failure "There is nothing to do here.")))
             (when (not (eq ',closed-state-name (treemacs-button-get btn :state)))
               (treemacs-return
-                (treemacs-pulse-on-failure "This function cannot expand a node of type '%s'."
-                  (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
+               (treemacs-pulse-on-failure "This function cannot expand a node of type '%s'."
+                 (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
             (,do-expand-name btn))))
 
        (defun ,do-expand-name (btn)
          ,(format "Execute expansion of treemacs nodes of type `%s'." name)
-         (let ((items ,query-function)
-               (depth (1+ (treemacs-button-get btn :depth))))
-           (treemacs--button-open
-            :button btn
-            :new-state ',open-state-name
-            :new-icon ,(if icon-open open-icon-name icon-open-form)
-            :immediate-insert t
-            :open-action
-            (treemacs--create-buttons
-             :nodes items
-             :depth depth
-             :node-name item
-             :node-action ,render-action)
-            :post-open-action
-            (progn
-              (treemacs-on-expand
-               (treemacs-button-get btn :path) btn
-               (-some-> btn (treemacs-button-get :parent) (treemacs-button-get :path)))
-              (treemacs--reopen-at (treemacs-button-get btn :path))))))
+         (save-restriction
+           (widen)
+           (let ((items ,query-function)
+                 (depth (1+ (treemacs-button-get btn :depth))))
+             (treemacs--button-open
+              :button btn
+              :new-state ',open-state-name
+              :new-icon ,(if icon-open open-icon-name icon-open-form)
+              :immediate-insert t
+              :open-action
+              (treemacs--create-buttons
+               :nodes items
+               :depth depth
+               :node-name item
+               :node-action ,render-action)
+              :post-open-action
+              (progn
+                (treemacs-on-expand
+                 (treemacs-button-get btn :path)
+                 btn
+                 (-some-> btn (treemacs-button-get :parent) (treemacs-button-get :path)))
+                (treemacs--reopen-at (treemacs-button-get btn :path)))))))
 
        (defun ,collapse-name (&optional _)
          ,(format "Collapse treemacs nodes of type `%s'." name)
          (interactive)
-         (treemacs-block
-          (-let [btn (treemacs-current-button)]
-            (when (null btn)
-              (treemacs-return
-                (treemacs-pulse-on-failure "There is nothing to do here.")))
-            (when (not (eq ',open-state-name (treemacs-button-get btn :state)))
-              (treemacs-return
-                (treemacs-pulse-on-failure "This function cannot collapse a node of type '%s'."
-                  (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
-            (,do-collapse-name btn))))
+         (save-restriction
+           (widen)
+           (treemacs-block
+            (-let [btn (treemacs-current-button)]
+              (when (null btn)
+                (treemacs-return
+                 (treemacs-pulse-on-failure "There is nothing to do here.")))
+              (when (not (eq ',open-state-name (treemacs-button-get btn :state)))
+                (treemacs-return
+                 (treemacs-pulse-on-failure "This function cannot collapse a node of type '%s'."
+                   (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
+              (,do-collapse-name btn)))))
 
        (defun ,do-collapse-name (btn)
          ,(format "Collapse treemacs nodes of type `%s'." name)
@@ -429,31 +438,37 @@ additional keys."
                 (project-var-name (intern (format "treemacs-%s-extension-project" (symbol-name name)))))
             (put ext-name :defined-in (or load-file-name (buffer-name)))
             `(progn
-               ,(if (equal top-level-marker (quote 'variadic))
-                    `(defun ,ext-name (items)
-                       (let ((last-index (1- (length items))))
+               ,(if variadic?
+                    ;; When the extension is variadic it will be managed by a hidden top-level
+                    ;; node. Its depth is -1 and it is not visible, but can still be used to update
+                    ;; the entire extension without explivitly worrying about complex dom changes.
+                    `(progn
+                       (defvar-local ,(intern (format "treemacs-%s-extension-handle" (symbol-name name))) nil
+                         ,(format "The handle to update the the %s extension." name))
+                       (defun ,ext-name ()
                          (treemacs-with-writable-buffer
-                          (--each items
-                            (let* ((extension-label (car it))
-                                   (extension-key (cdr it))
-                                   (pr (make-treemacs-project
-                                        :name extension-label
-                                        :path extension-key
-                                        :path-status 'extension)))
-                              (insert ,closed-icon-name)
-                              (treemacs--set-project-position ,root-key-form (point-marker))
-                              (insert (propertize extension-label
-                                                  'button '(t)
-                                                  'category 'default-button
-                                                  'face ,root-face
-                                                  :custom t
-                                                  :key extension-key
-                                                  :path (list extension-key)
-                                                  :depth 0
-                                                  :project pr
-                                                  :state ,closed-state-name))
-                              (unless (= it-index last-index)
-                                (treemacs--insert-root-separator)))))))
+                          (-let [pr (make-treemacs-project
+                                     :name ,root-label
+                                     :path ,root-key-form
+                                     :path-status 'extension)]
+                            (treemacs--set-project-position ,root-key-form (point-marker))
+                            (setq-local ,project-var-name pr)
+                            (insert (propertize "a"
+                                                'button '(t)
+                                                'category 'default-button
+                                                :custom t
+                                                :key ,root-key-form
+                                                :path (list :custom ,root-key-form)
+                                                :depth -1
+                                                :project pr
+                                                :state ,closed-state-name))
+                            (goto-char 0)
+                            (funcall ',expand-name)
+                            (goto-char 0)
+                            ;; (narrow-to-region (1+ (point-at-eol)) (point-max))
+                            (setq-local hide-ov (make-overlay (point-at-bol) (1+ (point-at-eol))))
+                            (overlay-put hide-ov 'invisible t)
+                            ))))
                   `(progn
                      (defvar-local ,project-var-name nil
                        ,(format "The project displaying the local %s extension." name))
