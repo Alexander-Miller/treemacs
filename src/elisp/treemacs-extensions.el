@@ -365,7 +365,7 @@ additional keys."
              (treemacs--button-open
               :button btn
               :new-state ',open-state-name
-              :new-icon ,(if icon-open open-icon-name icon-open-form)
+              :new-icon ,(unless (equal top-level-marker (quote 'variadic)) (if icon-open open-icon-name icon-open-form))
               :immediate-insert t
               :open-action
               (treemacs--create-buttons
@@ -402,7 +402,7 @@ additional keys."
          (treemacs--button-close
           :button btn
           :new-state ',closed-state-name
-          :new-icon ,(if icon-closed closed-icon-name icon-closed-form)
+          :new-icon ,(unless (equal top-level-marker (quote 'variadic)) (if icon-closed closed-icon-name icon-closed-form))
           :post-close-action
           (treemacs-on-collapse (treemacs-button-get btn :path))))
 
@@ -472,9 +472,9 @@ additional keys."
                                                 :depth -1
                                                 :project pr
                                                 :state ,closed-state-name))
-                            (save-excursion
-                              (goto-char button-start)
-                              (funcall ',expand-name))))
+                            (let ((marker (copy-marker (point) t)))
+                              (funcall ',do-expand-name button-start)
+                              (goto-char marker))))
                          t))
                   `(progn
                      (defvar-local ,project-var-name nil
