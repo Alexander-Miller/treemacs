@@ -384,6 +384,8 @@ Will simply return `treemacs--eldoc-msg'."
   (when treemacs-fringe-indicator-mode
     (treemacs--setup-fringe-indicator-mode))
   (hl-line-mode t)
+  ;; Required for skipping hidden buttons
+  (cursor-sensor-mode t)
 
   ;; needs to run manually the first time treemacs is loaded, since the hook is only added *after*
   ;; the window config was changed to show treemacs
