@@ -461,10 +461,6 @@ additional keys."
                                                 'category 'default-button
                                                 'invisible t
                                                 'skip t
-                                                'cursor-sensor-functions (list (lambda (_ previous-position change)
-                                                                                 (when (eq change 'entered)
-                                                                                   (treemacs-next-line 1)
-                                                                                   (hl-line-highlight))))
                                                 :custom t
                                                 :key ,root-key-form
                                                 :path (list :custom ,root-key-form)
