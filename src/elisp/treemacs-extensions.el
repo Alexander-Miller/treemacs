@@ -131,14 +131,14 @@ Also pass additional DATA to predicate function.")
     ((define-root-extension-application (name variable doc)
        `(defun ,name (workspace &optional has-previous)
           ,doc
-          (let ((is-first t))
+          (let ((is-first (not has-previous)))
             (--each ,variable
               (let ((extension (car it))
                     (predicate (cdr it)))
                 (when (or (null predicate) (funcall predicate workspace))
-                  (when (or has-previous (not is-first))
+                  (unless is-first
                     (treemacs--insert-root-separator))
-                  (setq is-first (and is-first (funcall extension))))))
+                  (setq is-first (funcall extension)))))
             (not is-first)))))
 
   (define-root-extension-application
@@ -463,9 +463,7 @@ additional keys."
                                                 'skip t
                                                 'cursor-sensor-functions (list (lambda (_ previous-position change)
                                                                                  (when (eq change 'entered)
-                                                                                   (if (< previous-position (point))
-                                                                                       (treemacs-next-line 1)
-                                                                                     (treemacs-previous-line 1))
+                                                                                   (treemacs-next-line 1)
                                                                                    (hl-line-highlight))))
                                                 :custom t
                                                 :key ,root-key-form
