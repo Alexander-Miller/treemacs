@@ -333,6 +333,9 @@ If there is no node at point use \"~/\" instead.
 Also skip hidden buttons.
 
 Used as a post command hook."
+  (-when-let (btn (treemacs-current-button))
+    (when (treemacs-button-get btn 'invisible)
+      (treemacs-next-line 1)))
   (-if-let* ((btn (treemacs-current-button))
              (project (treemacs-project-of-node btn))
              (path (or (treemacs-button-get btn :default-directory)
@@ -342,9 +345,6 @@ Used as a post command hook."
         (setq treemacs--eldoc-msg path
               default-directory (treemacs--add-trailing-slash
                                  (if (file-directory-p path) path (file-name-directory path)))))
-    (-when-let (btn (treemacs-current-button))
-      (when (treemacs-button-get btn 'invisible)
-        (treemacs-next-line 1)))
     (setq treemacs--eldoc-msg nil
           default-directory "~/")))
 
