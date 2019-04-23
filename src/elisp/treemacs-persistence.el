@@ -282,7 +282,7 @@ CONTEXT: Keyword"
 
 (defun treemacs--write-error-persist-state (lines error)
   "Write broken state LINES and ERROR to `treemacs--last-error-persist-file'."
-  (-let [txt (concat (format "# State when last error occured on %s\n" (format-time-string "%F %T"))
+  (-let [txt (concat (format "# State when last error occurred on %s\n" (format-time-string "%F %T"))
                      (format "# Error was %s\n\n" error)
                      (apply #'concat (--map (concat it "\n") lines)))]
     (f-write txt 'utf-8 treemacs--last-error-persist-file)))
