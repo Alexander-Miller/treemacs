@@ -680,12 +680,30 @@ Aside from this there are the following known incompatibilities:
    part of ~special-mode-hook~, since this is the mode ~treemacs-mode~ is derived from.
 
 * FAQ
+ * How do I hide files I don't want to see?
+
+   You need to define a predicate function and add it to ~treemacs-ignored-file-predicates~. This function accepts two
+   arguments, a file's name and its absolute path, and must return non-nil when treemacs should hide that file.
+
+   For example the code to ignore files eiter called "foo" or located in "/x/y/z/" would look like this:
+
+   #+BEGIN_SRC emacs-lisp
+     (with-eval-after-load 'treemacs
+
+       (defun treemacs-ignore-example (filename absolute-path)
+         (or (string-equal filename "foo")
+             (string-prefix-p "/x/y/z/" absolute-path)))
+
+       (add-to-list 'treemacs-ignored-file-predicates #'treemacs-ignore-example))
+   #+END_SRC
+
  * How do I keep treemacs from showing files that are ignored by git?
 
    Short answer:
 
    #+BEGIN_SRC emacs-lisp
-     (add-to-list 'treemacs-pre-file-insert-predicates #'treemacs-is-file-git-ignored?)
+     (with-eval-after-load 'treemacs
+       (add-to-list 'treemacs-pre-file-insert-predicates #'treemacs-is-file-git-ignored?))
    #+END_SRC
 
    A slightly longer explanation about how you can hook into the render process can be found in the documentation string
