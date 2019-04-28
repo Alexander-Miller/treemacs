@@ -151,13 +151,33 @@ The real parsing and formatting is done by the python process. All that's really
 left to do is pick up the cons list and put it in a hash table.
 
 GIT-FUTURE: Pfuture"
-  (-let [ret (ht)]
-    (when git-future
-      (pfuture-await-to-finish git-future)
-      (when (= 0 (process-exit-status git-future))
-        (-let [git-output (pfuture-result git-future)]
-          (setf ret (read git-output)))))
-    ret))
+  (or (when git-future
+        (let* ((git-output (pfuture-await-to-finish git-future))
+               ;; Check fboundp in case an old version of pfuture is used.
+               ;; TODO: Remove the check when pfuture 1.7 has been widely adopted.
+               (git-stderr (when (fboundp 'pfuture-stderr)
+                             (pfuture-stderr git-future))))
+          ;; Check stderr separately from parsing, often git status displays
+          ;; warnings which do not affect the final result.
+          (unless (s-blank? git-stderr)
+            (let ((visible-error (--> (s-trim git-stderr)
+                                      (s-replace "\n" ", " it)
+                                      (s-truncate 80 it)
+                                      (propertize it 'face 'error))))
+              (if (< (length git-stderr) 80)
+                  (treemacs-log "treemacs-git-status.py wrote to stderr: %s" visible-error)
+                (treemacs-log "treemacs-git-status.py wrote to stderr (see full output in *Messages*): %s" visible-error)
+                (let ((inhibit-message t))
+                  (treemacs-log "treemacs-git-status.py wrote to stderr: %s" git-stderr)))))
+          (when (= 0 (process-exit-status git-future))
+            (-let [parsed-output (read git-output)]
+              (if (hash-table-p parsed-output)
+                  parsed-output
+                (let ((inhibit-message t))
+                  (treemacs-log "treemacs-git-status.py output: %s" git-output))
+                (treemacs-log "treemacs-git-status.py did not output a valid hash table. See full output in *Messages*.")
+                nil)))))
+      (ht)))
 
 (defun treemacs--git-status-process-simple (path)
   "Start a simple git status process for files under PATH."
