@@ -72,7 +72,7 @@ def main():
 
         # for files deeper down in the file hierarchy also print all their directories
         # if /A/B/C/x is changed then /A and /A/B and /A/B/C must be shown as changed as well
-        if b'/' in filename:
+        if b'/' in filename and state != b'!':
             name_parts = filename.split(b'/')[:-1]
             dirname = b''
             for name_part in name_parts:
