@@ -199,7 +199,7 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
                              (when recursive
                                (--each (treemacs--get-children-of btn)
                                  (when (eq 'tag-node-closed (treemacs-button-get it :state))
-                                   (goto-char (button-start it))
+                                   (goto-char (treemacs-button-start it))
                                    (treemacs--expand-tag-node it t))))))
       (treemacs-pulse-on-failure "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
 
@@ -254,7 +254,7 @@ the display window."
                    (setq need-to-close-section t)
                    (treemacs--expand-tag-node btn)))
                (treemacs--call-imenu-and-goto-tag
-                (treemacs-with-button-buffer btn (treemacs--tags-path-of (next-button (button-end btn)))))
+                (treemacs-with-button-buffer btn (treemacs--tags-path-of (next-button (treemacs-button-end btn)))))
                (when need-to-close-section
                  (treemacs-with-button-buffer btn
                    (treemacs--collapse-tag-node btn))))
@@ -304,7 +304,7 @@ Open all tag section under BTN when call is RECURSIVE."
                          (if recursive
                              (--each (treemacs--get-children-of btn)
                                (when (eq 'tag-node-closed (treemacs-button-get it :state))
-                                 (goto-char (button-start it))
+                                 (goto-char (treemacs-button-start it))
                                  (treemacs--expand-tag-node it t)))
                            (treemacs--reopen-tags-under btn))))))
 
@@ -315,9 +315,9 @@ button from cache. Easiest way is to just do it manually here."
   (--each (treemacs--get-children-of btn)
     (when (eq 'tag-node-open (treemacs-button-get it :state))
       (treemacs--collapse-tag-node-recursive it)
-      (goto-char (button-start it))
+      (goto-char (treemacs-button-start it))
       (treemacs--collapse-tag-node it)))
-  (goto-char (button-start btn))
+  (goto-char (treemacs-button-start btn))
   (treemacs--collapse-tag-node btn))
 
 (defun treemacs--collapse-tag-node (btn &optional recursive)
@@ -432,7 +432,7 @@ case point will be left at the next highest node available."
   (-let [(tag file . path) tag-path]
     (-when-let (file-node (treemacs-goto-file-node file))
       (when (eq 'file-node-closed (treemacs-button-get file-node :state))
-        (goto-char (button-start file-node))
+        (goto-char (treemacs-button-start file-node))
         (treemacs--expand-file-node file-node))
       (dolist (tag-path-item path)
         (-if-let (tag-path-node (--first
@@ -441,7 +441,7 @@ case point will be left at the next highest node available."
             (progn
               (setq file-node tag-path-node)
               (when (eq 'tag-node-closed (treemacs-button-get file-node :state))
-                (goto-char (button-start file-node))
+                (goto-char (treemacs-button-start file-node))
                 (treemacs--expand-tag-node file-node)))
           (goto-char file-node)
           (cl-return-from treemacs--goto-tag-button-at nil)))
@@ -467,7 +467,7 @@ case point will be left at the next highest node available."
                                              (treemacs--tags-path-of it))
                                       btns-under-btn))
             (when (eq 'tag-node-closed (treemacs-button-get child-btn :state))
-              (goto-char (button-start child-btn))
+              (goto-char (treemacs-button-start child-btn))
               (treemacs--expand-tag-node child-btn))
           (setf (treemacs-dom-node->children sh-node)
                 (delete sh-child (treemacs-dom-node->children sh-node)))

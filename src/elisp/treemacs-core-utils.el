@@ -233,6 +233,26 @@ button type on every call."
     (inline-quote
      (get-text-property ,button ,prop))))
 
+(define-inline treemacs-button-start (button)
+  "Return the start position of BUTTON.
+Same as `button-start', but faster since it's inlined and does not query the
+button type on every call."
+  (declare (side-effect-free t))
+  (inline-letevals (button)
+    (inline-quote
+     (or (previous-single-property-change (1+ ,button) 'button)
+         (point-min)))))
+
+(define-inline treemacs-button-end (button)
+  "Return the end position of BUTTON.
+Same as `button-end', but faster since it's inlined and does not query the
+button type on every call."
+  (declare (side-effect-free t))
+  (inline-letevals (button)
+    (inline-quote
+     (or (next-single-property-change ,button 'button)
+         (point-max)))))
+
 (define-inline treemacs-is-node-expanded? (btn)
   "Return whether BTN is in an open state."
   (declare (side-effect-free t))
@@ -259,7 +279,7 @@ button type on every call."
   "Return the text label of BTN."
   (declare (side-effect-free t))
   (inline-quote
-   (buffer-substring-no-properties (button-start ,btn) (button-end ,btn))))
+   (buffer-substring-no-properties (treemacs-button-start ,btn) (treemacs-button-end ,btn))))
 
 (defun treemacs--replace-recentf-entry (old-file new-file)
   "Replace OLD-FILE with NEW-FILE in the recent file list."
@@ -318,7 +338,7 @@ Returns nil if no such buffer exists.."
     (inline-quote
      (save-excursion
        (let ((len (length ,new-sym)))
-         (goto-char (- (button-start (next-button (point-at-bol) t)) len))
+         (goto-char (- (treemacs-button-start (next-button (point-at-bol) t)) len))
          (insert ,new-sym)
          (delete-char len))))))
 
@@ -416,9 +436,9 @@ Will also perform cleanup if the buffer is dead."
   (inline-letevals (btn)
     (inline-quote
      (-let ((depth (treemacs-button-get ,btn :depth))
-            (next (next-button (button-end ,btn))))
+            (next (next-button (treemacs-button-end ,btn))))
        (while (and next (< depth (treemacs-button-get next :depth)))
-         (setq next (next-button (button-end next))))
+         (setq next (next-button (treemacs-button-end next))))
        (when (and next (= depth (treemacs-button-get next :depth))) next)))))
 
 (define-inline treemacs--prev-non-child-button (btn)
@@ -427,9 +447,9 @@ Will also perform cleanup if the buffer is dead."
   (inline-letevals (btn)
     (inline-quote
      (let ((depth (treemacs-button-get ,btn :depth))
-           (prev (previous-button (button-start ,btn))))
+           (prev (previous-button (treemacs-button-start ,btn))))
        (while (and prev (< depth (treemacs-button-get prev :depth)))
-         (setq prev (previous-button (button-start prev))))
+         (setq prev (previous-button (treemacs-button-start prev))))
        (when (and prev (= depth (treemacs-button-get prev :depth))) prev)))))
 
 (define-inline treemacs--next-non-child-button (btn)
@@ -439,9 +459,9 @@ Will also perform cleanup if the buffer is dead."
     (inline-quote
      (when ,btn
        (let ((depth (treemacs-button-get ,btn :depth))
-             (next (next-button (button-end ,btn) t)))
+             (next (next-button (treemacs-button-end ,btn) t)))
          (while (and next (< depth (treemacs-button-get next :depth)))
-           (setq next (next-button (button-end next) t)))
+           (setq next (next-button (treemacs-button-end next) t)))
          next)))))
 
 (define-inline treemacs--remove-framelocal-buffer ()
@@ -471,9 +491,9 @@ Simply collapses and re-expands the button (if it has not been closed)."
   (inline-quote
    (let ((btn (treemacs-goto-file-node ,path)))
      (when (memq (treemacs-button-get btn :state) '(dir-node-open file-node-open))
-       (goto-char (button-start btn))
+       (goto-char (treemacs-button-start btn))
        (treemacs--push-button btn)
-       (goto-char (button-start btn))
+       (goto-char (treemacs-button-start btn))
        (treemacs--push-button btn)))))
 
 (define-inline treemacs--canonical-path (path)
@@ -538,7 +558,7 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
 The child buttons are returned in the same order as they appear in the treemacs
 buffer."
   (let ((ret)
-        (btn (next-button (button-end parent-btn) t)))
+        (btn (next-button (treemacs-button-end parent-btn) t)))
     (when (equal (1+ (treemacs-button-get parent-btn :depth)) (treemacs-button-get btn :depth))
       (setq ret (cons btn ret))
       (while (setq btn (treemacs--next-neighbour-of btn))

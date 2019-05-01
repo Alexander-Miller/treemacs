@@ -284,7 +284,7 @@ DIRS: List of Collapse Paths. Each Collapse Path is a list of
             (treemacs--start-watching (car it))
             (dolist (step (nthcdr 2 it))
               (treemacs--start-watching step t)))
-          (let ((props (text-properties-at (button-start b)))
+          (let ((props (text-properties-at (treemacs-button-start b)))
                 (new-path (nth (- (length it) 1) it)))
             (treemacs-button-put b :path new-path)
             ;; if the collapsed path leads to a symlinked directory the button needs to be marked as a symlink
@@ -302,7 +302,7 @@ DIRS: List of Collapse Paths. Each Collapse Path is a list of
               (insert dir)
               (add-text-properties beg (point) props)
               (add-text-properties
-               (button-start b) (+ beg (length parent))
+               (treemacs-button-start b) (+ beg (length parent))
                '(face treemacs-directory-collapsed-face)))))))))
 
 (defmacro treemacs--map-when-unrolled (items interval &rest mapper)
@@ -458,7 +458,9 @@ set to PARENT."
           ;; last project.
           (let* ((pos-start (point-at-eol))
                  (next (treemacs--next-non-child-button ,button))
-                 (pos-end (if next (-> next (button-start) (previous-button) (button-end)) (point-max))))
+                 (pos-end (if next
+                              (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))
+                            (point-max))))
             (delete-region pos-start pos-end))))
       ,post-close-action)))
 
@@ -538,7 +540,7 @@ RECURSIVE: Bool"
          (when recursive
            (--each (treemacs--get-children-of btn)
              (when (eq 'dir-node-closed (treemacs-button-get it :state))
-               (goto-char (button-start it))
+               (goto-char (treemacs-button-start it))
                (treemacs--expand-dir-node it :git-future git-future :recursive t)))))))))
 
 (defun treemacs--collapse-dir-node (btn &optional recursive)

@@ -397,14 +397,14 @@ When PREDICATE returns non-nil RET will be returned."
 For the PREDICATE call the button being checked is bound as 'child-btn'."
   (declare (indent 1) (debug (sexp body)))
   `(cl-block __search__
-     (let* ((child-btn (next-button (button-end ,btn) t))
+     (let* ((child-btn (next-button (treemacs-button-end ,btn) t))
             (depth (when child-btn (treemacs-button-get child-btn :depth))))
        (when (and child-btn
                   (equal (treemacs-button-get child-btn :parent) ,btn))
          (if ,@predicate
              (cl-return-from __search__ child-btn)
            (while child-btn
-             (setq child-btn (next-button (button-end child-btn)))
+             (setq child-btn (next-button (treemacs-button-end child-btn)))
              (when child-btn
                (-let [child-depth (treemacs-button-get child-btn :depth)]
                  (cond

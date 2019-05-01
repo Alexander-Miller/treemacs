@@ -146,12 +146,12 @@ ignored argument."
           (when treemacs-fringe-indicator-mode
             (treemacs--move-fringe-indicator-to-point))
           (-when-let (btn (treemacs-current-button))
-            (let* ((pos (max (point-at-bol) (- (button-start btn) 2)))
+            (let* ((pos (max (point-at-bol) (- (treemacs-button-start btn) 2)))
                    (img-selected (get-text-property pos 'img-selected)))
               (treemacs-with-writable-buffer
                (when (and treemacs--last-highlight
                           (> (point-max) treemacs--last-highlight))
-                 (let* ((last-pos (- (button-start treemacs--last-highlight) 2))
+                 (let* ((last-pos (- (treemacs-button-start treemacs--last-highlight) 2))
                         (img-unselected (get-text-property last-pos 'img-unselected)))
                    (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
                (when img-selected
@@ -165,7 +165,7 @@ ignored argument."
   (when (eq 'treemacs-mode major-mode)
     (treemacs-with-writable-buffer
      (-when-let (btn (treemacs-current-button))
-       (let* ((start (max (point-at-bol) (- (button-start btn) 2)) )
+       (let* ((start (max (point-at-bol) (- (treemacs-button-start btn) 2)) )
               (end (1+ start))
               (img (get-text-property start 'display))
               (cp (copy-sequence img)))

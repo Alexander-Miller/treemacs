@@ -543,7 +543,7 @@ without the need to call `treemacs-resort' with a prefix arg."
                          (propertize sort-name 'face 'font-lock-type-face)))
           ('dir-node-open
            (treemacs--collapse-dir-node btn)
-           (goto-char (button-start btn))
+           (goto-char (treemacs-button-start btn))
            (treemacs--expand-dir-node btn)
            (treemacs-log "Resorted %s with sort method '%s'."
                          (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
@@ -556,9 +556,9 @@ without the need to call `treemacs-resort' with a prefix arg."
              (if parent
                  (let ((line (line-number-at-pos))
                        (window-point (window-point)))
-                   (goto-char (button-start parent))
+                   (goto-char (treemacs-button-start parent))
                    (treemacs--collapse-dir-node parent)
-                   (goto-char (button-start btn))
+                   (goto-char (treemacs-button-start btn))
                    (treemacs--expand-dir-node parent)
                    (set-window-point (selected-window) window-point)
                    (with-no-warnings (goto-line line))
@@ -697,7 +697,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
            (setf (treemacs-project->name project) new-name)
            (treemacs--forget-last-highlight)
            ;; after renaming, delete and redisplay the project
-           (goto-char (button-end project-btn))
+           (goto-char (treemacs-button-end project-btn))
            (delete-region (point-at-bol) (point-at-eol))
            (treemacs--add-root-element project)
            (when (eq state 'root-node-open)

@@ -218,7 +218,7 @@ Does not preserve the current position in the buffer."
     (inline-quote
      (-> ,self
          (treemacs-project->position)
-         (button-end)
+         (treemacs-button-end)
          (next-single-property-change :project)
          (null)))))
 
@@ -420,7 +420,7 @@ PROJECT: Project Struct"
          ;; the end of the previous button's line. If the `treemacs--projects-end'
          ;; is at the EOL of the  it will move to EOL of the previous button.
          (previous-button
-          (delete-region (button-end previous-button) (point-at-eol))
+          (delete-region (treemacs-button-end previous-button) (point-at-eol))
           (when next-button (forward-button 1)))
          ;; Previous project does not exist, but a next button exists. Delete from
          ;; BOL to the start of the next buttons line.
@@ -493,7 +493,7 @@ PROJECT, excluding newlines."
     (goto-char (treemacs-project->position project))
     (let* ((start (point-at-bol))
            (next  (treemacs--next-non-child-button (treemacs-project->position project)))
-           (end   (if next (-> next (button-start) (previous-button) (button-end)) (point-max))))
+           (end   (if next (-> next (treemacs-button-start) (previous-button) (treemacs-button-end)) (point-max))))
       (cons start end))))
 
 (defun treemacs--consolidate-projects ()

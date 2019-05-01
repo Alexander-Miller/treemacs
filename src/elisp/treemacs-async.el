@@ -275,14 +275,14 @@ FILE: Filepath"
                (-when-let (pos (treemacs-find-visible-node file))
                  (-let [face (treemacs--git-status-face state 'treemacs-git-unmodified-face)]
                    (put-text-property
-                    (button-start pos) (button-end pos)
+                    (treemacs-button-start pos) (treemacs-button-end pos)
                     'face face))))
              ;; then the directories
              (pcase-dolist (`(,file . ,state) output)
                (-when-let (pos (treemacs-find-visible-node file))
                  (-let [face (treemacs--git-status-face state 'treemacs-directory-face)]
                    (put-text-property
-                    (button-start pos) (button-end pos)
+                    (treemacs-button-start pos) (treemacs-button-end pos)
                     'face face))))))))
       :on-error
       (pcase (process-exit-status process)

@@ -242,7 +242,7 @@ PROJECT: Project Struct"
               ;; also move manually when there is no button at point
               (treemacs-goto-file-node ,buffer-file ,project)
               (setq btn (treemacs-current-button)))
-            (goto-char (button-start btn))
+            (goto-char (treemacs-button-start btn))
             (setq treemacs--previously-followed-tag-position (cons btn (treemacs-button-get btn :path)))
             ;; imenu already rescanned when fetching the tag path
             (let ((imenu-auto-rescan nil))
