@@ -42,7 +42,7 @@
 
 (defvar-local treemacs--eldoc-msg nil
   "Message to be output by `treemacs--eldoc-function'.
-Will be set by `treemacs--set-default-directory'.")
+Will be set by `treemacs--post-command'.")
 
 (defconst treemacs--eldoc-obarray
   (-let [ob (make-vector 59 0)]
@@ -327,22 +327,25 @@ to it will instead show a blank."
               (t
                '(" Treemacs ")))))
 
-(defun treemacs--set-default-directory ()
+(defun treemacs--post-command ()
   "Set the default directory to the nearest directory of the current node.
 If there is no node at point use \"~/\" instead.
+Also skip hidden buttons (as employed by variadic extensions).
 
 Used as a post command hook."
-  (-if-let* ((btn  (treemacs-current-button))
-             (project (treemacs-project-of-node btn))
-             (path (or (treemacs-button-get btn :default-directory)
-                       (treemacs--nearest-path btn))))
-      (when (and (treemacs-project->is-readable? project)
-                 (file-readable-p path))
-        (setq treemacs--eldoc-msg path
-              default-directory (treemacs--add-trailing-slash
-                                 (if (file-directory-p path) path (file-name-directory path)))))
-    (setq treemacs--eldoc-msg nil
-          default-directory "~/")))
+  (-when-let (btn (treemacs-current-button))
+    (when (treemacs-button-get btn 'invisible)
+      (treemacs-next-line 1))
+    (-if-let* ((project (treemacs-project-of-node btn))
+               (path (or (treemacs-button-get btn :default-directory)
+                         (treemacs--nearest-path btn))))
+        (when (and (treemacs-project->is-readable? project)
+                   (file-readable-p path))
+          (setq treemacs--eldoc-msg path
+                default-directory (treemacs--add-trailing-slash
+                                   (if (file-directory-p path) path (file-name-directory path)))))
+      (setq treemacs--eldoc-msg nil
+            default-directory "~/"))))
 
 (defun treemacs--eldoc-function ()
   "Treemacs' implementation of `eldoc-documentation-function'.
@@ -394,7 +397,7 @@ Will simply return `treemacs--eldoc-msg'."
   (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
   ;; (add-hook 'after-make-frame-functions #'treemacs--remove-treemacs-window-in-new-frames)
   (add-to-list 'delete-frame-functions #'treemacs--on-frame-kill)
-  (add-hook 'post-command-hook #'treemacs--set-default-directory nil t)
+  (add-hook 'post-command-hook #'treemacs--post-command nil t)
 
   (treemacs--adjust-icons-to-window-system)
   (treemacs--setup-icon-highlight)
