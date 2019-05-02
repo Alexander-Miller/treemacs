@@ -22,6 +22,21 @@
 
 (require 'f)
 
+(defun treemacs--find-python3 ()
+  "Determine the location of python 3."
+  (--if-let (executable-find "python3") it
+    (when (eq system-type 'windows-nt)
+      (->> "where python"
+           (shell-command-to-string)
+           (s-trim)
+           (s-lines)
+           (--first
+            (->> (concat it " --version")
+                 (shell-command-to-string)
+                 (s-trim)
+                 (s-replace "Python " "")
+                 (version<= "3")))))))
+
 (defgroup treemacs nil
   "Treemacs configuration options."
   :group 'treemacs
@@ -573,7 +588,7 @@ not apply to the simple `treemacs-git-mode.'"
   :type 'number
   :group 'treemacs-git)
 
-(defcustom treemacs-python-executable (executable-find "python3")
+(defcustom treemacs-python-executable (treemacs--find-python3)
   "The python executable used by treemacs.
 An asynchronous python process is used in two optional feaures:
 `treemacs-collapse-dirs' and the extended variant of `treemacs-git-mode'.
