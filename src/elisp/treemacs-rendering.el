@@ -224,10 +224,10 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
      (-let [p (point)]
        (treemacs-with-writable-buffer
         (treemacs-button-put ,button :state ,new-state)
-        (beginning-of-line)
         ,@(when new-icon
-            `((treemacs--button-symbol-switch ,new-icon)))
-        (end-of-line)
+            `((beginning-of-line)
+              (treemacs--button-symbol-switch ,new-icon)))
+        (goto-char (treemacs-button-end ,button))
         ,@(if immediate-insert
               `((progn
                   (insert (apply #'concat ,open-action))))
@@ -451,12 +451,12 @@ set to PARENT."
                 (/= (1+ (treemacs-button-get btn :depth))
                     (treemacs-button-get (copy-marker next t) :depth)))
             (delete-trailing-whitespace)
-          ;; Delete from end of the current line to end of the last sub-button.
+          ;; Delete from end of the current button to end of the last sub-button.
           ;; This will make the EOL of the last button become the EOL of the
           ;; current button, making the treemacs--projects-end marker track
           ;; properly when collapsing the last project or a last directory of the
           ;; last project.
-          (let* ((pos-start (point-at-eol))
+          (let* ((pos-start (treemacs-button-end ,button))
                  (next (treemacs--next-non-child-button ,button))
                  (pos-end (if next
                               (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))

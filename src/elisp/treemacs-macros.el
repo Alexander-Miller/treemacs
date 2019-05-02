@@ -310,6 +310,8 @@ it on the same line."
            (error (ignore)))))
       (treemacs--evade-image)
       ,@final-form
+      (when (get-text-property (point) 'invisible)
+        (goto-char (next-single-property-change (point) 'invisible)))
       (when curr-win-line
         (with-selected-window curr-window
           ;; recenter starts counting at 0

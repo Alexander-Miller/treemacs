@@ -433,8 +433,7 @@ additional keys."
                     ;; When the extension is variadic it will be managed by a hidden top-level
                     ;; node. Its depth is -1 and it is not visible, but can still be used to update
                     ;; the entire extension without explicitly worrying about complex dom changes.
-                    `(let ((handle (list :custom ,root-key-form)))
-                       (defun ,ext-name ()
+                    `(defun ,ext-name ()
                          (treemacs-with-writable-buffer
                           (save-excursion
                             (let ((pr (make-treemacs-project
@@ -443,21 +442,21 @@ additional keys."
                                        :path-status 'extension))
                                   (button-start (point-marker)))
                               (treemacs--set-project-position ,root-key-form (point-marker))
-                              (insert (propertize "\n"
+                              (insert (propertize "Hidden Node\n"
                                                   'button '(t)
                                                   'category 'default-button
                                                   'invisible t
                                                   'skip t
                                                   :custom t
                                                   :key ,root-key-form
-                                                  :path handle
+                                                  :path (list :custom ,root-key-form)
                                                   :depth -1
                                                   :project pr
                                                   :state ,closed-state-name))
                               (let ((marker (copy-marker (point) t)))
                                 (funcall ',do-expand-name button-start)
                                 (goto-char marker)))))
-                         t))
+                         t)
                   `(progn
                      (defun ,ext-name (&rest _)
                        (treemacs-with-writable-buffer
