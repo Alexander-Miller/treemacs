@@ -203,12 +203,9 @@ Unlike `kill-whole-line' this won't pollute the kill ring."
 Returns nil when point is between projects."
   (declare (side-effect-free error-free))
   (inline-quote
-   (-let [point-at-bol (point-at-bol)]
-     (if (get-text-property point-at-bol 'button)
-         (copy-marker point-at-bol t)
-       (-let [p (next-single-property-change point-at-bol 'button nil (point-at-eol))]
-         (when (get-char-property p 'button)
-           (copy-marker p t)))))))
+   (-some->
+    (text-property-not-all (point-at-bol) (point-at-eol) 'button nil)
+    (copy-marker t))))
 (defalias 'treemacs-node-at-point #'treemacs-current-button)
 
 (define-inline treemacs-button-put (button prop val)
