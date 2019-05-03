@@ -76,7 +76,10 @@ def add_git_processes(status_listings, path):
 def determine_file_git_state():
     proc  = Popen(FILE_STATE_CMD + FILE, shell=True, stdout=PIPE, stderr=DEVNULL)
     line  = proc.stdout.readline()
-    state = line.lstrip().split(b" ")[0]
-    return state.decode('utf-8').strip()[0]
+    if line:
+        state = line.lstrip().split(b" ")[0]
+        return state.decode('utf-8').strip()[0]
+    else:
+        return "0"
 
 main()
