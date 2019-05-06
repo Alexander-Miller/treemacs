@@ -165,15 +165,18 @@ ignored argument."
   (when (eq 'treemacs-mode major-mode)
     (treemacs-with-writable-buffer
      (-when-let (btn (treemacs-current-button))
-       (let* ((start (max (point-at-bol) (- (treemacs-button-start btn) 2)) )
+       (let* ((start (max (point-at-bol) (- (treemacs-button-start btn) 2)))
               (end (1+ start))
               (img (get-text-property start 'display))
               (cp (copy-sequence img)))
-         (treemacs--set-img-property cp :background
-                                     (face-attribute
-                                      (overlay-get pulse-momentary-overlay 'face)
-                                      :background nil t))
-         (put-text-property start end 'display cp))))))
+         ;; Icons may not always be images, as extensions may use text and e.g.
+         ;; all-the-icons font icons as the icon.
+         (when (eq (car cp) 'image)
+           (treemacs--set-img-property cp :background
+                                       (face-attribute
+                                        (overlay-get pulse-momentary-overlay 'face)
+                                        :background nil t))
+           (put-text-property start end 'display cp)))))))
 
 (defun treemacs--do-pulse (face)
   "Visually pulse current line using FACE."
