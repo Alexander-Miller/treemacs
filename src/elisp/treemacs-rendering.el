@@ -604,34 +604,39 @@ PROJECT: Project Struct"
        (set-marker-insertion-type treemacs--projects-end has-previous)
        (set-marker treemacs--projects-end projects-end-point)))))
 
-(define-inline treemacs-do-update-node (path)
+(define-inline treemacs-do-update-node (path &optional force-expand)
   "Update the node identified by its PATH.
 Throws an error when the node cannot be found. Does nothing if the node is
-not expanded.
+not expanded, unless FORCE-EXPAND is non-nil, in which case the node will be
+expanded.
 Same as `treemacs-update-node', but does not take care to either save
 position or assure hl-line highlighting, so it should be used when making
 multiple updates.
 
-PATH: Node Path"
-  (inline-letevals (path)
+PATH: Node Path
+FORCE-EXPAND: Boolean"
+  (inline-letevals (path force-expand)
     (inline-quote
      (treemacs-unless-let (btn (treemacs-goto-node ,path))
          (error "Node at path %s cannot be found" ,path)
-       (when (treemacs-is-node-expanded? btn)
+       (if (treemacs-is-node-expanded? btn)
          (-let [close-func (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)]
            (funcall close-func)
            ;; close node again if no new lines were rendered
            (when (= 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
-             (funcall close-func))))))))
+             (funcall close-func)))
+         (when ,force-expand
+           (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))))))))
 
-(defun treemacs-update-node (path)
+(defun treemacs-update-node (path &optional force-expand)
   "Update the node identified by its PATH.
 Same as `treemacs-do-update-node', but wraps the call in
 `treemacs-save-position'.
 
-PATH: Node Path"
+PATH: Node Path
+FORCE-EXPAND: Boolean"
   (treemacs-save-position
-   (treemacs-do-update-node path)))
+   (treemacs-do-update-node path force-expand)))
 
 (defun treemacs-delete-single-node (path &optional project)
   "Delete single node at given PATH and PROJECT.
