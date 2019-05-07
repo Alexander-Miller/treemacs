@@ -819,7 +819,9 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
                     (treemacs-dom-node->position dom-node)
                   (treemacs-project->position root-key)))
            ;; do the rest manually
-           (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
+           (search-result (if manual-parts
+                              (treemacs--follow-path-elements btn manual-parts)
+                            (goto-char btn))))
       (if (eq 'follow-failed search-result)
           (prog1 nil
             (goto-char start))
