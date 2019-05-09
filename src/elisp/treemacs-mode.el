@@ -32,6 +32,7 @@
 (require 'treemacs-persistence)
 (require 'treemacs-dom)
 (require 'treemacs-workspaces)
+(require 'treemacs-visuals)
 (eval-and-compile (require 'treemacs-macros))
 
 (treemacs-import-functions-from  "treemacs"
@@ -399,6 +400,7 @@ Will simply return `treemacs--eldoc-msg'."
   (add-to-list 'delete-frame-functions #'treemacs--on-frame-kill)
   (add-hook 'post-command-hook #'treemacs--post-command nil t)
 
+  (treemacs--build-indentation-cache 6)
   (treemacs--adjust-icons-to-window-system)
   (treemacs--setup-icon-highlight)
   (treemacs--setup-icon-background-colors)

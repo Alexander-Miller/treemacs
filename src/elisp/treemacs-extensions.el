@@ -33,6 +33,8 @@
   treemacs-mode)
 (treemacs-import-functions-from "treemacs-rendering"
   treemacs--insert-root-separator)
+(treemacs-import-functions-from "treemacs-visuals"
+  treemacs--get-indentation)
 
 (defmacro treemacs--build-extension-addition (name)
   "Internal building block.
@@ -414,7 +416,7 @@ additional keys."
              (-let [depth (1+ (treemacs-button-get parent :depth))]
                (insert
                 "\n"
-                (s-repeat (* depth treemacs-indentation) treemacs-indentation-string)
+                (treemacs--get-indentation depth)
                 ,closed-icon-name
                 (propertize ,root-label
                             'button '(t)

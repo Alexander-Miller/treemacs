@@ -21,6 +21,7 @@
 ;;; Code:
 
 (require 'f)
+(defvar treemacs--indentation-string-cache)
 
 (defun treemacs--find-python3 ()
   "Determine the location of python 3."
@@ -93,9 +94,14 @@
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
 (defcustom treemacs-indentation 2
-  "The number of spaces each level is indented in the file tree.
-Indentation is created by repeating `treemacs-indentation-string'."
-  :type 'integer
+  "The number of spaces or pixels each level is indented in the file tree.
+If the value is integer, indentation is created by repeating
+`treemacs-indentation-string'. If the value is a list of form '(INTEGER px),
+indentation will be a space INTEGER pixels wide."
+  :type '(choice (integer :tag "Spaces" :value 2)
+                 (list :tag "Pixels"
+                       (integer :tag "Pixels" :value 16)
+                       (const :tag "" px)))
   :group 'treemacs)
 
 (defcustom treemacs-eldoc-display t
@@ -107,7 +113,8 @@ Requires eldoc mode to be enabled."
 (defcustom treemacs-indentation-string " "
   "The string that is for indentation in the file tree.
 Indentation is created by repeating this string `treemacs-indentation' many
-times."
+times. If `treemacs-indentation' is specified in pixels, this value is only used
+when there is no windowing system available."
   :type 'string
   :group 'treemacs)
 
