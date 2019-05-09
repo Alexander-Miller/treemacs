@@ -74,6 +74,12 @@
       bg))
   "Background for selected icons.")
 
+
+(defvar-local treemacs--indentation-string-cache-key nil
+  "Cache key for `treemacs--indentation-string-cache.")
+(defvar-local treemacs--indentation-string-cache (vector)
+  "Cached propertized indentation.")
+
 (define-inline treemacs--set-img-property (image property value)
   "Set IMAGE's PROPERTY to VALUE."
   ;; the emacs26 code where this is copied from says it's for internal
@@ -201,6 +207,34 @@ Optionally issue a log statment with LOG-ARGS."
     (treemacs-log (apply #'format log-args)))
   (when treemacs-pulse-on-failure
     (treemacs--do-pulse 'treemacs-on-failure-pulse-face)))
+
+(defun treemacs--build-indentation-cache (depth)
+  "Rebuild indentation string cache up to DEPTH levels deep."
+  (setq treemacs--indentation-string-cache (make-vector (1+ depth) nil)
+        treemacs--indentation-string-cache-key (cons treemacs-indentation treemacs-indentation-string))
+  (dotimes (i (1+ depth))
+    (aset treemacs--indentation-string-cache i
+          (cond ((integerp treemacs-indentation)
+                 (s-repeat (* i treemacs-indentation) treemacs-indentation-string))
+                ((not window-system)
+                 (s-repeat (* i 2) treemacs-indentation-string))
+                (t (propertize " "
+                               'display
+                               `(space . (:width (,(* (car treemacs-indentation)
+                                                      i))))))))))
+
+(define-inline treemacs--get-indentation (depth)
+  "Gets an indentation string DEPTH levels deep."
+  (inline-letevals (depth)
+    (inline-quote
+     (progn
+       (when (or (>= ,depth (length treemacs--indentation-string-cache))
+                 (not (eq (car treemacs--indentation-string-cache-key) treemacs-indentation))
+                 ;; Eq is faster than string comparison, and accidentally
+                 ;; rebuilding the cache in some corner case is not disastrous.
+                 (not (eq (cdr treemacs--indentation-string-cache-key) treemacs-indentation-string)))
+         (treemacs--build-indentation-cache ,depth))
+       (aref treemacs--indentation-string-cache ,depth)))))
 
 (provide 'treemacs-visuals)
 

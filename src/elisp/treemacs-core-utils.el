@@ -1142,7 +1142,7 @@ It needs to be moved aside in a way that works for all indent depths and
 `treemacs-indentation' settings."
   (when (eq major-mode 'treemacs-mode)
     (beginning-of-line)
-    (when (get-text-property (point) 'display)
+    (when (eq 'image (car (get-text-property (point) 'display)))
       (forward-char 1))))
 
 (defun treemacs--read-first-project-path ()

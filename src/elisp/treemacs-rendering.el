@@ -39,6 +39,9 @@
   treemacs--start-watching
   treemacs--stop-watching)
 
+(treemacs-import-functions-from "treemacs-visuals"
+  treemacs--get-indentation)
+
 (treemacs-import-functions-from "treemacs-tags"
   treemacs--goto-tag-button-at
   treemacs--tags-path-of)
@@ -246,7 +249,7 @@ EXTRA-VARS are additional var bindings inserted into the initial let block.
 NODE-ACTION is the button creating form inserted for every NODE.
 NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
   `(let* ((depth ,depth)
-          (prefix (concat "\n" (s-repeat (* depth treemacs-indentation) treemacs-indentation-string)))
+          (prefix (concat "\n" (treemacs--get-indentation depth)))
           (,node-name (cl-first ,nodes))
           (strings)
           ,@extra-vars)
