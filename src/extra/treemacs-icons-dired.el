@@ -43,6 +43,7 @@
              (not treemacs-icons-dired-displayed)
              dired-subdir-alist)
     (setq-local treemacs-icons-dired-displayed t)
+    (setq-local treemacs-icons (treemacs-theme->gui-icons treemacs--current-theme))
     (pcase-dolist (`(,path . ,pos) dired-subdir-alist)
       (treemacs-icons-dired--display-icons-for-subdir path pos))))
 
@@ -59,7 +60,7 @@
           (if (dired-move-to-filename nil)
               (let* ((file (dired-get-filename nil t))
                      (icon (if (file-directory-p file)
-                               treemacs-icon-closed
+                               treemacs-icon-dir-closed
                              (treemacs-icon-for-file file))))
                 (insert icon))
             (treemacs-return nil))
@@ -127,6 +128,7 @@ This will make sure the icons' background colors will align with hl-line mode."
   (if treemacs-icons-dired-mode
       (progn
         (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
+        (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
         (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
         (dolist (buffer (buffer-list))
           (with-current-buffer buffer
@@ -134,6 +136,7 @@ This will make sure the icons' background colors will align with hl-line mode."
               (treemacs-icons-dired--enable-highlight-correction)
               (treemacs-icons-dired--display)))))
     (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
+    (remove-hook 'dired-mode-hook #'treemacs--select-icon-set)
     (remove-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
     (dolist (buffer (buffer-list))
       (with-current-buffer buffer

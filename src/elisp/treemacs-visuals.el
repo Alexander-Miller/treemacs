@@ -24,6 +24,7 @@
 (require 'pulse)
 (require 'hl-line)
 (require 'treemacs-core-utils)
+(require 'treemacs-themes)
 (require 'treemacs-customization)
 (require 'treemacs-fringe-indicator)
 (eval-and-compile
@@ -44,9 +45,6 @@
 ;; `hl-line-highlight'. The last displayed icon is saved as a button marker in `treemacs--last-highlight'.
 ;; Since it is a marker in the treemacs buffer it is important for it to be reset whenever it might
 ;; become invalid.
-
-(treemacs-import-functions-from "treemacs-icons"
-  treemacs--created-icons)
 
 (defvar-local treemacs--last-highlight nil
   "The last button treemacs has highlighted.")
@@ -119,15 +117,15 @@
     (advice-remove #'disable-theme     #'treemacs--setup-icon-background-colors)))
 
 (defun treemacs--setup-icon-background-colors (&rest _)
-  "Align icon backgrounds with current theme.
-Fetch the current theme's background & hl-line colors and inject them into
-`treemacs--created-icons'. Also called as advice after `load-theme', hence the
-ignored argument."
+  "Align icon backgrounds with current Emacs theme.
+Fetch the current Emacs theme's background & hl-line colors and inject them into
+the gui icons of every theme in `treemacs--themes'.
+Also called as advice after `load-theme', hence the ignored argument."
   (let* ((default-background (face-attribute 'default :background nil t))
          (hl-line-background (face-attribute 'hl-line :background nil t))
-         (icon               (car (treemacs--created-icons)))
-         (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected icon) :background))
-         (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected icon) :background)))
+         (test-icon               (with-no-warnings treemacs-icon-root))
+         (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected test-icon) :background))
+         (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected test-icon) :background)))
     (when (eq default-background 'unspecified-bg)
       (setq default-background "#2d2d31"))
     ;; make sure we only change all the icons' colors when we have to
@@ -135,13 +133,13 @@ ignored argument."
                  (string= hl-line-background icon-hl-background))
       (setf treemacs--selected-icon-background hl-line-background
             treemacs--not-selected-icon-background default-background)
-      (--each (treemacs--created-icons)
-        (progn
+      (dolist (theme treemacs--themes)
+        (treemacs--maphash (treemacs-theme->gui-icons theme) (_ icon)
           (treemacs--set-img-property
-           (get-text-property 0 'img-selected it)
+           (get-text-property 0 'img-selected icon)
            :background treemacs--selected-icon-background)
           (treemacs--set-img-property
-           (get-text-property 0 'img-unselected it)
+           (get-text-property 0 'img-unselected icon)
            :background treemacs--not-selected-icon-background))))))
 
 (defun treemacs--update-icon-selection ()

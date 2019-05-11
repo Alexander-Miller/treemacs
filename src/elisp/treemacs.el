@@ -31,6 +31,7 @@
 (require 'f)
 (require 'bookmark)
 (require 'treemacs-customization)
+(require 'treemacs-themes)
 (require 'treemacs-icons)
 (require 'treemacs-faces)
 (require 'treemacs-visuals)

@@ -185,7 +185,7 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
          :open-action (treemacs--create-buttons
                        :nodes index
                        :extra-vars
-                       ((node-prefix (concat prefix treemacs-icon-tag-node-closed))
+                       ((node-prefix (concat prefix treemacs-icon-tag-closed))
                         (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
                        :depth (1+ (treemacs-button-get btn :depth))
                        :node-name item
@@ -283,13 +283,13 @@ Open all tag section under BTN when call is RECURSIVE."
      :button btn
      :immediate-insert t
      :new-state 'tag-node-open
-     :new-icon treemacs-icon-tag-node-open
+     :new-icon treemacs-icon-tag-open
      :open-action (treemacs--create-buttons
                    :nodes index
                    :depth (1+ (treemacs-button-get btn :depth))
                    :node-name item
                    :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))
-                                (node-prefix (concat prefix treemacs-icon-tag-node-closed)))
+                                (node-prefix (concat prefix treemacs-icon-tag-closed)))
                    :node-action (if (imenu--subalist-p item)
                                     (treemacs--insert-tag-node item node-prefix btn depth)
                                   (treemacs--insert-tag-leaf item leaf-prefix btn depth)))
@@ -328,7 +328,7 @@ Remove all open tag entries under BTN when RECURSIVE."
     (treemacs--button-close
      :button btn
      :new-state 'tag-node-closed
-     :new-icon treemacs-icon-tag-node-closed
+     :new-icon treemacs-icon-tag-closed
      :post-close-action
      (treemacs-on-collapse (treemacs--tags-path-of btn)))))
 
