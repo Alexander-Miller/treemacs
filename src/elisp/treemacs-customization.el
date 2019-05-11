@@ -37,6 +37,31 @@
                  (s-replace "Python " "")
                  (version<= "3")))))))
 
+(cl-macrolet
+    ((define-action-widget (name include-default include-tab include-ret)
+       `(define-widget ',name 'lazy
+          "Treemacs button action"
+          :format "%v"
+          :type '(choice
+                  :tag "Action"
+                  ,@(when include-default `((const :tag "Default visit action" treemacs-visit-node-default)))
+                  ,@(when include-tab `((const :tag "Same as TAB" treemacs-TAB-action)))
+                  ,@(when include-ret `((const :tag "Same as RET" treemacs-RET-action)))
+                  (const :tag "Visit node without splitting" treemacs-visit-node-no-split)
+                  (const :tag "Visit node in a vertical split" treemacs-visit-node-vertical-split)
+                  (const :tag "Visit node in a horizontal split" treemacs-visit-node-horizontal-split)
+                  (const :tag "Visit node with Ace" treemacs-visit-node-ace)
+                  (const :tag "Visit node with Ace in a horizontal split" treemacs-visit-node-ace-horizontal-split)
+                  (const :tag "Visit node with Ace in a vertical split" treemacs-visit-node-ace-vertical-split)
+                  (const :tag "Visit node in the most recently used window" treemacs-visit-node-in-most-recently-used-window)
+                  (const :tag "Toggle node" treemacs-toggle-node)
+                  (const :tag "Toggle node (prefer tag visit)" treemacs-toggle-node-prefer-tag-visit)
+                  (function :tag "Custom function")))))
+  (define-action-widget treemacs-default-action nil nil nil)
+  (define-action-widget treemacs-ret-action t t nil)
+  (define-action-widget treemacs-tab-action t nil t)
+  (define-action-widget treemacs-mouse-action t t t))
+
 (defgroup treemacs nil
   "Treemacs configuration options."
   :group 'treemacs
@@ -106,12 +131,12 @@ See also `treemacs-edit-workspaces'."
     (file-node-closed . treemacs-toggle-node)
     (tag-node-open    . treemacs-toggle-node)
     (tag-node-closed  . treemacs-toggle-node)
-    (tag-node         . treemacs-visit-node-no-split))
+    (tag-node         . treemacs-visit-node-default))
   "Defines the behaviour of `treemacs-TAB-action'.
 
 See the doc string of `treemacs-RET-actions-config' for a detailed description
 of how this config works and how to modify it."
-  :type 'alist
+  :type '(alist :key-type symbol :value-type treemacs-tab-action)
   :group 'treemacs)
 
 (defcustom treemacs-doubleclick-actions-config
@@ -119,16 +144,22 @@ of how this config works and how to modify it."
     (root-node-closed . treemacs-toggle-node)
     (dir-node-open    . treemacs-toggle-node)
     (dir-node-closed  . treemacs-toggle-node)
-    (file-node-open   . treemacs-visit-node-no-split)
-    (file-node-closed . treemacs-visit-node-no-split)
+    (file-node-open   . treemacs-visit-node-default)
+    (file-node-closed . treemacs-visit-node-default)
     (tag-node-open    . treemacs-toggle-node)
     (tag-node-closed  . treemacs-toggle-node)
-    (tag-node         . treemacs-visit-node-no-split))
+    (tag-node         . treemacs-visit-node-default))
   "Defines the behaviour of `treemacs-doubleclick-action'.
 
 See the doc string of `treemacs-RET-actions-config' for a detailed description
 of how this config works and how to modify it."
-  :type 'alist
+  :type '(alist :key-type symbol :value-type treemacs-mouse-action)
+  :group 'treemacs)
+
+(defcustom treemacs-default-visit-action
+  'treemacs-visit-node-no-split
+  "Defines the behavior of `treemacs-visit-node-default'."
+  :type 'treemacs-default-action
   :group 'treemacs)
 
 (defcustom treemacs-RET-actions-config
@@ -136,11 +167,11 @@ of how this config works and how to modify it."
     (root-node-closed . treemacs-toggle-node)
     (dir-node-open    . treemacs-toggle-node)
     (dir-node-closed  . treemacs-toggle-node)
-    (file-node-open   . treemacs-visit-node-no-split)
-    (file-node-closed . treemacs-visit-node-no-split)
+    (file-node-open   . treemacs-visit-node-default)
+    (file-node-closed . treemacs-visit-node-default)
     (tag-node-open    . treemacs-toggle-node-prefer-tag-visit)
     (tag-node-closed  . treemacs-toggle-node-prefer-tag-visit)
-    (tag-node         . treemacs-visit-node-no-split))
+    (tag-node         . treemacs-visit-node-default))
   "Defines the behaviour of `treemacs-RET-action'.
 
 Each alist element maps from a button state to the function that should be used
@@ -153,7 +184,7 @@ single argument.
 To keep the alist clean changes should not be made directly, but with
 `treemacs-define-RET-action', for example like this:
 \(treemacs-define-RET-action 'file-node-closed #'treemacs-visit-node-ace\)"
-  :type 'alist
+  :type '(alist :key-type symbol :value-type treemacs-ret-action)
   :group 'treemacs)
 
 (defcustom treemacs-follow-after-init nil

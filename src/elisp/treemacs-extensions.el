@@ -208,7 +208,7 @@ node for quick retrieval later."
                      ,@more-properties)
          (when (zerop depth) (if treemacs-space-between-root-nodes "\n\n" "\n"))))
 
-(cl-defmacro treemacs-define-leaf-node (name icon &key ret-action tab-action mouse1-action)
+(cl-defmacro treemacs-define-leaf-node (name icon &key ret-action tab-action mouse1-action visit-action)
   "Define a type of node that is a leaf and cannot be further expanded.
 
 Based on the given NAME this macro will define a `treemacs-${name}-state' state
@@ -221,7 +221,7 @@ is for a file you can also use `treemacs-icon-for-file'.
 
 RET-ACTION, TAB-ACTION and MOUSE1-ACTION are function references that will be
 invoked when RET or TAB are pressed or mouse1 is double-clicked a node of this
-type."
+type. VISIT-ACTION is used in `treemacs-visit-node-no-split' actions."
   (declare (indent 1))
   (let ((state-name (intern (format "treemacs-%s-state" name)))
         (icon-name  (intern (format "treemacs-%s-icon" name))))
@@ -229,12 +229,14 @@ type."
        (defvar ,state-name ',state-name)
        ,(unless (equal icon (quote 'dynamic-icon))
           `(defvar ,icon-name ,icon))
-       ,(when ret-action
-          `(treemacs-define-RET-action ,state-name ,ret-action))
+       ,(when (or ret-action visit-action)
+          `(treemacs-define-RET-action ,state-name ,(or ret-action '(quote treemacs-visit-node-default))))
        ,(when tab-action
           `(treemacs-define-TAB-action ,state-name ,tab-action))
        ,(when mouse1-action
           `(treemacs-define-doubleclick-action ,state-name ,mouse1-action))
+       ,(when visit-action
+          `(put ',state-name :treemacs-visit-action ,visit-action))
        t)))
 
 (cl-defmacro treemacs-define-expandable-node
@@ -246,6 +248,7 @@ type."
           query-function
           render-action
           ret-action
+          visit-action
           top-level-marker
           root-marker
           root-label
@@ -271,7 +274,8 @@ bound under the name `item'. The form itself should end in a call to
 
 RET-ACTION will define what function is called when RET is pressed on this type
 of node. Only RET, without TAB and mouse1 can be defined since for expandable
-nodes both TAB and RET should toggle expansion/collapse.
+nodes both TAB and RET should toggle expansion/collapse. VISIT-ACTION is used in
+`treemacs-visit-node-no-split' actions.
 
 ROOT-MARKER is a simple boolean. It indicates the special case that the node
 being defined is a top level entry point. When this value is non-nil this macro
@@ -331,10 +335,14 @@ additional keys."
        (add-to-list 'treemacs-valid-button-states ,closed-state-name)
        (add-to-list 'treemacs-valid-button-states ,open-state-name)
 
-       ,(when ret-action
+       ,(when (or ret-action visit-action)
           `(progn
-             (treemacs-define-RET-action ,open-state-name ,ret-action)
-             (treemacs-define-RET-action ,closed-state-name ,ret-action)))
+             (treemacs-define-RET-action ,open-state-name ,(or ret-action '(quote treemacs-visit-node-default)))
+             (treemacs-define-RET-action ,closed-state-name ,(or ret-action '(quote treemacs-visit-node-default)))))
+
+       ,@(when visit-action
+           `((put ',open-state-name :treemacs-visit-action ,visit-action)
+             (put ',closed-state-name :treemacs-visit-action ,visit-action)))
 
        (defun ,expand-name (&optional _)
          ,(format "Expand treemacs nodes of type `%s'." name)
