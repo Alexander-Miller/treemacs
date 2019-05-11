@@ -207,7 +207,8 @@ under or below it."
        (treemacs-without-following
         (let* ((state (treemacs-button-get btn :state))
                (current-window (selected-window)))
-          (if (not (memq state ',valid-states))
+          (if (and (not (memq state ',valid-states))
+                   (not (get state :treemacs-visit-action)))
               (treemacs-pulse-on-failure "%s" ,no-match-explanation)
             (progn
               ,@(if ensure-window-split
@@ -232,8 +233,11 @@ under or below it."
                        ,@(when tag-action
                            `((`tag-node
                               ,tag-action)))
-                       (_ (error "No match achieved even though button's state %s was part of the set of valid states %s"
-                                 state ',valid-states)))
+                       (_
+                        (-if-let (visit-action (get state :treemacs-visit-action))
+                            (funcall visit-action btn)
+                          (error "No match achieved even though button's state %s was part of the set of valid states %s"
+                                 state ',valid-states))))
                 (when ,save-window
                   (select-window current-window))))))))))
 

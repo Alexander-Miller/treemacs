@@ -272,6 +272,12 @@ Stay in current window with a prefix argument ARG."
    :save-window arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
+(defun treemacs-visit-node-default (&optional arg)
+  "Run `treemacs-default-visit-action' for the current button.
+A potential prefix ARG is passed on to the executed action, if possible."
+  (interactive "P")
+  (funcall-interactively treemacs-default-visit-action arg))
+
 (defun treemacs-RET-action (&optional arg)
   "Run the appropriate RET action for the current button.
 
