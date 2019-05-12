@@ -31,7 +31,7 @@
            (s-trim)
            (s-lines)
            (--first
-            (->> (concat it " --version")
+            (->> (concat (shell-quote-argument it) " --version")
                  (shell-command-to-string)
                  (s-trim)
                  (s-replace "Python " "")
