@@ -229,10 +229,10 @@ PROJECT: Project Struct"
                              (not (eq (car treemacs--previously-followed-tag-position) btn)))
                     (-let [(prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position]
                       (save-excursion
-                        (goto-char prev-followed-pos)
-                        (when  (and (treemacs-is-path (-some-> (treemacs-current-button) (treemacs-button-get :path))
-                                                      :same-as prev-followed-path)
-                                    (eq 'file-node-open (treemacs-button-get prev-followed-pos :state)))
+                        (when (marker-position prev-followed-pos) (goto-char prev-followed-pos))
+                        (when  (and (eq 'file-node-open (treemacs-button-get prev-followed-pos :state))
+                                    (treemacs-is-path (-some-> (treemacs-current-button) (treemacs-button-get :path))
+                                                      :same-as prev-followed-path))
                           (treemacs--collapse-file-node prev-followed-pos)))))
                   ;; when that doesnt work move manually to the correct file
                   (-let [btn-path (treemacs-button-get btn :path)]
