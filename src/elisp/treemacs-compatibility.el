@@ -102,6 +102,10 @@ width of the new window when the treemacs window is visible."
   (advice-add 'which-key--update :after 'treemacs--fix-width-after-which-key)
   (advice-add 'which-key--hide-buffer-side-window :after 'treemacs--fix-width-after-which-key))
 
+(with-eval-after-load 'evil-escape
+  (when (boundp 'evil-escape-excluded-major-modes)
+    (add-to-list 'evil-escape-excluded-major-modes 'treemacs-mode)))
+
 (provide 'treemacs-compatibility)
 
 ;;; treemacs-compatibility.el ends here
