@@ -1,6 +1,7 @@
 # -*- fill-column: 120 -*-
 #+STARTUP: noinlineimages
 
+[[https://gitter.im/treemacs/community][file:https://badges.gitter.im/Alexander-Miller/treemacs.png]]
 [[https://melpa.org/#/treemacs][file:https://melpa.org/packages/treemacs-badge.svg]]
 [[https://stable.melpa.org/#/treemacs][file:https://stable.melpa.org/packages/treemacs-badge.svg]]
 [[https://travis-ci.org/Alexander-Miller/treemacs][file:https://travis-ci.org/Alexander-Miller/treemacs.svg?branch=master]]
