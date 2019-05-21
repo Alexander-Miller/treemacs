@@ -617,16 +617,20 @@ PATH: Node Path
 FORCE-EXPAND: Boolean"
   (inline-letevals (path force-expand)
     (inline-quote
-     (treemacs-unless-let (btn (treemacs-goto-node ,path))
-         (error "Node at path %s cannot be found" ,path)
-       (if (treemacs-is-node-expanded? btn)
-         (-let [close-func (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)]
-           (funcall close-func)
-           ;; close node again if no new lines were rendered
-           (when (eq 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
-             (funcall close-func)))
-         (when ,force-expand
-           (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))))))))
+     (-if-let (btn (if ,force-expand
+                       (treemacs-goto-node ,path)
+                     (-some-> (treemacs-find-visible-node ,path)
+                              (goto-char))))
+         (if (treemacs-is-node-expanded? btn)
+             (-let [close-func (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)]
+               (funcall close-func)
+               ;; close node again if no new lines were rendered
+               (when (eq 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
+                 (funcall close-func)))
+           (when ,force-expand
+             (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))))
+       (-when-let (dom-node (treemacs-find-in-dom ,path))
+         (setf (treemacs-dom-node->refresh-flag dom-node) t))))))
 
 (defun treemacs-update-node (path &optional force-expand)
   "Update the node identified by its PATH.
