@@ -82,8 +82,9 @@
   treemacs-find-in-dom
   treemacs-get-position-of
   treemacs-dom-node->children
-  treemacs-dom-node->key
   treemacs-dom-node->closed
+  treemacs-dom-node->key
+  treemacs-dom-node->parent
   treemacs-dom-node->position
   treemacs-project-p
   treemacs--on-rename
@@ -1272,11 +1273,29 @@ GOTO-TAG: Bool"
 
 (defun treemacs-is-path-visible? (path)
   "Return whether a node for PATH is displayed in the current buffer.
-The return value, if PATH is visible, is either the dom node of PATH - if it
-is an expanded directory - or the dom node of its parent - if it is a dir or
-file below an expanded directory."
-  (or (treemacs-find-in-dom path)
-      (treemacs-find-in-dom (treemacs--parent path))))
+The return value is a boolean indicating whether the node is visible."
+  (let* ((current-node (treemacs-find-in-dom path))
+         (current-parent (treemacs-find-in-dom (treemacs--parent path))))
+    (cond
+     ;; All parents must be expanded.
+     (current-parent
+      (not (or (treemacs-dom-node->closed current-parent)
+               (-some #'treemacs-dom-node->closed
+                      (treemacs-dom-node->all-parents current-parent)))))
+     ;; Root-level node in DOM -> must be visible.
+     (current-node t)
+     ;; The node may be a collapsed project.
+     ((stringp path)
+      (->> (treemacs-current-workspace)
+           (treemacs-workspace->projects)
+           (--some-p (treemacs-is-path path :same-as (treemacs-project->path it)))))
+
+     ;; The node may still be a non-variadic top-level extension.
+     ;; Check the length of path to avoid false positives for children of
+     ;; top-level extension nodes
+     ((and (eq :custom (car path)) (= 2 (length path)))
+      (when (treemacs-project->position (cadr path)) t)))))
+
 
 (defun treemacs--copy-or-move (action)
   "Internal implementation for copying and moving files.
