@@ -879,18 +879,12 @@ Unlike `treemacs-find-node' this will not expand other nodes in the view, but
 only look among those currently visible. The result however is the same: either
 a marker ponting to the found node or nil.
 
+Unlike `treemacs-find-node', this function does not go to the node.
+
 PATH: Node Path"
-  (-let [node (treemacs-find-in-dom path)]
-    ;; just finding a node in the dom is far from enough to be sure it is visible
-    ;; it can still be closed with children, or be one of the children of a closed node
-    (if (and node
-             (treemacs-dom-node->position node)
-             (null (treemacs-dom-node->closed node)))
-        (treemacs-dom-node->position node)
-      (-when-let (parent (treemacs-find-in-dom (treemacs--parent path)))
-        (when (treemacs-dom-node->position parent)
-          (treemacs-first-child-node-where (treemacs-dom-node->position parent)
-            (treemacs-is-path path :same-as (treemacs-button-get child-btn :path))))))))
+  (when (treemacs-is-path-visible? path)
+    (save-excursion
+      (treemacs-find-node path))))
 
 (defun treemacs-find-node (path &optional project)
   "Find position of node identified by PATH under PROJECT in the current buffer.
@@ -923,8 +917,7 @@ successful.
 PATH: Filepath | Node Path
 PROJECT Project Struct"
   (treemacs-with-path path
-    :file-action (when (file-exists-p path)
-                   (treemacs-find-file-node path project))
+    :file-action (when (file-exists-p path) (treemacs-find-file-node path project))
     :top-level-extension-action (treemacs--find-custom-top-level-node path)
     :directory-extension-action (treemacs--find-custom-dir-node path)
     :project-extension-action (treemacs--find-custom-project-node path)))
