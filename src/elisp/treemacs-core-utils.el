@@ -861,7 +861,8 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
                             (treemacs-dom-node->position dom-node)
                           (treemacs-project->position project)))
                    ;; do the rest manually
-                   (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts) btn)))
+                   (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts)
+                                    (goto-char btn))))
               (if (eq 'follow-failed search-result)
                   (prog1 nil
                     (goto-char start))
@@ -986,7 +987,9 @@ PROJECT: Project Struct"
                     (treemacs-project->position project)
                   (treemacs-dom-node->position dom-node)))
            ;; do the rest manually - at least the actual file to move to is still left in manual-parts
-           (search-result (if manual-parts (save-match-data (treemacs--follow-each-dir btn manual-parts project)) btn)))
+           (search-result (if manual-parts (save-match-data
+                                             (treemacs--follow-each-dir btn manual-parts project))
+                            (goto-char btn))))
       (if (eq 'follow-failed search-result)
           (prog1 nil
             (goto-char start))
