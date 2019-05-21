@@ -1127,11 +1127,15 @@ Valid states are 'visible, 'exists and 'none."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (path)
     (inline-quote
-     (if (treemacs-is-path ,path :same-as "/")
-         ,path
-       (-> ,path
-           (file-name-directory)
-           (treemacs--unslash))))))
+     (treemacs-with-path ,path
+       :file-action (if (treemacs-is-path ,path :same-as "/")
+                        ,path
+                      (-> ,path
+                          (file-name-directory)
+                          (treemacs--unslash)))
+       :top-level-extension-action (when (> (length ,path) 2) (butlast ,path))
+       :directory-extension-action (if (> (length ,path) 2) (butlast ,path) (car ,path))
+       :project-extension-action (if (> (length ,path) 2) (butlast ,path) (treemacs-project->path (car ,path)))))))
 
 (defun treemacs--evade-image ()
   "The cursor visibly blinks when on top of an icon.
