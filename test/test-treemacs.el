@@ -333,7 +333,24 @@
     (expect (treemacs--parent "/home/A/B") :to-equal "/home/A"))
 
   (it "Returns the system root when it's the input"
-    (expect (treemacs--parent "/") :to-equal "/")))
+    (expect (treemacs--parent "/") :to-equal "/"))
+
+  (it "Returns parent of root-level extension node."
+    (expect (treemacs--parent '(:custom "a" "b")) :to-equal '(:custom "a")))
+
+  (it "Returns directory extension of extension sub-item node."
+    (expect (treemacs--parent '("/test1" "a" "b")) :to-equal '("/test1" "a")))
+
+  (it "Returns directory of a directory extension node."
+    (expect (treemacs--parent '("/test1" "a")) :to-equal "/test1"))
+
+  (it "Returns project extension of a project sub-item node."
+    (let ((p (make-treemacs-project :path "/A" :path-status 'local-readable)))
+      (expect (treemacs--parent (list p "a" "b")) :to-equal (list p "a"))))
+
+  (it "Returns project of a project extension node."
+    (let ((p (make-treemacs-project :path "/A" :path-status 'local-readable)))
+      (expect (treemacs--parent (list p "a")) :to-equal "/A"))))
 
 (describe "treemacs--get-or-parse-git-result"
 
