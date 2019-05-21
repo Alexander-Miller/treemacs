@@ -922,15 +922,12 @@ successful.
 
 PATH: Filepath | Node Path
 PROJECT Project Struct"
-  (cond
-   ((stringp path)
-    (when (file-exists-p path) (treemacs-find-file-node path project)))
-   ((eq :custom (car path))
-    (treemacs--find-custom-top-level-node path))
-   ((stringp (car path))
-    (treemacs--find-custom-dir-node path))
-   (t
-    (treemacs--find-custom-project-node path))))
+  (treemacs-with-path path
+    :file-action (when (file-exists-p path)
+                   (treemacs-find-file-node path project))
+    :top-level-extension-action (treemacs--find-custom-top-level-node path)
+    :directory-extension-action (treemacs--find-custom-dir-node path)
+    :project-extension-action (treemacs--find-custom-project-node path)))
 
 (defun treemacs-goto-node (path &optional project)
   "Move point to button identified by PATH under PROJECT in the current buffer.
@@ -939,15 +936,11 @@ point.
 
 PATH: Filepath | Node Path
 PROJECT Project Struct"
-  (cond
-   ((stringp path)
-    (when (file-exists-p path) (treemacs-goto-file-node path project)))
-   ((eq :custom (car path))
-    (treemacs--goto-custom-top-level-node path))
-   ((stringp (car path))
-    (treemacs--goto-custom-dir-node path))
-   (t
-    (treemacs--goto-custom-project-node path))))
+  (treemacs-with-path path
+    :file-action (when (file-exists-p path) (treemacs-goto-file-node path project))
+    :top-level-extension-action (treemacs--goto-custom-top-level-node path)
+    :directory-extension-action (treemacs--goto-custom-dir-node path)
+    :project-extension-action (treemacs--goto-custom-project-node path)))
 
 (defun treemacs-find-file-node (path &optional project)
   "Find position of node identified by PATH under PROJECT in the current buffer.
