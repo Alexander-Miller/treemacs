@@ -623,7 +623,7 @@ FORCE-EXPAND: Boolean"
          (-let [close-func (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)]
            (funcall close-func)
            ;; close node again if no new lines were rendered
-           (when (= 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
+           (when (eq 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
              (funcall close-func)))
          (when ,force-expand
            (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))))))))
