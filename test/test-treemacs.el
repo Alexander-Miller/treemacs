@@ -1083,24 +1083,36 @@
   (it "Removes only the last newline"
     (expect (treemacs--remove-trailing-newline "abc\n\n\n") :to-equal "abc\n\n")))
 
-(describe "treemacs-find-visible-node"
+(describe "treemacs-is-path-visible?"
 
   (describe "Successes"
 
     (it "Finds node in the dom"
       (let* ((pos (point-marker))
-             (node (make-treemacs-dom-node :position pos :closed nil))
-             (path "path")
-             (treemacs-dom (ht (path node))))
-        (expect (treemacs-find-visible-node path) :to-be pos)))
+             (root-node (make-treemacs-dom-node :closed nil :parent nil))
+             (node (make-treemacs-dom-node :position pos :closed nil :parent root-node))
+             (path "/path")
+             (treemacs-dom (ht (path node) ("/" root-node))))
+        (expect (treemacs-is-path-visible? path) :to-be t)))
+
+    (it "Finds project root"
+      (let ((treemacs-dom (ht)))
+        (treemacs--with-project (make-treemacs-project :path "/test-project")
+          (expect (treemacs-is-path-visible? "/test-project") :to-be t))))
+
+    (it "Finds top-level custom root node"
+      (let ((treemacs-dom (ht))
+            (treemacs--project-positions (ht ('Some-Extension (point-marker)))))
+        (expect (treemacs-is-path-visible? '(:custom Some-Extension)) :to-be t)))
 
     (it "Finds node in parent's children"
       (with-temp-buffer
         (let* ((parent-pos (point-marker))
-               (parent (make-treemacs-dom-node :position parent-pos))
+               (root (make-treemacs-dom-node :parent nil))
+               (parent (make-treemacs-dom-node :position parent-pos :parent root))
                (path "/A/B")
                (parent-path (treemacs--parent path))
-               (treemacs-dom (ht (parent-path parent))))
+               (treemacs-dom (ht ("/" root) (parent-path parent))))
           (insert-text-button "B1" :path parent-path :depth 1)
           (insert "\n")
           (insert-text-button "B2" :path "/other/path/1" :depth 2 :parent parent-pos)
@@ -1108,49 +1120,27 @@
           (insert-text-button "B3" :path path :depth 2 :parent parent-pos)
           (insert "\n")
           (insert-text-button "B4" :path "/other/path/2" :depth 2 :parent parent-pos)
-          (-let [result (treemacs-find-visible-node path)]
-            (expect (eq 'marker (type-of result)) :to-be t))))))
+          (expect (treemacs-is-path-visible? path) :to-be t)))))
 
   (describe "Failures"
 
     (it "Fails on nil input"
-      (expect (treemacs-find-visible-node nil)
+      (expect (treemacs-is-path-visible? nil)
               :to-throw))
 
-    (it "Won't find node without position"
-      (let* ((node (make-treemacs-dom-node :position nil))
-             (path "path")
-             (treemacs-dom (ht (path node))))
-        (expect (treemacs-find-visible-node path)
-                :to-be nil)))
-
-    (it "Won't find closed node"
+    (it "Won't find a child of a closed node"
       (let* ((node (make-treemacs-dom-node :position (point-marker) :closed t))
-             (path "path")
+             (path "/path")
              (treemacs-dom (ht (path node))))
-        (expect (treemacs-find-visible-node path)
+        (expect (treemacs-is-path-visible? "/path/child")
                 :to-be nil)))
 
-    (it "Won't find node through parent without position"
-      (let* ((parent (make-treemacs-dom-node :position nil))
-             (path "/A/B")
-             (parent-path (treemacs--parent path))
-             (treemacs-dom (ht (parent-path parent))))
-        (expect (treemacs-find-visible-node path)
-                :to-be nil)))
-
-    (it "Won't find node through parent's children"
-      (with-temp-buffer
-        (let* ((parent-pos (point-marker))
-               (parent (make-treemacs-dom-node :position parent-pos))
-               (path "/A/B")
-               (parent-path (treemacs--parent path))
-               (treemacs-dom (ht (parent-path parent))))
-          (insert-text-button "B1" :path parent-path :depth 1)
-          (insert "\n")
-          (insert-text-button "B2" :path "/other/path" :depth 2 :parent parent-pos)
-          (expect (treemacs-find-visible-node path)
-                  :to-be nil))))))
+    (it "Won't find a grandchild of a closed node"
+      (let* ((parent-node (make-treemacs-dom-node :position (point-marker) :closed t))
+             (node (make-treemacs-dom-node :position (point-marker) :closed nil :parent parent-node))
+             (treemacs-dom (ht ("/root" parent-node) ("/root/child" node))))
+        (expect (treemacs-is-path-visible? "/root/child/grandchild")
+                :to-be nil)))))
 
 (describe "treemacs--add-trailing-slash"
 
