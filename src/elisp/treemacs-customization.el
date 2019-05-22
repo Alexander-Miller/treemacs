@@ -753,6 +753,24 @@ created or deleted."
   :type 'hook
   :group 'treemacs-hooks)
 
+(defcustom treemacs-bookmark-title-template "Treemacs - ${project}: ${label}"
+  "Template for default bookmark titles.
+
+The following replacements are available:
+ * ${project}: The label of the project.
+ * ${label}: Label of the current button.
+ * ${label:N} Label of the Nth parent.
+   If the parent does not exist, an empty string.
+ * ${label-path}: Label path of the button.
+   For example, \"Project/directory/file.txt\"
+ * ${label-path:N}: Last N components of the label path.
+ * ${file-path}: Absolute file-system path of the node.
+   If the node is a top-level extension node, this expands to an empty string.
+   If the node is a directory or or project extension, the path of its parent.
+ * ${file-path:N}: Last N components of the filesystem path."
+  :type 'string
+  :group 'treemacs)
+
 (defcustom treemacs-pre-refresh-hook nil
   "Hooks to run right before the refresh process for a project kicks off.
 During the refresh the project is effectively collapsed and then expanded again.

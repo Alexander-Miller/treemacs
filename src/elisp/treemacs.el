@@ -29,7 +29,6 @@
 (require 'dash)
 (require 's)
 (require 'f)
-(require 'bookmark)
 (require 'treemacs-customization)
 (require 'treemacs-themes)
 (require 'treemacs-icons)
@@ -81,40 +80,6 @@
     ('visible (delete-window (treemacs-get-local-window)))
     ('exists  (treemacs-select-window))
     ('none    (treemacs--init))))
-
-;;;###autoload
-(defun treemacs-bookmark (&optional arg)
-  "Find a bookmark in treemacs.
-Only bookmarks marking either a file or a directory are offered for selection.
-Treemacs will try to find and focus the given bookmark's location, in a similar
-fashion to `treemacs-find-file'.
-
-With a prefix argument ARG treemacs will also open the bookmarked location."
-  (interactive "P")
-  (treemacs-block
-   (-let [bookmarks
-          (cl-loop
-           for b in bookmark-alist
-           for name = (car b)
-           for location = (bookmark-location b)
-           when (or (f-file? location) (f-directory? location))
-           collect (propertize name 'location location))]
-     (treemacs-error-return-if (null bookmarks)
-       "Didn't find any bookmarks pointing to files.")
-     (let* ((bookmark (completing-read "Bookmark: " bookmarks))
-            (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
-            (dir (if (f-directory? location) location (f-dirname location)))
-            (project (treemacs--find-project-for-path dir)))
-       (treemacs-error-return-if (null project)
-         "Bookmark at %s does not fall under any project in the workspace."
-         (propertize location 'face 'font-lock-string-face))
-       (pcase (treemacs-current-visibility)
-         ('visible (treemacs--select-visible-window))
-         ('exists  (treemacs--select-not-visible-window))
-         ('none    (treemacs--init)))
-       (treemacs-goto-file-node location project)
-       (treemacs-pulse-on-success)
-       (when arg (treemacs-visit-node-no-split))))))
 
 ;;;###autoload
 (defun treemacs-find-file (&optional arg)

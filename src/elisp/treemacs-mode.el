@@ -34,12 +34,19 @@
 (require 'treemacs-workspaces)
 (require 'treemacs-visuals)
 (eval-and-compile (require 'treemacs-macros))
+(with-eval-after-load 'bookmark
+  (require 'treemacs-bookmarks))
 
 (treemacs-import-functions-from  "treemacs"
   treemacs-refresh
   treemacs-version)
+(treemacs-import-functions-from "treemacs-bookmarks"
+  treemacs-add-bookmark
+  treemacs--make-bookmark-record)
 
 (declare-function treemacs--helpful-hydra/body "treemacs-mode")
+
+(defvar bookmark-make-record-function)
 
 (defvar-local treemacs--eldoc-msg nil
   "Message to be output by `treemacs--eldoc-function'.
@@ -390,6 +397,8 @@ Will simply return `treemacs--eldoc-msg'."
   (setq-local show-paren-mode nil)
   (setq-local eldoc-documentation-function #'treemacs--eldoc-function)
   (setq-local eldoc-message-commands treemacs--eldoc-obarray)
+  ;; integrate with bookmark.el
+  (setq-local bookmark-make-record-function #'treemacs--make-bookmark-record)
   (electric-indent-local-mode -1)
   (visual-line-mode -1)
   (font-lock-mode -1)
