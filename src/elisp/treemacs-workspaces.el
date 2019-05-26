@@ -83,11 +83,17 @@ This function can be used with `setf'."
    (frame-parameter (selected-frame) 'treemacs-workspace)))
 (gv-define-setter treemacs-current-workspace (val) `(set-frame-parameter (selected-frame) 'treemacs-workspace ,val))
 
-(define-inline treemacs--find-workspace ()
-  "Find the right workspace for the current (uninitialized) treemacs buffer."
-  (inline-quote
-   (setf (treemacs-current-workspace)
-         (car treemacs--workspaces))))
+(define-inline treemacs--find-workspace (&optional path)
+  "Find the right workspace the given PATH.
+
+PATH: String"
+  (declare (side-effect-free t))
+  (inline-letevals (path)
+    (inline-quote
+     (setf (treemacs-current-workspace)
+           (or (--first (treemacs-is-path ,path :in-workspace it)
+                        treemacs--workspaces)
+            (car treemacs--workspaces))))))
 
 (defun treemacs--find-project-for-buffer ()
   "In the current workspace find the project current buffer's file falls under."

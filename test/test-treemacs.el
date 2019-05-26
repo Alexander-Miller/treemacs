@@ -39,6 +39,13 @@
        (progn
          (setf (treemacs-current-workspace) --original--)))))
 
+(defmacro treemacs--save-workspace (&rest body)
+  "Execute BODY saving the current workspace."
+  `(-let [ws (treemacs-current-workspace)]
+     (unwind-protect
+         ,@body
+       (setf (treemacs-current-workspace) ws))))
+
 (describe "treemacs-is-path"
 
   (describe ":in matcher"
@@ -1155,6 +1162,47 @@
 
   (it "Adds a slash when there isn't one"
     (expect (treemacs--add-trailing-slash "/ABC") :to-equal "/ABC/")))
+
+(describe "treemacs--find-workspace"
+
+  (it "Finds nothing when there are no workspaces"
+    (treemacs--save-workspace
+     (-let [treemacs--workspaces nil]
+       (treemacs--find-workspace)
+       (expect (treemacs-current-workspace) :to-be nil)))
+
+    (treemacs--save-workspace
+     (-let [treemacs--workspaces nil]
+       (treemacs--find-workspace "X")
+       (expect (treemacs-current-workspace) :to-be nil))))
+
+  (it "Finds the first workspace when there is no current file"
+    (treemacs--save-workspace
+     (let* ((ws1 (make-treemacs-workspace :name "A"))
+            (ws2 (make-treemacs-workspace :name "B"))
+            (treemacs--workspaces (list ws1 ws2)))
+       (treemacs--find-workspace)
+       (expect (treemacs-current-workspace) :to-be ws1))))
+
+  (it "Finds the first workspace when nothing fits the current file"
+    (treemacs--save-workspace
+     (let* ((p1  (make-treemacs-project :name "P1" :path "P1"))
+            (p2  (make-treemacs-project :name "P2" :path "P2"))
+            (ws1 (make-treemacs-workspace :name "A" :projects (list p1)))
+            (ws2 (make-treemacs-workspace :name "B" :projects (list p2)))
+            (treemacs--workspaces (list ws1 ws2)))
+       (treemacs--find-workspace "X")
+       (expect (treemacs-current-workspace) :to-be ws1))))
+
+  (it "Finds workspace which contains current file"
+    (treemacs--save-workspace
+     (let* ((p1  (make-treemacs-project :name "P1" :path "P1"))
+            (p2  (make-treemacs-project :name "P2" :path "/A"))
+            (ws1 (make-treemacs-workspace :name "A" :projects (list p1)))
+            (ws2 (make-treemacs-workspace :name "B" :projects (list p2)))
+            (treemacs--workspaces (list ws1 ws2)))
+       (treemacs--find-workspace "/A/B/C")
+       (expect (treemacs-current-workspace) :to-be ws2)))))
 
 (provide 'test-treemacs)
 
