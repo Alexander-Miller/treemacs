@@ -3,6 +3,18 @@
 
 * Changelog
 ** Current master
+** v2.6
+ - Added ~treemacs-add-and-display-current-project~ (both projectile and project.el)
+ - Added ~treemacs-eldoc-display~
+ - Added ~treemacs-visit-node-in-most-recently-used-window~
+ - Added ~treemacs-wrap-around~
+ - Basic theme support
+ - Added hooks for selecting, quitting and killing treemacs
+ - Moved completely to python3, improved python3 detection
+ - Expansion of and fixes for the extension api
+ - Split similar command keybinds into common keymaps
+ - New Icons
+ - Bug Fixes
 ** v2.5
  - Added ~treemacs-magit~ helper package.
  - Added ~treemacs-recenter-after-project-jump~ option.
