@@ -126,7 +126,8 @@ Also called as advice after `load-theme', hence the ignored argument."
          (test-icon               (with-no-warnings treemacs-icon-root))
          (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected test-icon) :background))
          (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected test-icon) :background)))
-    (when (eq default-background 'unspecified-bg)
+    (when (memq default-background '(unspecified-bg unspecified))
+      (treemacs-log "Current theme fails to specify default background color, falling back on #2d2d31")
       (setq default-background "#2d2d31"))
     ;; make sure we only change all the icons' colors when we have to
     (unless (and (string= default-background icon-background)
