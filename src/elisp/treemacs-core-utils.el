@@ -85,6 +85,7 @@
   treemacs-dom-node->closed
   treemacs-dom-node->key
   treemacs-dom-node->parent
+  treemacs-dom-node->all-parents
   treemacs-dom-node->position
   treemacs-project-p
   treemacs--on-rename
@@ -326,8 +327,11 @@ Returns nil if no such buffer exists.."
 (define-inline treemacs--select-not-visible-window ()
   "Switch to treemacs buffer, given that it not visible."
   (inline-quote
-   (progn
+   (let ((buffer (current-buffer)))
      (treemacs--setup-buffer)
+     (when (or treemacs-follow-after-init
+               (with-no-warnings treemacs-follow-mode))
+       (with-current-buffer buffer (treemacs--follow)))
      (run-hooks 'treemacs-select-hook))))
 
 (define-inline treemacs--button-symbol-switch (new-sym)
