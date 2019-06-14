@@ -264,7 +264,8 @@ to it will instead show a blank."
   (defvar treemacs-mode-map
     (let ((map (make-sparse-keymap)))
       (define-key map (kbd "?")         #'treemacs-helpful-hydra)
-      (define-key map [mouse-1]         #'treemacs-leftclick-action)
+      (define-key map [down-mouse-1]    #'treemacs-leftclick-action)
+      (define-key map [drag-mouse-1]    #'treemacs-dragleftclick-action)
       (define-key map [double-mouse-1]  #'treemacs-doubleclick-action)
       (define-key map [mouse-3]         #'treemacs-rightclick-menu)
       (define-key map [tab]             #'treemacs-TAB-action)

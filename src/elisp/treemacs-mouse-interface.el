@@ -33,7 +33,7 @@
   "Move focus to the clicked line.
 Must be bound to a mouse click, or EVENT will not be supplied."
   (interactive "e")
-  (when (eq 'mouse-1 (elt event 0))
+  (when (eq 'down-mouse-1 (elt event 0))
     (select-window (->> event (cadr) (nth 0)))
     (goto-char (posn-point (cadr event)))
     (when (region-active-p)
@@ -94,6 +94,19 @@ Clicking on icons will expand a file's tags, just like
       (-when-let (state (treemacs--prop-at-point :state))
         (funcall (cdr (assoc state treemacs-doubleclick-actions-config)))))
     (treemacs--evade-image)))
+
+(defun treemacs-dragleftclick-action (event)
+  "Drag a file/dir node to be opened in a window.
+Must be bound to a mouse click, or EVENT will not be supplied."
+  (interactive "e")
+  (when (eq 'drag-mouse-1 (elt event 0))
+    (-when-let (treemacs-buffer (treemacs-get-local-buffer))
+      (let* ((node (with-current-buffer treemacs-buffer (treemacs-node-at-point)))
+             (path (-some-> node (treemacs-button-get :path))))
+        (treemacs-with-path path
+          :file-action (progn (select-window (elt (elt event 2) 0))
+                              (find-file path))
+          :no-match-action (ignore))))))
 
 (defun treemacs-define-doubleclick-action (state action)
   "Define the behaviour of `treemacs-doubleclick-action'.

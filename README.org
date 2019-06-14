@@ -177,6 +177,8 @@ A right click popup-menu is also available:
 
 [[file:screenshots/right-click.png]]
 
+You can also open a file in a specific window by dragging using left click from treemacs to the required window.
+
 ** Follow-mode
 ~treemacs-follow-mode~ is a global minor mode which allows the treemacs view to always move its focus to the currently
 selected file. This mode runs on an idle timer - the exact duration of inactivity (in seconds) before a move is called
