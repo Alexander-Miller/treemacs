@@ -1,4 +1,4 @@
-# -*- fill-column: 120 -*-
+# -*- fill-column: 120 org-list-indent-offset: 1 -*-
 #+STARTUP: noinlineimages
 
 [[https://gitter.im/treemacs/community][file:https://badges.gitter.im/Alexander-Miller/treemacs.png]]
