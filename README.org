@@ -106,7 +106,7 @@ If you don't care about reading the full readme here's a list of some bare bones
    move between projects.
  * There's half a dozen different ways to open nodes, all bound under o as prefix. Pick your favourite.
  * TAB and RET are particularly configurable. See ~treemacs-TAB/RET-actions-config~.
- * Projects administration is bound under the ~C-p~ prefix.
+ * Projects administration is bound under the ~C-c C-p~ prefix.
 
 * Detailed Feature List
 ** Projects and Workspaces
@@ -129,8 +129,9 @@ treemacs heavily relies on every node having a unique natural key in its absolut
 outweigh the cons, as a multiroot setup allows to work on multiple projects with any combination concern/buffer
 separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for concurrent display not
 only of the file system, but e.g. the currently open buffers.
+
 ** Conveniently Editing Your Projects and Workspaces
-While treemacs offers several single functions, all bound under the ~C-p~ prefix, to add or remove projects, it is also
+While treemacs offers several single functions, all bound under the ~C-c C-p~ prefix, to add or remove projects, it is also
 possible to make large-scale edits to the layout of your workspace(s) with the same convenience as editing an ~org-mode~
 file. Simply call ~treemacs-edit-workspaces~ and you'll be presented with a buffer representing your current layout.
 Just make your edits and call ~treemacs-finish-edit~ and you're done.
@@ -625,13 +626,13 @@ By default Treemacs's keymap looks as follows:
 | M-j/M-n           | treemacs-next-neighbour                          | Go to the next same-level neighbour of the current node.                                                       |
 | M-k/M-p           | treemacs-previous-neighbour                      | Go to the previous same-level neighbour of the current node.                                                   |
 | u                 | treemacs-goto-parent-node                        | Go to parent of node at point, if possible.                                                                    |
-| C-p C-p a         | treemacs-add-project-to-workspace                | Select a new project to add to the treemacs workspace.                                                         |
-| C-p C-p p         | treemacs-projectile                              | Select a projectile project to add to the workspace.                                                           |
-| C-p C-p d         | treemacs-remove-project-from-workspace           | Remove project at point from the workspace.                                                                    |
-| C-p C-p r         | treemacs-rename-project                          | Rename project at point.                                                                                       |
-| C-p C-p c c       | treemacs-collapse-project                        | Collapse project at point.                                                                                     |
-| C-p C-p c o/S-TAB | treemacs-collapse-all-projects                   | Collapse all projects.                                                                                         |
-| C-p C-p c o       | treemacs-collapse-all-projects                   | Collapse all projects except the project at point.                                                             |
+| C-c C-p a         | treemacs-add-project-to-workspace                | Select a new project to add to the treemacs workspace.                                                         |
+| C-c C-p p         | treemacs-projectile                              | Select a projectile project to add to the workspace.                                                           |
+| C-c C-p d         | treemacs-remove-project-from-workspace           | Remove project at point from the workspace.                                                                    |
+| C-c C-p r         | treemacs-rename-project                          | Rename project at point.                                                                                       |
+| C-c C-p c c       | treemacs-collapse-project                        | Collapse project at point.                                                                                     |
+| C-c C-p c o/S-TAB | treemacs-collapse-all-projects                   | Collapse all projects.                                                                                         |
+| C-c C-p c o       | treemacs-collapse-all-projects                   | Collapse all projects except the project at point.                                                             |
 | <M-Up>            | treemacs-move-project-up                         | Switch positions of project at point and the one above it.                                                     |
 | <M-Down>          | treemacs-move-project-down                       | Switch positions of project at point and the one below it.                                                     |
 | th                | treemacs-toggle-show-dotfiles                    | Toggle the hiding and displaying of dotfiles.                                                                  |
