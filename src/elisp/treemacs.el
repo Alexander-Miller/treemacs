@@ -103,7 +103,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
            when (or (f-file? location) (f-directory? location))
            collect (propertize name 'location location))]
      (treemacs-error-return-if (null bookmarks)
-       (treemacs-log "Didn't find any bookmarks pointing to files."))
+       "Didn't find any bookmarks pointing to files.")
      (let* ((bookmark (completing-read "Bookmark: " bookmarks))
             (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
             (dir (if (f-directory? location) location (f-dirname location)))
