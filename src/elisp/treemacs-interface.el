@@ -800,26 +800,20 @@ With a prefix ARG select project to remove by name."
     ('only-one-workspace
      (treemacs-pulse-on-failure "There are no other workspaces to select."))
     (`(success ,workspace)
-     (let ((window-visible? nil)
-           (buffer-exists? nil))
-       (pcase (treemacs-current-visibility)
-         ('visible
-          (setq window-visible? t
-                buffer-exists? t))
-         ('exists
-          (setq buffer-exists? t)))
-       (when window-visible?
-         (delete-window (treemacs-get-local-window)))
-       (when buffer-exists?
-         (kill-buffer (treemacs-get-local-buffer)))
-       (when buffer-exists?
-         (let ((treemacs-follow-after-init nil)
-               (treemacs-follow-mode nil))
-           (treemacs-select-window)))
-       (when (not window-visible?)
-         (bury-buffer)))
      (treemacs-pulse-on-success "Selected workspace %s."
        (propertize (treemacs-workspace->name workspace))))))
+
+(defun treemacs-rename-workspace ()
+  "Select a workspace to rename."
+  (interactive)
+  (pcase (treemacs-do-rename-workspace)
+    (`(success ,old-name ,workspace)
+     (treemacs-pulse-on-success "Workspace %s successfully renamed to %s."
+       (propertize old-name 'face 'font-lock-type-face)
+       (propertize (treemacs-workspace->name workspace) 'face 'font-lock-type-face)))
+    (`(invalid-name ,name)
+     (treemacs-pulse-on-failure "Name '%s' is invalid."
+       (propertize name 'face 'font-lock-string-face)))))
 
 (defun treemacs-refresh ()
   "Refresh the project at point."
@@ -1036,6 +1030,7 @@ Only works with a single project in the workspace."
        (`(error ,err-line ,err-msg)
         (treemacs--org-edit-display-validation-msg err-msg err-line))
        ('success
+        (treemacs--invalidate-buffer-project-cache)
         (f-write (apply #'concat (--map (concat it "\n") lines)) 'utf-8 treemacs-persist-file)
         (kill-buffer)
         (treemacs--restore)
