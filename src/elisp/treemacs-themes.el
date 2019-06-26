@@ -58,22 +58,36 @@
                   :gui-icons gui-icons
                   :tui-icons tui-icons)))
      (add-to-list 'treemacs--themes theme)
-     (when ,extends
-       (treemacs-unless-let (base-theme (treemacs--find-theme ,extends))
-           (treemacs-log "Could not find base theme %s when creating theme %s." ,extends ,name)
-         (treemacs--maphash (treemacs-theme->gui-icons base-theme) (ext icon)
-           (ht-set! gui-icons ext icon))
-         (treemacs--maphash (treemacs-theme->tui-icons base-theme) (ext icon)
-           (ht-set! tui-icons ext icon))))
+     ,(when extends
+        `(treemacs-unless-let (base-theme (treemacs--find-theme ,extends))
+             (treemacs-log "Could not find base theme %s when creating theme %s." ,extends ,name)
+           (treemacs--maphash (treemacs-theme->gui-icons base-theme) (ext icon)
+             (ht-set! gui-icons ext icon))
+           (treemacs--maphash (treemacs-theme->tui-icons base-theme) (ext icon)
+             (ht-set! tui-icons ext icon))))
      (-let [treemacs--current-theme theme]
        ,config)
      theme))
+
+(defmacro treemacs-modify-theme (theme &rest config)
+  "Modify an existing THEME with the given.
+CONFIG will be applied to the THEME in the same manner as in
+`treemacs-create-theme'.
+THEME can either be a treemacs-theme object or the name of a theme."
+  (declare (indent 1))
+  (treemacs-static-assert (not (null theme))
+    "Theme may not be null.")
+  `(treemacs-unless-let (theme (if (stringp ,theme) (treemacs--find-theme ,theme) ,theme))
+       (user-error "Theme %s does not exist" ,theme)
+     (-let [treemacs--current-theme theme]
+       ,@config)))
 
 (defun treemacs-load-theme (name)
   "Enable the theme with the given NAME."
   (treemacs-unless-let (theme (treemacs--find-theme name))
       (treemacs-log "Cannot find theme '%s'." name)
-    (setq treemacs--current-theme theme)))
+    (setq treemacs--current-theme theme)
+    (treemacs--select-icon-set)))
 
 (provide 'treemacs-themes)
 
