@@ -85,7 +85,7 @@ Necessary since root icons are not rectangular."
            (create-image ,file-path 'imagemagick nil :ascent 'center :width width :height height)
          (create-image ,file-path 'png nil :ascent 'center))))))
 
-(define-inline treemacs---create-icon-strings (file fallback)
+(define-inline treemacs--create-icon-strings (file fallback)
   "Create propertized icon strings for a given FILE image and TUI FALLBACK."
   (inline-letevals (file fallback)
     (inline-quote
@@ -104,9 +104,16 @@ Necessary since root icons are not rectangular."
                         " ")))))
        (cons gui-icon tui-icon)))))
 
-(cl-defmacro treemacs-create-icon (&key file (fallback " ") extensions)
+(defmacro treemacs--splice-icon (icon)
+  "Splice the given ICON data depending on whether it is a value or an sexp."
+  (if (listp icon)
+      `(progn ,@icon)
+    `(progn ,icon)))
+
+(cl-defmacro treemacs-create-icon (&key file icon (fallback " ") extensions)
   "Create an icon for the current theme.
 - FILE is a file path relative to the icon directory of the current theme.
+- ICON is a string of an already created icon. Mutually exclusive with FILE.
 - FALLBACK is the fallback string for situations where png images are
   unavailable.
 - EXTENSIONS is a list of file extensions the icon should be used for.
@@ -116,8 +123,11 @@ Necessary since root icons are not rectangular."
   An extension may also be a symbol instead of a string. In this case treemacs
   will also create a variable named \"treemacs-icon-%s\" making it universally
   accessible."
-  `(let* ((icon-path (f-join (treemacs-theme->path treemacs--current-theme) ,file))
-          (icon-pair (treemacs---create-icon-strings icon-path ,fallback))
+  (treemacs-static-assert (or (null icon) (null file))
+    "FILE and ICON arguments are mutually exclusive")
+  `(let* ((icon-path ,(if file `(f-join (treemacs-theme->path treemacs--current-theme) ,file) nil))
+          (icon-pair ,(if file `(treemacs--create-icon-strings icon-path ,fallback)
+                        `(cons ,(treemacs--splice-icon icon) ,fallback)))
           (gui-icons (treemacs-theme->gui-icons treemacs--current-theme))
           (tui-icons (treemacs-theme->tui-icons treemacs--current-theme))
           (gui-icon  (car icon-pair))
