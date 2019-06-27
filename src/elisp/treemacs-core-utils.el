@@ -1318,7 +1318,7 @@ from `treemacs-copy-file' or `treemacs-move-file'."
        (treemacs-error-return-if (not (treemacs-is-node-file-or-dir? node))
          wrong-type-msg)
        (let* ((source (treemacs-button-get node :path))
-              (destination (read-directory-name prompt nil default-directory :must-match))
+              (destination (file-name-as-directory (read-directory-name prompt nil default-directory :must-match)))
               (filename (treemacs--filename source))
               (move-to-on-success (f-join destination filename)))
          (when (file-exists-p (f-join destination filename))
