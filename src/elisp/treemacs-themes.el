@@ -16,8 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Definitions for the theme type, their creation, and, eventually, the means
-;;; to change themes.
+;;; Definitions for the theme type, their creation, and, the means to change themes.
 
 ;;; Code:
 
@@ -29,12 +28,20 @@
 (require 'treemacs-macros)
 (require 'treemacs-core-utils)
 
+(treemacs-import-functions-from "treemacs-icons"
+  treemacs--select-icon-set)
+
 (treemacs--defstruct treemacs-theme
   name path gui-icons tui-icons)
 
 (defvar treemacs--current-theme nil "The currently used theme.")
 
 (defvar treemacs--themes nil "List of all known themes.")
+
+(define-inline treemacs-current-theme ()
+  "Get the current theme."
+  (declare (side-effect-free t))
+  (inline-quote treemacs--current-theme))
 
 (define-inline treemacs--find-theme (name)
   "Find theme with the given NAME."

@@ -24,6 +24,7 @@
 (require 'image)
 (require 'dash)
 (require 's)
+(require 'ht)
 (require 'treemacs-visuals)
 (require 'treemacs-themes)
 (require 'treemacs-workspaces)
@@ -279,6 +280,19 @@ TUI icons will be used if
       (let ((variable (intern (format "treemacs-icon-%s" icon-symbol)))
             (value    (ht-get icons icon-symbol)))
         (set variable value)))))
+
+(defmacro treemacs-get-icon-value (ext &optional tui theme)
+  "Get the value of an icon for extension EXT.
+If TUI is non-nil the terminal fallback value is returned.
+THEME is the name of the theme to look in. Will cause an error if the theme
+does not exist."
+  `(let* ((theme ,(if theme
+                      `(treemacs--find-theme ,theme)
+                    `(treemacs-current-theme)))
+          (icons ,(if tui
+                     `(treemacs-theme->tui-icons theme)
+                   `(treemacs-theme->gui-icons theme))))
+     (ht-get icons ,ext)))
 
 ;;;###autoload
 (defun treemacs-define-custom-icon (icon &rest file-extensions)
