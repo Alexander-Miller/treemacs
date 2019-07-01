@@ -232,6 +232,15 @@ to it will instead show a blank."
       (define-key map (kbd "c a")   #'treemacs-collapse-all-projects)
       map)
     "Keymap for project-related commands in `treemacs-mode'.")
+  (defvar treemacs-workspace-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "r")     #'treemacs-rename-workspace)
+      (define-key map (kbd "a")     #'treemacs-create-workspace)
+      (define-key map (kbd "d")     #'treemacs-remove-workspace)
+      (define-key map (kbd "s")     #'treemacs-switch-workspace)
+      (define-key map (kbd "e")     #'treemacs-edit-workspaces)
+      map)
+    "Keymap for workspace-related commands in `treemacs-mode'.")
   (defvar treemacs-node-visit-map
     (let ((map (make-sparse-keymap)))
       (define-key map (kbd "v")        #'treemacs-visit-node-vertical-split)
@@ -298,6 +307,7 @@ to it will instead show a blank."
       (define-key map (kbd "s")         #'treemacs-resort)
       (define-key map (kbd "b")         #'treemacs-add-bookmark)
       (define-key map (kbd "C-c C-p")   treemacs-project-map)
+      (define-key map (kbd "C-c C-w")   treemacs-workspace-map)
       (define-key map (kbd "<M-up>")    #'treemacs-move-project-up)
       (define-key map (kbd "<M-down>")  #'treemacs-move-project-down)
       (define-key map (kbd "<backtab>") #'treemacs-collapse-all-projects)
