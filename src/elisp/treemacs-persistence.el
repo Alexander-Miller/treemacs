@@ -44,7 +44,7 @@
   (rx bol
       (? " ")
       "- "
-      (1+ (or (syntax word) (syntax symbol) (syntax punctuation)))
+      (or "path")
       " :: "
       (1+ (or (syntax word) (syntax symbol) (syntax punctuation) space))
       eol)
@@ -181,13 +181,12 @@ ITER: Treemacs-Iter struct"
 (defun treemacs--read-persist-lines (&optional txt)
   "Read the relevant lines from given TXT or `treemacs-persist-file'.
 Will read all lines, except those that start with # or contain only whitespace."
-  (-when-let (lines (-some-> (or txt (when (file-exists-p treemacs-persist-file)
-                                       (f-read treemacs-persist-file)))
-                             (s-trim)
-                             (s-lines)))
-    (--reject (or (s-blank-str? it)
-                  (s-starts-with? "#" it))
-              lines)))
+  (-some->> (or txt (when (file-exists-p treemacs-persist-file)
+                      (f-read treemacs-persist-file)))
+            (s-trim)
+            (s-lines)
+            (--reject (or (s-blank-str? it)
+                          (s-starts-with? "#" it)))))
 
 (cl-defun treemacs--validate-persist-lines (lines &optional (context :start) (prev nil))
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.
