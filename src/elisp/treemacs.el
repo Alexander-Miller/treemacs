@@ -206,10 +206,12 @@ treemacs buffer for this frame."
   (switch-to-buffer (get-buffer-create treemacs--org-edit-buffer-name))
   (erase-buffer)
   (org-mode)
+  (local-set-key (kbd "C-c C-c") #'treemacs-finish-edit)
   (insert "#+TITLE: Edit Treemacs Workspaces & Projects\n")
   (when treemacs-show-edit-workspace-help
-    (insert "# Call ~treemacs-finish-edit~ when done.\n")
-    (insert "# [[https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-and-workspaces][Click here for detailed documentation.]]\n\n"))
+    (insert "# Call ~treemacs-finish-edit~ or press ~C-c C-c~ when done.\n")
+    (insert "# [[https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-and-workspaces][Click here for detailed documentation.]]\n")
+    (insert "# To cancel you can simple kill this buffer.\n\n"))
   (insert-file-contents treemacs-persist-file)
   (with-no-warnings
     (outline-show-all))
