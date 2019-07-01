@@ -551,6 +551,12 @@ is enabled, since constantly expanding an entire project is fairly expensive."
   :group 'treemacs
   :type 'string)
 
+(defcustom treemacs-last-error-persist-file
+  (f-join user-emacs-directory ".cache" "treemacs-persist-at-last-error")
+  "File that stores the treemacs state as it was during the last load error."
+  :group 'treemacs
+  :type 'string)
+
 (defcustom treemacs-missing-project-action 'ask
   "Action to perform when a persisted project is not found on the disk.
 If the project is not found, the project can either be kept in the project list,

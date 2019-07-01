@@ -38,6 +38,8 @@
   (f-join user-emacs-directory ".cache" "treemacs-persist-at-last-error")
   "File that stores the treemacs state as it was during the last load error.")
 
+(make-obsolete-variable 'treemacs--last-error-persist-file 'treemac-last-error-persist-file "v2.7")
+
 (defconst treemacs--persist-kv-regex
   (rx bol
       (? " ")
