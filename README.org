@@ -55,6 +55,7 @@
    - [[#unbound-functions][Unbound functions]]
    - [[#default-keymaps][Default keymaps]]
       - [[#project-keybinds-prefix-c-c-c-p][Project Keybinds (Prefix ~C-c C-p~)]]
+      - [[#workspaces-keybinds-prefix-c-c-c-w][Workspaces Keybinds (Prefix ~C-c C-w~)]]
       - [[#node-visit-keybinds-prefix-o][Node Visit Keybinds (Prefix ~o~)]]
       - [[#toggle-keybinds-prefix-t][Toggle Keybinds (Prefix ~t~)]]
       - [[#copy-keybinds-prefix-y][Copy Keybinds (Prefix ~y~)]]
@@ -71,7 +72,8 @@ Explorer in Eclipse. It shows the file system outlines of your projects in a sim
 navigation and exploration, while also possessing *basic* file management utilities. Specifically a quick feature
 overview looks as follows:
 
- * Project management :: Treemacs lets you view multiple file trees - projects - at once and quickly add or remove them.
+ * Project management :: Treemacs lets you view multiple file trees - projects - at once and quickly add or remove them,
+   and groups projects in workspaces.
  * Easy navigation :: quickly move between projects or use shortcuts to jump to parent or neighbouring nodes.
  * Versatile file access :: decide exactly how and where a file will be opened, including using ~ace-window~ to choose
    a window or launching an external application.
@@ -85,7 +87,7 @@ overview looks as follows:
  * [[https://github.com/bbatsov/projectile][Projectile]] integration :: the ~treemacs-projectile~ package lets you quickly add your projectile projects to the
    treemacs workspace.
  * Simple mouse interface :: Left clicks will work the same as you're used to from with graphical applications
- * Session persistence :: Treemacs automatically saves and restores your workspace.
+ * Session persistence :: Treemacs automatically saves and restores your workspaces.
  * Dashing good looks :: Treemacs uses (optionally resizable) png images in HD 22x22 resolution for its icons (quantity
    is, of course, another matter). When run in a terminal a simple fallback is used.
  * Tag view :: Treemacs can display files' tags. All file types that Emacs can generate a (semantic) imenu index for are
@@ -121,29 +123,27 @@ arbitrarily change. This system makes it difficult to work on and switch between
 (and still does) remedy that limitation by making every treemacs buffer unique to its frame, but it has now been
 redesigned to be able to display multiple file trees - projects - at once.
 
-In treemacs a workspace is simply a (named) collection of projects, while a project consists of 2 things: its location
-in the file system and its display name. This is the info that you need to provide when you want to add a new project to
-your workspace. In the future it should be possible to switch between various workspaces and use different workspaces
-for different frames' buffers, but as of now there exists only the global default workspace.
+In treemacs a workspace is simply a (named) collection of projects, while a project mostly consists of 2 things: its
+location in the file system and its name. This is the info that you need to provide when you want to add a new project
+to your workspace. Just like projects you can add, remove, rename and switch between workspaces at any time.
 
 This design approach has various advantages and disadvantages. It is now no longer possible to "free roam" in the file
 system with treemacs, i.e. you can no longer arbitrarily switch the single file tree's root to the directory at point or
 the current root's parent. Another restriction is that the same part of the file system may not appear more than once as
-part of the workspace. For example it is not possible to add both /Foo and /Foo/Bar as projects, since internally
-treemacs heavily relies on every node having a unique natural key in its absolute path. Nonetheless the pros certainly
-outweigh the cons, as a multiroot setup allows to work on multiple projects with any combination concern/buffer
-separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for concurrent display not
-only of the file system, but e.g. the currently open buffers.
+part of the workspace. For example it is not possible to have both /Documents and /Documents/ProjectX as projects in the
+same workspace, since internally treemacs heavily relies on every node having a unique natural key in its absolute path.
+Nonetheless the pros certainly outweigh the cons, as a multiroot setup allows to work on multiple projects with any
+combination concern/buffer separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for
+concurrent display not only of the file system, but e.g. the currently open buffers.
 
 ** Conveniently Editing Your Projects and Workspaces
-While treemacs offers several single functions, all bound under the ~C-c C-p~ prefix, to add or remove projects, it is also
-possible to make large-scale edits to the layout of your workspace(s) with the same convenience as editing an ~org-mode~
-file. Simply call ~treemacs-edit-workspaces~ and you'll be presented with a buffer representing your current layout.
-Just make your edits and call ~treemacs-finish-edit~ and you're done.
+There are two ways to edit your projects and workspaces: call up single add/remove/rename/switch commands under either
+the ~C-c C-p~ or ~C-c C-w~ prefix, or call ~treemacs-edit-workspaces~ and edit your entire layout in the form of a
+single org-mode buffer.
 
-The format is quite simple: level 1 headlines are names of workspaces, level 2 headlines are names of projects under a
-workspace, and every project's path is given as a description list, starting with a ~-~ (and an optional leading space).
-Empty lines and lines starting with ~#~ are ignored, and everything else leads to an error.
+The used org-format is quite simple: level 1 headlines are names of workspaces, level 2 headlines are names of projects
+in a workspace, and every project's path is given as a description list, starting with a ~-~ (and an optional leading
+space). Empty lines and lines starting with ~#~ are ignored, and everything else leads to an error.
 
 You needn't worry about making mistakes either. If there's something wrong when you call ~treemacs-finish-edit~ then
 treemacs will point you at the incorrect line and tell you what's missing:
@@ -635,6 +635,16 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | C-c C-p c c       | treemacs-collapse-project              | Collapse project at point.                             |
 | C-c C-p c o/S-TAB | treemacs-collapse-all-projects         | Collapse all projects.                                 |
 | C-c C-p c o       | treemacs-collapse-all-projects         | Collapse all projects except the project at point.     |
+
+*** Workspaces Keybinds (Prefix ~C-c C-w~)
+
+| Key       | Action                    | Description                         |
+|-----------+---------------------------+-------------------------------------|
+| C-c C-w r | treemacs-rename-workspace | Rename a workspace.                 |
+| C-c C-w a | treemacs-create-workspace | Create a new workspace.             |
+| C-c C-w d | treemacs-remove-workspace | Delete a workspace.                 |
+| C-c C-w s | treemacs-switch-workspace | Switch the current workspace.       |
+| C-c C-w e | treemacs-edit-workspaces  | Edit workspace layout via org-mode. |
 
 *** Node Visit Keybinds (Prefix ~o~)
 
