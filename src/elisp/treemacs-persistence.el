@@ -154,9 +154,9 @@ ITER: Treemacs-Iter struct"
 (defun treemacs--persist ()
   "Persist treemacs' state in `treemacs-persist-file'."
   (unless (treemacs--should-not-run-persistence?)
-    (unless (f-exists? treemacs-persist-file)
-      (f-mkdir (f-dirname treemacs-persist-file))
-      (f-touch treemacs-persist-file))
+    (dolist (file (list treemacs-persist-file treemacs-last-error-persist-file))
+      (unless (file-exists-p file)
+        (make-directory (file-name-directory file) :with-parents)))
     (condition-case e
         (let ((txt nil)
               (buffer nil)
