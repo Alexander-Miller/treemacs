@@ -73,7 +73,17 @@
            (treemacs--maphash (treemacs-theme->tui-icons base-theme) (ext icon)
              (ht-set! tui-icons ext icon))))
      (-let [treemacs--current-theme theme]
-       ,config)
+       ,config
+       ,(unless (string= name "Default")
+          `(dolist (other-theme (delete treemacs--current-theme treemacs--themes))
+             (pcase-dolist (`(,current-icons . ,other-icons)
+                            `(,(cons (treemacs-theme->gui-icons treemacs--current-theme)
+                                     (treemacs-theme->gui-icons other-theme))
+                              ,(cons (treemacs-theme->tui-icons treemacs--current-theme)
+                                     (treemacs-theme->tui-icons other-theme))))
+               (treemacs--maphash current-icons (ext icon)
+                 (unless (ht-get other-icons ext)
+                   (ht-set! other-icons ext icon)))))))
      theme))
 
 (defmacro treemacs-modify-theme (theme &rest config)
