@@ -701,6 +701,58 @@ Valid values are
                  (const right))
   :group 'treemacs)
 
+(defcustom treemacs-create-project-functions nil
+  "Hooks to run whenever a project is created.
+Will be called with the new project as the sole argument."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-delete-project-functions nil
+  "Hooks to run whenever a project is deleted.
+Will be called with the deleted project as the sole argument *after* it has been
+deleted."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-rename-project-functions nil
+  "Hooks to run whenever a project is renamed.
+Will be called with the renamed project and the old name as its argumens."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-create-workspace-functions nil
+  "Hooks to run whenever a workspace is created.
+Will be called with the new workspace as the sole argument."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-delete-workspace-functions nil
+  "Hooks to run whenever a workspace is deleted.
+Will be called with the deleted workspace as the sole argument *after* it has
+been deleted."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-rename-workspace-functions nil
+  "Hooks to run whenever a workspace is renamed.
+Will be called with the renamed workspace and the old name as its argumens."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-switch-workspace-hook nil
+  "Hooks to run whenever the workspace is changed.
+The current workspace will be available as `treemacs-current-workspace'."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-workspace-edit-hook nil
+  "Hooks to run whenever the entire workspace layout has been rebuilt.
+This hook runs after `treemacs-finish-edit' has been called. After such an edit
+any number (including zero) of workspaces and projects may have been changed or
+created or deleted."
+  :type 'hook
+  :group 'treemacs-hooks)
+
 (defcustom treemacs-pre-refresh-hook nil
   "Hooks to run right before the refresh process for a project kicks off.
 During the refresh the project is effectively collapsed and then expanded again.

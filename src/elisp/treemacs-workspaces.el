@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; TODO
+;;; Everything about creating, (re)moving, (re)naming and otherwise editing
+;;; projects and workspaces.
 
 ;;; Code:
 
@@ -261,6 +262,7 @@ Return values may be as follows:
      (-let [workspace (make-treemacs-workspace :name name)]
        (add-to-list 'treemacs--workspaces workspace :append)
        (treemacs--persist)
+       (run-hook-with-args 'treemacs-create-workspace-functions workspace)
        `(success ,workspace)))))
 
 (defun treemacs-do-remove-workspace (&optional ask-to-confirm)
@@ -296,6 +298,7 @@ Return values may be as follows:
          (-when-let (current-ws (treemacs-current-workspace))
            (when (eq current-ws to-delete)
              (treemacs--rerender-after-workspace-change)))))
+     (run-hook-with-args 'treemacs-delete-workspace-functions to-delete)
      `(success ,to-delete ,treemacs--workspaces))))
 
 (defun treemacs--rerender-after-workspace-change ()
@@ -433,6 +436,7 @@ NAME: String"
          (treemacs--insert-into-dom (make-treemacs-dom-node
                                      :key path :position (treemacs-project->position project)))))
        (treemacs--persist)
+       (run-hook-with-args 'treemacs-create-project-functions project)
        `(success ,project)))))
 
 (defalias 'treemacs-add-project-at #'treemacs-do-add-project-to-workspace)
@@ -484,6 +488,7 @@ PROJECT: Project Struct"
         (recenter)))
     (treemacs--evade-image)
     (hl-line-highlight)))
+  (run-hook-wrapped 'treemacs-delete-project-functions project)
   (treemacs--persist))
 
 (defun treemacs-do-switch-workspace ()
@@ -506,6 +511,7 @@ Return values may be as follows:
      (setf (treemacs-current-workspace) selected)
      (treemacs--invalidate-buffer-project-cache)
      (treemacs--rerender-after-workspace-change)
+     (run-hooks 'treemacs-switch-workspace-hook)
      (treemacs-return
       `(success ,selected)))))
 
@@ -532,6 +538,7 @@ Return values may be as follows:
        `(invalid-name ,new-name))
      (setf (treemacs-workspace->name ws-to-rename) new-name)
      (treemacs--persist)
+     (run-hook-with-args 'treemacs-rename-workspace-functions ws-to-rename old-name)
      `(success ,old-name ,ws-to-rename))))
 
 (defun treemacs--is-name-invalid? (name)

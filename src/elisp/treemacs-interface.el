@@ -709,6 +709,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
            (when (eq state 'root-node-open)
              (treemacs--collapse-root-node (treemacs-project->position project))
              (treemacs--expand-root-node (treemacs-project->position project))))
+         (run-hook-with-args 'treemacs-rename-project-functions project old-name)
          (treemacs-pulse-on-success "Renamed project %s to %s."
            (propertize old-name 'face 'font-lock-type-face)
            (propertize new-name 'face 'font-lock-type-face)))))))
@@ -1036,6 +1037,7 @@ Only works with a single project in the workspace."
         (treemacs--restore)
         (treemacs--consolidate-projects)
         (-some-> (get-buffer treemacs--org-edit-buffer-name) (kill-buffer))
+        (run-hooks 'treemacs-workspace-edit-hook)
         (treemacs-log "Edit completed successfully."))))))
 
 (defun treemacs-collapse-parent-node (arg)
