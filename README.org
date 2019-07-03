@@ -616,6 +616,7 @@ These functions are not bound to any keys by default. It's left up to users to f
 | treemacs-select-window                   | Select the treemacs window if it is visible. Call ~treemacs~ if it is not. |
 | treemacs-delete-other-windows            | Same as ~delete-other-windows~, but will not delete the treemacs window.   |
 | treemacs-show-changelog                  | Opens a buffer showing the changelog.                                      |
+| treemacs-load-theme                      | Load a different icon theme.                                               |
 |------------------------------------------+----------------------------------------------------------------------------|
 | treemacs-projectile                      | Add a project from projectile to treemacs.                                 |
 | treemacs-add-and-display-current-project | Add current project to treemacs and open it.                               |

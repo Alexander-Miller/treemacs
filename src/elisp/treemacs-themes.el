@@ -114,7 +114,11 @@
             (ht-set! other-icons ext icon)))))))
 
 (defun treemacs-load-theme (name)
-  "Enable the theme with the given NAME."
+  "Load the theme with the given NAME.
+Note that some changes will only take effect after a treemacs buffer was killed
+and restored."
+  (interactive
+   (list (completing-read "Theme: " (-map #'treemacs-theme->name treemacs--themes))))
   (treemacs-unless-let (theme (treemacs--find-theme name))
       (treemacs-log "Cannot find theme '%s'." name)
     (setq treemacs--current-theme theme)
