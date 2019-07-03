@@ -75,21 +75,30 @@
      (-let [treemacs--current-theme theme]
        ,config
        (treemacs--propagate-new-icons theme))
-     theme))
+     ,name))
 
-(defmacro treemacs-modify-theme (theme &rest config)
-  "Modify an existing THEME with the given.
-CONFIG will be applied to the THEME in the same manner as in
-`treemacs-create-theme'.
-THEME can either be a treemacs-theme object or the name of a theme."
+(cl-defmacro treemacs-modify-theme (theme &key icon-directory config)
+  "Modify an existing THEME.
+- CONFIG will be applied to the THEME in the same manner as in
+  `treemacs-create-theme'.
+- THEME can either be a treemacs-theme object or the name of a theme.
+- For the scope of the modification an alternative ICON-DIRECTORY can also be
+  used."
   (declare (indent 1))
   (treemacs-static-assert (not (null theme))
     "Theme may not be null.")
   `(treemacs-unless-let (theme (if (stringp ,theme) (treemacs--find-theme ,theme) ,theme))
        (user-error "Theme %s does not exist" ,theme)
-     (-let [treemacs--current-theme theme]
-       ,@config
-       (treemacs--propagate-new-icons theme))))
+     (let* ((treemacs--current-theme theme)
+            (original-icon-dir (treemacs-theme->path theme))
+            (new-icon-dir (if ,icon-directory ,icon-directory original-icon-dir)))
+       (unwind-protect
+           (progn
+             (setf (treemacs-theme->path theme) new-icon-dir)
+             ,config
+             (treemacs--propagate-new-icons theme))
+         (setf (treemacs-theme->path theme) original-icon-dir))
+       (treemacs-theme->name theme))))
 
 (defun treemacs--propagate-new-icons (theme)
   "Add THEME's new icons to the other themes."
