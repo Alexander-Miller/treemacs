@@ -47,7 +47,6 @@
   treemacs-next-project)
 
 (treemacs-import-functions-from "treemacs-persistence"
-  treemacs--restore
   treemacs--persist)
 
 (treemacs--defstruct treemacs-project name path path-status)

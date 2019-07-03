@@ -54,9 +54,6 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
-(treemacs-only-during-init
- (treemacs--restore))
-
 (defconst treemacs-version
   (eval-when-compile
     (format "v2.6-%s @ %s"

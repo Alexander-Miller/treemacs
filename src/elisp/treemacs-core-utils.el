@@ -107,6 +107,9 @@
 (treemacs-import-functions-from "treemacs-visuals"
   treemacs-pulse-on-failure)
 
+(treemacs-import-functions-from "treemacs-persistence"
+  treemacs--maybe-load-workspaces)
+
 (declare-function treemacs-mode "treemacs-mode")
 
 (defvar treemacs--closed-node-states
@@ -569,6 +572,7 @@ buffer."
 (defun treemacs--init (&optional root name)
   "Initialize a treemacs buffer from the current workspace.
 Add a project for ROOT and NAME if they are non-nil."
+  (treemacs--maybe-load-workspaces)
   (let ((origin-buffer (current-buffer))
         (current-workspace (treemacs-current-workspace))
         (run-hook? nil))

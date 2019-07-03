@@ -281,6 +281,13 @@ CONTEXT: Keyword"
                            (format "Broken state was saved to %s"
                                    (propertize treemacs-last-error-persist-file 'face 'font-lock-string-face))))))))))
 
+(define-inline treemacs--maybe-load-workspaces ()
+  "First load of the workspaces, if it hasn't happened already."
+  (inline-quote
+   (unless (get 'treemacs :state-is-restored)
+     (treemacs--restore)
+     (put 'treemacs :state-is-restored t))))
+
 (defun treemacs--write-error-persist-state (lines error)
   "Write broken state LINES and ERROR to `treemacs-last-error-persist-file'."
   (-let [txt (concat (format "# State when last error occurred on %s\n" (format-time-string "%F %T"))
