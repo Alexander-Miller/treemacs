@@ -38,7 +38,7 @@
   (f-join user-emacs-directory ".cache" "treemacs-persist-at-last-error")
   "File that stores the treemacs state as it was during the last load error.")
 
-(make-obsolete-variable 'treemacs--last-error-persist-file 'treemac-last-error-persist-file "v2.7")
+(make-obsolete-variable 'treemacs--last-error-persist-file 'treemacs-last-error-persist-file "v2.7")
 
 (defconst treemacs--persist-kv-regex
   (rx bol
@@ -154,9 +154,8 @@ ITER: Treemacs-Iter struct"
 (defun treemacs--persist ()
   "Persist treemacs' state in `treemacs-persist-file'."
   (unless (treemacs--should-not-run-persistence?)
-    (dolist (file (list treemacs-persist-file treemacs-last-error-persist-file))
-      (unless (file-exists-p file)
-        (make-directory (file-name-directory file) :with-parents)))
+    (unless (file-exists-p treemacs-persist-file)
+      (make-directory (file-name-directory treemacs-persist-file) :with-parents))
     (condition-case e
         (let ((txt nil)
               (buffer nil)
@@ -293,6 +292,8 @@ CONTEXT: Keyword"
   (-let [txt (concat (format "# State when last error occurred on %s\n" (format-time-string "%F %T"))
                      (format "# Error was %s\n\n" error)
                      (apply #'concat (--map (concat it "\n") lines)))]
+    (unless (file-exists-p treemacs-last-error-persist-file)
+      (make-directory (file-name-directory treemacs-last-error-persist-file) :with-parents))
     (f-write txt 'utf-8 treemacs-last-error-persist-file)))
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
