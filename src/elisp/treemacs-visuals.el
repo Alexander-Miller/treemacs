@@ -123,7 +123,7 @@ the gui icons of every theme in `treemacs--themes'.
 Also called as advice after `load-theme', hence the ignored argument."
   (let* ((default-background (face-attribute 'default :background nil t))
          (hl-line-background (face-attribute 'hl-line :background nil t))
-         (test-icon          (with-no-warnings treemacs-icon-root))
+         (test-icon          (treemacs-get-icon-value 'dir-open))
          (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected test-icon) :background))
          (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected test-icon) :background)))
     (when (memq default-background '(unspecified-bg unspecified))

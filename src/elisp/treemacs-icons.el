@@ -279,7 +279,7 @@ TUI icons will be used if
     (dolist (icon-symbol treemacs--icon-symbols)
       (let ((variable (intern (format "treemacs-icon-%s" icon-symbol)))
             (value    (ht-get icons icon-symbol)))
-        (set variable value)))))
+        (set (make-local-variable variable) value)))))
 
 (defmacro treemacs-get-icon-value (ext &optional tui theme)
   "Get the value of an icon for extension EXT.

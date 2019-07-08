@@ -122,7 +122,10 @@ and restored."
   (treemacs-unless-let (theme (treemacs--find-theme name))
       (treemacs-log "Cannot find theme '%s'." name)
     (setq treemacs--current-theme theme)
-    (treemacs--select-icon-set)))
+    (dolist (buffer (buffer-list))
+      (when (memq (buffer-local-value 'major-mode buffer) '(treemacs-mode dired-mode))
+        (with-current-buffer buffer
+          (treemacs--select-icon-set))))))
 
 (provide 'treemacs-themes)
 
