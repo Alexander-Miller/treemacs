@@ -31,7 +31,10 @@
       - [[#ggtags][ggtags]]
    - [[#current-directory-awareness][Current-Directory Awareness]]
    - [[#tramp-support][Tramp Support]]
-   - [[#org-support][Org support]]
+   - [[#org-support][Org Support]]
+   - [[#theme-support][Theme Support]]
+      - [[#using-themes][Using Themes]]
+      - [[#creating-and-modifying-themes][Creating and modifying Themes]]
    - [[#additional-packages][Additional Packages]]
       - [[#treemacs-evil][treemacs-evil]]
       - [[#treemacs-projectile][treemacs-projectile]]
@@ -94,6 +97,7 @@ overview looks as follows:
    supported.
  * Visual feedback :: When it would otherwise be difficult to see the message in the minibuffer success/failure is
    indicated with pulse.el.
+ * Theming support :: Treemacs supports using multiple icon themes that can be changed at will.
  * Ease of use :: Treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
    defaults. Installation aside there are two obligatory pieces of setup: 1) Choosing convenient keybindings to run
    treemacs and 2) If you use evil: requiring ~treemacs-evil~ to integrate treemacs with evil and enable j/k navigation.
@@ -295,8 +299,70 @@ your home directory when there is no node or path at point. That means that vari
 Treemacs supports projects on remote directories, e.g. ~/scp:remote-server:path/to/directory~.
 
 However tramp support has some restrictions: ~treemacs-use-collapsed-directories~ has no effect on remote directories.
-** Org support
+** Org Support
 Treemacs supports storing links to its file nodes by means of ~org-store-link~.
+** Theme Support
+*** Using Themes
+Using a different treemacs theme works the same way as using a different Emacs theme: just call ~treemacs-load-theme~,
+either programmatically or interactively. In the former case you need to supply the name of the theme as a string, like
+this:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-load-theme "Default")
+#+END_SRC
+
+Do keep in mind that by default treemacs' theme support is all theory: the standard installation includes only the
+default theme; this feature is meant to easily allow *others* to create and distribute themes for treemacs.
+
+*** Creating and modifying Themes
+Creating and modifying themes and icons is all done in a single step using dedicated macros.
+
+To create a theme use ~treemacs-create-theme~. It requires the name of the theme and accepts 3 optional keyword
+arguments: the directory the theme's icons are stored in (if it's using png icons), the name of the theme it's extending
+and the config, a final form that's responsible for creating all the theme's icons. A config will typically consist of
+nothing but calls to ~treemacs-create-icon~:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-create-theme "Default"
+    :icon-directory (f-join treemacs-dir "icons/default")
+    :config
+    (progn
+      (treemacs-create-icon :file "root.png"  :fallback ""             :extensions (root))
+      (treemacs-create-icon :file "emacs.png" :fallback "🗏 "           :extensions ("el" "elc"))
+      (treemacs-create-icon :icon (all-the-icons-icon-for-file "yaml") :extensions ("yml" "yaml"))))
+
+#+END_SRC
+
+The ~:file~ argument is relative to the icon directory of the theme being created. When not using image icons the
+~:icon-directory~ argument can be omitted and the ~:file~ argument can be switched for ~:icon~ to supply the icon string
+directly. The TUI fallback is also optional, " " is used by default. Finally the list of extensions determines which
+file extensions the icon should be used for (for treemacs an extension is either the text after the last period or the
+entire file name).
+
+Instead of a string extension a symbol can also be used. In this case treemacs will also create a variable for that icon
+named ~treemacs-icon-$symbol~. Treemacs uses several such icon variables and any new theme should define their own
+versions (it it's not extending the default theme). The following icons are used:
+
+ - root
+ - dir-closed
+ - dir-open
+ - fallback
+ - tag-open
+ - tag-closed
+ - tag-leaf
+ - error
+ - info
+ - warning
+
+Finally keep in mind that treemacs' icons are all buffer-local values, and will most likely not be defined when trying
+to access their values directly. When you need to programmatically access some of treemacs' icons you should use
+~treemacs-get-icon-value~:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-get-icon-value 'root nil "Default")
+  (treemacs-get-icon-value "org" t)
+#+END_SRC
+
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 
