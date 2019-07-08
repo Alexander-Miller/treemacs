@@ -405,7 +405,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
       (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
     (progn
-      (setq treemacs-collapse-dirs                 (if (executable-find "python3") 3 0)
+      (setq treemacs-collapse-dirs                 (if (treemacs--find-python3) 3 0)
             treemacs-deferred-git-apply-delay      0.5
             treemacs-display-in-side-window        t
             treemacs-eldoc-display                 t
@@ -446,7 +446,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
       (treemacs-filewatch-mode t)
       (treemacs-fringe-indicator-mode t)
       (pcase (cons (not (null (executable-find "git")))
-                   (not (null (executable-find "python3"))))
+                   (not (null (treemacs--find-python3))))
         (`(t . t)
          (treemacs-git-mode 'deferred))
         (`(t . _)
@@ -507,7 +507,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-tag-follow-cleanup            | t                                                | When non-nil ~treemacs-tag-follow-mode~ will keep only the current file's tags visible.                                                                                                    |
 | treemacs-project-follow-cleanup        | nil                                              | When non-nil ~treemacs-follow-mode~ will keep only the current project expanded and all others closed.                                                                                     |
 | treemacs-no-png-images                 | nil                                              | When non-nil treemacs will use TUI string icons even when running in a GUI.                                                                                                                |
-| treemacs-python-executable             | (executable-find "python3")                      | Python 3 binary used by treemacs.                                                                                                                                                          |
+| treemacs-python-executable             | (treemacs--find-python3)                         | Python 3 binary used by treemacs.                                                                                                                                                          |
 | treemacs-recenter-after-file-follow    | nil                                              | Decides if and when to call ~recenter~ when ~treemacs-follow-mode~ moves to a new file.                                                                                                    |
 | treemacs-recenter-after-tag-follow     | nil                                              | Decides if and when to call ~recenter~ when ~treemacs-tag-follow-mode~ moves to a new tag.                                                                                                 |
 | treemacs-recenter-after-project-jump   | 'always                                          | Decides if and when to call ~recenter~ when navigating between projects.                                                                                                                   |
