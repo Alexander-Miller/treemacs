@@ -32,12 +32,12 @@
            (s-trim)
            (s-lines)
            (--first
-	    (when (not (file-exists-p it))
-	      (->> (concat (shell-quote-argument it) " --version")
-		   (shell-command-to-string)
-		   (s-trim)
-		   (s-replace "Python " "")
-		   (version<= "3"))))))))
+            (when (file-exists-p it)
+              (->> (concat (shell-quote-argument it) " --version")
+                   (shell-command-to-string)
+                   (s-trim)
+                   (s-replace "Python " "")
+                   (version<= "3"))))))))
 
 (cl-macrolet
     ((define-action-widget (name include-default include-tab include-ret)
