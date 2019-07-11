@@ -1163,6 +1163,19 @@
   (it "Adds a slash when there isn't one"
     (expect (treemacs--add-trailing-slash "/ABC") :to-equal "/ABC/")))
 
+(describe "treemacs--is-name-invalid?"
+  (it "detects nil"
+    (expect (treemacs--is-name-invalid? nil) :to-be t))
+
+  (it "detects an empty string"
+    (expect (treemacs--is-name-invalid? "") :to-be t))
+
+  (it "detects a blank string"
+    (expect (treemacs--is-name-invalid? "      ") :to-be t))
+
+  (it "detects a string with newlines"
+    (expect (treemacs--is-name-invalid? "a\nb") :to-be t)))
+
 (describe "treemacs--find-workspace"
 
   (it "Finds nothing when there are no workspaces"

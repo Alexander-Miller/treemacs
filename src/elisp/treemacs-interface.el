@@ -698,6 +698,9 @@ For slower scrolling see `treemacs-previous-line-other-window'"
              (new-name (read-string "New name: " (treemacs-project->name project))))
         (treemacs-save-position
          (progn
+           (treemacs-return-if (treemacs--is-name-invalid? new-name)
+             (treemacs-pulse-on-failure "'%s' is an invalid name."
+               (propertize new-name 'face 'font-lock-type-face)))
            (treemacs-return-if (string-equal old-name new-name)
              (treemacs-pulse-on-failure "The new name is the same as the old name."))
            (setf (treemacs-project->name project) new-name)

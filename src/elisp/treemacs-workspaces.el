@@ -545,7 +545,9 @@ Return values may be as follows:
 Returns t when the name is invalid.
 
 NAME: String"
-  (or (string= "" name)
+  (declare (pure t) (side-effect-free t))
+  (or (s-blank-str? name)
+      (s-contains? "\n" name)
       (not (s-matches? (rx (1+ (or space (syntax word) (syntax symbol) (syntax punctuation)))) name))))
 
 (define-inline treemacs-project-at-point ()
@@ -629,7 +631,7 @@ PROJECT, excluding newlines."
        (forward-line (if treemacs-show-edit-workspace-help 4 2)))
       (_
        (goto-char 0)
-       (search-forward line)))
+       (search-forward-regexp (rx-to-string `(seq bol ,line eol)))))
     (setf treemacs--org-err-ov (make-overlay (point-at-eol) (point-at-eol)))
     (overlay-put treemacs--org-err-ov 'after-string
                  (concat (propertize " ← " 'face 'error) message))
