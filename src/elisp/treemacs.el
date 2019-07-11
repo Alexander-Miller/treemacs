@@ -208,7 +208,7 @@ treemacs buffer for this frame."
   (when treemacs-show-edit-workspace-help
     (insert "# Call ~treemacs-finish-edit~ or press ~C-c C-c~ when done.\n")
     (insert "# [[https://github.com/Alexander-Miller/treemacs#conveniently-editing-your-projects-and-workspaces][Click here for detailed documentation.]]\n")
-    (insert "# To cancel you can simple kill this buffer.\n\n"))
+    (insert "# To cancel you can simply kill this buffer.\n\n"))
   (insert-file-contents treemacs-persist-file)
   (with-no-warnings
     (outline-show-all))
