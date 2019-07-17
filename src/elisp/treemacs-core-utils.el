@@ -563,7 +563,8 @@ The child buttons are returned in the same order as they appear in the treemacs
 buffer."
   (let ((ret)
         (btn (next-button (treemacs-button-end parent-btn) t)))
-    (when (equal (1+ (treemacs-button-get parent-btn :depth)) (treemacs-button-get btn :depth))
+    (when (and btn (equal (1+ (treemacs-button-get parent-btn :depth))
+                          (treemacs-button-get btn :depth)))
       (setq ret (cons btn ret))
       (while (setq btn (treemacs--next-neighbour-of btn))
         (push btn ret)))
