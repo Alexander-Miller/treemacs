@@ -130,8 +130,8 @@ This will make sure the icons' background colors will align with hl-line mode."
         (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
         (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
         (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
-        (advice-add #'ranger-setup :before #'treemacs--select-icon-set)
-        (advice-add #'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
+        (advice-add 'ranger-setup :before #'treemacs--select-icon-set)
+        (advice-add 'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
         (dolist (buffer (buffer-list))
           (with-current-buffer buffer
             (when (derived-mode-p 'dired-mode)
@@ -140,8 +140,8 @@ This will make sure the icons' background colors will align with hl-line mode."
     (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
     (remove-hook 'dired-mode-hook #'treemacs--select-icon-set)
     (remove-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
-    (advice-add #'ranger-setup :before #'treemacs--select-icon-set)
-    (advice-add #'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
+    (advice-remove 'ranger-setup #'treemacs--select-icon-set)
+    (advice-remove 'ranger-setup #'treemacs-icons-dired--enable-highlight-correction)
     (dolist (buffer (buffer-list))
       (with-current-buffer buffer
         (when (derived-mode-p 'dired-mode)
