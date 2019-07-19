@@ -203,9 +203,9 @@ node for quick retrieval later."
                      'help-echo nil
                      :custom t
                      :state ,state
-                     :parent btn
+                     :parent node
                      :depth depth
-                     :path (append (treemacs-button-get btn :path) (list ,key-form))
+                     :path (append (treemacs-button-get node :path) (list ,key-form))
                      :key ,key-form
                      ,@more-properties)
          (when (zerop depth) (if treemacs-space-between-root-nodes "\n\n" "\n"))))
@@ -251,6 +251,8 @@ type. VISIT-ACTION is used in `treemacs-visit-node-no-split' actions."
           render-action
           ret-action
           visit-action
+          after-expand
+          after-collapse
           top-level-marker
           root-marker
           root-label
@@ -278,6 +280,10 @@ RET-ACTION will define what function is called when RET is pressed on this type
 of node. Only RET, without TAB and mouse1 can be defined since for expandable
 nodes both TAB and RET should toggle expansion/collapse. VISIT-ACTION is used in
 `treemacs-visit-node-no-split' actions.
+
+AFTER-EXPAND and AFTER-COLLAPSE are optional forms that will be called after a
+node has been expanded or collapsed. The closed or opened node marker will be
+visible under the name `node' in their scope.
 
 ROOT-MARKER is a simple boolean. It indicates the special case that the node
 being defined is a top level entry point. When this value is non-nil this macro
@@ -350,22 +356,22 @@ additional keys."
          ,(format "Expand treemacs nodes of type `%s'." name)
          (interactive)
          (treemacs-block
-          (-let [btn (treemacs-current-button)]
-            (when (null btn)
+          (-let [node (treemacs-node-at-point)]
+            (when (null node)
               (treemacs-return
                (treemacs-pulse-on-failure "There is nothing to do here.")))
-            (when (not (eq ',closed-state-name (treemacs-button-get btn :state)))
+            (when (not (eq ',closed-state-name (treemacs-button-get node :state)))
               (treemacs-return
                (treemacs-pulse-on-failure "This function cannot expand a node of type '%s'."
-                 (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
-            (,do-expand-name btn))))
+                 (propertize (format "%s" (treemacs-button-get node :state)) 'face 'font-lock-type-face))))
+            (,do-expand-name node))))
 
-       (defun ,do-expand-name (btn)
+       (defun ,do-expand-name (node)
          ,(format "Execute expansion of treemacs nodes of type `%s'." name)
          (let ((items ,query-function)
-               (depth (1+ (treemacs-button-get btn :depth))))
+               (depth (1+ (treemacs-button-get node :depth))))
            (treemacs--button-open
-            :button btn
+            :button node
             :new-state ',open-state-name
             :new-icon ,(unless variadic? (if icon-open open-icon-name icon-open-form))
             :immediate-insert t
@@ -378,33 +384,36 @@ additional keys."
             :post-open-action
             (progn
               (treemacs-on-expand
-               (treemacs-button-get btn :path)
-               btn
-               (-some-> btn (treemacs-button-get :parent) (treemacs-button-get :path)))
-              (treemacs--reopen-at (treemacs-button-get btn :path))))))
+               (treemacs-button-get node :path)
+               node
+               (-some-> node (treemacs-button-get :parent) (treemacs-button-get :path)))
+              (treemacs--reopen-at (treemacs-button-get node :path))
+              ,after-expand))))
 
        (defun ,collapse-name (&optional _)
          ,(format "Collapse treemacs nodes of type `%s'." name)
          (interactive)
          (treemacs-block
-          (-let [btn (treemacs-current-button)]
-            (when (null btn)
+          (-let [node (treemacs-node-at-point)]
+            (when (null node)
               (treemacs-return
                (treemacs-pulse-on-failure "There is nothing to do here.")))
-            (when (not (eq ',open-state-name (treemacs-button-get btn :state)))
+            (when (not (eq ',open-state-name (treemacs-button-get node :state)))
               (treemacs-return
                (treemacs-pulse-on-failure "This function cannot collapse a node of type '%s'."
-                 (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))))
-            (,do-collapse-name btn))))
+                 (propertize (format "%s" (treemacs-button-get node :state)) 'face 'font-lock-type-face))))
+            (,do-collapse-name node))))
 
-       (defun ,do-collapse-name (btn)
+       (defun ,do-collapse-name (node)
          ,(format "Collapse treemacs nodes of type `%s'." name)
          (treemacs--button-close
-          :button btn
+          :button node
           :new-state ',closed-state-name
           :new-icon ,(unless variadic? (if icon-closed closed-icon-name icon-closed-form))
           :post-close-action
-          (treemacs-on-collapse (treemacs-button-get btn :path))))
+          (progn
+            (treemacs-on-collapse (treemacs-button-get node :path))
+            ,after-collapse)))
 
        (treemacs-define-TAB-action ',open-state-name #',collapse-name)
        (treemacs-define-TAB-action ',closed-state-name #',expand-name)

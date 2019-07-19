@@ -443,7 +443,7 @@ set to PARENT."
          (point-at-eol))))))
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
-  "Close node given by BTN, use NEW-ICON and set state of BTN to NEW-STATE."
+  "Close node given by BUTTON, use NEW-ICON and set state of BUTTON to NEW-STATE."
   `(save-excursion
      (treemacs-with-writable-buffer
       ,@(when new-icon
@@ -451,7 +451,7 @@ set to PARENT."
       (treemacs-button-put ,button :state ,new-state)
       (-let [next (next-button (point-at-eol))]
         (if (or (null next)
-                (/= (1+ (treemacs-button-get btn :depth))
+                (/= (1+ (treemacs-button-get ,button :depth))
                     (treemacs-button-get (copy-marker next t) :depth)))
             (delete-trailing-whitespace)
           ;; Delete from end of the current button to end of the last sub-button.
