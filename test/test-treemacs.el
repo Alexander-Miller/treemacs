@@ -964,6 +964,10 @@
       (-let [lines '("* W1" "** P1" " - path :: a" "** P2" "- path :: b" "* W2" "** P3" " - path :: c")]
         (expect (treemacs--validate-persist-lines lines) :to-be 'success)))
 
+    (it "Succeeds with the same path in multiple workspaces"
+      (-let [lines '("* W1" "** P1" " - path :: /A/B" "* W2" "** P2" " - path :: /A/B")]
+        (expect (treemacs--validate-persist-lines lines) :to-be 'success)))
+
     (it "Succeeds with non-connectable remotes"
       (let* ((treemacs--org-edit-buffer-name (buffer-name))
              (lines '("* W1" "** P1" " - path :: /ftp:anonymous@ftp.invalid:/test-path")))
@@ -1003,7 +1007,17 @@
 
     (it "Fails when input is empty"
       (expect (treemacs--validate-persist-lines nil)
-              :to-equal '(error :start "Input is empty")))))
+              :to-equal '(error :start "Input is empty")))
+
+    (it "Fails when path appears more than once"
+      (-let [lines '("* W1"
+                     "** P1"
+                     " - path :: /A/B/C"
+                     "** P2"
+                     "- path :: /A/B/C/D")]
+        (expect (treemacs--validate-persist-lines lines)
+                :to-equal
+                '(error "- path :: /A/B/C/D" "Path '/A/B/C/D' appears in the workspace more than once."))))))
 
 (describe "treemacs--read-persist-lines"
 

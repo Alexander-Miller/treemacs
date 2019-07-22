@@ -187,11 +187,14 @@ Will read all lines, except those that start with # or contain only whitespace."
             (--reject (or (s-blank-str? it)
                           (s-starts-with? "#" it)))))
 
-(cl-defun treemacs--validate-persist-lines (lines &optional (context :start) (prev nil))
+(cl-defun treemacs--validate-persist-lines
+    (lines &optional (context :start) (prev nil) (paths nil))
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.
 Lines must start with a workspace name, followed by a project name, followed by
 the project's path property, followed by either the next project or the next
-workspace. The previously looked at line type is given by CONTEXT.
+workspace. The previously looked at line type is given by CONTEXT. PATHS contains
+all the project paths previously seen in the current workspace. These are used to
+make sure that no file path appears in the workspaces more than once.
 
 A successful validation returns just the symbol 'success, in case of an error a
 list of 3 items is returned: the symbol 'error, the exact line where the error
@@ -219,11 +222,11 @@ CONTEXT: Keyword"
          (:start
           (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
             `(error ,line ,(as-warning "First item must be a workspace name")))
-          (treemacs--validate-persist-lines (cdr lines) :workspace line))
+          (treemacs--validate-persist-lines (cdr lines) :workspace line nil))
          (:workspace
           (treemacs-return-if (not (s-matches? treemacs--persist-project-name-regex line))
             `(error ,line ,(as-warning "Workspace name must be followed by project name")))
-          (treemacs--validate-persist-lines (cdr lines) :project line))
+          (treemacs--validate-persist-lines (cdr lines) :project line nil))
          (:project
           (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
             `(error ,prev ,(as-warning "Project name must be followed by path declaration")))
@@ -236,15 +239,19 @@ CONTEXT: Keyword"
                                      (not (file-remote-p path))
                                      (not (file-exists-p path)))
               `(error ,line ,(format (as-warning "File '%s' does not exist") (propertize path 'face 'font-lock-string-face))))
-            (treemacs--validate-persist-lines (cdr lines) :property line)))
+            (treemacs-return-if (or (--any (treemacs-is-path path :in it) paths)
+                                    (--any (treemacs-is-path it :in path) paths))
+              `(error ,line ,(format (as-warning "Path '%s' appears in the workspace more than once.")
+                                     (propertize path 'face 'font-lock-string-face))))
+            (treemacs--validate-persist-lines (cdr lines) :property line (cons path paths))))
          (:property
           (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
                 (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
             (cond
              (line-is-workspace-name
-              (treemacs--validate-persist-lines (cdr lines) :workspace line))
+              (treemacs--validate-persist-lines (cdr lines) :workspace line nil))
              (line-is-project-name
-              (treemacs--validate-persist-lines (cdr lines) :project line))
+              (treemacs--validate-persist-lines (cdr lines) :project line paths))
              (t
               (treemacs-return-if (-none? #'identity (list line-is-workspace-name line-is-project-name))
                 `(error ,prev ,(as-warning "Path property must be followed by the next workspace or project"))))))))))))
