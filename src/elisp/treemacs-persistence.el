@@ -153,7 +153,8 @@ ITER: Treemacs-Iter struct"
 
 (defun treemacs--persist ()
   "Persist treemacs' state in `treemacs-persist-file'."
-  (unless (treemacs--should-not-run-persistence?)
+  (unless (or (treemacs--should-not-run-persistence?)
+              (null (get 'treemacs :state-is-restored)))
     (unless (file-exists-p treemacs-persist-file)
       (make-directory (file-name-directory treemacs-persist-file) :with-parents))
     (condition-case e

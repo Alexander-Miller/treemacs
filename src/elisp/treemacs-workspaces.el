@@ -53,7 +53,7 @@
 
 (treemacs--defstruct treemacs-workspace name projects)
 
-(defvar treemacs--workspaces (list (make-treemacs-workspace :name "Default Workspace")))
+(defvar treemacs--workspaces nil)
 
 (defvar treemacs--find-user-project-functions (list #'treemacs--default-current-user-project-function)
   "List of functions to find the user project for the current buffer.")
