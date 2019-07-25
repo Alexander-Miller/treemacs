@@ -260,7 +260,9 @@ CONTEXT: Keyword"
 (defun treemacs--restore ()
   "Restore treemacs' state from `treemacs-persist-file'."
   (unless (treemacs--should-not-run-persistence?)
-    (-when-let (lines (treemacs--read-persist-lines))
+    (treemacs-unless-let (lines (treemacs--read-persist-lines))
+        (setf treemacs--workspaces (list (make-treemacs-workspace :name "Default"))
+              (treemacs-current-workspace) (car treemacs--workspaces))
       ;; Don't persist during restore. Otherwise, if the user would quit
       ;; Emacs during restore, for example during the completing read for
       ;; missing project action, the whole persist file would be emptied.
