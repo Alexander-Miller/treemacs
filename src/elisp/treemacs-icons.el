@@ -203,6 +203,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "video.png"       :extensions ("webm" "mp4" "avi" "mkv" "flv" "mov" "wmv" "mpg" "mpeg" "mpv"))
     (treemacs-create-icon :file "tex.png"         :extensions ("tex"))
     (treemacs-create-icon :file "racket.png"      :extensions ("racket" "rkt" "rktl" "rktd" "scrbl" "scribble" "plt"))
+    (treemacs-create-icon :file "erlang.png"      :extensions ("erl" "hrl"))
     (treemacs-create-icon :file "vsc/make.png"    :extensions ("makefile"))
     (treemacs-create-icon :file "vsc/license.png" :extensions ("license"))
     (treemacs-create-icon :file "vsc/zip.png"     :extensions ("zip" "7z" "tar" "gz" "rar"))
