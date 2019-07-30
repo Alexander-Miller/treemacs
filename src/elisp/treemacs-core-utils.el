@@ -486,19 +486,22 @@ being edited to trigger."
      (progn
        (unless ,no-buffer-delete (treemacs--kill-buffers-after-deletion ,path t))
        (treemacs--stop-watching ,path t)
-       (treemacs-run-in-every-buffer
-        (treemacs-on-collapse ,path t))))))
+       ;; filewatch mode needs the node's information to be in the dom
+       (unless (with-no-warnings treemacs-filewatch-mode)
+         (treemacs-run-in-every-buffer
+          (treemacs-on-collapse ,path t)))))))
 
-(define-inline treemacs--refresh-dir (path)
-  "Local refresh for button at PATH.
+(define-inline treemacs--refresh-dir (path &optional project)
+  "Local refresh for button at PATH and PROJECT.
 Simply collapses and re-expands the button (if it has not been closed)."
-  (inline-quote
-   (let ((btn (treemacs-goto-file-node ,path)))
-     (when (memq (treemacs-button-get btn :state) '(dir-node-open file-node-open))
-       (goto-char (treemacs-button-start btn))
-       (treemacs--push-button btn)
-       (goto-char (treemacs-button-start btn))
-       (treemacs--push-button btn)))))
+  (inline-letevals (path project)
+    (inline-quote
+     (let ((btn (treemacs-goto-file-node ,path ,project)))
+       (when (memq (treemacs-button-get btn :state) '(dir-node-open file-node-open))
+         (goto-char (treemacs-button-start btn))
+         (treemacs--push-button btn)
+         (goto-char (treemacs-button-start btn))
+         (treemacs--push-button btn))))))
 
 (define-inline treemacs--canonical-path (path)
   "The canonical version of PATH for being handled by treemacs.
@@ -930,15 +933,17 @@ PROJECT Project Struct"
     :directory-extension-action (treemacs--find-custom-dir-node path)
     :project-extension-action (treemacs--find-custom-project-node path)))
 
-(defun treemacs-goto-node (path &optional project)
+(defun treemacs-goto-node (path &optional project ignore-file-exists)
   "Move point to button identified by PATH under PROJECT in the current buffer.
 Falls under the same constraints as `treemacs-find-node', but will actually move
-point.
+point. Will do nothing if file at PATH does not exist, unless IGNORE-FILE-EXISTS
+is non-nil.
 
 PATH: Filepath | Node Path
-PROJECT Project Struct"
+PROJECT Project Struct
+IGNORE-FILE-EXISTS. Boolean"
   (treemacs-with-path path
-    :file-action (when (file-exists-p path) (treemacs-goto-file-node path project))
+    :file-action (when (or ignore-file-exists (file-exists-p path)) (treemacs-goto-file-node path project))
     :top-level-extension-action (treemacs--goto-custom-top-level-node path)
     :directory-extension-action (treemacs--goto-custom-dir-node path)
     :project-extension-action (treemacs--goto-custom-project-node path)))

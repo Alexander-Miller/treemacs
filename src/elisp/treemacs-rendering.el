@@ -659,7 +659,8 @@ to `treemacs-do-delete-single-node' wrapped in `treemacs-save-position' instead.
 PATH: Node Path
 Project: Project Struct"
   (treemacs-save-position
-    (treemacs-do-delete-single-node path project)))
+   (treemacs-do-delete-single-node path project)
+   (hl-line-highlight)))
 
 (define-inline treemacs-do-delete-single-node (path &optional project)
   "Actual implementation of single node deletion.
@@ -678,10 +679,11 @@ Project: Project Struct"
              (goto-char pos)
              (treemacs-TAB-action :purge))
            (treemacs-dom-node->remove-from-dom! it))
-         (unless pos (treemacs-goto-node ,path ,project))
-         (treemacs-with-writable-buffer
-          (treemacs--delete-line)))
-       (hl-line-highlight)))))
+         (unless pos
+           (setf pos (treemacs-goto-node ,path ,project :ignore-file-exists-check)))
+         (when pos
+           (treemacs-with-writable-buffer
+            (treemacs--delete-line))))))))
 
 (defun treemacs--maybe-recenter (when &optional new-lines)
   "Potentially recenter based on value of WHEN.
@@ -711,6 +713,44 @@ WHEN can take the following values:
            (when (or (> treemacs-recenter-distance distance-from-top)
                      (> treemacs-recenter-distance distance-from-bottom))
              (recenter))))))))
+
+(defun treemacs--recursive-refresh ()
+  "Recursively descend the dom, updating only the refresh-marked nodes."
+  (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
+    (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
+      (treemacs--recursive-refresh-descent root-node project))))
+
+(defun treemacs--recursive-refresh-descent (node project)
+  "The recursive descent implementation of `treemacs--recursive-refresh'.
+If NODE under PROJECT is marked for refresh and in an open state (since it could
+have been collapsed in the meantime) it will simply be collapsed and
+re-expanded. If NODE is node marked its children will be recursively
+investigated instead.
+Additionally all the refreshed nodes are collected and returned so their
+parents' git status can be updated."
+  (let ((recurse t)
+        (refreshed-nodes nil))
+    (-when-let (change-list (treemacs-dom-node->refresh-flag node))
+      (treemacs-dom-node->reset-refresh-flag! node)
+      (push node refreshed-nodes)
+      (unless (> (length change-list) 8)
+        (dolist (change change-list)
+          (-let [(type . path) change]
+            (pcase type
+              ('deleted
+               (treemacs-do-delete-single-node path project))
+              (_
+               (setf recurse nil)
+               (treemacs--refresh-dir (treemacs-dom-node->key node) project)
+               (treemacs--do-for-all-child-nodes node
+                 #'treemacs-dom-node->reset-refresh-flag!)))))))
+    (when recurse
+      (dolist (child (treemacs-dom-node->children node))
+        (setq refreshed-nodes
+              (nconc refreshed-nodes
+                     (treemacs--recursive-refresh-descent child project)))))
+    ;; TODO(2019/07/30): add as little as possible
+    refreshed-nodes))
 
 (provide 'treemacs-rendering)
 

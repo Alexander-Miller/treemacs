@@ -74,7 +74,7 @@ filewatch-mode's mechanics to update the entire project."
             (dom-node (treemacs-find-in-dom project-root)))
        (when (and dom-node
                   (null (treemacs-dom-node->refresh-flag dom-node)))
-         (treemacs--set-refresh-flags project-root))))))
+         (treemacs--set-refresh-flags project-root 'magit-refresh project-root))))))
 
 (defun treemacs-magit--extended-git-mode-update (magit-root)
   "Update the project at the given MAGIT-ROOT.

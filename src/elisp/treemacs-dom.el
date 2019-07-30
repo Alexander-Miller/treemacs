@@ -207,39 +207,6 @@ NODE and its children from the dom."
    (treemacs--maphash treemacs-dom (_ node)
      (treemacs-dom-node->invalidate-pos! node))))
 
-(defun treemacs--recursive-refresh-descent (node)
-  "The recursive descent implementation of `treemacs--recursive-refresh'.
-If NODE is marked for refresh and in an open state (since it could have been
-collapsed in the meantime) it will simply be collapsed and re-expanded. If NODE
-is node marked its children will be recursively investigated instead.
-Additionally all the refreshed nodes are collected and returned so their
-parents' git status can be updated."
-  (-let [refreshed-nodes nil]
-    (if (treemacs-dom-node->refresh-flag node)
-        (progn
-          (push node refreshed-nodes)
-          (treemacs--refresh-dir (treemacs-dom-node->key node))
-          (treemacs--do-for-all-child-nodes node
-            #'treemacs-dom-node->reset-refresh-flag!))
-      (dolist (child (treemacs-dom-node->children node))
-        (setq refreshed-nodes
-              (nconc refreshed-nodes
-                     (treemacs--recursive-refresh-descent child)))))
-    refreshed-nodes))
-
-(defun treemacs--recursive-refresh ()
-  "Recursively descend the dom, updating only the refresh-marked nodes.
-If the root is marked simply reset all refresh flags and run `treemacs-refresh'
-instead."
-  (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
-    (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
-      (if (treemacs-dom-node->refresh-flag root-node)
-          (progn
-            (treemacs--do-for-all-child-nodes root-node #'treemacs-dom-node->reset-refresh-flag!)
-            (treemacs--do-refresh (current-buffer) project))
-        (dolist (root-child (treemacs-dom-node->children root-node))
-          (treemacs--recursive-refresh-descent root-child))))))
-
 (provide 'treemacs-dom)
 
 ;;; treemacs-dom.el ends here
