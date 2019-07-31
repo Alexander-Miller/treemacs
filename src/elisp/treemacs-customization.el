@@ -21,7 +21,6 @@
 ;;; Code:
 
 (require 'f)
-(defvar treemacs--indentation-string-cache)
 
 (defun treemacs--find-python3 ()
   "Determine the location of python 3."
@@ -37,6 +36,7 @@
                    (shell-command-to-string)
                    (s-trim)
                    (s-replace "Python " "")
+                   (s-left 1)
                    (version<= "3"))))))))
 
 (cl-macrolet
