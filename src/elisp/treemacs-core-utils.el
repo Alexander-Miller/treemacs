@@ -340,11 +340,10 @@ Returns nil if no such buffer exists.."
   "Replace icon in current line with NEW-SYM."
   (inline-letevals (new-sym)
     (inline-quote
-     (save-excursion
-       (let ((len (length ,new-sym)))
-         (goto-char (- (treemacs-button-start (next-button (point-at-bol) t)) len))
-         (insert ,new-sym)
-         (delete-char len))))))
+     (let* ((icon-start (text-property-any (line-beginning-position) (line-end-position) 'icon t))
+            (icon-end (next-single-property-change icon-start 'icon))
+            (new-properties (text-properties-at 0 ,new-sym)))
+       (add-text-properties icon-start icon-end new-properties)))))
 
 (defun treemacs-project-of-node (node)
   "Find the project the given NODE belongs to."

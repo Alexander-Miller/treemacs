@@ -182,21 +182,19 @@ GIT-INFO is the git info of the current directory."
   (inline-letevals (path prefix parent depth git-info)
     (inline-quote
      (unless (--any (funcall it ,path git-info) treemacs-pre-file-insert-predicates)
-       (concat
-        ,prefix
-        (propertize (file-name-nondirectory ,path)
-                    'button '(t)
-                    'category 'default-button
-                    'help-echo nil
-                    'keymap nil
-                    'face (treemacs--get-node-face ,path ,git-info 'treemacs-directory-face)
-                    :default-face 'treemacs-directory-face
-                    :state 'dir-node-closed
-                    :path ,path
-                    :key ,path
-                    :symlink (file-symlink-p ,path)
-                    :parent ,parent
-                    :depth ,depth))))))
+       (propertize (concat ,prefix (file-name-nondirectory ,path))
+                   'button '(t)
+                   'category 'default-button
+                   'help-echo nil
+                   'keymap nil
+                   'face (treemacs--get-node-face ,path ,git-info 'treemacs-directory-face)
+                   :default-face 'treemacs-directory-face
+                   :state 'dir-node-closed
+                   :path ,path
+                   :key ,path
+                   :symlink (file-symlink-p ,path)
+                   :parent ,parent
+                   :depth ,depth)))))
 
 (define-inline treemacs--create-file-button-strings (path prefix parent depth git-info)
   "Return the text to insert for a file button for PATH.
@@ -207,21 +205,20 @@ GIT-INFO is the git info of the current directory."
   (inline-letevals (path prefix parent depth git-info)
     (inline-quote
      (unless (--any (funcall it ,path git-info) treemacs-pre-file-insert-predicates)
-       (concat
-        ,prefix
-        (treemacs-icon-for-file ,path)
-        (propertize (file-name-nondirectory ,path)
-                    'button '(t)
-                    'category 'default-button
-                    'help-echo nil
-                    'keymap nil
-                    'face (treemacs--get-node-face ,path ,git-info 'treemacs-git-unmodified-face)
-                    :default-face 'treemacs-git-unmodified-face
-                    :state 'file-node-closed
-                    :path ,path
-                    :key ,path
-                    :parent ,parent
-                    :depth ,depth))))))
+       (propertize (concat ,prefix
+                           (treemacs-icon-for-file ,path)
+                           (file-name-nondirectory ,path))
+                   'button '(t)
+                   'category 'default-button
+                   'help-echo nil
+                   'keymap nil
+                   'face (treemacs--get-node-face ,path ,git-info 'treemacs-git-unmodified-face)
+                   :default-face 'treemacs-git-unmodified-face
+                   :state 'file-node-closed
+                   :path ,path
+                   :key ,path
+                   :parent ,parent
+                   :depth ,depth)))))
 
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action immediate-insert)
   "Building block macro to open a BUTTON.
@@ -375,26 +372,21 @@ set to PARENT."
                           ('deferred
                             (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state ,parent ,git-future (current-buffer))
                             (or (ht-get treemacs--git-cache ,root) (ht)))
-                          (_ (ht))))
-              (file-strings)
-              (dir-strings))
-         (setq dir-strings
-               (treemacs--create-buttons
-                :nodes dirs
-                :extra-vars ((dir-prefix (concat prefix treemacs-icon-dir-closed)))
-                :depth ,depth
-                :node-name node
-                :node-action (treemacs--create-dir-button-strings node dir-prefix ,parent ,depth git-info)))
-         (setq file-strings
-               (treemacs--create-buttons
-                :nodes files
-                :depth ,depth
-                :node-name node
-                :node-action (treemacs--create-file-button-strings node prefix ,parent ,depth git-info)))
+                          (_ (ht)))))
 
-         (dolist (string dir-strings)
+         (dolist (string (treemacs--create-buttons
+                          :nodes dirs
+                          :extra-vars ((dir-prefix (concat prefix treemacs-icon-dir-closed)))
+                          :depth ,depth
+                          :node-name node
+                          :node-action (treemacs--create-dir-button-strings node dir-prefix ,parent ,depth git-info)))
            (insert string "\n"))
-         (dolist (string file-strings)
+
+         (dolist (string (treemacs--create-buttons
+                          :nodes files
+                          :depth ,depth
+                          :node-name node
+                          :node-action (treemacs--create-file-button-strings node prefix ,parent ,depth git-info)))
            (insert string "\n"))
 
          (save-excursion
@@ -530,10 +522,9 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
   "Insert a new root node for the given PROJECT node.
 
 PROJECT: Project Struct"
-  (insert treemacs-icon-root)
   (treemacs--set-project-position project (point-marker))
   (insert
-   (propertize (treemacs-project->name project)
+   (propertize (concat treemacs-icon-root (treemacs-project->name project))
                'button '(t)
                'category 'default-button
                'face (treemacs--root-face project)

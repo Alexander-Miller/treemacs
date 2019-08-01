@@ -101,9 +101,10 @@ Necessary since root icons are not rectangular."
                 (concat (propertize " "
                                     'display img-unselected
                                     'img-selected img-selected
-                                    'img-unselected img-unselected)
+                                    'img-unselected img-unselected
+                                    'icon t)
                         " ")))))
-       (cons gui-icon tui-icon)))))
+       (cons gui-icon (propertize tui-icon 'icon t))))))
 
 (defmacro treemacs--splice-icon (icon)
   "Splice the given ICON data depending on whether it is a value or an sexp."

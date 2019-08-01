@@ -190,21 +190,20 @@ MORE-PROPERTIES is a plist of text properties that can arbitrarily added to the
 node for quick retrieval later."
   (treemacs-static-assert (and icon label-form state key-form)
     "All values except :more-properties and :face are mandatory")
-  `(concat (unless (zerop depth) prefix)
-           ,icon
-           (propertize ,label-form
-                       'button '(t)
-                       'category 'default-button
-                       ,@(when face `((quote face) ,face))
-                       'help-echo nil
-                       :custom t
-                       :state ,state
-                       :parent node
-                       :depth depth
-                       :path (append (treemacs-button-get node :path) (list ,key-form))
-                       :key ,key-form
-                       ,@more-properties)
-           (when (and (zerop depth) treemacs-space-between-root-nodes) "\n")))
+  `(concat
+    (propertize (concat prefix ,icon ,label-form)
+                'button '(t)
+                'category 'default-button
+                ,@(when face `((quote face) ,face))
+                'help-echo nil
+                :custom t
+                :state ,state
+                :parent node
+                :depth depth
+                :path (append (treemacs-button-get node :path) (list ,key-form))
+                :key ,key-form
+                ,@more-properties)
+    (when (and (zerop depth) treemacs-space-between-root-nodes) "\n")))
 
 (cl-defmacro treemacs-define-leaf-node (name icon &key ret-action tab-action mouse1-action visit-action)
   "Define a type of node that is a leaf and cannot be further expanded.
@@ -420,9 +419,10 @@ additional keys."
           `(cl-defun ,(intern (format "treemacs-%s-extension" (upcase (symbol-name name)))) (parent)
              (-let [depth (1+ (treemacs-button-get parent :depth))]
                (insert
-                (treemacs--get-indentation depth)
-                ,(if icon-closed closed-icon-name icon-closed-form)
-                (propertize ,root-label
+                (propertize (concat
+                             (treemacs--get-indentation depth)
+                             ,(if icon-closed closed-icon-name icon-closed-form)
+                             ,root-label)
                             'button '(t)
                             'category 'default-button
                             'face ,root-face
@@ -475,9 +475,10 @@ additional keys."
                                    :name ,root-label
                                    :path ,root-key-form
                                    :path-status 'extension)]
-                          (insert ,(if icon-closed closed-icon-name icon-closed-form))
                           (treemacs--set-project-position ,root-key-form (point-marker))
-                          (insert (propertize ,root-label
+                          (insert (propertize (concat
+                                               ,(if icon-closed closed-icon-name icon-closed-form)
+                                               ,root-label)
                                               'button '(t)
                                               'category 'default-button
                                               'face ,root-face
