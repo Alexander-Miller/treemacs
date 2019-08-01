@@ -422,7 +422,7 @@ FUTURE: Pfuture process"
 
 (treemacs-only-during-init
  (let ((has-git    (not (null (executable-find "git"))))
-       (has-python (not (null (treemacs--find-python3)))))
+       (has-python (not (null treemacs-python-executable))))
    (pcase (cons has-git has-python)
      (`(t . t)
       (treemacs-git-mode 'deferred))

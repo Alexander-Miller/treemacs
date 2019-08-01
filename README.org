@@ -405,7 +405,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
       (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
     (progn
-      (setq treemacs-collapse-dirs                 (if (treemacs--find-python3) 3 0)
+      (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
             treemacs-deferred-git-apply-delay      0.5
             treemacs-display-in-side-window        t
             treemacs-eldoc-display                 t
@@ -447,7 +447,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
       (treemacs-filewatch-mode t)
       (treemacs-fringe-indicator-mode t)
       (pcase (cons (not (null (executable-find "git")))
-                   (not (null (treemacs--find-python3))))
+                   (not (null treemacs-python-executable)))
         (`(t . t)
          (treemacs-git-mode 'deferred))
         (`(t . _)
