@@ -426,7 +426,7 @@ additional keys."
                (insert
                 "\n"
                 (treemacs--get-indentation depth)
-                ,closed-icon-name
+                ,(if icon-closed closed-icon-name icon-closed-form)
                 (propertize ,root-label
                             'button '(t)
                             'category 'default-button
@@ -483,7 +483,7 @@ additional keys."
                                    :name ,root-label
                                    :path ,root-key-form
                                    :path-status 'extension)]
-                          (insert ,closed-icon-name)
+                          (insert ,(if icon-closed closed-icon-name icon-closed-form))
                           (treemacs--set-project-position ,root-key-form (point-marker))
                           (insert (propertize ,root-label
                                               'button '(t)
