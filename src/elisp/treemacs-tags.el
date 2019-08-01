@@ -138,7 +138,7 @@ PARENT: Button
 DEPTH: Int"
   (inline-letevals (item prefix parent depth)
     (inline-quote
-     (list
+     (concat
       ,prefix
       (propertize (car ,item)
                   'button '(t)
@@ -161,7 +161,7 @@ PARENT: Button
 DEPTH: Int"
   (inline-letevals (node prefix parent depth)
     (inline-quote
-     (list
+     (concat
       ,prefix
       (propertize (car ,node)
                   'button '(t)

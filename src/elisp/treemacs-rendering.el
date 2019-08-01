@@ -172,50 +172,56 @@ the height of treemacs' icons must be taken into account."
          (list (sort (cl-first dirs-files) sort-func)
                (sort (cl-second dirs-files) sort-func)))))))
 
-(define-inline treemacs--create-dir-button-strings (path prefix parent depth)
+(define-inline treemacs--create-dir-button-strings (path prefix parent depth git-info)
   "Return the text to insert for a directory button for PATH.
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
-DEPTH indicates how deep in the filetree the current button is."
+DEPTH indicates how deep in the filetree the current button is.
+GIT-INFO is the git info of the current directory."
   ;; for directories the icon is included in the prefix since it's always known
-  (inline-letevals (path prefix parent depth)
+  (inline-letevals (path prefix parent depth git-info)
     (inline-quote
-     (list
-      ,prefix
-      (propertize (file-name-nondirectory ,path)
-                  'button '(t)
-                  'category 'default-button
-                  'help-echo nil
-                  'keymap nil
-                  :default-face 'treemacs-directory-face
-                  :state 'dir-node-closed
-                  :path ,path
-                  :key ,path
-                  :symlink (file-symlink-p ,path)
-                  :parent ,parent
-                  :depth ,depth)))))
+     (unless (--any (funcall it ,path git-info) treemacs-pre-file-insert-predicates)
+       (concat
+        ,prefix
+        (propertize (file-name-nondirectory ,path)
+                    'button '(t)
+                    'category 'default-button
+                    'help-echo nil
+                    'keymap nil
+                    'face (treemacs--get-node-face ,path ,git-info 'treemacs-directory-face)
+                    :default-face 'treemacs-directory-face
+                    :state 'dir-node-closed
+                    :path ,path
+                    :key ,path
+                    :symlink (file-symlink-p ,path)
+                    :parent ,parent
+                    :depth ,depth))))))
 
-(define-inline treemacs--create-file-button-strings (path prefix parent depth)
+(define-inline treemacs--create-file-button-strings (path prefix parent depth git-info)
   "Return the text to insert for a file button for PATH.
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
-DEPTH indicates how deep in the filetree the current button is."
-  (inline-letevals (path prefix parent depth)
+DEPTH indicates how deep in the filetree the current button is.
+GIT-INFO is the git info of the current directory."
+  (inline-letevals (path prefix parent depth git-info)
     (inline-quote
-     (list
-      ,prefix
-      (treemacs-icon-for-file ,path)
-      (propertize (file-name-nondirectory ,path)
-                  'button '(t)
-                  'category 'default-button
-                  'help-echo nil
-                  'keymap nil
-                  :default-face 'treemacs-git-unmodified-face
-                  :state 'file-node-closed
-                  :path ,path
-                  :key ,path
-                  :parent ,parent
-                  :depth ,depth)))))
+     (unless (--any (funcall it ,path git-info) treemacs-pre-file-insert-predicates)
+       (concat
+        ,prefix
+        (treemacs-icon-for-file ,path)
+        (propertize (file-name-nondirectory ,path)
+                    'button '(t)
+                    'category 'default-button
+                    'help-echo nil
+                    'keymap nil
+                    'face (treemacs--get-node-face ,path ,git-info 'treemacs-git-unmodified-face)
+                    :default-face 'treemacs-git-unmodified-face
+                    :state 'file-node-closed
+                    :path ,path
+                    :key ,path
+                    :parent ,parent
+                    :depth ,depth))))))
 
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action immediate-insert)
   "Building block macro to open a BUTTON.
@@ -230,12 +236,16 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
         ,@(when new-icon
             `((beginning-of-line)
               (treemacs--button-symbol-switch ,new-icon)))
-        (goto-char (treemacs-button-end ,button))
+        (goto-char ,button)
+        (forward-line 1)
+        (unless (eq (char-before) ?\n)
+          (insert "\n"))
         ,@(if immediate-insert
-              `((progn
-                  (insert (apply #'concat ,open-action))))
+              `((dolist (string ,open-action)
+                  (insert string "\n")))
             `(,open-action))
-        ,post-open-action)
+        ,post-open-action
+        (treemacs--trim-trailing-newlines))
        (count-lines p (point)))))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
@@ -249,15 +259,9 @@ EXTRA-VARS are additional var bindings inserted into the initial let block.
 NODE-ACTION is the button creating form inserted for every NODE.
 NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
   `(let* ((depth ,depth)
-          (prefix (concat "\n" (treemacs--get-indentation depth)))
-          (,node-name (cl-first ,nodes))
-          (strings)
+          (prefix (treemacs--get-indentation depth))
           ,@extra-vars)
-     (when ,node-name
-       (dolist (,node-name ,nodes)
-         (--each ,node-action
-           (push it strings))))
-     (nreverse strings)))
+     (remove nil (mapcar (lambda (,node-name) ,node-action) ,nodes))))
 
 (defun treemacs--collapse-dirs (dirs)
   "Display DIRS as collpased.
@@ -353,8 +357,25 @@ set to PARENT."
      (save-excursion
        (let* ((dirs-and-files (treemacs--get-dir-content ,root))
               (dirs (cl-first dirs-and-files))
+              (,root (--if-let (file-truename (treemacs-button-get ,parent :path))
+                         it
+                       ,root))
               (files (cl-second dirs-and-files))
-              (git-info)
+              ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
+              ;; so there are two possibilities: either the future given to this function is a pfuture object
+              ;; that needs to complete and be parsed or it's an already finished git status hash table
+              ;; additionally when git mode is deferred we don't parse the git output right here, it is instead done later
+              ;; by means of an idle timer. The git info used is instead fetched from `treemacs--git-cache', which is
+              ;; based on previous invocations
+              ;; if git-mode is disabled there is nothing to do - in this case the git status parse function will always
+              ;; produce an empty hash table
+              (git-info (pcase treemacs-git-mode
+                          ((or 'simple 'extended)
+                           (treemacs--get-or-parse-git-result ,git-future))
+                          ('deferred
+                            (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state ,parent ,git-future (current-buffer))
+                            (or (ht-get treemacs--git-cache ,root) (ht)))
+                          (_ (ht))))
               (file-strings)
               (dir-strings))
          (setq dir-strings
@@ -363,84 +384,22 @@ set to PARENT."
                 :extra-vars ((dir-prefix (concat prefix treemacs-icon-dir-closed)))
                 :depth ,depth
                 :node-name node
-                :node-action (treemacs--create-dir-button-strings node dir-prefix ,parent ,depth)))
+                :node-action (treemacs--create-dir-button-strings node dir-prefix ,parent ,depth git-info)))
          (setq file-strings
                (treemacs--create-buttons
                 :nodes files
                 :depth ,depth
                 :node-name node
-                :node-action (treemacs--create-file-button-strings node prefix ,parent ,depth)))
+                :node-action (treemacs--create-file-button-strings node prefix ,parent ,depth git-info)))
 
-         (--when-let (file-truename (treemacs-button-get ,parent :path))
-           (setq ,root it))
-
-         (end-of-line)
-
-         ;; the files list contains 3 item tuples: the prefix the icon and the filename
-         ;; direcories are different, since dirs do not  have different icons the icon is part if the prefix
-         ;; therefore when filtering or propertizing the files and dirs only every 3rd or 2nd item must be looked at
-
-         ;; as reopening is done recursively the parsed git status is passed down to subsequent calls
-         ;; so there are two possibilities: either the future given to this function is a pfuture object
-         ;; that needs to complete and be parsed or it's an already finished git status hash table
-         ;; additionally when git mode is deferred we don't parse the git output right here, it is instead done later
-         ;; by means of an idle timer. The git info used is instead fetched from `treemacs--git-cache', which is
-         ;; based on previous invocations
-         ;; if git-mode is disabled there is nothing to do - in this case the git status parse function will always
-         ;; produce an empty hash table
-         (pcase treemacs-git-mode
-           ((or 'simple 'extended)
-            (setq git-info (treemacs--get-or-parse-git-result ,git-future)))
-           ('deferred
-             (setq git-info (or (ht-get treemacs--git-cache ,root) (ht)))
-             (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state ,parent ,git-future (current-buffer)))
-           (_
-            (setq git-info (ht))))
-
-         (when treemacs-pre-file-insert-predicates
-           (-let [result nil]
-             (while file-strings
-               (let* ((prefix (car file-strings))
-                      (icon (cadr file-strings))
-                      (filename (cl-third file-strings))
-                      (filepath (concat ,root "/" filename)))
-                 (unless (--any? (funcall it filepath git-info) treemacs-pre-file-insert-predicates)
-                   (setq result (cons filename (cons icon (cons prefix result))))))
-               (setq file-strings (cl-cdddr file-strings)))
-             (setq file-strings (nreverse result)))
-           (-let [result nil]
-             (while dir-strings
-               (let* ((prefix (car dir-strings))
-                      (dirname (cadr dir-strings))
-                      (dirpath (concat ,root "/" dirname)))
-                 (unless (--any? (funcall it dirpath git-info) treemacs-pre-file-insert-predicates)
-                   (setq result (cons dirname (cons prefix result)))))
-               (setq dir-strings (cddr dir-strings)))
-             (setq dir-strings (nreverse result))))
-
-         (treemacs--inplace-map-when-unrolled dir-strings 2
-           (put-text-property
-            0
-            (length it)
-            'face
-            (treemacs--get-node-face (concat ,root "/" it) git-info 'treemacs-directory-face)
-            it))
-         (insert (apply #'concat dir-strings))
-
-         (end-of-line)
-         (treemacs--inplace-map-when-unrolled file-strings 3
-           (put-text-property
-            0
-            (length it)
-            'face
-            (treemacs--get-node-face (concat ,root "/" it) git-info 'treemacs-git-unmodified-face)
-            it))
-         (insert (apply #'concat file-strings))
+         (dolist (string dir-strings)
+           (insert string "\n"))
+         (dolist (string file-strings)
+           (insert string "\n"))
 
          (save-excursion
            (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs ,collapse-process))
-           (treemacs--reopen-at ,root ,git-future))
-         (point-at-eol))))))
+           (treemacs--reopen-at ,root ,git-future)))))))
 
 (cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
   "Close node given by BUTTON, use NEW-ICON and set state of BUTTON to NEW-STATE."
@@ -488,7 +447,7 @@ set to PARENT."
            :open-action
            (progn
              (treemacs--apply-project-top-extensions btn project)
-             (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
+             (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn)
              (treemacs--apply-project-bottom-extensions btn project))
            :post-open-action
            (progn
@@ -518,7 +477,7 @@ GIT-FUTURE: Pfuture|Hashtable
 RECURSIVE: Bool"
   (if (not (f-readable? (treemacs-button-get btn :path)))
       (treemacs-pulse-on-failure
-       "Directory %s is not readable." (propertize (treemacs-button-get btn :path) 'face 'font-lock-string-face))
+          "Directory %s is not readable." (propertize (treemacs-button-get btn :path) 'face 'font-lock-string-face))
     (let* ((project (treemacs-project-of-node btn))
            (path (treemacs-button-get btn :path))
            (git-future (if (treemacs-button-get btn :symlink)
@@ -535,7 +494,7 @@ RECURSIVE: Bool"
          ;; do on-expand first so buttons that need collapsing can quickly find their parent
          (treemacs-on-expand path btn (treemacs-parent-of btn))
          (treemacs--apply-directory-top-extensions btn path)
-         (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
+         (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn)
          (treemacs--apply-directory-bottom-extensions btn path))
        :post-open-action
        (progn
@@ -590,22 +549,29 @@ PROJECT: Project Struct"
   (treemacs-with-writable-buffer
    (unless treemacs--projects-end
      (setq treemacs--projects-end (make-marker)))
-   (let* ((current-workspace (treemacs-current-workspace))
-          (has-previous (treemacs--apply-root-top-extensions current-workspace)))
+   (let ((current-workspace (treemacs-current-workspace)))
+     (treemacs--apply-root-top-extensions current-workspace)
 
      (--each projects
-       (when has-previous (treemacs--insert-root-separator))
-       (setq has-previous t)
-       (treemacs--add-root-element it))
+       (treemacs--add-root-element it)
+       (treemacs--insert-root-separator))
 
      ;; Set the end marker after inserting the extensions. Otherwise, the
      ;; extensions would move the marker.
      (let ((projects-end-point (point)))
-       (treemacs--apply-root-bottom-extensions current-workspace has-previous)
+       (treemacs--apply-root-bottom-extensions current-workspace)
        ;; If the marker lies at the start of the buffer, expanding extensions would
        ;; move the marker. Make sure that the marker does not move when doing so.
-       (set-marker-insertion-type treemacs--projects-end has-previous)
-       (set-marker treemacs--projects-end projects-end-point)))))
+       (set-marker-insertion-type treemacs--projects-end t)
+       (set-marker treemacs--projects-end projects-end-point))
+     (treemacs--trim-trailing-newlines))))
+
+(defun treemacs--trim-trailing-newlines ()
+  "Remove trailing newlines from the Treemacs buffer."
+  (save-excursion
+    (goto-char (point-max))
+    (while (eq (char-before) ?\n)
+      (delete-char -1))))
 
 (define-inline treemacs-do-update-node (path &optional force-expand)
   "Update the node identified by its PATH.

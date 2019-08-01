@@ -131,17 +131,13 @@ Also pass additional DATA to predicate function.")
 ;; slighty non-standard application for root extensions
 (cl-macrolet
     ((define-root-extension-application (name variable doc)
-       `(defun ,name (workspace &optional has-previous)
+       `(defun ,name (workspace)
           ,doc
-          (let ((is-first (not has-previous)))
-            (--each ,variable
-              (let ((extension (car it))
-                    (predicate (cdr it)))
-                (when (or (null predicate) (funcall predicate workspace))
-                  (unless is-first
-                    (treemacs--insert-root-separator))
-                  (setq is-first (funcall extension)))))
-            (not is-first)))))
+          (--each ,variable
+            (let ((extension (car it))
+                  (predicate (cdr it)))
+              (when (or (null predicate) (funcall predicate workspace))
+                (funcall extension)))))))
 
   (define-root-extension-application
     treemacs--apply-root-top-extensions
@@ -194,21 +190,21 @@ MORE-PROPERTIES is a plist of text properties that can arbitrarily added to the
 node for quick retrieval later."
   (treemacs-static-assert (and icon label-form state key-form)
     "All values except :more-properties and :face are mandatory")
-  `(list (unless (zerop depth) prefix)
-         ,icon
-         (propertize ,label-form
-                     'button '(t)
-                     'category 'default-button
-                     ,@(when face `((quote face) ,face))
-                     'help-echo nil
-                     :custom t
-                     :state ,state
-                     :parent node
-                     :depth depth
-                     :path (append (treemacs-button-get node :path) (list ,key-form))
-                     :key ,key-form
-                     ,@more-properties)
-         (when (zerop depth) (if treemacs-space-between-root-nodes "\n\n" "\n"))))
+  `(concat (unless (zerop depth) prefix)
+           ,icon
+           (propertize ,label-form
+                       'button '(t)
+                       'category 'default-button
+                       ,@(when face `((quote face) ,face))
+                       'help-echo nil
+                       :custom t
+                       :state ,state
+                       :parent node
+                       :depth depth
+                       :path (append (treemacs-button-get node :path) (list ,key-form))
+                       :key ,key-form
+                       ,@more-properties)
+           (when (and (zerop depth) treemacs-space-between-root-nodes) "\n")))
 
 (cl-defmacro treemacs-define-leaf-node (name icon &key ret-action tab-action mouse1-action visit-action)
   "Define a type of node that is a leaf and cannot be further expanded.
@@ -424,7 +420,6 @@ additional keys."
           `(cl-defun ,(intern (format "treemacs-%s-extension" (upcase (symbol-name name)))) (parent)
              (-let [depth (1+ (treemacs-button-get parent :depth))]
                (insert
-                "\n"
                 (treemacs--get-indentation depth)
                 ,(if icon-closed closed-icon-name icon-closed-form)
                 (propertize ,root-label
@@ -439,8 +434,8 @@ additional keys."
                             :depth depth
                             :no-git t
                             :parent parent
-                            :state ,closed-state-name)))
-             nil))
+                            :state ,closed-state-name)
+                "\n"))))
 
        ,(when top-level-marker
           (treemacs-static-assert (and root-label root-face root-key-form)
@@ -453,29 +448,26 @@ additional keys."
                     ;; node. Its depth is -1 and it is not visible, but can still be used to update
                     ;; the entire extension without explicitly worrying about complex dom changes.
                     `(defun ,ext-name ()
-                         (treemacs-with-writable-buffer
-                          (save-excursion
-                            (let ((pr (make-treemacs-project
-                                       :name ,root-label
-                                       :path ,root-key-form
-                                       :path-status 'extension))
-                                  (button-start (point-marker)))
-                              (treemacs--set-project-position ,root-key-form (point-marker))
-                              (insert (propertize "Hidden Node\n"
-                                                  'button '(t)
-                                                  'category 'default-button
-                                                  'invisible t
-                                                  'skip t
-                                                  :custom t
-                                                  :key ,root-key-form
-                                                  :path (list :custom ,root-key-form)
-                                                  :depth -1
-                                                  :project pr
-                                                  :state ,closed-state-name))
-                              (let ((marker (copy-marker (point) t)))
-                                (funcall ',do-expand-name button-start)
-                                (goto-char marker)))))
-                         t)
+                       (treemacs-with-writable-buffer
+                        (save-excursion
+                          (let ((pr (make-treemacs-project
+                                     :name ,root-label
+                                     :path ,root-key-form
+                                     :path-status 'extension))
+                                (button-start (point-marker)))
+                            (treemacs--set-project-position ,root-key-form (point-marker))
+                            (insert (propertize "Hidden Node\n"
+                                                'button '(t)
+                                                'category 'default-button
+                                                'invisible t
+                                                'skip t
+                                                :custom t
+                                                :key ,root-key-form
+                                                :path (list :custom ,root-key-form)
+                                                :depth -1
+                                                :project pr
+                                                :state ,closed-state-name))
+                            (funcall ',do-expand-name button-start)))))
                   `(progn
                      (defun ,ext-name (&rest _)
                        (treemacs-with-writable-buffer
@@ -494,8 +486,8 @@ additional keys."
                                               :path (list :custom ,root-key-form)
                                               :depth 0
                                               :project pr
-                                              :state ,closed-state-name))))
-                       nil)))))))))
+                                              :state ,closed-state-name))
+                          (treemacs--insert-root-separator))))))))))))
 
 (cl-defmacro treemacs-define-variadic-node
     (name &key
