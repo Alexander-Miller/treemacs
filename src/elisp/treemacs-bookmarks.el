@@ -136,7 +136,11 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
        ((s-starts-with? "file-path:" pattern)
         (let ((n (string-to-number (s-chop-prefix "file-path:" pattern))))
           (-when-let (path (treemacs--nearest-path btn))
-            (s-join "/" (last (s-split "/" path) n)))))
+            (let ((components (last (s-split "/" path) (1+ n))))
+              ;; Add the leading slash for absolute paths
+              (when (and (> (length components) n) (not (string= "" (car components))))
+                (pop components))
+              (s-join "/" components)))))
 
        (t
         ;; Don't rely on treemacs-pulse-on-failure to display the error, since the
