@@ -23,6 +23,8 @@
 (require 'dash)
 (require 'pfuture)
 (require 'treemacs)
+(require 'treemacs-bookmarks)
+(require 'treemacs-core-utils)
 (require 'buttercup)
 
 (defconst treemacs-should-run-file-notify-tests (not (null file-notify--library)))
@@ -1230,6 +1232,90 @@
             (treemacs--workspaces (list ws1 ws2)))
        (treemacs--find-workspace "/A/B/C")
        (expect (treemacs-current-workspace) :to-be ws2)))))
+
+(defmacro test-treemacs--with-sample-buffer (&rest body)
+  "Evaluate BODY with some buttons defined.
+
+In BODY, variable PROJECT is defined."
+  (declare (indent 0))
+  (let ((parent-marker (make-symbol "parent-marker")))
+    `(with-temp-buffer
+       (let ((project (make-treemacs-project :name "Project" :path "/project"))
+             (,parent-marker nil))
+         (insert-text-button "Project"
+                             :path "/project"
+                             :state 'root-node-open
+                             :depth 0
+                             :project project)
+         (setq ,parent-marker (copy-marker (line-beginning-position)))
+         (insert "\n")
+         (insert-text-button "directory"
+                             :path "/project/directory"
+                             :key "/project/directory"
+                             :state 'dir-node-open
+                             :parent ,parent-marker
+                             :depth 1)
+         (setq ,parent-marker (copy-marker (line-beginning-position)))
+         (insert "\n")
+         (insert-text-button "file.txt"
+                             :path "/project/directory/file.txt"
+                             :key "/project/directory/file.txt"
+                             :state 'file-node-closed
+                             :parent ,parent-marker
+                             :depth 2)
+         (setq ,parent-marker (copy-marker (line-beginning-position)))
+         (insert "\n")
+         (goto-char 0)
+         ,@body))))
+
+(defun test-treemacs--format-pattern (template expected-1 expected-2 expected-3)
+  "Test that `treemacs--format-bookmark-title' expands TEMPLATE correctly.
+
+EXPECTED-1 is the expected expansion of the \"Project\" button.
+EXPECTED-2 is the expected expansion of the \"directory\" button.
+EXPECTED-3 is the expected expansion of the \"file.txt\" button."
+  (test-treemacs--with-sample-buffer
+   (let ((treemacs-bookmark-title-template template))
+     (expect (treemacs--format-bookmark-title (treemacs-current-button)) :to-equal expected-1)
+     (forward-line 1)
+     (expect (treemacs--format-bookmark-title (treemacs-current-button)) :to-equal expected-2)
+     (forward-line 1)
+     (expect (treemacs--format-bookmark-title (treemacs-current-button)) :to-equal expected-3))))
+
+
+(describe "treemacs--format-bookmark-title"
+  (it "Uses the configured pattern"
+    (test-treemacs--format-pattern "No replacements" "No replacements" "No replacements" "No replacements"))
+
+  (it "Formats the project name"
+    (test-treemacs--format-pattern "${project}" "Project" "Project" "Project"))
+
+  (it "Formats the label"
+    (test-treemacs--format-pattern "${label}" "Project" "directory" "file.txt"))
+
+  (it "Formats the parent label"
+    (test-treemacs--format-pattern "${label:1}" "" "Project" "directory"))
+
+  (it "Formats the grandparent label"
+    (test-treemacs--format-pattern "${label:2}" "" "" "Project"))
+
+  (it "Formats the label path"
+    (test-treemacs--format-pattern "${label-path}" "Project" "Project/directory" "Project/directory/file.txt"))
+
+  (it "Formats the limited label path"
+    (test-treemacs--format-pattern "${label-path:2}" "Project" "Project/directory" "directory/file.txt"))
+
+  (it "Does not hang with negatie label path limit"
+    (test-treemacs--format-pattern "${label-path:-2}" "Project" "Project/directory" "Project/directory/file.txt"))
+
+  (it "Formats the file path"
+    (test-treemacs--format-pattern "${file-path}" "/project" "/project/directory" "/project/directory/file.txt"))
+
+  (it "Formats the limited file path"
+    (test-treemacs--format-pattern "${file-path:2}" "/project" "/project/directory" "directory/file.txt"))
+
+  (it "Does not hang with negative file path"
+    (test-treemacs--format-pattern "${file-path:-1}" "" "" "")))
 
 (provide 'test-treemacs)
 
