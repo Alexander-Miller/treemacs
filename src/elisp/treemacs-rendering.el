@@ -449,9 +449,10 @@ set to PARENT."
       ,@(when new-icon
           `((treemacs--button-symbol-switch ,new-icon)))
       (treemacs-button-put ,button :state ,new-state)
-      (-let [next (next-button (point-at-eol))]
+      (-let ((next (next-button (point-at-eol)))
+             (depth (treemacs-button-get ,button :depth)))
         (if (or (null next)
-                (/= (1+ (treemacs-button-get ,button :depth))
+                (/= (1+ depth)
                     (treemacs-button-get (copy-marker next t) :depth)))
             (delete-trailing-whitespace)
           ;; Delete from end of the current button to end of the last sub-button.
@@ -461,9 +462,15 @@ set to PARENT."
           ;; last project.
           (let* ((pos-start (treemacs-button-end ,button))
                  (next (treemacs--next-non-child-button ,button))
-                 (pos-end (if next
-                              (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))
-                            (point-max))))
+                 (pos-end (cond ((not next)
+                                 (point-max))
+                                ((eq depth -1)
+                                 ;; Variadic buttons should delete also the white space.
+                                 (save-excursion
+                                   (goto-char (treemacs-button-start next))
+                                   (line-beginning-position)))
+                                (t
+                                 (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))))))
             (delete-region pos-start pos-end))))
       ,post-close-action)))
 

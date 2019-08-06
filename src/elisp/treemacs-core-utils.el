@@ -464,7 +464,13 @@ Will also perform cleanup if the buffer is dead."
      (when ,btn
        (let ((depth (treemacs-button-get ,btn :depth))
              (next (next-button (treemacs-button-end ,btn) t)))
-         (while (and next (< depth (treemacs-button-get next :depth)))
+         (while (and next
+                     (< depth (treemacs-button-get next :depth))
+                     ;; Special handling for variadic hidden nodes.
+                     ;; Since they are at negative depth, projects would be considered their children.
+                     (or (>= depth 0)
+                         (and (consp (treemacs-button-get next :path))
+                              (-is-prefix? (treemacs-button-get ,btn :path) (treemacs-button-get next :path)))))
            (setq next (next-button (treemacs-button-end next) t)))
          next)))))
 
