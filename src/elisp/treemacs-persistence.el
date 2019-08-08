@@ -160,7 +160,10 @@ ITER: Treemacs-Iter struct"
     (condition-case e
         (let ((txt nil)
               (buffer nil)
-              (no-kill nil))
+              (no-kill nil)
+              ;; no surprisese when using `abbreviate-file-name'
+              (directory-abbrev-alist nil)
+              (abbreviated-home-dir nil))
           (--if-let (get-file-buffer treemacs-persist-file)
               (setq buffer it
                     no-kill t)
@@ -171,7 +174,7 @@ ITER: Treemacs-Iter struct"
               (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
               (dolist (pr (treemacs-workspace->projects ws))
                 (push (format "** %s\n" (treemacs-project->name pr)) txt)
-                (push (format " - path :: %s\n" (treemacs-project->path pr)) txt)))
+                (push (format " - path :: %s\n" (abbreviate-file-name (treemacs-project->path pr))) txt)))
             (delete-region (point-min) (point-max))
             (insert (apply #'concat (nreverse txt)))
             (-let [inhibit-message t] (save-buffer))
