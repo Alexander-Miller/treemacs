@@ -463,7 +463,14 @@ Will also perform cleanup if the buffer is dead."
      (when ,btn
        (let ((depth (treemacs-button-get ,btn :depth))
              (next (next-button (treemacs-button-end ,btn) t)))
-         (while (and next (< depth (treemacs-button-get next :depth)))
+         (while (and next
+                     (< depth (treemacs-button-get next :depth))
+                     (or (>= depth 0)
+                         ;; Special handling for variadic extension roots whose
+                         ;; depth is -1.
+                         (let ((next-path (treemacs-button-get next :path)))
+                           (and (listp next-path)
+                                (-is-prefix? (treemacs-button-get ,btn :path) next-path)))))
            (setq next (next-button (treemacs-button-end next) t)))
          next)))))
 

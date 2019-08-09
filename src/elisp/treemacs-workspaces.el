@@ -567,7 +567,10 @@ PROJECT, excluding newlines."
     (goto-char (treemacs-project->position project))
     (let* ((start (point-at-bol))
            (next  (treemacs--next-non-child-button (treemacs-project->position project)))
-           (end   (if next (-> next (treemacs-button-start) (previous-button) (treemacs-button-end)) (point-max))))
+           (end   (if next
+                      (- (treemacs-button-start next)
+                         (if treemacs-space-between-root-nodes 1 0))
+                    (point-max))))
       (cons start end))))
 
 (defun treemacs--consolidate-projects ()

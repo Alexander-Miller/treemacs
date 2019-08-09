@@ -227,7 +227,8 @@ and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
 and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
   `(save-excursion
-     (-let [p (point)]
+     (let ((p (point))
+           (is-variadic (eq (treemacs-button-get ,button :depth) -1)))
        (treemacs-with-writable-buffer
         (treemacs-button-put ,button :state ,new-state)
         ,@(when new-icon
@@ -235,14 +236,16 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
               (treemacs--button-symbol-switch ,new-icon)))
         (goto-char ,button)
         (forward-line 1)
-        (unless (eq (char-before) ?\n)
-          (insert "\n"))
         ,@(if immediate-insert
               `((dolist (string ,open-action)
-                  (insert string "\n")))
+                  (insert string)
+                  ;; If refreshing a variadic extension, insert root separators
+                  ;; between the items.
+                  (if is-variadic
+                      (treemacs--insert-root-separator)
+                    (insert "\n"))))
             `(,open-action))
-        ,post-open-action
-        (treemacs--trim-trailing-newlines))
+        ,post-open-action)
        (count-lines p (point)))))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
@@ -400,22 +403,20 @@ set to PARENT."
       ,@(when new-icon
           `((treemacs--button-symbol-switch ,new-icon)))
       (treemacs-button-put ,button :state ,new-state)
-      (-let [next (next-button (point-at-eol))]
-        (if (or (null next)
-                (/= (1+ (treemacs-button-get ,button :depth))
-                    (treemacs-button-get (copy-marker next t) :depth)))
-            (delete-trailing-whitespace)
-          ;; Delete from end of the current button to end of the last sub-button.
-          ;; This will make the EOL of the last button become the EOL of the
-          ;; current button, making the treemacs--projects-end marker track
-          ;; properly when collapsing the last project or a last directory of the
-          ;; last project.
-          (let* ((pos-start (treemacs-button-end ,button))
-                 (next (treemacs--next-non-child-button ,button))
-                 (pos-end (if next
-                              (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))
-                            (point-max))))
-            (delete-region pos-start pos-end))))
+      (let* ((next (next-button (point-at-eol)))
+             (button-depth (treemacs-button-get ,button :depth)))
+        ;; Delete from end of the current button to end of the last sub-button.
+        ;; This will make the EOL of the last button become the EOL of the
+        ;; current button, making the treemacs--projects-end marker track
+        ;; properly when collapsing the last project or a last directory of the
+        ;; last project.
+        (let* ((pos-start (1+ (treemacs-button-end ,button)))
+               (next (treemacs--next-non-child-button ,button))
+               (pos-end (if next
+                            (- (treemacs-button-start next)
+                               (if (and treemacs-space-between-root-nodes (zerop button-depth)) 1 0))
+                          (point-max))))
+          (delete-region pos-start pos-end)))
       ,post-close-action)))
 
 (defun treemacs--expand-root-node (btn)
@@ -554,15 +555,7 @@ PROJECT: Project Struct"
        ;; If the marker lies at the start of the buffer, expanding extensions would
        ;; move the marker. Make sure that the marker does not move when doing so.
        (set-marker-insertion-type treemacs--projects-end t)
-       (set-marker treemacs--projects-end projects-end-point))
-     (treemacs--trim-trailing-newlines))))
-
-(defun treemacs--trim-trailing-newlines ()
-  "Remove trailing newlines from the Treemacs buffer."
-  (save-excursion
-    (goto-char (point-max))
-    (while (eq (char-before) ?\n)
-      (delete-char -1))))
+       (set-marker treemacs--projects-end projects-end-point)))))
 
 (define-inline treemacs-do-update-node (path &optional force-expand)
   "Update the node identified by its PATH.
