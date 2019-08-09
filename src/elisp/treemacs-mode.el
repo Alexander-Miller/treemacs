@@ -345,19 +345,24 @@ If there is no node at point use \"~/\" instead.
 Also skip hidden buttons (as employed by variadic extensions).
 
 Used as a post command hook."
-  (-when-let (btn (treemacs-current-button))
-    (when (treemacs-button-get btn 'invisible)
-      (treemacs-next-line 1))
-    (-if-let* ((project (treemacs-project-of-node btn))
-               (path (or (treemacs-button-get btn :default-directory)
-                         (treemacs--nearest-path btn))))
-        (when (and (treemacs-project->is-readable? project)
-                   (file-readable-p path))
-          (setq treemacs--eldoc-msg path
-                default-directory (treemacs--add-trailing-slash
-                                   (if (file-directory-p path) path (file-name-directory path)))))
-      (setq treemacs--eldoc-msg nil
-            default-directory "~/"))))
+  (-if-let (btn (treemacs-current-button))
+      (progn
+        (when (treemacs-button-get btn 'invisible)
+          (treemacs-next-line 1))
+        (-if-let* ((project (treemacs-project-of-node btn))
+                   (path (or (treemacs-button-get btn :default-directory)
+                             (treemacs--nearest-path btn))))
+            (when (and (treemacs-project->is-readable? project)
+                       (file-readable-p path))
+              (setq treemacs--eldoc-msg path
+                    default-directory (treemacs--add-trailing-slash
+                                       (if (file-directory-p path) path (file-name-directory path)))))
+          (setq treemacs--eldoc-msg nil
+                default-directory "~/")))
+    ;; If moved to the newlines at the end of the buffer,
+    ;; move to the previous button.
+    (when (> (point) (- (point-max) 2))
+      (treemacs-previous-line 1))))
 
 (defun treemacs--eldoc-function ()
   "Treemacs' implementation of `eldoc-documentation-function'.
