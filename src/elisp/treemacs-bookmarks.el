@@ -25,6 +25,7 @@
 (require 'f)
 (require 'treemacs-follow-mode)
 (require 'treemacs-interface)
+(require 'treemacs-tags)
 (eval-and-compile
   (require 'treemacs-macros))
 (require 'treemacs-workspaces)
@@ -69,23 +70,27 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
 ;;;###autoload
 (defun treemacs--bookmark-handler (record)
   "Open Treemacs into a bookmark RECORD."
-  (treemacs-unless-let (path (bookmark-prop-get record 'treemacs-bookmark-path))
+  (let ((path (bookmark-prop-get record 'treemacs-bookmark-path))
+        (tags-path (bookmark-prop-get record 'treemacs-bookmark-tags-path)))
+    (unless (or path tags-path)
       ;; Don't rely on treemacs-pulse-on-failure to display the error, since the
       ;; error must be handled in bookmark.el.
-      (user-error "Treemacs--bookmark-handler invoked for a non-Treemacs bookmark")
+      (user-error "Treemacs--bookmark-handler invoked for a non-Treemacs bookmark"))
     (treemacs-select-window)
-    (treemacs-goto-node path)
-    ;; If the user has bookmarked a directory, they probably want to operate on
-    ;; its contents. Expand it, and select the first child.
-    (treemacs-with-current-button
-     "Could not select the current bookmark"
-     (when (eq (treemacs-button-get current-btn :state) 'dir-node-closed)
-       (treemacs-TAB-action))
-     (when (eq (treemacs-button-get current-btn :state) 'dir-node-open)
-       (let ((depth (treemacs-button-get current-btn :depth))
-             (next-button (next-button current-btn)))
-         (when (and next-button (> (treemacs-button-get next-button :depth) depth))
-           (treemacs-next-line 1)))))))
+    (if tags-path
+        (treemacs--goto-tag-button-at tags-path)
+      (treemacs-goto-node path)
+      ;; If the user has bookmarked a directory, they probably want to operate on
+      ;; its contents. Expand it, and select the first child.
+      (treemacs-with-current-button
+       "Could not select the current bookmark"
+       (when (eq (treemacs-button-get current-btn :state) 'dir-node-closed)
+         (treemacs-TAB-action))
+       (when (eq (treemacs-button-get current-btn :state) 'dir-node-open)
+         (let ((depth (treemacs-button-get current-btn :depth))
+               (next-button (next-button current-btn)))
+           (when (and next-button (> (treemacs-button-get next-button :depth) depth))
+             (treemacs-next-line 1))))))))
 
 (defun treemacs--format-bookmark-title (btn)
   "Format the bookmark title for BTN with `treemacs-bookmark-title-template'."
@@ -153,16 +158,23 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
   "Make a bookmark record for the current Treemacs button.
 
 This function is installed as the `bookmark-make-record-function'."
-  (-if-let* ((current-btn (treemacs-current-button))
-             (path (treemacs-button-get current-btn :path)))
+  (treemacs-unless-let (current-btn (treemacs-current-button))
+      (progn
+        ;; Don't rely on treemacs-pulse-on-failure to display the error, since the
+        ;; error must be handled in bookmark.el.
+        (treemacs-pulse-on-failure)
+        (user-error "Nothing to bookmark here"))
+    (let* ((path (treemacs-button-get current-btn :path))
+           (tags-path (unless path (treemacs--tags-path-of current-btn))))
+      (unless (or path tags-path)
+        (treemacs-pulse-on-failure)
+        (user-error "Could not find the path of the current button"))
+
       `((defaults . (,(treemacs--format-bookmark-title current-btn)))
         (treemacs-bookmark-path . ,path)
+        (treemacs-bookmark-tags-path . ,tags-path)
         (handler . treemacs--bookmark-handler)
-        ,@(when (stringp path) `((filename . ,path))))
-    ;; Don't rely on treemacs-pulse-on-failure to display the error, since the
-    ;; error must be handled in bookmark.el.
-    (treemacs-pulse-on-failure)
-    (user-error (if (treemacs-current-button) "Cannot bookmark a tag" "Nothing to bookmark here"))))
+        ,@(when (stringp path) `((filename . ,path)))))))
 
 ;;;###autoload
 (defun treemacs-add-bookmark ()

@@ -104,7 +104,6 @@ overview looks as follows:
    More on both below. You can also summon a helpful hydra with ~?~ that will remind you of treemacs' many keybindings
    and features.
  * Bookmark integration :: Running ~bookmark-set~ on a Treemacs item will store a bookmark to Treemacs buffer for that item.
-   Bookmarking all kinds of items except for tags is supported.
 
 * Quick Start
 If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
