@@ -524,6 +524,7 @@ rules apply for QUERY-FUNCTION, RENDER-ACTION and ROOT-KEY-FORM."
 (defun treemacs-initialize ()
   "Initialize treemacs in an external buffer for extension use."
   (setq-local treemacs--in-this-buffer :extension)
+  (treemacs--disable-fringe-indicator)
   (treemacs-with-writable-buffer
    (erase-buffer))
   ;; make sure the fringe indicator is enabled later, otherwise treemacs attempts

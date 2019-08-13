@@ -48,7 +48,8 @@
 
 (defun treemacs--disable-fringe-indicator ()
   "Enabled the fringe indicator in the current buffer."
-  (delete-overlay treemacs--fringe-indicator-overlay))
+  (when treemacs--fringe-indicator-overlay
+    (delete-overlay treemacs--fringe-indicator-overlay)))
 
 (defun treemacs--setup-fringe-indicator-mode ()
   "Setup `treemacs-fringe-indicator-mode'."
