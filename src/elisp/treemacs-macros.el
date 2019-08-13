@@ -352,7 +352,8 @@ foregoing typechecking for its properties for the hope of improved performance."
                  (define-inline ,func-name (self)
                    ,(format "Get the '%s' property of `%s' SELF." prop-name name)
                    (declare (side-effect-free t))
-                   (inline-quote (aref ,',self ,(1+ it)))))))
+                   (inline-letevals (self)
+                     (inline-quote (aref ,',self ,(1+ it))))))))
           (number-sequence 0 (1- (length properties)))))))
 
 (defmacro treemacs-only-during-init (&rest body)
