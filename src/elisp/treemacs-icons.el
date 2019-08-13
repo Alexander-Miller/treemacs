@@ -137,7 +137,10 @@ Necessary since root icons are not rectangular."
           (tui-icons (treemacs-theme->tui-icons treemacs--current-theme))
           (gui-icon  (car icon-pair))
           (tui-icon  (cdr icon-pair)))
-     ,(unless file `(ignore icon-path))
+     ,(unless file
+        `(progn
+           (ignore icon-path)
+           (ignore icons-dir)))
      ,@(->> (-filter #'symbolp extensions)
             (--map `(progn (add-to-list 'treemacs--icon-symbols ',it)
                            (defvar ,(intern (format "treemacs-icon-%s" it)) nil))))
