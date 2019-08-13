@@ -260,9 +260,8 @@ BUFFER: Buffer"
 Internally calls `treemacs-do-update-single-file-git-state'.
 
 FILE: Filepath"
-  (with-no-warnings
-    (treemacs-save-position
-     (treemacs-do-update-single-file-git-state file))))
+  (treemacs-save-position
+   (treemacs-do-update-single-file-git-state file)))
 
 (defun treemacs-do-update-single-file-git-state (file)
   "Asynchronously update the given FILE node's git fontification.
@@ -279,7 +278,8 @@ FILE: Filepath"
                         ;; ...but exclude the project root
                         (cdr (-map #'treemacs-dom-node->key
                                    (treemacs-dom-node->all-parents parent-node)))))
-         (current-state (or (-some-> treemacs--git-cache (ht-get parent) (ht-get file)) "0"))
+         (git-cache (ht-get treemacs--git-cache parent))
+         (current-state (or (-some-> git-cache (ht-get file)) "0"))
          (cmd `(,treemacs-python-executable
                 "-O"
                 ,treemacs--single-file-git-status.py ,file ,current-state ,@parents)))
@@ -293,6 +293,8 @@ FILE: Filepath"
            ;; first the file node with its own default face
            (-let [output (read (pfuture-callback-output))]
              (-let [(file . state) (pop output)]
+               (when git-cache
+                 (ht-set! git-cache file state))
                (-when-let (pos (treemacs-find-visible-node file))
                  (-let [face (treemacs--git-status-face state 'treemacs-git-unmodified-face)]
                    (put-text-property

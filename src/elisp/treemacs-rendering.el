@@ -739,6 +739,8 @@ parents' git status can be updated."
             (pcase type
               ('deleted
                (treemacs-do-delete-single-node path project))
+              ('changed
+               (treemacs-update-single-file-git-state path))
               (_
                (setf recurse nil)
                (treemacs--refresh-dir (treemacs-dom-node->key node) project)

@@ -259,6 +259,9 @@ attempt first to keep point on the same file/tag, and if that does not work keep
 it on the same line."
   (declare (debug (form body)))
   `(treemacs-without-following
+    (declare-function treemacs--tags-path-of "treemacs-tags")
+    (declare-function treemacs--goto-tag-button-at "treemacs-tags")
+    (declare-function treemacs--current-screen-line "treemacs-rendering")
     (let* ((curr-btn       (treemacs-current-button))
            (curr-point     (point-marker))
            (next-path      (-some-> curr-btn (treemacs--next-non-child-button) (button-get :path)))
