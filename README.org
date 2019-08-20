@@ -155,6 +155,9 @@ treemacs will point you at the incorrect line and tell you what's missing:
 
 [[file:screenshots/workspace-edit.png]]
 
+(Note that the list with the path property allows an indentation of 0 or 1 spaces only. The much greater visible
+indentation is caused by ~org-indent-mode~)
+
 ** Navigation without Projects and Workspaces
 If a strict workspace and project structure, as described above, is too stringent for your use-case you can, under
 certain circumstances, use treemacs to freely navigate through your your file system, similar to dired: When your
