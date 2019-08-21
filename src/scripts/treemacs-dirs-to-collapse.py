@@ -75,7 +75,7 @@ def main():
         if depth > 0:
             final_dir      = steps[-1]
             display_suffix = final_dir[len(current_dir):]
-            out.write("(" + '"' + current_dir + '" ' + '"' + display_suffix + '" ' + '"' + '" "'.join(steps) + '")')
+            out.write("(" + '"' + display_suffix + '" ' + '"' + current_dir + '" ' + '"' + '" "'.join(steps) + '")')
     out.write(")")
 
 main()

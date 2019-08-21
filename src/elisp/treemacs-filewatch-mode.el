@@ -157,7 +157,9 @@ Also start the refresh timer if it's not started already."
          (treemacs--stop-watching ,path))
        (treemacs-run-in-every-buffer
         (--when-let (treemacs-find-in-dom ,location)
-          (push (cons ,type ,path) (treemacs-dom-node->refresh-flag it)))
+          (let ((flag (cons ,type ,path)))
+            (unless (member flag (treemacs-dom-node->refresh-flag it))
+              (push flag (treemacs-dom-node->refresh-flag it)))))
         (unless treemacs--refresh-timer
           (setf treemacs--refresh-timer
                 (run-with-timer (/ treemacs-file-event-delay 1000) nil
@@ -190,8 +192,8 @@ Extracted only so `treemacs--process-file-events' can decide when to call
    (treemacs-run-in-every-buffer
     (treemacs-save-position
      (-let [treemacs--no-messages (or treemacs-silent-refresh treemacs-silent-filewatch)]
-       (treemacs--recursive-refresh)
-       (hl-line-highlight))))))
+       (treemacs--recursive-refresh)))
+    (hl-line-highlight))))
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected.

@@ -40,7 +40,7 @@
 (defvar-local treemacs-dom nil)
 
 (treemacs--defstruct treemacs-dom-node
-  key parent children position closed refresh-flag)
+  key parent children position closed refresh-flag collapse-keys)
 
 (define-inline treemacs--insert-into-dom (node)
   "Insert NODE into the dom."
@@ -113,8 +113,9 @@ Debug function."
 Sets its POS info and collpase field to nil."
   (inline-letevals (node pos)
     (inline-quote
-     (setf (treemacs-dom-node->position ,node) ,pos
-           (treemacs-dom-node->closed ,node) nil))))
+     (prog1 ,node
+       (setf (treemacs-dom-node->position ,node) ,pos
+             (treemacs-dom-node->closed ,node) nil)))))
 
 (define-inline treemacs--on-expanding-new-node (key pos parent-key)
   "When node at KEY is expanded and does not yet exist in the dom.
@@ -127,15 +128,20 @@ the dom."
        (when parent
          (setf (treemacs-dom-node->children parent) (cons new-node (treemacs-dom-node->children parent))))
        (setf (treemacs-dom-node->parent new-node) parent)
-       (ht-set! treemacs-dom ,key new-node)))))
+       (ht-set! treemacs-dom ,key new-node)
+       new-node))))
 
 (defun treemacs-on-expand (key pos parent-key)
   "Routine to run when a node is expanded.
 Sets up a new node for KEY and POS and parent at PARENT-KEY or resurrects an
 already present node by setting its POS and marking at as no longer closed."
-  (--if-let (ht-get treemacs-dom key)
-      (treemacs--on-expanding-existing-node it pos)
-    (treemacs--on-expanding-new-node key pos parent-key)))
+  (-let [dom-node
+         (--if-let (ht-get treemacs-dom key)
+             (treemacs--on-expanding-existing-node it pos)
+           (treemacs--on-expanding-new-node key pos parent-key))]
+    (dolist (step (cdr (treemacs-button-get pos :collapsed)))
+      (ht-set! treemacs-dom step dom-node)
+      (push step (treemacs-dom-node->collapse-keys dom-node)))))
 
 (defun treemacs--do-for-all-child-nodes (node f)
   "Recursively iterate over NODE and its children and run F on every one of them."
@@ -174,15 +180,19 @@ data of NODE and all its children. When PURGE is non-nil will instead remove
 NODE and its children from the dom."
   ;; need to check for nil, since this code also runs on deletion of files or closed dirs
   ;; which were never part of the dom
-  (-when-let (node (treemacs-find-in-dom key))
-    (if (null (treemacs-dom-node->children node))
-        ;; no children - just throw the node out of the dom and its parent
-        (-let [parent (treemacs-dom-node->parent node)]
+  (-when-let (dom-node (treemacs-find-in-dom key))
+    (if (null (treemacs-dom-node->children dom-node))
+        ;; no children - just throw the dom-node out of the dom and its parent
+        (-let [parent (treemacs-dom-node->parent dom-node)]
           (when parent
             (setf (treemacs-dom-node->children parent)
-                  (delete node (treemacs-dom-node->children parent))))
-          (ht-remove! treemacs-dom key))
-      (treemacs--on-collapse-of-node-with-children node purge))))
+                  (delete dom-node (treemacs-dom-node->children parent))))
+          (ht-remove! treemacs-dom key)
+          ;; remove additional dom entries for flattened dirs
+          (dolist (step (treemacs-dom-node->collapse-keys dom-node))
+            (ht-remove! treemacs-dom step))
+          (setf (treemacs-dom-node->collapse-keys dom-node) nil))
+      (treemacs--on-collapse-of-node-with-children dom-node purge))))
 
 (defun treemacs--on-rename (old-name new-name)
   "Routine to run after a file was renamed from OLD-NAME to NEW-NAME."

@@ -497,7 +497,7 @@ Simply collapses and re-expands the button (if it has not been closed)."
   (inline-letevals (path project)
     (inline-quote
      (let ((btn (treemacs-goto-file-node ,path ,project)))
-       (when (memq (treemacs-button-get btn :state) '(dir-node-open file-node-open))
+       (when (memq (treemacs-button-get btn :state) '(dir-node-open file-node-open root-node-open))
          (goto-char (treemacs-button-start btn))
          (treemacs--push-button btn)
          (goto-char (treemacs-button-start btn))
@@ -779,7 +779,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
                           ;; multiple search iterations bundled as one
                           ((and (treemacs-button-get current-btn :collapsed)
                                 (treemacs-is-path (treemacs-button-get btn :path) :parent-of root))
-                           (dotimes (_ (treemacs-button-get current-btn :collapsed))
+                           (dotimes (_ (car (treemacs-button-get current-btn :collapsed)))
                              (setq root (concat root "/" (pop ,dir-parts)))
                              (cl-incf index))
                            (cl-return-from search current-btn))

@@ -217,15 +217,16 @@ Does not preserve the current position in the buffer."
   "Refresh project SELF in the current buffer.
 Does not preserve the current position in the buffer."
   (inline-letevals (self)
-    (inline-quote (treemacs-project->refresh-path-status! ,self))
     (inline-quote
-     (when (treemacs-project->is-expanded? ,self)
-       (let ((root-btn (treemacs-project->position ,self)))
-         (goto-char root-btn)
-         (treemacs--forget-last-highlight)
-         (treemacs--collapse-root-node root-btn)
-         (unless (treemacs-project->is-unreadable? ,self)
-           (treemacs--expand-root-node root-btn)))))))
+     (progn
+       (treemacs-project->refresh-path-status! ,self)
+       (when (treemacs-project->is-expanded? ,self)
+         (let ((root-btn (treemacs-project->position ,self)))
+           (goto-char root-btn)
+           (treemacs--forget-last-highlight)
+           (treemacs--collapse-root-node root-btn)
+           (unless (treemacs-project->is-unreadable? ,self)
+             (treemacs--expand-root-node root-btn))))))))
 
 (define-inline treemacs-project->is-last? (self)
   "Return t when root node of project SELF is the last in the view."

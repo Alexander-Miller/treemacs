@@ -582,12 +582,20 @@
 
 (describe "treemacs-on-expand"
 
-  (it "Does nothing when input is nil"
+  (it "Does nothing when key is nil"
     (with-temp-buffer
       (setq treemacs-dom (ht))
-      (expect (treemacs-on-expand "A" 1 nil) :to-be nil)
-      (expect (treemacs-on-expand "A" nil "B") :to-be nil)
       (expect (treemacs-on-expand nil 1 "B") :to-be nil)))
+
+  (it "Does nothing when parent-key is nil"
+    (with-temp-buffer
+      (setq treemacs-dom (ht))
+      (expect (treemacs-on-expand "A" 1 nil) :to-be nil)))
+
+  (it "Fails when position is nil"
+    (with-temp-buffer
+      (setq treemacs-dom (ht))
+      (expect (treemacs-on-expand "A" nil "B") :to-throw)))
 
   (it "Correctly expands new node"
     (with-temp-buffer
@@ -597,11 +605,12 @@
                      (ht-set! treemacs-dom default-directory
                               (make-treemacs-dom-node :key default-directory))
                      (treemacs-find-in-dom default-directory))))
-        (treemacs-on-expand "/A/B" 22 "/A")
+        (insert "/A/B")
+        (treemacs-on-expand "/A/B" 3 "/A")
         (-let [node (treemacs-find-in-dom "/A/B")]
           (expect (ht-size treemacs-dom) :to-equal 2)
           (expect (treemacs-dom-node->children root) :to-equal (list node))
-          (expect (treemacs-dom-node->position node) :to-equal 22)
+          (expect (treemacs-dom-node->position node) :to-equal 3)
           (expect (treemacs-dom-node->parent node) :to-equal root)))))
 
   (it "Correctly expands previously open node"
@@ -616,13 +625,14 @@
                      (ht-set! treemacs-dom "/A/B"
                               (make-treemacs-dom-node :key "/A/B" :closed t))
                      (treemacs-find-in-dom "/A/B"))))
+        (insert "/A/B")
         (setf (treemacs-dom-node->parent node) root)
         (setf (treemacs-dom-node->children root) (list node))
-        (treemacs-on-expand "/A/B" 22 "/A")
+        (treemacs-on-expand "/A/B" 3 "/A")
         (-let [node (treemacs-find-in-dom "/A/B")]
           (expect (ht-size treemacs-dom) :to-equal 2)
           (expect (treemacs-dom-node->children root) :to-equal (list node))
-          (expect (treemacs-dom-node->position node) :to-equal 22)
+          (expect (treemacs-dom-node->position node) :to-equal 3)
           (expect (treemacs-dom-node->parent node) :to-equal root)
           (expect (treemacs-dom-node->closed node) :to-be nil))))))
 
@@ -1070,11 +1080,15 @@
     (-let [treemacs-collapse-dirs 3]
       (expect (-> treemacs-dir
                   (f-join "test")
-                  (treemacs--collapsed-dirs-process (make-treemacs-project :name "P" :path treemacs-dir :path-status 'local-readable))
+                  (treemacs--collapsed-dirs-process
+                   (make-treemacs-project
+                    :name "P"
+                    :path treemacs-dir
+                    :path-status 'local-readable))
                   (treemacs--parse-collapsed-dirs))
               :to-equal
-              `((,(f-join treemacs-dir "test/testdir1")
-                 "/testdir2/testdir3"
+              `(("/testdir2/testdir3"
+                 ,(f-join treemacs-dir "test/testdir1")
                  ,(f-join treemacs-dir "test/testdir1/testdir2")
                  ,(f-join treemacs-dir "test/testdir1/testdir2/testdir3"))))))
 

@@ -268,8 +268,9 @@ it on the same line."
            (prev-path      (-some-> curr-btn (treemacs--prev-non-child-button) (button-get :path)))
            (curr-node-path (-some-> curr-btn (treemacs-button-get :path)))
            (curr-state     (-some-> curr-btn (treemacs-button-get :state)))
-           (curr-file      (-some-> curr-btn (treemacs--nearest-path)))
+           (collapse       (-some-> curr-btn (treemacs-button-get :collapsed)))
            (curr-tagpath   (-some-> curr-btn (treemacs--tags-path-of)))
+           (curr-file      (if collapse (treemacs-button-get curr-btn :key) (-some-> curr-btn (treemacs--nearest-path))))
            (curr-window    (treemacs-get-local-window))
            (curr-win-line  (when curr-window
                              (with-selected-window curr-window
