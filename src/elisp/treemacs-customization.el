@@ -20,6 +20,9 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+(require 'widget)
+(require 'dash)
 (require 'f)
 
 (defun treemacs--find-python3 ()
