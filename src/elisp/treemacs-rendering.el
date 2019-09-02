@@ -764,7 +764,12 @@ parents' git status can be updated."
     (-when-let (change-list (treemacs-dom-node->refresh-flag node))
       (treemacs-dom-node->reset-refresh-flag! node)
       (push node refreshed-nodes)
-      (unless (> (length change-list) 8)
+      (if (> (length change-list) 8)
+          (progn
+            (setf recurse nil)
+            (if (null (treemacs-dom-node->parent node))
+                (treemacs-project->refresh! project)
+              (treemacs--refresh-dir (treemacs-dom-node->key node) project)))
         (dolist (change change-list)
           (-let [(type . path) change]
             (pcase type
