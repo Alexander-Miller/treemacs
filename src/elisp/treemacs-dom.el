@@ -106,7 +106,10 @@ Debug function."
   "Remove single SELF from the dom."
   (inline-letevals (self)
     (inline-quote
-     (ht-remove treemacs-dom (treemacs-dom-node->key ,self)))))
+     (progn
+       (ht-remove treemacs-dom (treemacs-dom-node->key ,self))
+       (dolist (coll-key (treemacs-dom-node->collapse-keys ,self))
+         (ht-remove treemacs-dom coll-key))))))
 
 (define-inline treemacs--on-expanding-existing-node (node pos)
   "Run when existing NODE is expanded.
