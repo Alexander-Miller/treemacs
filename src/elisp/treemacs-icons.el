@@ -193,6 +193,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "scala.png"       :extensions ("scala"))
     (treemacs-create-icon :file "sbt.png"         :extensions ("sbt"))
     (treemacs-create-icon :file "go.png"          :extensions ("go"))
+    (treemacs-create-icon :file "php.png"         :extensions ("php"))
     (treemacs-create-icon :file "js.png"          :extensions ("js" "jsx"))
     (treemacs-create-icon :file "hy.png"          :extensions ("hy"))
     (treemacs-create-icon :file "json.png"        :extensions ("json"))
