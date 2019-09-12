@@ -33,10 +33,8 @@
  (push '(treemacs-workspace . :never) frameset-filter-alist))
 
 (with-eval-after-load 'winum
-  (when (boundp 'winum-ignored-buffers)
-    (dolist (n (number-sequence 1 5))
-      (add-to-list 'winum-ignored-buffers
-                   (format "%sFramebuffer-%s*" treemacs--buffer-name-prefix n)))))
+  (when (boundp 'winum-ignored-buffers-regexp)
+    (add-to-list 'winum-ignored-buffers-regexp (regexp-quote (format "%sFramebuffer-" treemacs--buffer-name-prefix)))))
 
 (with-eval-after-load 'ace-window
   (when (boundp 'aw-ignored-buffers)
