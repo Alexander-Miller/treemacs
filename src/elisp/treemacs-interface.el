@@ -853,7 +853,7 @@ really (or rather permanently) opened - any command other than `treemacs-peek',
 `treemacs-next-page-other-window' or `treemacs-previous-page-other-window' will
 cause it to be closed again and the previously shown buffer to be restored. The
 buffer visiting the peeked file will also be killed again, unless it was already
-open before eing used for peeking."
+open before being used for peeking."
   (interactive)
   (treemacs--execute-button-action
    :save-window t

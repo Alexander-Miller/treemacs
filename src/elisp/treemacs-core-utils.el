@@ -1236,10 +1236,11 @@ Additionally also navigate to BTN's tag if GOTO-TAG is t.
 
 BTN: Button
 GOTO-TAG: Bool"
-  (let ((path (if goto-tag?
-                  (treemacs-with-button-buffer btn
-                    (treemacs--nearest-path btn))
-                (treemacs-safe-button-get btn :path)))
+  (let ((path (file-truename
+               (if goto-tag?
+                   (treemacs-with-button-buffer btn
+                     (treemacs--nearest-path btn))
+                 (treemacs-safe-button-get btn :path))))
         (buffer-to-restore (current-buffer))
         (buffer-to-kill nil))
     (-if-let (buffer (get-file-buffer path))
