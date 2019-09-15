@@ -263,21 +263,28 @@ FILE: Filepath"
   (treemacs-save-position
    (treemacs-do-update-single-file-git-state file)))
 
-(defun treemacs-do-update-single-file-git-state (file)
+(defun treemacs-do-update-single-file-git-state (file &optional exclude-parents)
   "Asynchronously update the given FILE node's git fontification.
 Since an update to a single node can potentially also mean a change to the
 states of all its parents they will likewise be updated by this function. If the
 file's current and new git status are the same this function will do nothing.
 
-FILE: Filepath"
+When EXCLUDE-PARENTS is non-nil only the given FILE only the file node is
+updated. This is only used in case a file-watch update requires the insertion of
+a new file that, due to being recently created, does not have a git status cache
+entry.
+
+FILE: Filepath
+EXCLUDE-PARENTS: Boolean"
   (let* ((local-buffer (current-buffer))
          (parent (treemacs--parent file))
          (parent-node (treemacs-find-in-dom parent))
-         ;; include the first parent...
-         (parents (cons (treemacs-dom-node->key parent-node)
-                        ;; ...but exclude the project root
-                        (cdr (-map #'treemacs-dom-node->key
-                                   (treemacs-dom-node->all-parents parent-node)))))
+         (parents (unless exclude-parents
+                    ;; include the first parent...
+                    (cons (treemacs-dom-node->key parent-node)
+                          ;; ...but exclude the project root
+                          (cdr (-map #'treemacs-dom-node->key
+                                     (treemacs-dom-node->all-parents parent-node))))))
          (git-cache (ht-get treemacs--git-cache parent))
          (current-state (or (-some-> git-cache (ht-get file)) "0"))
          (cmd `(,treemacs-python-executable

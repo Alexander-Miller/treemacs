@@ -150,6 +150,20 @@ the height of treemacs' icons must be taken into account."
   (inline-quote
    (insert (if treemacs-space-between-root-nodes "\n\n" "\n"))))
 
+(define-inline treemacs--get-sort-fuction ()
+  (declare (side-effect-free t))
+  (inline-quote
+   (pcase treemacs-sorting
+     ('alphabetic-asc #'treemacs--sort-alphabetic-asc)
+     ('alphabetic-desc #'treemacs--sort-alphabetic-desc)
+     ('alphabetic-case-insensitive-asc  #'treemacs--sort-alphabetic-case-insensitive-asc)
+     ('alphabetic-case-insensitive-desc #'treemacs--sort-alphabetic-case-insensitive-desc)
+     ('size-asc #'treemacs--sort-size-asc)
+     ('size-desc #'treemacs--sort-size-desc)
+     ('mod-time-asc #'treemacs--sort-mod-time-asc)
+     ('mod-time-desc #'treemacs--sort-mod-time-desc)
+     (other other))))
+
 (define-inline treemacs--get-dir-content (dir)
   "Get the content of DIR, separated into sublists of first dirs, then files."
   (inline-letevals (dir)
@@ -157,17 +171,7 @@ the height of treemacs' icons must be taken into account."
      ;; `directory-files' is much faster in a temp buffer for whatever reason
      (with-temp-buffer
        (let* ((file-name-handler-alist '(("\\`/[^/|:]+:" . tramp-autoload-file-name-handler)))
-              (sort-func
-               (pcase treemacs-sorting
-                 ('alphabetic-asc #'treemacs--sort-alphabetic-asc)
-                 ('alphabetic-desc #'treemacs--sort-alphabetic-desc)
-                 ('alphabetic-case-insensitive-asc  #'treemacs--sort-alphabetic-case-insensitive-asc)
-                 ('alphabetic-case-insensitive-desc #'treemacs--sort-alphabetic-case-insensitive-desc)
-                 ('size-asc #'treemacs--sort-size-asc)
-                 ('size-desc #'treemacs--sort-size-desc)
-                 ('mod-time-asc #'treemacs--sort-mod-time-asc)
-                 ('mod-time-desc #'treemacs--sort-mod-time-desc)
-                 (other other)))
+              (sort-func (treemacs--get-sort-fuction))
               (entries (-> ,dir (directory-files :absolute-names nil :no-sort) (treemacs--filter-files-to-be-shown)))
               (dirs-files (-separate #'file-directory-p entries)))
          (list (sort (cl-first dirs-files) sort-func)
@@ -716,6 +720,82 @@ DELETED-PATH: File Path"
                (-let [properties (text-properties-at (1- (point)))]
                  (insert (apply #'propertize new-label properties)))))))))))
 
+(defun treemacs-do-insert-single-node (path parent-path)
+  "Insert single file node at given PATH and PARENT-PATH.
+
+PATH: File Path
+PARENT-PATH: File Path"
+  (-when-let (parent-node (treemacs-find-visible-node parent-path))
+    (when (treemacs-is-node-expanded? parent-node)
+      (treemacs-with-writable-buffer
+       (let* ((sort-function (treemacs--get-sort-fuction))
+              (insert-before
+               (if (file-directory-p path)
+                   (or
+                    ;; insert directory at first dir node that fits sort-fuction
+                    ;; if there are no directories try before first file node
+                    ;; if there are no files either take the next neighbour
+                    (treemacs-first-child-node-where parent-node
+                      (-let [child-path (treemacs-button-get child-btn :path)]
+                        (or (and (file-directory-p child-path)
+                                 (funcall sort-function path child-path))
+                            (not (file-directory-p child-path)))))
+                    (-when-let (first-file
+                                (treemacs-first-child-node-where parent-node
+                                  (not (file-directory-p (treemacs-button-get child-btn :path)))))
+                      (goto-char first-file)
+                      (forward-line -1)
+                      (treemacs-node-at-point))
+                    (treemacs--next-neighbour-of parent-node))
+                 (or
+                  ;; insert file at first file node that fits sort-fuction
+                  ;; if there are no directories ignore files and take the next neighbour
+                  (treemacs-first-child-node-where parent-node
+                    (-let [child-path (treemacs-button-get child-btn :path)]
+                      (and (not (file-directory-p child-path))
+                           (funcall sort-function path child-path))))
+                  (treemacs--next-neighbour-of parent-node)))))
+         (if insert-before
+             (goto-char insert-before)
+           (goto-char (point-max))
+           (end-of-line)
+           (insert "\n"))
+         (beginning-of-line)
+         (insert (treemacs--create-string-for-single-insert
+                  path parent-node (1+ (button-get parent-node :depth)))
+                 "\n")
+         (when treemacs-git-mode
+           (treemacs-do-update-single-file-git-state path :exclude-parents)))))))
+
+(define-inline treemacs--create-string-for-single-insert (path parent depth)
+  "Create the necessary strings to insert a new file node.
+Creates the required indent prefix and file icon based on the given file PATH,
+PARENT node and node DEPTH.
+
+PATH: File Path
+PARENT: Button
+DEPTH: Int"
+  (declare (side-effect-free t))
+  (inline-letevals (path depth parent)
+    (inline-quote
+     (let ((prefix (treemacs--get-indentation ,depth)))
+       (apply
+        #'concat
+        (let* ((strs)
+               (face))
+          (if (file-directory-p ,path)
+              (setf strs (treemacs--create-dir-button-strings
+                          ,path
+                          (concat prefix treemacs-icon-dir-closed)
+                          ,parent
+                          ,depth)
+                    face 'treemacs-directory-face)
+            (setf strs (treemacs--create-file-button-strings ,path prefix ,parent ,depth)
+                  face 'treemacs-file-face))
+          (-let [last (-last-item strs)]
+            (put-text-property 0 (length last) 'face face last))
+          strs))))) )
+
 (defun treemacs--maybe-recenter (when &optional new-lines)
   "Potentially recenter based on value of WHEN.
 
@@ -776,7 +856,10 @@ parents' git status can be updated."
               ('deleted
                (treemacs-do-delete-single-node path project))
               ('changed
-               (treemacs-update-single-file-git-state path))
+               (when (memq treemacs-git-mode '(extended deferred))
+                 (treemacs-update-single-file-git-state path)))
+              ('created
+               (treemacs-do-insert-single-node path (treemacs-dom-node->key node)))
               (_
                (setf recurse nil)
                (if (null (treemacs-dom-node->parent node))
