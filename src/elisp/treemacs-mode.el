@@ -227,7 +227,8 @@ to it will instead show a blank."
               (,(cdr key-remove-project) #'treemacs-remove-project-from-workspace)
               (,(cdr key-rename-project) #'treemacs-rename-project)
               (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
-              ("?" nil "Exit"))))
+              ("?" nil "Exit")
+              ("ESC" nil "Exit"))))
         (treemacs--helpful-hydra/body))
     (treemacs-log "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
 
