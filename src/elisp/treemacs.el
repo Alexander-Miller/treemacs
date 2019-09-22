@@ -168,6 +168,7 @@ treemacs buffer for this frame."
   (switch-to-buffer (get-buffer-create treemacs--org-edit-buffer-name))
   (erase-buffer)
   (org-mode)
+  (use-local-map (copy-keymap (with-no-warnings org-mode-map)))
   (local-set-key (kbd "C-c C-c") #'treemacs-finish-edit)
   (insert "#+TITLE: Edit Treemacs Workspaces & Projects\n")
   (when treemacs-show-edit-workspace-help
