@@ -323,6 +323,8 @@ to it will instead show a blank."
       (define-key map (kbd "h")         #'treemacs-root-up)
       (define-key map (kbd "l")         #'treemacs-root-down)
       (define-key map (kbd "H")         #'treemacs-collapse-parent-node)
+      (define-key map (kbd "!")         #'treemacs-run-shell-command-for-current-node)
+      (define-key map (kbd "M-!")       #'treemacs-run-shell-command-in-project-root)
       map)
     "Keymap for `treemacs-mode'."))
 
