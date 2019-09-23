@@ -46,6 +46,9 @@
 ;; Since it is a marker in the treemacs buffer it is important for it to be reset whenever it might
 ;; become invalid.
 
+(treemacs-import-functions-from "treemacs-icons"
+  treemacs-get-icon-value)
+
 (defvar-local treemacs--last-highlight nil
   "The last button treemacs has highlighted.")
 
