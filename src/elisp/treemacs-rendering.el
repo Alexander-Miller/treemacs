@@ -861,6 +861,9 @@ parents' git status can be updated."
               ('created
                (treemacs-do-insert-single-node path (treemacs-dom-node->key node)))
               (_
+               ;; Renaming is handled as a combination of delete+create, so
+               ;; this case should never be taken
+               (treemacs-log "Unusual change event: %s" change)
                (setf recurse nil)
                (if (null (treemacs-dom-node->parent node))
                    (treemacs-project->refresh! project)
