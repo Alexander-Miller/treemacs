@@ -720,6 +720,52 @@ DELETED-PATH: File Path"
                (-let [properties (text-properties-at (1- (point)))]
                  (insert (apply #'propertize new-label properties)))))))))))
 
+(defun treemacs--determine-insert-position (path parent-btn sort-function)
+  "Determine the insert location for PATH under PARENT-BTN.
+Specifically this will return the node *after* which to make the new insert.
+
+Mostly this means the position before the first node for whose path returns
+SORT-FUNCTION returns non-nil, but files and directories must be handled
+propery,and edge cases for inserting at the end of the project and buffer must
+be taken into account.
+
+PATH: File Path
+PARENT-BTN: Button
+SORT-FUNCTION: Button -> Boolean."
+  (or
+   (if (file-directory-p path)
+       ;; for directoies
+       (or
+        ;; insert directory before first dir node that fits sort-function
+        (--when-let
+            (treemacs-first-child-node-where parent-btn
+              (-let [child-path (treemacs-button-get child-btn :path)]
+                (or (and (file-directory-p child-path)
+                         (funcall sort-function path child-path))
+                    (not (file-directory-p child-path)))))
+          (previous-button it))
+        ;; if there are no directories try before first file node
+        (--when-let (treemacs-first-child-node-where parent-btn
+                      (not (file-directory-p (treemacs-button-get child-btn :path))))
+          (previous-button it)))
+     ;; for files
+     (or
+      ;; insert before first file node that fits sort-function
+      (--when-let
+          (treemacs-first-child-node-where parent-btn
+            (-let [child-path (treemacs-button-get child-btn :path)]
+              (and (not (file-directory-p child-path))
+                   (funcall sort-function path child-path))))
+        (previous-button it))))
+   ;; if neither works just use the next neighbour of parent
+   (if (treemacs-button-get parent-btn :parent)
+       (treemacs--next-neighbour-of parent-btn)
+     ;; unless parent is a project, then we must use the last node in the project
+     (-> parent-btn
+         (treemacs-button-get :project)
+         (treemacs--get-bounds-of-project)
+         (cdr))) ))
+
 (defun treemacs-do-insert-single-node (path parent-path)
   "Insert single file node at given PATH and PARENT-PATH.
 
@@ -729,41 +775,11 @@ PARENT-PATH: File Path"
     (when (treemacs-is-node-expanded? parent-node)
       (treemacs-with-writable-buffer
        (let* ((sort-function (treemacs--get-sort-fuction))
-              (insert-before
-               (if (file-directory-p path)
-                   (or
-                    ;; insert directory at first dir node that fits sort-fuction
-                    ;; if there are no directories try before first file node
-                    ;; if there are no files either take the next neighbour
-                    (treemacs-first-child-node-where parent-node
-                      (-let [child-path (treemacs-button-get child-btn :path)]
-                        (or (and (file-directory-p child-path)
-                                 (funcall sort-function path child-path))
-                            (not (file-directory-p child-path)))))
-                    (-when-let (first-file
-                                (treemacs-first-child-node-where parent-node
-                                  (not (file-directory-p (treemacs-button-get child-btn :path)))))
-                      (goto-char first-file)
-                      (forward-line -1)
-                      (treemacs-node-at-point))
-                    (treemacs--next-neighbour-of parent-node))
-                 (or
-                  ;; insert file at first file node that fits sort-fuction
-                  ;; if there are no directories ignore files and take the next neighbour
-                  (treemacs-first-child-node-where parent-node
-                    (-let [child-path (treemacs-button-get child-btn :path)]
-                      (and (not (file-directory-p child-path))
-                           (funcall sort-function path child-path))))
-                  (treemacs--next-neighbour-of parent-node)))))
-         (if insert-before
-             (goto-char insert-before)
-           (goto-char (point-max))
-           (end-of-line)
-           (insert "\n"))
-         (beginning-of-line)
-         (insert (treemacs--create-string-for-single-insert
-                  path parent-node (1+ (button-get parent-node :depth)))
-                 "\n")
+              (insert-after (treemacs--determine-insert-position path parent-node sort-function)))
+         (goto-char insert-after)
+         (end-of-line)
+         (insert "\n" (treemacs--create-string-for-single-insert
+                       path parent-node (1+ (button-get parent-node :depth))))
          (when treemacs-git-mode
            (treemacs-do-update-single-file-git-state path :exclude-parents)))))))
 
