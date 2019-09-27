@@ -587,7 +587,7 @@ Add a project for ROOT and NAME if they are non-nil."
        (treemacs--setup-buffer)
        (treemacs-mode)
        (unless current-workspace
-         (treemacs--find-workspace)
+         (treemacs--find-workspace (buffer-file-name origin-buffer))
          (setq current-workspace (treemacs-current-workspace))
          (run-hook-with-args treemacs-workspace-first-found-functions
                              current-workspace (selected-frame)))

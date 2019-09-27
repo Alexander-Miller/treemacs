@@ -273,8 +273,7 @@ CONTEXT: Keyword"
         (condition-case e
             (pcase (treemacs--validate-persist-lines lines)
               ('success
-               (setf treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list lines))
-                     (treemacs-current-workspace) (car treemacs--workspaces)))
+               (setf treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list lines))))
               (`(error ,line ,error-msg)
                (treemacs--write-error-persist-state lines (format "'%s' in line '%s'" error-msg line))
                (treemacs-log "Could not restore saved state, %s:\n%s\n%s"
