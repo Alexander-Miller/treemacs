@@ -1034,6 +1034,10 @@ Only works with a single project in the workspace."
         (f-write (apply #'concat (--map (concat it "\n") lines)) 'utf-8 treemacs-persist-file)
         (kill-buffer)
         (treemacs--restore)
+        (-if-let (ws (treemacs--select-workspace-by-name
+                      (treemacs-workspace->name (treemacs-current-workspace))))
+            (setf (treemacs-current-workspace) ws)
+          (treemacs--find-workspace))
         (treemacs--consolidate-projects)
         (-some-> (get-buffer treemacs--org-edit-buffer-name) (kill-buffer))
         (run-hooks 'treemacs-workspace-edit-hook)
