@@ -412,7 +412,7 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
             (depth (when child-btn (treemacs-button-get child-btn :depth))))
        (when (and child-btn
                   (equal (treemacs-button-get child-btn :parent) ,btn))
-         (if ,@predicate
+         (if (progn ,@predicate)
              (cl-return-from __search__ child-btn)
            (while child-btn
              (setq child-btn (next-button (treemacs-button-end child-btn)))
@@ -420,7 +420,7 @@ For the PREDICATE call the button being checked is bound as 'child-btn'."
                (-let [child-depth (treemacs-button-get child-btn :depth)]
                  (cond
                   ((= depth child-depth)
-                   (when ,@predicate (cl-return-from __search__ child-btn)) )
+                   (when (progn ,@predicate) (cl-return-from __search__ child-btn)) )
                   ((> depth child-depth)
                    (cl-return-from __search__ nil)))))))))))
 

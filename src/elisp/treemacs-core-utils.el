@@ -560,18 +560,18 @@ are not being shown on account of `treemacs-show-hidden-files' being nil."
                             (f-split (substring it (length root)))))
                 dirs))))
 
-(defun treemacs--get-children-of (parent-btn)
+(defun treemacs-collect-child-nodes (parent-btn)
   "Get all buttons exactly one level deeper than PARENT-BTN.
 The child buttons are returned in the same order as they appear in the treemacs
 buffer."
-  (let ((ret)
-        (btn (next-button (treemacs-button-end parent-btn) t)))
-    (when (and btn (equal (1+ (treemacs-button-get parent-btn :depth))
-                          (treemacs-button-get btn :depth)))
-      (setq ret (cons btn ret))
-      (while (setq btn (treemacs--next-neighbour-of btn))
-        (push btn ret)))
+  (let (ret)
+    (treemacs-first-child-node-where parent-btn
+      (push child-btn ret)
+      nil)
     (nreverse ret)))
+(defalias 'treemacs--get-children-of #'treemacs-collect-child-nodes)
+(with-no-warnings
+  (make-obsolete #'treemacs--get-children-of #'treemacs-collect-child-nodes "v2.7"))
 
 (defun treemacs--init (&optional root name)
   "Initialize a treemacs buffer from the current workspace.

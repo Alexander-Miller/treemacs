@@ -548,7 +548,7 @@ RECURSIVE: Bool"
          (progn
            (treemacs--start-watching path)
            (when recursive
-             (--each (treemacs--get-children-of btn)
+             (--each (treemacs-collect-child-nodes btn)
                (when (eq 'dir-node-closed (treemacs-button-get it :state))
                  (goto-char (treemacs-button-start it))
                  (treemacs--expand-dir-node it :git-future git-future :recursive t))))))))))

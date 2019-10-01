@@ -110,7 +110,7 @@
                 (call-interactively #'treemacs-TAB-action)
                 (should (equal '("Variables" "Functions")
                                (-map #'treemacs--get-label-of
-                                     (treemacs--get-children-of (treemacs-current-button)))))
+                                     (treemacs-collect-child-nodes (treemacs-current-button)))))
 
                 (call-interactively #'treemacs-next-line)
                 (call-interactively #'treemacs-next-line)
@@ -118,7 +118,7 @@
                 (call-interactively #'treemacs-TAB-action)
                 (should (equal '("fn1" "fn2")
                                (-map #'treemacs--get-label-of
-                                     (treemacs--get-children-of (treemacs-current-button)))))
+                                     (treemacs-collect-child-nodes (treemacs-current-button)))))
 
                 ;; open a tag
                 (call-interactively #'treemacs-next-line)

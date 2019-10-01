@@ -106,7 +106,7 @@
 
   (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
 
-    (describe "Acceptions"
+    (describe "Accepting"
 
       (it "Accepts dot-file"
         (expect (treemacs--reject-ignored-files "~/A/B/C/.foo.el") :to-be t))
@@ -120,7 +120,7 @@
       (it "Accepts directory"
         (expect (treemacs--reject-ignored-files "~/A/B/C/") :to-be t)))
 
-    (describe "Rejections"
+    (describe "Rejecting"
 
       (it "Fails on nil input"
         (expect (treemacs--reject-ignored-files nil) :to-throw))
@@ -1296,6 +1296,64 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
      (forward-line 1)
      (expect (treemacs--format-bookmark-title (treemacs-current-button)) :to-equal expected-3))))
 
+(describe "treemacs-collect-child-nodes"
+
+  (it "Finds nothing for last node"
+    (with-temp-buffer
+      (insert (propertize "Root" 'button t :depth 1))
+      (insert "\n")
+      (goto-char 0)
+      (let* ((parent-btn (point-marker))
+             (result (treemacs-collect-child-nodes parent-btn)))
+        (expect result :to-be nil))))
+
+  (it "Finds nothing for node without direct children"
+    (with-temp-buffer
+      (let* ((root1 (progn
+                      (insert (propertize "Root1" 'button t :depth 1))
+                      (beginning-of-line)
+                      (point-marker)))
+             (input (progn
+                      (end-of-line)
+                      (insert "\n" (propertize " Input" 'button t :depth 2 :parent root1))
+                      (beginning-of-line)
+                      (point-marker)))
+             (_root2 (progn
+                       (end-of-line)
+                       (insert "\n" (propertize "Root2" 'button t :depth 1))
+                       (beginning-of-line)
+                       (point-marker))) )
+        (-let [result (treemacs-collect-child-nodes input)]
+          (expect result :to-be nil)))))
+
+  (it "Finds only direct childre"
+    (with-temp-buffer
+      (let* ((root1 (progn
+                      (insert (propertize "Root1" 'button t :depth 1))
+                      (beginning-of-line)
+                      (point-marker)))
+             (input (progn
+                      (end-of-line)
+                      (insert "\n" (propertize " Input" 'button t :depth 2 :parent root1))
+                      (beginning-of-line)
+                      (point-marker)))
+             (child1 (progn
+                       (end-of-line)
+                       (insert "\n" (propertize "  Child1" 'button t :depth 3 :parent input))
+                       (beginning-of-line)
+                       (point-marker)))
+             (_grand-child (progn
+                            (end-of-line)
+                            (insert "\n" (propertize "   Grand Child" 'button t :depth 4 :parent child1))
+                            (beginning-of-line)
+                            (point-marker)))
+             (_child2 (progn
+                       (end-of-line)
+                       (insert "\n" (propertize "  Child2" 'button t :depth 3 :parent input))
+                       (beginning-of-line)
+                       (point-marker))) )
+        (-let [result (-map #'treemacs--get-label-of (treemacs-collect-child-nodes input))]
+          (expect result :to-have-same-items-as '("  Child1" "  Child2")))))))
 
 (describe "treemacs--format-bookmark-title"
   (it "Uses the configured pattern"
