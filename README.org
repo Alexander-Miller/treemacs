@@ -16,6 +16,7 @@
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
    - [[#projects-and-workspaces][Projects and Workspaces]]
+      - [[#workspace-selection][Workspace Selection]]
    - [[#conveniently-editing-your-projects-and-workspaces][Conveniently Editing Your Projects and Workspaces]]
    - [[#navigation-without-projects-and-workspaces][Navigation without Projects and Workspaces]]
    - [[#frame-locality][Frame Locality]]
@@ -140,7 +141,14 @@ same workspace, since internally treemacs heavily relies on every node having a 
 Nonetheless the pros certainly outweigh the cons, as a multiroot setup allows to work on multiple projects with any
 combination concern/buffer separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for
 concurrent display not only of the file system, but e.g. the currently open buffers.
+*** Workspace Selection
+On first load treemacs will select a workspace in the following manner:
 
+If the current buffer is editing a file then treemacs will try to find the first workspace with a project containing
+that file. If that fails treemacs will simply fall back on the /first/ element in the list of all workspace.
+
+The order of workspaces is the same that you see when calling ~treemacs-edit-workspaces~ (see next chapter). You can set
+the fall backback workspace by calling ~treemacs-set-fallback-workspace~.
 ** Conveniently Editing Your Projects and Workspaces
 There are two ways to edit your projects and workspaces: call up single add/remove/rename/switch commands under either
 the ~C-c C-p~ or ~C-c C-w~ prefix, or call ~treemacs-edit-workspaces~ and edit your entire layout in the form of a
@@ -711,13 +719,14 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 
 *** Workspaces Keybinds (Prefix ~C-c C-w~)
 
-| Key       | Action                    | Description                         |
-|-----------+---------------------------+-------------------------------------|
-| C-c C-w r | treemacs-rename-workspace | Rename a workspace.                 |
-| C-c C-w a | treemacs-create-workspace | Create a new workspace.             |
-| C-c C-w d | treemacs-remove-workspace | Delete a workspace.                 |
-| C-c C-w s | treemacs-switch-workspace | Switch the current workspace.       |
-| C-c C-w e | treemacs-edit-workspaces  | Edit workspace layout via org-mode. |
+| Key       | Action                          | Description                            |
+|-----------+---------------------------------+----------------------------------------|
+| C-c C-w r | treemacs-rename-workspace       | Rename a workspace.                    |
+| C-c C-w a | treemacs-create-workspace       | Create a new workspace.                |
+| C-c C-w d | treemacs-remove-workspace       | Delete a workspace.                    |
+| C-c C-w s | treemacs-switch-workspace       | Switch the current workspace.          |
+| C-c C-w e | treemacs-edit-workspaces        | Edit workspace layout via org-mode.    |
+| C-c C-w f | treemacs-set-fallback-workspace | Select the default fallback workspace. |
 
 *** Node Visit Keybinds (Prefix ~o~)
 

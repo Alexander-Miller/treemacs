@@ -246,6 +246,7 @@ to it will instead show a blank."
       (define-key map (kbd "d")     #'treemacs-remove-workspace)
       (define-key map (kbd "s")     #'treemacs-switch-workspace)
       (define-key map (kbd "e")     #'treemacs-edit-workspaces)
+      (define-key map (kbd "f")     #'treemacs-set-fallback-workspace)
       map)
     "Keymap for workspace-related commands in `treemacs-mode'.")
   (defvar treemacs-node-visit-map

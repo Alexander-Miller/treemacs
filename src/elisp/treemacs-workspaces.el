@@ -562,7 +562,9 @@ Return nil when `treemacs-current-button' is nil."
 (defun treemacs--get-bounds-of-project (project)
   "Get the bounds a PROJECT in the current buffer.
 Returns a cons cell of buffer positions at the very start and end of the
-PROJECT, excluding newlines."
+PROJECT, excluding newlines.
+
+PROJECT: Project Struct"
   (interactive)
   (save-excursion
     (goto-char (treemacs-project->position project))
@@ -652,6 +654,16 @@ PROJECT, excluding newlines."
    (dolist (fun treemacs--find-user-project-functions)
      (--when-let (funcall fun)
        (treemacs-return it)))))
+
+(defun treemacs--select-workspace-by-name (&optional name)
+  "Interactivly select the workspace with the given NAME."
+  (-let [name (or name
+                   (completing-read
+                    "Workspace: "
+                    (->> treemacs--workspaces
+                         (--map (cons (treemacs-workspace->name it) it)))))]
+    (--first (string= name (treemacs-workspace->name it))
+             treemacs--workspaces)))
 
 (provide 'treemacs-workspaces)
 
