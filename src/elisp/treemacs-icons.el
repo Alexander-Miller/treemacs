@@ -186,7 +186,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "css.png"         :extensions ("css"))
     (treemacs-create-icon :file "conf.png"        :extensions ("properties" "conf" "config" "cfg" "ini" "xdefaults" "xresources" "terminalrc" "ledgerrc"))
     (treemacs-create-icon :file "html.png"        :extensions ("html" "htm"))
-    (treemacs-create-icon :file "git.png"         :extensions ("git" "gitignore" "gitconfig" "gitmodules"))
+    (treemacs-create-icon :file "git.png"         :extensions ("git" "gitignore" "gitconfig" "gitmodules" "gitattributes"))
     (treemacs-create-icon :file "dart.png"        :extensions ("dart"))
     (treemacs-create-icon :file "java.png"        :extensions ("java"))
     (treemacs-create-icon :file "kotlin.png"      :extensions ("kt"))
