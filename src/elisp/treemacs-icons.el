@@ -211,6 +211,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "erlang.png"      :extensions ("erl" "hrl"))
     (treemacs-create-icon :file "purescript.png"  :extensions ("purs"))
     (treemacs-create-icon :file "nix.png"         :extensions ("nix"))
+    (treemacs-create-icon :file "scons.png"       :extensions ("sconstruct" "sconstript"))
     (treemacs-create-icon :file "vsc/make.png"    :extensions ("makefile"))
     (treemacs-create-icon :file "vsc/license.png" :extensions ("license"))
     (treemacs-create-icon :file "vsc/zip.png"     :extensions ("zip" "7z" "tar" "gz" "rar"))
