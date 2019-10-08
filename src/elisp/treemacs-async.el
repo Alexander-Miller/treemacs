@@ -310,10 +310,11 @@ EXCLUDE-PARENTS: Boolean"
              ;; then the directories
              (pcase-dolist (`(,file . ,state) output)
                (-when-let (pos (treemacs-find-visible-node file))
-                 (-let [face (treemacs--git-status-face state 'treemacs-directory-face)]
-                   (put-text-property
-                    (treemacs-button-start pos) (treemacs-button-end pos)
-                    'face face))))))))
+                 (unless (equal file (treemacs-project->path (treemacs--find-project-for-path file)))
+                   (-let [face (treemacs--git-status-face state 'treemacs-directory-face)]
+                     (put-text-property
+                      (treemacs-button-start pos) (treemacs-button-end pos)
+                      'face face)))))))))
       :on-error
       (pcase (process-exit-status process)
         (2 (ignore "No Change, Do Nothing"))
