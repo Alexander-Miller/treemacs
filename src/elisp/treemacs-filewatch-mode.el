@@ -181,7 +181,8 @@ file from caches if it has been deleted instead of waiting for file processing."
             (treemacs-run-in-every-buffer
              (treemacs--on-rename old-name new-name))
             (treemacs--set-refresh-flags (treemacs--nearest-parent-directory old-name) 'deleted old-name)
-            (treemacs--set-refresh-flags (treemacs--nearest-parent-directory new-name) 'created new-name))
+            (when (--none? (funcall it (treemacs--filename new-name) new-name) treemacs-ignored-file-predicates)
+              (treemacs--set-refresh-flags (treemacs--nearest-parent-directory new-name) 'created new-name)))
         (treemacs--set-refresh-flags (treemacs--parent path) event-type path)))))
 
 (define-inline treemacs--do-process-file-events ()
