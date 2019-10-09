@@ -194,21 +194,26 @@ MORE-PROPERTIES is a plist of text properties that can arbitrarily added to the
 node for quick retrieval later."
   (treemacs-static-assert (and icon label-form state key-form)
     "All values except :more-properties and :face are mandatory")
-  `(list (unless (zerop depth) prefix)
-         ,icon
-         (propertize ,label-form
-                     'button '(t)
-                     'category 'default-button
-                     ,@(when face `((quote face) ,face))
-                     'help-echo nil
-                     :custom t
-                     :state ,state
-                     :parent node
-                     :depth depth
-                     :path (append (treemacs-button-get node :path) (list ,key-form))
-                     :key ,key-form
-                     ,@more-properties)
-         (when (zerop depth) (if treemacs-space-between-root-nodes "\n\n" "\n"))))
+  `(let* ((path (append (treemacs-button-get node :path) (list ,key-form)))
+          (dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)))
+     (treemacs-dom-node->insert-into-dom! dom-node)
+     (when parent-dom-node
+       (treemacs-dom-node->add-child! parent-dom-node dom-node))
+     (list (unless (zerop depth) prefix)
+           ,icon
+           (propertize ,label-form
+                       'button '(t)
+                       'category 'default-button
+                       ,@(when face `((quote face) ,face))
+                       'help-echo nil
+                       :custom t
+                       :state ,state
+                       :parent node
+                       :depth depth
+                       :path path
+                       :key ,key-form
+                       ,@more-properties)
+           (when (zerop depth) (if treemacs-space-between-root-nodes "\n\n" "\n")))))
 
 (cl-defmacro treemacs-define-leaf-node (name icon &key ret-action tab-action mouse1-action visit-action)
   "Define a type of node that is a leaf and cannot be further expanded.
@@ -369,7 +374,9 @@ additional keys."
        (defun ,do-expand-name (node)
          ,(format "Execute expansion of treemacs nodes of type `%s'." name)
          (let ((items ,query-function)
-               (depth (1+ (treemacs-button-get node :depth))))
+               (depth (1+ (treemacs-button-get node :depth)))
+               ;; must be implicitly in scope for calls to `treemacs-render-node'
+               (parent-dom-node (treemacs-find-in-dom (treemacs-button-get node :path))))
            (treemacs--button-open
             :button node
             :new-state ',open-state-name
@@ -383,11 +390,8 @@ additional keys."
              :node-action ,render-action)
             :post-open-action
             (progn
-              (treemacs-on-expand
-               (treemacs-button-get node :path)
-               node
-               (-some-> node (treemacs-button-get :parent) (treemacs-button-get :path)))
-              (treemacs--reopen-at (treemacs-button-get node :path))
+              (treemacs-on-expand (treemacs-button-get node :path) node)
+              (treemacs--reentry (treemacs-button-get node :path))
               ,after-expand))))
 
        (defun ,collapse-name (&optional _)
@@ -422,7 +426,15 @@ additional keys."
           (treemacs-static-assert (and root-label root-face root-key-form)
             ":root-label, :root-face and :root-key-form must be provided when `:root-marker' is non-nil")
           `(cl-defun ,(intern (format "treemacs-%s-extension" (upcase (symbol-name name)))) (parent)
-             (-let [depth (1+ (treemacs-button-get parent :depth))]
+             (let* ((depth (1+ (treemacs-button-get parent :depth)))
+                    (path (list (or (treemacs-button-get parent :project)
+                                    (treemacs-button-get parent :key))
+                                ,root-key-form))
+                    (parent-dom-node (treemacs-find-in-dom (treemacs-button-get parent :path)))
+                    (new-dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)))
+               (treemacs-dom-node->insert-into-dom! new-dom-node)
+               (when parent-dom-node
+                 (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
                (insert
                 "\n"
                 (treemacs--get-indentation depth)
@@ -433,9 +445,7 @@ additional keys."
                             'face ,root-face
                             :custom t
                             :key ,root-key-form
-                            :path (list (or (treemacs-button-get parent :project)
-                                            (treemacs-button-get parent :key))
-                                        ,root-key-form)
+                            :path path
                             :depth depth
                             :no-git t
                             :parent parent
@@ -455,12 +465,16 @@ additional keys."
                     `(defun ,ext-name ()
                          (treemacs-with-writable-buffer
                           (save-excursion
-                            (let ((pr (make-treemacs-project
-                                       :name ,root-label
-                                       :path ,root-key-form
-                                       :path-status 'extension))
-                                  (button-start (point-marker)))
+                            (let* ((pr (make-treemacs-project
+                                        :name ,root-label
+                                        :path ,root-key-form
+                                        :path-status 'extension))
+                                   (button-start (point-marker))
+                                   (dom-node (make-treemacs-dom-node
+                                              :key ,root-key-form
+                                              :position button-start)))
                               (treemacs--set-project-position ,root-key-form (point-marker))
+                              (treemacs-dom-node->insert-into-dom! dom-node)
                               (insert (propertize "Hidden Node\n"
                                                   'button '(t)
                                                   'category 'default-button

@@ -248,12 +248,14 @@ PROJECT: Project Struct"
             (let ((imenu-auto-rescan nil))
               ;; make a copy since this tag-path will be saved as cache, and the two modifications made here
               ;; make it impossible to find the current position in `treemacs--find-index-pos'
-              (-let [tag-path (copy-sequence tag-path)]
-                ;; the target tag still has its position marker attached
-                (setcar tag-path (car (car tag-path)))
+              (let* ((tag-path (copy-sequence tag-path))
+                     (target-tag (car tag-path)))
+                ;; remove position marker from target tag and move it
+                ;; to the end of the tag path
+                (setf tag-path (nconc (cdr tag-path) (car (car target-tag))))
                 ;; the tag path also needs its file
-                (setcdr tag-path (cons ,buffer-file (cdr tag-path)))
-                (treemacs--goto-tag-button-at tag-path)))
+                (setf tag-path (cons ,buffer-file tag-path))
+                (treemacs-goto-node tag-path)))
             (hl-line-highlight)
             (treemacs--evade-image)
             (when treemacs-recenter-after-tag-follow

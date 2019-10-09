@@ -40,9 +40,7 @@
   treemacs--expand-tag-node
   treemacs--collapse-tag-node
   treemacs--extract-position
-  treemacs--goto-tag
-  treemacs--tags-path-of
-  treemacs--goto-tag-button-at)
+  treemacs--goto-tag)
 
 (treemacs-import-functions-from "treemacs"
   treemacs-refresh)
@@ -79,17 +77,10 @@
 
 (treemacs-import-functions-from "treemacs-dom"
   treemacs-on-collapse
+  treemacs-dome-node->set-position!
   treemacs-find-in-dom
-  treemacs-get-position-of
-  treemacs-dom-node->children
-  treemacs-dom-node->closed
   treemacs-dom-node->key
-  treemacs-dom-node->parent
-  treemacs-dom-node->all-parents
-  treemacs-dom-node->position
-  treemacs-project-p
-  treemacs--on-rename
-  treemacs--invalidate-position-cache)
+  treemacs-dom-node->position)
 
 (treemacs-import-functions-from "treemacs-workspaces"
   treemacs--find-workspace
@@ -102,6 +93,7 @@
   treemacs-project->name
   treemacs-project->refresh!
   treemacs-project->position
+  treemacs-project-p
   treemacs--find-project-for-path)
 
 (treemacs-import-functions-from "treemacs-visuals"
@@ -168,13 +160,16 @@ Used to show an error message if someone mistakenly actives `treemacs-mode'.")
 (defvar treemacs--pre-peek-state nil
   "List of window, buffer to restore and buffer to kill treemacs used for peeking.")
 
-(define-inline treemacs--nearest-parent-directory (path)
-  "Return the parent of PATH is it's a file, or PATH if it is a directory."
-  (declare (side-effect-free t))
-  (inline-quote
-   (if (file-directory-p ,path)
-       path
-     (treemacs--parent ,path))))
+(define-inline treemacs--parent-dir (path)
+  "Return the parent of PATH is it's a file, or PATH if it is a directory.
+
+PATH: File Path"
+  (declare (side-effect-free t) (pure t))
+  (inline-letevals (path)
+    (inline-quote
+     (-> ,path
+         (file-name-directory)
+         (treemacs--unslash)))))
 
 (define-inline treemacs--remove-trailing-newline (str)
   "Remove final newline in STR."
@@ -363,15 +358,6 @@ Returns nil when there is no button at point."
    (-when-let (b (treemacs-current-button))
      (treemacs-button-get b ,prop))))
 
-(define-inline treemacs-parent-of (btn)
-  "Return the parent path of BTN."
-  (declare (side-effect-free t))
-  (inline-letevals (btn)
-    (inline-quote
-     (--if-let (treemacs-button-get ,btn :parent)
-         (treemacs-button-get it :path)
-       (treemacs--parent (treemacs-button-get ,btn :path))))))
-
 (define-inline treemacs--filename (file)
   "Return the name of FILE, same as `f-filename', but inlined."
   (declare (pure t) (side-effect-free t))
@@ -549,17 +535,6 @@ In practice this means expand PATH and remove its final slash."
           (find-file-noselect new-file)
           (treemacs--replace-recentf-entry buff-file new-file))))))
 
-(defun treemacs--maybe-filter-dotfiles (dirs)
-  "Remove from DIRS directories that shouldn't be reopened.
-That is, directories (and their descendants) that are in the reopen cache, but
-are not being shown on account of `treemacs-show-hidden-files' being nil."
-  (if treemacs-show-hidden-files
-      dirs
-    (-let [root (treemacs-project->path (treemacs--find-project-for-path (car dirs)))]
-      (--filter (not (--any (s-matches? treemacs-dotfiles-regex it)
-                            (f-split (substring it (length root)))))
-                dirs))))
-
 (defun treemacs-collect-child-nodes (parent-btn)
   "Get all buttons exactly one level deeper than PARENT-BTN.
 The child buttons are returned in the same order as they appear in the treemacs
@@ -635,34 +610,6 @@ Optionally do so in a RECURSIVE fashion."
     ('tag-node-closed  (treemacs--expand-tag-node btn recursive))
     ('tag-node         (progn (other-window 1) (treemacs--goto-tag btn)))
     (_                 (error "[Treemacs] Cannot push button with unknown state '%s'" (treemacs-button-get btn :state)))))
-
-(defun treemacs--reopen-node (btn &optional git-info)
-  "Reopen file BTN.
-GIT-INFO is passed through from the previous branch build."
-  (pcase (treemacs-button-get btn :state)
-    ('dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info))
-    ('file-node-closed (treemacs--expand-file-node btn))
-    ('tag-node-closed  (treemacs--expand-tag-node btn))
-    ('root-node-closed (treemacs--expand-root-node btn))
-    (other             (funcall (alist-get other treemacs-TAB-actions-config) btn))))
-
-(defun treemacs--reopen-at (path &optional git-info)
-  "Reopen dirs below PATH.
-GIT-INFO is passed through from the previous branch build.
-
-PATH: Node Path
-GIT-INFO: Pfuture|HashMap<String, String>"
-  (treemacs-without-messages
-   (dolist (it (-some->>
-                path
-                (treemacs-find-in-dom)
-                (treemacs-dom-node->children)
-                (-reject #'treemacs-dom-node->closed)
-                (-map #'treemacs-dom-node->key)
-                (treemacs--maybe-filter-dotfiles)))
-     (-if-let (pos (treemacs-goto-node it))
-         (treemacs--reopen-node pos git-info)
-       (treemacs-on-collapse it :purge)))))
 
 (defun treemacs--nearest-path (btn)
   "Return the file path of the BTN.
@@ -850,7 +797,6 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
                  ;; making a copy since the variable is a reference to a node actual path
                  ;; and will be changed in-place here
                  (goto-path (copy-sequence path))
-                 (counter (1- (length goto-path)))
                  ;; manual as in to be expanded manually after we moved to the next closest node we can find
                  ;; in the dom
                  (manual-parts nil)
@@ -858,20 +804,19 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
             ;; try to move as close as possible to the followed node, starting with its immediate parent
             ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
             ;; all the while collecting the parts of the path that beed manual expanding
-            (while (and (> (1+ counter) 0)
-                        (null dom-node))
-              (setq dom-node (treemacs-find-in-dom (if (cdr goto-path) goto-path (car goto-path)))
-                    counter (1- counter))
-              (cond
-               ((null dom-node)
-                (push (nth (1+ counter) goto-path) manual-parts)
-                (setcdr (nthcdr counter goto-path) nil))
-               ((and dom-node (null (treemacs-dom-node->position dom-node)))
-                (setq dom-node nil)
-                (push (nth (1+ counter) goto-path) manual-parts)
-                (setcdr (nthcdr counter goto-path) nil))))
-            (let* ((btn (if dom-node
-                            (treemacs-dom-node->position dom-node)
+            (-let [continue t]
+              (while continue
+                (setf dom-node (treemacs-find-in-dom goto-path))
+                (if (or (null dom-node)
+                        ;; dom node might exist, but a leaf's position is not always known
+                        (null (treemacs-dom-node->position dom-node)))
+                    (progn
+                      (push (-last-item  goto-path) manual-parts)
+                      (setf goto-path (-butlast goto-path))
+                      (unless (cdr goto-path) (setf goto-path (car goto-path))))
+                  (setf continue nil))))
+            (let* ((btn (--if-let (treemacs-dom-node->position dom-node)
+                            it
                           (treemacs-project->position project)))
                    ;; do the rest manually
                    (search-result (if manual-parts (treemacs--follow-path-elements btn manual-parts)
@@ -879,6 +824,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
               (if (eq 'follow-failed search-result)
                   (prog1 nil
                     (goto-char start))
+                (treemacs-dome-node->set-position! (treemacs-find-in-dom path) search-result)
                 search-result))))))
   (define-find-custom-node treemacs--find-custom-project-node (pop path)
     "Move to the project extension node at PATH.")
@@ -894,9 +840,10 @@ a marker ponting to the found node or nil.
 Unlike `treemacs-find-node', this function does not go to the node.
 
 PATH: Node Path"
-  (when (treemacs-is-path-visible? path)
-    (save-excursion
-      (treemacs-find-node path))))
+  (-when-let (dom-node (treemacs-is-path-visible? path))
+    (or (treemacs-dom-node->position dom-node)
+        (save-excursion
+          (treemacs-find-node path)))))
 
 (defun treemacs-find-node (path &optional project)
   "Find position of node identified by PATH under PROJECT in the current buffer.
@@ -955,7 +902,7 @@ If PROJECT is not given it will be found with `treemacs--find-project-for-path'.
 No attempt is made to verify that PATH falls under a project in the workspace.
 It is assumed that this check has already been made.
 
-PATH: Filepath
+PATH: File Path
 PROJECT: Project Struct"
   (unless project (setq project (treemacs--find-project-for-path path)))
   (let* (;; go back here if the search fails
@@ -963,12 +910,9 @@ PROJECT: Project Struct"
          ;; the path we're moving to minus the project root
          (path-minus-root (->> project (treemacs-project->path) (length) (substring path)))
          ;; the parts of the path that we can try to go to until we arrive at the project root
-         (dir-parts (nreverse (s-split (f-path-separator) path-minus-root 'omit-nulls)))
+         (dir-parts (nreverse (s-split (f-path-separator) path-minus-root :omit-nulls)))
          ;; the path we try to quickly move to because it's already open and thus in the dom
-         (goto-path (if dir-parts (treemacs--parent path) path))
-         ;; if we try mode than this many times to grab a path location for the dom it means
-         ;; the file we want to move to is under a *closed* project node
-         (counter (length dir-parts))
+         (goto-path path)
          ;; manual as in to be expanded manually after we moved to the next closest node we can find
          ;; in the dom
          (manual-parts nil)
@@ -976,17 +920,19 @@ PROJECT: Project Struct"
     ;; try to move as close as possible to the followed file, starting with its immediate parent
     ;; keep moving upwards in the path we move to until reaching the root of the project (counter = 0)
     ;; all the while collecting the parts of the path that beed manual expanding
-    (while (and (> counter 0)
-                (or (null dom-node)
-                    ;; dom node might exist, but one of its parents might be null
-                    (null (treemacs-dom-node->position dom-node))))
-      (setq dom-node (treemacs-find-in-dom goto-path)
-            goto-path (treemacs--parent goto-path)
-            counter (1- counter))
-      (push (pop dir-parts) manual-parts))
-    (let* ((btn (if (= 0 counter)
-                    (treemacs-project->position project)
-                  (treemacs-dom-node->position dom-node)))
+    (-let [continue t]
+      (while continue
+        (setf dom-node (treemacs-find-in-dom goto-path)
+              goto-path (treemacs--parent goto-path))
+        (if (or (null dom-node)
+                ;; dom node might exist, but a leaf's position is not always known
+                (null (treemacs-dom-node->position dom-node)))
+            (progn
+              (push (pop dir-parts) manual-parts))
+          (setf continue nil))))
+    (let* ((btn (--if-let (treemacs-dom-node->position dom-node)
+                    it
+                  (treemacs-project->position project)))
            ;; do the rest manually - at least the actual file to move to is still left in manual-parts
            (search-result (if manual-parts (save-match-data
                                              (treemacs--follow-each-dir btn manual-parts project))
@@ -994,6 +940,7 @@ PROJECT: Project Struct"
       (if (eq 'follow-failed search-result)
           (prog1 nil
             (goto-char start))
+        (treemacs-dome-node->set-position! (treemacs-find-in-dom path) search-result)
         search-result))))
 
 (cl-macrolet
@@ -1024,7 +971,6 @@ PROJECT: Project Struct")
     "Move to the directory extension node at PATH, returning the button's position.")
   (define-goto treemacs--goto-custom-project-node treemacs--find-custom-project-node nil
     "Move to the project extension node at PATH, returning the button's position."))
-
 
 (defun treemacs--on-window-config-change ()
   "Collects all tasks that need to run on a window config change."
@@ -1130,16 +1076,14 @@ Valid states are 'visible, 'exists and 'none."
     (treemacs--set-width treemacs-width)))
 
 (define-inline treemacs--parent (path)
-  "Parent of PATH, or PATH itself if PATH is the root directory."
+  "Parent of PATH, or PATH itself if PATH is the root directory.
+
+PATH: Node Path"
   (declare (pure t) (side-effect-free t))
   (inline-letevals (path)
     (inline-quote
      (treemacs-with-path ,path
-       :file-action (if (treemacs-is-path ,path :same-as "/")
-                        ,path
-                      (-> ,path
-                          (file-name-directory)
-                          (treemacs--unslash)))
+       :file-action (treemacs--parent-dir ,path)
        :top-level-extension-action (when (> (length ,path) 2) (butlast ,path))
        :directory-extension-action (if (> (length ,path) 2) (butlast ,path) (car ,path))
        :project-extension-action (if (> (length ,path) 2) (butlast ,path) (treemacs-project->path (car ,path)))))))
@@ -1218,7 +1162,7 @@ Will refresh every project when PROJECT is 'all."
        (treemacs--cancel-refresh-timer)
        (run-hook-with-args
         'treemacs-pre-refresh-hook
-        project curr-win-line curr-btn curr-state curr-file curr-tagpath)
+        project curr-win-line curr-btn curr-state curr-file curr-node-path)
 
        (if (eq 'all project)
            (-each (treemacs-workspace->projects (treemacs-current-workspace)) #'treemacs-project->refresh!)
@@ -1226,7 +1170,7 @@ Will refresh every project when PROJECT is 'all."
 
      (run-hook-with-args
       'treemacs-post-refresh-hook
-      project curr-win-line curr-btn curr-state curr-file curr-tagpath)
+      project curr-win-line curr-btn curr-state curr-file curr-node-path)
 
      (unless treemacs-silent-refresh
        (treemacs-log "Refresh complete.")))))
@@ -1276,31 +1220,15 @@ GOTO-TAG: Bool"
      (memq (treemacs-button-get node :state)
            '(file-node-open file-node-closed dir-node-open dir-node-closed)))))
 
-(defun treemacs-is-path-visible? (path)
+(define-inline treemacs-is-path-visible? (path)
   "Return whether a node for PATH is displayed in the current buffer.
-The return value is a boolean indicating whether the node is visible."
-  (let* ((current-node (treemacs-find-in-dom path))
-         (current-parent (treemacs-find-in-dom (treemacs--parent path))))
-    (cond
-     ;; All parents must be expanded.
-     (current-parent
-      (not (or (treemacs-dom-node->closed current-parent)
-               (-some #'treemacs-dom-node->closed
-                      (treemacs-dom-node->all-parents current-parent)))))
-     ;; Root-level node in DOM -> must be visible.
-     (current-node t)
-     ;; The node may be a collapsed project.
-     ((stringp path)
-      (->> (treemacs-current-workspace)
-           (treemacs-workspace->projects)
-           (--some-p (treemacs-is-path path :same-as (treemacs-project->path it)))))
+Returns the backing dom node is the PATH is visible, nil otherwise.
 
-     ;; The node may still be a non-variadic top-level extension.
-     ;; Check the length of path to avoid false positives for children of
-     ;; top-level extension nodes
-     ((and (eq :custom (car path)) (= 2 (length path)))
-      (when (treemacs-project->position (cadr path)) t)))))
-
+PATH: Node Path"
+  (declare (side-effect-free t))
+  (inline-letevals (path)
+    (inline-quote
+     (treemacs-find-in-dom ,path))))
 
 (defun treemacs--copy-or-move (action)
   "Internal implementation for copying and moving files.

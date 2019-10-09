@@ -39,6 +39,7 @@ Creates a list of `declare-function' statements."
 
 (defmacro treemacs-log (msg &rest args)
   "Write a log statement given format string MSG and ARGS."
+  (declare (indent 1))
   `(unless treemacs--no-messages
      (message
       "%s %s"
@@ -254,13 +255,11 @@ the on-delete code will run twice."
 Finally execute FINAL-FORM after the code to restore the position has run.
 
 This macro is meant for cases where a simple `save-excursion' will not do, like
-a refresh, which can potentially change the entire buffer layout. This means
-attempt first to keep point on the same file/tag, and if that does not work keep
-it on the same line."
+a refresh, which can potentially change the entire buffer layout. In pratice
+this means attempt first to keep point on the same file/tag, and if that does
+not work keep it on the same line."
   (declare (debug (form body)))
   `(treemacs-without-following
-    (declare-function treemacs--tags-path-of "treemacs-tags")
-    (declare-function treemacs--goto-tag-button-at "treemacs-tags")
     (declare-function treemacs--current-screen-line "treemacs-rendering")
     (let* ((curr-btn       (treemacs-current-button))
            (curr-point     (point-marker))
@@ -269,7 +268,6 @@ it on the same line."
            (curr-node-path (-some-> curr-btn (treemacs-button-get :path)))
            (curr-state     (-some-> curr-btn (treemacs-button-get :state)))
            (collapse       (-some-> curr-btn (treemacs-button-get :collapsed)))
-           (curr-tagpath   (-some-> curr-btn (treemacs--tags-path-of)))
            (curr-file      (if collapse (treemacs-button-get curr-btn :key) (-some-> curr-btn (treemacs--nearest-path))))
            (curr-window    (treemacs-get-local-window))
            (curr-win-line  (when curr-window
@@ -306,8 +304,7 @@ it on the same line."
                    (setf detour (treemacs--parent detour)))
                  (treemacs-goto-file-node detour)))))))
         ((or 'tag-node-open 'tag-node-closed 'tag-node)
-         ;; no correction needed, if the tag does not exist point is left at the next best node
-         (treemacs--goto-tag-button-at curr-tagpath))
+         (treemacs-goto-node curr-node-path))
         ((pred null)
          (goto-char curr-point))
         (_

@@ -787,8 +787,7 @@ collects for its refresh process:
    if the current button is nil.
  * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
    point is on the header.
- * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
-   nil if the current button is nil."
+ * The current button's tag path. Is nil if the current button is nil."
   :type 'hook
   :group 'treemacs-hooks)
 
@@ -807,8 +806,7 @@ button's position will be wrong, even if it wasn't deleted outright):
    if the current button is nil.
  * The nearest file path, as collected with `treemacs--nearest-path'. Is nil if
    point was on the header.
- * The current button's tag path, as collected by `treemacs--tags-path-of'. Is
-   nil if the current button is nil."
+ * The current button's tag path. Is nil if the current button is nil."
   :type 'hook
   :group 'treemacs-hooks)
 

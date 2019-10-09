@@ -136,8 +136,8 @@ ignore any prefix argument."
 
 (defun treemacs--imenu-tag-noselect (file tag-path)
   "Return a list of the source buffer for FILE and the position of the tag from TAG-PATH."
-  (let ((tag (car tag-path))
-        (path (cdr tag-path)))
+  (let ((tag (-last-item tag-path))
+        (path (-butlast tag-path)))
     (condition-case e
         (progn
           (find-file-noselect file)
@@ -145,9 +145,7 @@ ignore any prefix argument."
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
             (-let [(buf . pos) (treemacs--extract-position
-                              (cdr (--first
-                                    (equal (car it) tag)
-                                    index)))]
+                                (cdr (--first (equal (car it) tag) index)))]
               ;; some imenu implementations, like markdown, will only provide
               ;; a raw buffer position (an int) to move to
 	      (list (or buf (get-file-buffer file)) pos))))
@@ -180,7 +178,7 @@ ignore any prefix argument."
            (let (file tag-path)
              (with-current-buffer (marker-buffer btn)
                (setq file (treemacs--nearest-path btn)
-                     tag-path (treemacs--tags-path-of btn)))
+                     tag-path (treemacs-button-get btn :path)))
              (treemacs--imenu-tag-noselect file tag-path)))
           ('call-xref
            (let ((xref (xref-definition
