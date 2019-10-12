@@ -42,15 +42,15 @@ def main():
     propagate_state = None
     while i < l:
         path, ignore_proc, tracked_proc, changed_proc = proc_list[i]
-        if ignore_proc.communicate() and ignore_proc.returncode == 0:
+        if ignore_proc.wait() == 0:
             propagate_state = "!"
             result_list.append((path, propagate_state))
             break
-        elif tracked_proc.communicate() and tracked_proc.returncode == 1:
+        elif tracked_proc.wait() == 1:
             propagate_state = "?"
             result_list.append((path, propagate_state))
             break
-        elif changed_proc.communicate() and changed_proc.returncode == 1:
+        elif changed_proc.wait() == 1:
             result_list.append((path, "M"))
         else:
             result_list.append((path, "0"))
@@ -67,9 +67,9 @@ def main():
     print(elisp_alist)
 
 def add_git_processes(status_listings, path):
-    ignored_proc = Popen(IS_IGNORED_CMD + path, shell=True, stdout=PIPE, stderr=DEVNULL)
-    tracked_proc = Popen(IS_TRACKED_CMD + path, shell=True, stdout=PIPE, stderr=DEVNULL)
-    changed_proc = Popen(IS_CHANGED_CMD + path, shell=True, stdout=PIPE, stderr=DEVNULL)
+    ignored_proc = Popen(IS_IGNORED_CMD + path, shell=True, stdout=DEVNULL, stderr=DEVNULL)
+    tracked_proc = Popen(IS_TRACKED_CMD + path, shell=True, stdout=DEVNULL, stderr=DEVNULL)
+    changed_proc = Popen(IS_CHANGED_CMD + path, shell=True, stdout=DEVNULL, stderr=DEVNULL)
 
     status_listings.append((path, ignored_proc, tracked_proc, changed_proc))
 
