@@ -1107,7 +1107,7 @@ node is not a file/dir, then the next-closest file node will be used. If all
 nodes are non-files, or if there is no node at point, $HOME will be set as the
 working directory.
 
-Every instance of the string `$file' will be replaced with the (properly quoted)
+Every instance of the string `$path' will be replaced with the (properly quoted)
 absolute path of the node (if it is present)."
   (interactive "P")
   (let* ((cmd (read-shell-command "Command: "))
@@ -1128,7 +1128,7 @@ absolute path of the node (if it is present)."
      (t
       (setf working-dir (treemacs--parent working-dir))))
     (when (and node (treemacs-is-node-file-or-dir? node))
-      (setf cmd (s-replace "$file" (shell-quote-argument (treemacs-button-get node :path)) cmd)))
+      (setf cmd (s-replace "$path" (shell-quote-argument (treemacs-button-get node :path)) cmd)))
     (pfuture-callback `(,shell-file-name ,shell-command-switch ,cmd)
       :name name
       :buffer buffer
