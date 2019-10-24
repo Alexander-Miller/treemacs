@@ -761,40 +761,42 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 
 *** General Keybinds
 
-| Key      | Action                              | Description                                                                                         |
-|----------+-------------------------------------+-----------------------------------------------------------------------------------------------------|
-| ?        | treemacs-helpful-hydra              | Summon the helpful hydra to show you the treemacs keymap.                                           |
-| j/n      | treemacs-next-line                  | Go to the next line.                                                                                |
-| k/p      | treemacs-previous-line              | Go to the previous line.                                                                            |
-| M-J/N    | treemacs-next-line-other-window     | Go to the next line in ~next-window~.                                                               |
-| M-K/P    | treemacs-previous-line-other-window | Go to the previous line in ~next-window~..                                                          |
-| <PgUp>   | treemacs-next-page-other-window     | Go to the next page in ~next-window~.                                                               |
-| <PgDn>   | treemacs-previous-page-other-window | Go to the previous page in ~next-window~..                                                          |
-| M-j/M-n  | treemacs-next-neighbour             | Go to the next same-level neighbour of the current node.                                            |
-| M-k/M-p  | treemacs-previous-neighbour         | Go to the previous same-level neighbour of the current node.                                        |
-| u        | treemacs-goto-parent-node           | Go to parent of node at point, if possible.                                                         |
-| <M-Up>   | treemacs-move-project-up            | Switch positions of project at point and the one above it.                                          |
-| <M-Down> | treemacs-move-project-down          | Switch positions of project at point and the one below it.                                          |
-| w        | treemacs-set-width                  | Set a new value for the width of the treemacs window.                                               |
-| RET      | treemacs-RET-action                 | Run the action defined in ~treemacs-RET-actions-config~ for the current node.                       |
-| TAB      | treemacs-TAB-action                 | Run the action defined in ~treemacs-TAB-actions-config~ for the current node.                       |
-| g/r/gr   | treemacs-refresh                    | Refresh the project at point.                                                                       |
-| d        | treemacs-delete                     | Delete node at point.                                                                               |
-| R        | treemacs-rename                     | Rename node at point.                                                                               |
-| cf       | treemacs-create-file                | Create a file.                                                                                      |
-| cd       | treemacs-create-dir                 | Create a directory.                                                                                 |
-| q        | treemacs-quit                       | Hide the treemacs window.                                                                           |
-| Q        | treemacs-kill-buffer                | Delete the treemacs buffer.                                                                         |
-| P        | treemacs-peek                       | Peek at the file (or tag) at point without fully opening it.                                        |
-| yy       | treemacs-copy-path-at-point         | Copy the absolute path of the node at point.                                                        |
-| yr       | treemacs-copy-project-root          | Copy the absolute path of the project root for the node at point.                                   |
-| yf       | treemacs-copy-file                  | Copy the file at point.                                                                             |
-| m        | treemacs-move-file                  | Move the file at point.                                                                             |
-| s        | treemacs-resort                     | Set a new value for ~treemacs-sorting~.                                                             |
-| b        | treemacs-add-bookmark               | Bookmark the currently selected files's, dir's or tag's location.                                   |
-| h        | treemacs-root-up                    | Move treemacs' root one level upward. Only works with a single project in the workspace.            |
-| l        | treemacs-root-down                  | Move treemacs' root into the directory at point. Only works with a single project in the workspace. |
-| H        | treemacs-collapse-parent-node       | Collapse the parent of the node at point.                                                           |
+| Key      | Action                                      | Description                                                                                            |
+|----------+---------------------------------------------+--------------------------------------------------------------------------------------------------------|
+| ?        | treemacs-helpful-hydra                      | Summon the helpful hydra to show you the treemacs keymap.                                              |
+| j/n      | treemacs-next-line                          | Go to the next line.                                                                                   |
+| k/p      | treemacs-previous-line                      | Go to the previous line.                                                                               |
+| M-J/N    | treemacs-next-line-other-window             | Go to the next line in ~next-window~.                                                                  |
+| M-K/P    | treemacs-previous-line-other-window         | Go to the previous line in ~next-window~..                                                             |
+| <PgUp>   | treemacs-next-page-other-window             | Go to the next page in ~next-window~.                                                                  |
+| <PgDn>   | treemacs-previous-page-other-window         | Go to the previous page in ~next-window~..                                                             |
+| M-j/M-n  | treemacs-next-neighbour                     | Go to the next same-level neighbour of the current node.                                               |
+| M-k/M-p  | treemacs-previous-neighbour                 | Go to the previous same-level neighbour of the current node.                                           |
+| u        | treemacs-goto-parent-node                   | Go to parent of node at point, if possible.                                                            |
+| <M-Up>   | treemacs-move-project-up                    | Switch positions of project at point and the one above it.                                             |
+| <M-Down> | treemacs-move-project-down                  | Switch positions of project at point and the one below it.                                             |
+| w        | treemacs-set-width                          | Set a new value for the width of the treemacs window.                                                  |
+| RET      | treemacs-RET-action                         | Run the action defined in ~treemacs-RET-actions-config~ for the current node.                          |
+| TAB      | treemacs-TAB-action                         | Run the action defined in ~treemacs-TAB-actions-config~ for the current node.                          |
+| g/r/gr   | treemacs-refresh                            | Refresh the project at point.                                                                          |
+| d        | treemacs-delete                             | Delete node at point.                                                                                  |
+| R        | treemacs-rename                             | Rename node at point.                                                                                  |
+| cf       | treemacs-create-file                        | Create a file.                                                                                         |
+| cd       | treemacs-create-dir                         | Create a directory.                                                                                    |
+| q        | treemacs-quit                               | Hide the treemacs window.                                                                              |
+| Q        | treemacs-kill-buffer                        | Delete the treemacs buffer.                                                                            |
+| P        | treemacs-peek                               | Peek at the file (or tag) at point without fully opening it.                                           |
+| yy       | treemacs-copy-path-at-point                 | Copy the absolute path of the node at point.                                                           |
+| yr       | treemacs-copy-project-root                  | Copy the absolute path of the project root for the node at point.                                      |
+| yf       | treemacs-copy-file                          | Copy the file at point.                                                                                |
+| m        | treemacs-move-file                          | Move the file at point.                                                                                |
+| s        | treemacs-resort                             | Set a new value for ~treemacs-sorting~.                                                                |
+| b        | treemacs-add-bookmark                       | Bookmark the currently selected files's, dir's or tag's location.                                      |
+| h        | treemacs-root-up                            | Move treemacs' root one level upward. Only works with a single project in the workspace.               |
+| l        | treemacs-root-down                          | Move treemacs' root into the directory at point. Only works with a single project in the workspace.    |
+| H        | treemacs-collapse-parent-node               | Collapse the parent of the node at point.                                                              |
+| \!       | treemacs-run-shell-command-for-current-node | Run an asynchronous shell command on the current node, replacing "$path" with its path.                |
+| M-!      | treemacs-run-shell-command-in-project-root  | Run an asynchronous shell command in the root of the current project, replacing "$path" with its path. |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting to
