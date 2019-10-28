@@ -62,7 +62,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (when (region-active-p)
       (keyboard-quit))
     (-when-let (state (treemacs--prop-at-point :state))
-      (--if-let (cdr (assq state treemacs-RET-actions-config))
+      (--if-let (cdr (assq state treemacs-doubleclick-actions-config))
           (progn
             (funcall it)
             (treemacs--evade-image))
