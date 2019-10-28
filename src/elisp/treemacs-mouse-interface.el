@@ -111,7 +111,8 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 (defun treemacs-define-doubleclick-action (state action)
   "Define the behaviour of `treemacs-doubleclick-action'.
 Determines that a button with a given STATE should lead to the execution of
-ACTION.
+ACTION. The list of possible states can be found in
+`treemacs-valid-button-states'.
 
 First deletes the previous entry with key STATE from
 `treemacs-doubleclick-actions-config' and then inserts the new tuple."

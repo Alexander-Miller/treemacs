@@ -299,7 +299,8 @@ This function's exact configuration is stored in `treemacs-RET-actions-config'."
 (defun treemacs-define-RET-action (state action)
   "Define the behaviour of `treemacs-RET-action'.
 Determines that a button with a given STATE should lead to the execution of
-ACTION.
+ACTION. The list of possible states can be found in
+`treemacs-valid-button-states'.
 
 First deletes the previous entry with key STATE from
 `treemacs-RET-actions-config'and then inserts the new tuple."
@@ -309,7 +310,8 @@ First deletes the previous entry with key STATE from
 (defun treemacs-define-TAB-action (state action)
   "Define the behaviour of `treemacs-TAB-action'.
 Determines that a button with a given STATE should lead to the execution of
-ACTION.
+ACTION. The list of possible states can be found in
+`treemacs-valid-button-states'.
 
 First deletes the previous entry with key STATE from
 `treemacs-TAB-actions-config' and then inserts the new tuple."
