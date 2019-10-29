@@ -690,49 +690,51 @@ Will delete node at given PATH and PROJECT. See also
 
 PATH: Node Path
 Project: Project Struct"
-  (when (and (treemacs-is-path-visible? path)
-             ;; dont bother deleting this since we'll do the parent next
-             (file-exists-p (treemacs--parent path)))
-    (-let [pos nil]
-      (--when-let (treemacs-find-in-dom path)
-        (setf pos (treemacs-dom-node->position it))
-        (when (treemacs-is-node-expanded? pos)
-          (goto-char pos)
-          (treemacs-TAB-action :purge))
-        (treemacs-dom-node->remove-from-dom! it))
-      (unless pos
-        (setf pos (treemacs-goto-node path project :ignore-file-exists-check)))
-      (when pos
-        (treemacs-with-writable-buffer
-         (-let [node (treemacs-node-at-point)]
-           (if (treemacs-button-get node :collapsed)
-               (treemacs--delete-at-collapsed-path node path)
-             (treemacs--delete-line))))))))
+  (-when-let (dom-node (treemacs-find-in-dom path))
+    (-let [btn (or (treemacs-dom-node->position dom-node)
+                   (treemacs-goto-node path project :ignore-file-exists))]
+      (goto-char btn)
+      (when (treemacs-is-node-expanded? btn)
+        (treemacs-TAB-action :purge))
+      (treemacs-with-writable-buffer
+       (if (treemacs-button-get btn :collapsed)
+           (treemacs--delete-at-flattened-path btn path dom-node)
+         (treemacs--delete-line)
+         (treemacs-dom-node->remove-from-dom! dom-node))))))
 
-(define-inline treemacs--delete-at-collapsed-path (node deleted-path)
-  "Handle a delete for a flattened path NODE for given DELETED-PATH.
+(defun treemacs--delete-at-flattened-path (btn deleted-path dom-node)
+  "Handle a delete for a flattened path BTN for given DELETED-PATH.
+Remove DOM-NODE from the dom if the entire line was deleted.
 
-NODE: Button
-DELETED-PATH: File Path"
-  (inline-letevals (node deleted-path)
-    (inline-quote
-     (let ((key (treemacs-button-get ,node :key)))
-       (if (string= ,deleted-path key)
-           (treemacs--delete-line)
-         (let* ((new-path (treemacs--parent ,deleted-path))
-                (new-label (substring new-path (length key)))
-                (new-coll-count (length (cdr (f-split new-label)))))
-           (end-of-line)
-           (treemacs-button-put ,node :path new-path)
-           (delete-region (point) (previous-single-char-property-change (point-at-eol) :collapsed))
-           (if (= 0 new-coll-count)
-               (treemacs-button-put ,node :collapsed nil)
-             (let ((curr-collapse-info (treemacs-button-get ,node :collapsed)))
-               (treemacs-button-put
-                ,node :collapsed
-                (cons new-coll-count (-take (1+ new-coll-count) (cdr curr-collapse-info))))
-               (-let [properties (text-properties-at (1- (point)))]
-                 (insert (apply #'propertize new-label properties)))))))))))
+Btn: Button
+DELETED-PATH: File Path
+DOM-NODE: Dom Node"
+  (let ((key (treemacs-button-get btn :key))
+        (curr-collapse-steps (cdr (treemacs-button-get btn :collapsed))))
+    (if (string= deleted-path key)
+        (progn
+          ;; remove full dom entry if entire line was deleted
+          (treemacs--delete-line)
+          (treemacs-dom-node->remove-from-dom! dom-node))
+      ;; otherwise change the current line and update its properties
+      (let* ((path (treemacs-button-get btn :path))
+             (new-path (treemacs--parent deleted-path))
+             (delete-offset (- (length path) (length new-path)))
+             (new-label (substring new-path (length key)))
+             (new-coll-count (length (cdr (f-split new-label)))))
+        (treemacs-button-put btn :path new-path)
+        (end-of-line)
+        ;; delete just enough to get rid of the deleted dirs
+        (delete-region (- (point) delete-offset) (point))
+        ;; then remove the deleted directories from the dom
+        (treemacs-dom-node->remove-collapse-keys!
+         dom-node (last curr-collapse-steps (1+ new-coll-count)))
+        ;; and update inline collpase info
+        (if (= 0 new-coll-count)
+            (treemacs-button-put btn :collapsed nil)
+          (treemacs-button-put
+           btn :collapsed
+           (cons new-coll-count (-take (1+ new-coll-count) curr-collapse-steps))))))))
 
 (defun treemacs--determine-insert-position (path parent-btn sort-function)
   "Determine the insert location for PATH under PARENT-BTN.

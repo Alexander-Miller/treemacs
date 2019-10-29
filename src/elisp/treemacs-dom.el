@@ -82,9 +82,19 @@ SELF: Dom Node Struct"
   (inline-letevals (self)
     (inline-quote
      (progn
-       (ht-remove treemacs-dom (treemacs-dom-node->key ,self))
+       (ht-remove! treemacs-dom (treemacs-dom-node->key ,self))
        (dolist (key (treemacs-dom-node->collapse-keys ,self))
-         (ht-remove treemacs-dom key))))))
+         (ht-remove! treemacs-dom key))))))
+
+(define-inline treemacs-dom-node->remove-collapse-keys! (self keys)
+  "Remove the given collapse KEYS from both SELF and the dom."
+  (inline-letevals (self keys)
+    (inline-quote
+     (progn
+       (dolist (key ,keys)
+         (ht-remove! treemacs-dom key))
+       (setf (treemacs-dom-node->collapse-keys ,self)
+             (--reject (member it ,keys) (treemacs-dom-node->collapse-keys ,self)))))))
 
 (define-inline treemacs-dom-node->all-parents (self)
   "Get all parent nodes of SELF.

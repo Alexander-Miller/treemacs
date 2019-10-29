@@ -1224,6 +1224,8 @@ GOTO-TAG: Bool"
   "Return whether a node for PATH is displayed in the current buffer.
 Returns the backing dom node is the PATH is visible, nil otherwise.
 
+Morally equivalent to `treemacs-find-in-dom'.
+
 PATH: Node Path"
   (declare (side-effect-free t))
   (inline-letevals (path)

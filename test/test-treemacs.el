@@ -1241,6 +1241,23 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
   (it "Does not hang with negative file path"
     (test-treemacs--format-pattern "${file-path:-1}" "" "" "")))
 
+(describe "treemacs-dom-node->remove-collapse-keys!"
+  (it "Removes and deletes all collapse entries"
+    (with-temp-buffer
+      (let* ((dom-node (make-treemacs-dom-node
+                        :key "Main Key"
+                        :collapse-keys '("Key 1" "Key 2" "Key 3")))
+             (treemacs-dom (ht ("Main Key" dom-node)
+                               ("Key 1" dom-node)
+                               ("Key 2" dom-node)
+                               ("Key 3" dom-node))))
+        (treemacs-dom-node->remove-collapse-keys! dom-node '("Key 1" "Key 3"))
+        (expect (treemacs-find-in-dom "Main Key") :to-be dom-node)
+        (expect (treemacs-find-in-dom "Key 2") :to-be dom-node)
+        (expect (treemacs-find-in-dom "Key 1") :to-be nil)
+        (expect (treemacs-find-in-dom "Key 3") :to-be nil)
+        (expect (treemacs-dom-node->collapse-keys dom-node) :to-equal '("Key 2"))))))
+
 (provide 'test-treemacs)
 
 ;;; test-treemacs.el ends here
