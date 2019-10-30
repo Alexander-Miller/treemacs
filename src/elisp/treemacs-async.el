@@ -278,50 +278,52 @@ FILE: Filepath
 EXCLUDE-PARENTS: Boolean"
   (let* ((local-buffer (current-buffer))
          (parent (treemacs--parent file))
-         (parent-node (treemacs-find-in-dom parent))
-         (parents (unless exclude-parents
-                    ;; include the first parent...
-                    (cons (treemacs-dom-node->key parent-node)
-                          ;; ...but exclude the project root
-                          (cdr (-map #'treemacs-dom-node->key
-                                     (treemacs-dom-node->all-parents parent-node))))))
-         (git-cache (ht-get treemacs--git-cache parent))
-         (current-state (or (-some-> git-cache (ht-get file)) "0"))
-         (cmd `(,treemacs-python-executable
-                "-O"
-                ,treemacs--single-file-git-status.py ,file ,current-state ,@parents)))
-    (pfuture-callback cmd
-      :directory parent
-      :name "Treemacs Update Single File Process"
-      :on-success
-      (when (buffer-live-p local-buffer)
-        (with-current-buffer local-buffer
-          (treemacs-with-writable-buffer
-           ;; first the file node with its own default face
-           (-let [output (read (pfuture-callback-output))]
-             (-let [(file . state) (pop output)]
-               (when git-cache
-                 (ht-set! git-cache file state))
-               (-when-let (pos (treemacs-find-visible-node file))
-                 (-let [face (treemacs--git-status-face state 'treemacs-git-unmodified-face)]
-                   (put-text-property
-                    (treemacs-button-start pos) (treemacs-button-end pos)
-                    'face face))))
-             ;; then the directories
-             (pcase-dolist (`(,file . ,state) output)
-               (-when-let (pos (treemacs-find-visible-node file))
-                 (-let [face (treemacs--git-status-face state 'treemacs-directory-face)]
-                   (put-text-property
-                    (treemacs-button-start pos) (treemacs-button-end pos)
-                    'face face))))))))
-      :on-error
-      (pcase (process-exit-status process)
-        (2 (ignore "No Change, Do Nothing"))
-        (_
-         (-let [err-str (treemacs--remove-trailing-newline (pfuture-output-from-buffer pfuture-buffer))]
-           (treemacs-log "Update of node \"%s\" failed with status \"%s\" and result"
-                         file (treemacs--remove-trailing-newline status))
-           (treemacs-log "\"%s\"" (treemacs--remove-trailing-newline err-str))))))))
+         (parent-node (treemacs-find-in-dom parent)))
+    (when parent-node
+      (let* ((parents (unless (or exclude-parents
+                                  (null (treemacs-dom-node->parent parent-node)))
+                        ;; include the first parent...
+                        (cons (treemacs-dom-node->key parent-node)
+                              ;; ...but exclude the project root
+                              (cdr (-map #'treemacs-dom-node->key
+                                         (treemacs-dom-node->all-parents parent-node))))))
+             (git-cache (ht-get treemacs--git-cache parent))
+             (current-state (or (-some-> git-cache (ht-get file)) "0"))
+             (cmd `(,treemacs-python-executable
+                    "-O"
+                    ,treemacs--single-file-git-status.py ,file ,current-state ,@parents)))
+        (pfuture-callback cmd
+          :directory parent
+          :name "Treemacs Update Single File Process"
+          :on-success
+          (when (buffer-live-p local-buffer)
+            (with-current-buffer local-buffer
+              (treemacs-with-writable-buffer
+               ;; first the file node with its own default face
+               (-let [output (read (pfuture-callback-output))]
+                 (-let [(file . state) (pop output)]
+                   (when git-cache
+                     (ht-set! git-cache file state))
+                   (-when-let (pos (treemacs-find-visible-node file))
+                     (-let [face (treemacs--git-status-face state 'treemacs-git-unmodified-face)]
+                       (put-text-property
+                        (treemacs-button-start pos) (treemacs-button-end pos)
+                        'face face))))
+                 ;; then the directories
+                 (pcase-dolist (`(,file . ,state) output)
+                   (-when-let (pos (treemacs-find-visible-node file))
+                     (-let [face (treemacs--git-status-face state 'treemacs-directory-face)]
+                       (put-text-property
+                        (treemacs-button-start pos) (treemacs-button-end pos)
+                        'face face))))))))
+          :on-error
+          (pcase (process-exit-status process)
+            (2 (ignore "No Change, Do Nothing"))
+            (_
+             (-let [err-str (treemacs--remove-trailing-newline (pfuture-output-from-buffer pfuture-buffer))]
+               (treemacs-log "Update of node \"%s\" failed with status \"%s\" and result"
+                 file (treemacs--remove-trailing-newline status))
+               (treemacs-log "\"%s\"" (treemacs--remove-trailing-newline err-str))))))))))
 
 (defun treemacs--collapsed-dirs-process (path project)
   "Start a new process to determine dirs to collpase under PATH.
