@@ -748,56 +748,76 @@ be taken into account.
 PATH: File Path
 PARENT-BTN: Button
 SORT-FUNCTION: Button -> Boolean."
-  (or
-   (if (file-directory-p path)
-       ;; for directoies
-       (or
-        ;; insert directory before first dir node that fits sort-function
-        (--when-let
-            (treemacs-first-child-node-where parent-btn
-              (-let [child-path (treemacs-button-get child-btn :path)]
-                (or (and (file-directory-p child-path)
-                         (funcall sort-function path child-path))
-                    (not (file-directory-p child-path)))))
-          (previous-button it))
-        ;; if there are no directories try before first file node
-        (--when-let (treemacs-first-child-node-where parent-btn
-                      (not (file-directory-p (treemacs-button-get child-btn :path))))
-          (previous-button it)))
-     ;; for files
-     (or
-      ;; insert before first file node that fits sort-function
-      (--when-let
-          (treemacs-first-child-node-where parent-btn
-            (-let [child-path (treemacs-button-get child-btn :path)]
-              (and (not (file-directory-p child-path))
-                   (funcall sort-function path child-path))))
-        (previous-button it))))
-   ;; if neither works just use the next neighbour of parent
-   (if (treemacs-button-get parent-btn :parent)
-       (treemacs--next-neighbour-of parent-btn)
-     ;; unless parent is a project, then we must use the last node in the project
-     (-> parent-btn
-         (treemacs-button-get :project)
-         (treemacs--get-bounds-of-project)
-         (cdr))) ))
+  (let* ((parent-dom-node (treemacs-find-in-dom (treemacs-button-get parent-btn :path)))
+         (children (treemacs-dom-node->children parent-dom-node))
+         (dirs-files (--separate (-let [path (treemacs-dom-node->key it)]
+                                   (and (stringp path) (file-directory-p path)))
+                                 children))
+         (dirs (sort (car dirs-files) (lambda (d1 d2)
+                                        (funcall sort-function
+                                                 (treemacs-dom-node->key d1)
+                                                 (treemacs-dom-node->key d2)))))
+         (files (sort (cadr dirs-files) (lambda (f1 f2)
+                                        (funcall sort-function
+                                                 (treemacs-dom-node->key f1)
+                                                 (treemacs-dom-node->key f2))))))
+    (if (file-directory-p path)
+        ;; insert directory ...
+        (or
+         ;; at first dir that fits sort order
+         (--when-let (--first (funcall sort-function path (treemacs-dom-node->key it)) dirs)
+           (previous-button (or (treemacs-dom-node->position it)
+                                (treemacs-find-node (treemacs-dom-node->key it)))))
+         ;; after last dir
+         (--when-let (-last-item dirs)
+           (or (treemacs-dom-node->position it)
+               (treemacs-find-node (treemacs-dom-node->key it))))
+         ;; before first file
+         (--when-let (car files)
+           (previous-button (or (treemacs-dom-node->position it)
+                                (treemacs-find-node (treemacs-dom-node->key it)))))
+         ;; after parent
+         parent-btn)
+      ;; insert file ...
+      (or
+       ;; at first file that fits sort order
+       (--when-let (--first (funcall sort-function path (treemacs-dom-node->key it)) files)
+         (previous-button (or (treemacs-dom-node->position it)
+                              (treemacs-find-node (treemacs-dom-node->key it)))) )
+       ;; after last file
+       (--when-let (-last-item files)
+         (or (treemacs-dom-node->position it)
+             (treemacs-find-node (treemacs-dom-node->key it))) )
+       ;; before first dir
+       (--when-let (car dirs)
+         (previous-button (or (treemacs-dom-node->position it)
+                              (treemacs-find-node (treemacs-dom-node->key it)))))
+       ;; after parent
+       parent-btn))))
 
 (defun treemacs-do-insert-single-node (path parent-path)
   "Insert single file node at given PATH and PARENT-PATH.
 
 PATH: File Path
 PARENT-PATH: File Path"
-  (-when-let (parent-node (treemacs-find-visible-node parent-path))
-    (when (treemacs-is-node-expanded? parent-node)
-      (treemacs-with-writable-buffer
-       (let* ((sort-function (treemacs--get-sort-fuction))
-              (insert-after (treemacs--determine-insert-position path parent-node sort-function)))
-         (goto-char insert-after)
-         (end-of-line)
-         (insert "\n" (treemacs--create-string-for-single-insert
-                       path parent-node (1+ (button-get parent-node :depth))))
-         (when treemacs-git-mode
-           (treemacs-do-update-single-file-git-state path :exclude-parents)))))))
+  (-when-let (parent-dom-node (treemacs-find-in-dom parent-path))
+    ;; file events can be chaotic to the point that something is "created"
+    ;; that is already present
+    (unless (treemacs-find-in-dom path)
+      (-let [parent-btn (treemacs-dom-node->position parent-dom-node)]
+        (when (treemacs-is-node-expanded? parent-btn)
+          (treemacs-with-writable-buffer
+           (let* ((sort-function (treemacs--get-sort-fuction))
+                  (insert-after (treemacs--determine-insert-position path parent-btn sort-function)))
+             (goto-char insert-after)
+             (end-of-line)
+             (insert "\n" (treemacs--create-string-for-single-insert
+                           path parent-btn (1+ (button-get parent-btn :depth))))
+             (-let [new-dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)]
+               (treemacs-dom-node->insert-into-dom! new-dom-node)
+               (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
+             (when treemacs-git-mode
+               (treemacs-do-update-single-file-git-state path :exclude-parents)))))))))
 
 (define-inline treemacs--create-string-for-single-insert (path parent depth)
   "Create the necessary strings to insert a new file node.
