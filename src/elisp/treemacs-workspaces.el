@@ -488,7 +488,7 @@ PROJECT: Project Struct"
         (recenter)))
     (treemacs--evade-image)
     (hl-line-highlight)))
-  (run-hook-wrapped 'treemacs-delete-project-functions project)
+  (run-hook-with-args 'treemacs-delete-project-functions project)
   (treemacs--persist))
 
 (defun treemacs-do-switch-workspace ()
