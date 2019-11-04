@@ -82,14 +82,20 @@ Prefer evil keybinds, otherwise pick the first result."
             (-if-let (evil-keys (--first (eq 'treemacs-state (aref it 0)) keys))
                 (--map (aref evil-keys it) (number-sequence 1 (- (length evil-keys) 1)))
               (--map (aref (car keys) it) (number-sequence 0 (- (length (car keys)) 1)))))))
-      (setq key
-            (pcase key
-              ("<return>"  "RET")
-              ("<left>"    "LEFT")
-              ("<right>"   "RIGHT")
-              ("<up>"      "UP")
-              ("<down>"    "DOWN")
-              (_ key)))
+      (setf key
+            (s-replace-all
+             '(("<return>" . "RET")
+               ("<left>"   . "LEFT")
+               ("<right>"  . "RIGHT")
+               ("<up>"     . "UP")
+               ("<down>"   . "DOWN")
+               ("^"        . "C-")
+               ("⇢⌥"     . ">O-")
+               ("⌥"       . "O-")
+               ("⇢⌘"      . ">#-")
+               ("⌘"       . "#-")
+               ("⇧"        . "S-"))
+             key))
       (cons (s-pad-right pad " " (format "_%s_:" key)) key))
     (cons (s-pad-right pad " " (format "_%s_:" " ")) " ")))
 
