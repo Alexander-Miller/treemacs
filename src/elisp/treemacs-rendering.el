@@ -727,8 +727,9 @@ DOM-NODE: Dom Node"
         ;; delete just enough to get rid of the deleted dirs
         (delete-region (- (point) delete-offset) (point))
         ;; then remove the deleted directories from the dom
-        (treemacs-dom-node->remove-collapse-keys!
-         dom-node (last curr-collapse-steps (1+ new-coll-count)))
+        (-let [removed-collapse-keys (last curr-collapse-steps (1+ new-coll-count))]
+          (treemacs-dom-node->remove-collapse-keys! dom-node removed-collapse-keys)
+          (-each removed-collapse-keys #'treemacs--stop-watching))
         ;; and update inline collpase info
         (if (= 0 new-coll-count)
             (treemacs-button-put btn :collapsed nil)
@@ -805,19 +806,45 @@ PARENT-PATH: File Path"
     ;; that is already present
     (unless (treemacs-find-in-dom path)
       (-let [parent-btn (treemacs-dom-node->position parent-dom-node)]
-        (when (treemacs-is-node-expanded? parent-btn)
-          (treemacs-with-writable-buffer
-           (let* ((sort-function (treemacs--get-sort-fuction))
-                  (insert-after (treemacs--determine-insert-position path parent-btn sort-function)))
-             (goto-char insert-after)
-             (end-of-line)
-             (insert "\n" (treemacs--create-string-for-single-insert
-                           path parent-btn (1+ (button-get parent-btn :depth))))
-             (-let [new-dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)]
-               (treemacs-dom-node->insert-into-dom! new-dom-node)
-               (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
-             (when treemacs-git-mode
-               (treemacs-do-update-single-file-git-state path :exclude-parents)))))))))
+        (if (and (file-directory-p path)
+                 (null (treemacs-first-child-node-where parent-btn t)))
+            (treemacs-insert-new-flattened-directory path parent-btn parent-dom-node)
+          (when (treemacs-is-node-expanded? parent-btn)
+            (treemacs-with-writable-buffer;; TODO(2019/11/04): just one global call for refresh?
+             (let* ((sort-function (treemacs--get-sort-fuction))
+                    (insert-after (treemacs--determine-insert-position path parent-btn sort-function)))
+               (goto-char insert-after)
+               (end-of-line)
+               (insert "\n" (treemacs--create-string-for-single-insert
+                             path parent-btn (1+ (button-get parent-btn :depth))))
+               (-let [new-dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)]
+                 (treemacs-dom-node->insert-into-dom! new-dom-node)
+                 (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
+               (when treemacs-git-mode
+                 (treemacs-do-update-single-file-git-state path :exclude-parents))))))))))
+
+(defun treemacs-insert-new-flattened-directory (path parent-btn parent-dom-node)
+  "Insert PATH as new flattened directory under PARENT-BTN.
+Create a new dom node as child of PARENT-DOM-NODE and start watching PATH.
+
+PATH: File Path
+PARENT-BTN: Button
+PARENT-DOM-NODE: Dom Node Struct"
+  (treemacs-with-writable-buffer
+   (-let [current-path (treemacs-button-get parent-btn :path)]
+     (-if-let (collapse-info (treemacs-button-get parent-btn :collapsed))
+         (progn
+           (cl-incf (car collapse-info))
+           (setf (cdr collapse-info) (nconc (cdr collapse-info) (list path))))
+       (treemacs-button-put parent-btn :collapsed (list 2 current-path path)))
+     (treemacs-button-put parent-btn :path path)
+     (setf (treemacs-dom-node->collapse-keys parent-dom-node)
+           (cons path (treemacs-dom-node->collapse-keys parent-dom-node)))
+     (ht-set! treemacs-dom path parent-dom-node)
+     (treemacs--start-watching path :collapse)
+     (-let [props (text-properties-at parent-btn)]
+       (goto-char (treemacs-button-end parent-btn))
+       (insert (apply #'propertize (substring path (length current-path)) props))))))
 
 (define-inline treemacs--create-string-for-single-insert (path parent depth)
   "Create the necessary strings to insert a new file node.
