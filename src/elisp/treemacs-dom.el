@@ -38,7 +38,7 @@
   collapse-keys)
 
 ;; needed because simple declare-function for pos slot in core-utils wont properly expand via setf
-(define-inline treemacs-dome-node->set-position! (self value)
+(define-inline treemacs-dom-node->set-position! (self value)
   "Set `position' field of SELF to VALUE.
 
 SELF: Dom Node Struct

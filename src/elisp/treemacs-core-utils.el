@@ -77,7 +77,7 @@
 
 (treemacs-import-functions-from "treemacs-dom"
   treemacs-on-collapse
-  treemacs-dome-node->set-position!
+  treemacs-dom-node->set-position!
   treemacs-find-in-dom
   treemacs-dom-node->key
   treemacs-dom-node->position)
@@ -824,7 +824,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
               (if (eq 'follow-failed search-result)
                   (prog1 nil
                     (goto-char start))
-                (treemacs-dome-node->set-position! (treemacs-find-in-dom path) search-result)
+                (treemacs-dom-node->set-position! (treemacs-find-in-dom path) search-result)
                 search-result))))))
   (define-find-custom-node treemacs--find-custom-project-node (pop path)
     "Move to the project extension node at PATH.")
@@ -940,7 +940,7 @@ PROJECT: Project Struct"
       (if (eq 'follow-failed search-result)
           (prog1 nil
             (goto-char start))
-        (treemacs-dome-node->set-position! (treemacs-find-in-dom path) search-result)
+        (treemacs-dom-node->set-position! (treemacs-find-in-dom path) search-result)
         search-result))))
 
 (cl-macrolet
