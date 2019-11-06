@@ -385,9 +385,10 @@ will instead be wiped irreversibly."
             (treemacs--on-file-deletion path)
             (treemacs-without-messages
              (treemacs-run-in-every-buffer
-              (-when-let (project (treemacs--find-project-for-path path))
-                (when (treemacs-is-path-visible? path)
-                  (treemacs--do-refresh (current-buffer) project))))))))
+              (when (treemacs-is-path-visible? path)
+                (treemacs-delete-single-node path)))))
+          (treemacs-log "Deleted %s."
+            (propertize path 'face 'font-lock-string-face))))
     (treemacs-pulse-on-failure "Nothing to delete here."))
   (treemacs--evade-image))
 
