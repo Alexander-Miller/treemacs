@@ -111,12 +111,11 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 (defun treemacs-define-doubleclick-action (state action)
   "Define the behaviour of `treemacs-doubleclick-action'.
 Determines that a button with a given STATE should lead to the execution of
-ACTION. The list of possible states can be found in
-`treemacs-valid-button-states'.
+ACTION.
 
-First deletes the previous entry with key STATE from
-`treemacs-doubleclick-actions-config' and then inserts the new tuple."
-  (setq treemacs-doubleclick-actions-config (assq-delete-all state treemacs-doubleclick-actions-config))
+The list of possible states can be found in `treemacs-valid-button-states'.
+ACTION should be one of the `treemacs-visit-node-*' commands."
+  (setf treemacs-doubleclick-actions-config (assq-delete-all state treemacs-doubleclick-actions-config))
   (push (cons state action) treemacs-doubleclick-actions-config))
 
 ;;;###autoload
