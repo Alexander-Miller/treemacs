@@ -248,7 +248,7 @@ BUFFER: Buffer"
              ;; and stop when we've moved on to nodes that are above or belong to the next project
              (while (and (setq btn (next-button btn))
                          (>= (treemacs-button-get btn :depth) depth))
-               (-let [path (treemacs-button-get btn :path)]
+               (-let [path (treemacs-button-get btn :key)]
                  (when (and (= depth (treemacs-button-get btn :depth))
                             (not (treemacs-button-get btn :no-git)))
                    (treemacs-button-put
