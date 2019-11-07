@@ -131,7 +131,7 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
            (open-dirs (-some->>
                        path
                        (treemacs-find-in-dom)
-                       (treemacs-dom-node->children)
+                       (treemacs-dom-node->reentry-nodes)
                        (-map #'treemacs-dom-node->key)
                        ;; Remove extension nodes
                        (-filter #'stringp)))
