@@ -737,7 +737,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
                           ;; appropriate nuber of times, since a collapsed directory is basically
                           ;; multiple search iterations bundled as one
                           ((and (treemacs-button-get current-btn :collapsed)
-                                (treemacs-is-path (treemacs-button-get btn :path) :parent-of root))
+                                (treemacs-is-path (treemacs-button-get current-btn :path) :parent-of root))
                            (dotimes (_ (car (treemacs-button-get current-btn :collapsed)))
                              (setq root (concat root "/" (pop ,dir-parts)))
                              (cl-incf index))
