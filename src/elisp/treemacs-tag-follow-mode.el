@@ -253,6 +253,11 @@ PROJECT: Project Struct"
              (setf tag-path (nconc (cdr tag-path) target-tag))
              ;; the tag path also needs its file
              (setf tag-path (cons buffer-file tag-path))
+             ;; workaround: goto routines assume that at least the very first element of the followed
+             ;; path has a dom entry with a valid position, but this is not the case when moving to tags
+             ;; in a previously never-expanded file node, so we first find the file to make sure its
+             ;; position is known
+             (treemacs-find-file-node buffer-file)
              (treemacs-goto-node tag-path)))
          (hl-line-highlight)
          (treemacs--evade-image)
