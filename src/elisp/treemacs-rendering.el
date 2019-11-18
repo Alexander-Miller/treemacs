@@ -821,7 +821,7 @@ PARENT-PATH: File Path"
                  (treemacs-dom-node->insert-into-dom! new-dom-node)
                  (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
                (when treemacs-git-mode
-                 (treemacs-do-update-single-file-git-state path :exclude-parents))))))))))
+                 (treemacs-do-update-single-file-git-state path :exclude-parents :override-status))))))))))
 
 (defun treemacs-insert-new-flattened-directory (path parent-btn parent-dom-node)
   "Insert PATH as new flattened directory under PARENT-BTN.
