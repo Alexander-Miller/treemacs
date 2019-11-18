@@ -396,13 +396,13 @@
   (it "Does nothing when the dom is empty"
     (with-temp-buffer
       (-let [treemacs-dom (ht)]
-        (treemacs--on-rename "OLD" "NEW")
+        (treemacs--on-rename "OLD" "NEW" nil)
         (expect (ht-empty? treemacs-dom) :to-be t))))
 
   (it "Does nothing when the old key is not in the dom"
     (with-temp-buffer
       (-let [treemacs-dom (ht ("A" (make-treemacs-dom-node :key "A")))]
-        (treemacs--on-rename "OLD" "NEW")
+        (treemacs--on-rename "OLD" "NEW" nil)
         (expect (ht-size treemacs-dom) :to-equal 1)
         (expect (ht-get treemacs-dom "A") :to-be-truthy))))
 
@@ -442,7 +442,7 @@
                   ((treemacs-dom-node->key node4) node4)
                   ((treemacs-dom-node->key node5) node5)
                   ((treemacs-dom-node->key node6) node6)))
-        (treemacs--on-rename "/A/OLD" "/A/NEW")
+        (treemacs--on-rename "/A/OLD" "/A/NEW" nil)
         (dolist (key '("/A/OLD"
                        "/A/OLD/X"
                        "/A/OLD/X/Y"
@@ -455,7 +455,38 @@
                        ("/A/NEW/X/Y" "Classes" "Class Foo")
                        ("/A/NEW/X/Y" "Classes" "Class Foo" "void bar()")))
           (expect (ht-get treemacs-dom key) :to-be-truthy))
-        (expect (ht-size treemacs-dom) :to-equal 9)))))
+        (expect (ht-size treemacs-dom) :to-equal 9))))
+
+ (it "Won't rename initial node when filewatch is enabled"
+    (with-temp-buffer
+      (let* ((default-directory "/A")
+             (root (make-treemacs-dom-node :key "/A"))
+             (node1 (make-treemacs-dom-node :key "/A/OLD"))
+             (node2 (make-treemacs-dom-node :key "/A/OLD/X"))
+             (node3 (make-treemacs-dom-node :key "/A/OLD/X/Y"))
+             (nodex (make-treemacs-dom-node :key "/A/B"))
+             (nodey (make-treemacs-dom-node :key "/A/B/C")))
+        (setf (treemacs-dom-node->parent nodex) root
+              (treemacs-dom-node->parent nodey) root
+              (treemacs-dom-node->parent node1) root
+              (treemacs-dom-node->parent node2) node1
+              (treemacs-dom-node->parent node3) node2
+              (treemacs-dom-node->children root) (list node1 nodex nodey)
+              (treemacs-dom-node->children node1) (list node2)
+              (treemacs-dom-node->children node2) (list node3))
+        (setf treemacs-dom
+              (ht ((treemacs-dom-node->key root) root)
+                  ((treemacs-dom-node->key nodex) nodex)
+                  ((treemacs-dom-node->key nodey) nodey)
+                  ((treemacs-dom-node->key node1) node1)
+                  ((treemacs-dom-node->key node2) node2)
+                  ((treemacs-dom-node->key node3) node3)))
+        (treemacs--on-rename "/A/OLD" "/A/NEW" t)
+        (dolist (key '("/A/OLD/X" "/A/OLD/X/Y"))
+          (expect (ht-get treemacs-dom key) :to-be nil))
+        (dolist (key '("/A/OLD" "/A/NEW/X" "/A/NEW/X/Y"))
+          (expect (ht-get treemacs-dom key) :to-be-truthy))
+        (expect (ht-size treemacs-dom) :to-equal 6)))))
 
 (describe "treemacs-on-collapse"
 

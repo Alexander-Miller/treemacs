@@ -179,7 +179,7 @@ file from caches if it has been deleted instead of waiting for file processing."
           (let ((old-name path)
                 (new-name (cl-fourth event)))
             (treemacs-run-in-every-buffer
-             (treemacs--on-rename old-name new-name))
+             (treemacs--on-rename old-name new-name (with-no-warnings treemacs-filewatch-mode)))
             (treemacs--set-refresh-flags (treemacs--parent old-name) 'deleted old-name)
             (when (--none? (funcall it (treemacs--filename new-name) new-name) treemacs-ignored-file-predicates)
               (treemacs--set-refresh-flags (treemacs--parent new-name) 'created new-name)))

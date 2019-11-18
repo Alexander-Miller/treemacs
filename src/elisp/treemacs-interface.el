@@ -436,7 +436,7 @@ likewise be updated."
        (treemacs--replace-recentf-entry old-path new-path)
        (-let [treemacs-silent-refresh t]
          (treemacs-run-in-every-buffer
-          (treemacs--on-rename old-path new-path)
+          (treemacs--on-rename old-path new-path treemacs-filewatch-mode)
           (treemacs--do-refresh (current-buffer) project)))
        (treemacs--reload-buffers-after-rename old-path new-path)
        (treemacs-goto-file-node new-path project)

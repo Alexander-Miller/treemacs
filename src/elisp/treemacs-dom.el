@@ -192,11 +192,15 @@ DOM-NODE: Dom Node Struct"
            (setf (treemacs-dom-node->children it) nil)))
        (setf (treemacs-dom-node->children ,dom-node) nil)))))
 
-(defun treemacs--on-rename (old-name new-name)
-  "Renames dom entriesa after a file was renamed from OLD-NAME to NEW-NAME.
+(defun treemacs--on-rename (old-name new-name dont-rename-initial)
+  "Renames dom entries after a file was renamed from OLD-NAME to NEW-NAME.
+Renames the initial dom entry (the one backing the file that was acutally
+renamed) only if DONT-RENAME-INITIAL is nil in case the entry is required for
+filewatch-mode to work.
 
 OLD-NAME: File Path | Tag Path
-NEW-NAME: File Path | Tag Path"
+NEW-NAME: File Path | Tag Path
+DONT-RENAME-INITIAL: Boolean"
   (-when-let (dom-node (treemacs-find-in-dom old-name))
     (-let [migrate-keys
            (lambda (it)
@@ -210,8 +214,14 @@ NEW-NAME: File Path | Tag Path"
                  (ht-remove! treemacs-dom old-key)
                  (ht-set! treemacs-dom new-key it)
                  (setf (treemacs-dom-node->key it) new-key))))]
-      (treemacs-walk-dom dom-node migrate-keys)
-      (treemacs-walk-reentry-dom dom-node migrate-keys))))
+      ;; when filewatch is enabled the acutally renamed file needs to keep
+      ;; its dom entry until refresh actually runs so it can be deleted properly
+      (if dont-rename-initial
+          (progn
+            (treemacs-walk-reentry-dom-exclusive dom-node migrate-keys)
+            (treemacs-walk-dom-exclusive dom-node migrate-keys))
+        (treemacs-walk-dom dom-node migrate-keys)
+        (treemacs-walk-reentry-dom dom-node migrate-keys)))))
 
 (defun treemacs-walk-dom (node fn)
   "Recursively walk the dom starting at NODE.
@@ -249,6 +259,15 @@ FN: (Dom Node) -> Any"
   (dolist (it (treemacs-dom-node->reentry-nodes node))
     (treemacs-walk-reentry-dom it fn))
   (funcall fn node))
+
+(defun treemacs-walk-reentry-dom-exclusive (node fn)
+  "Same as `treemacs-walk-reentry-dom', but FN is not invoked on initial NODE.
+
+NODE: Dom Node Struct
+FN: (Dom Node) -> Any"
+  (declare (indent 1))
+  (dolist (it (treemacs-dom-node->reentry-nodes node))
+    (treemacs-walk-reentry-dom it fn)))
 
 (provide 'treemacs-dom)
 
