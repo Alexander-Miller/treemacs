@@ -248,8 +248,8 @@
   (it "Returns empty string when input is many periods"
     (expect (treemacs--file-extension ".......") :to-equal ""))
 
-  (it "Returns the filename of an absolute path without extension"
-    (expect (treemacs--file-extension "/A/B/C/D/foo") :to-equal "foo"))
+  (it "Returns input for an absolute path without extension"
+    (expect (treemacs--file-extension "/A/B/C/D/foo") :to-equal "/A/B/C/D/foo"))
 
   (it "Returns the filename of a filename without extension"
     (expect (treemacs--file-extension "foo") :to-equal "foo"))

@@ -237,13 +237,15 @@ Necessary since root icons are not rectangular."
 (define-inline treemacs-icon-for-file (file)
   "Retrieve an icon for FILE from `treemacs-icons' based on its extension.
 Uses `treemacs-icon-fallback' as fallback."
-  (declare (pure t))
+  (declare (side-effect-free t))
   (inline-letevals (file)
     (inline-quote
-     (ht-get treemacs-icons
-             (-> ,file (treemacs--file-extension) (downcase))
-             ;; no warnings since the fallback var is defined at the end of the module
-             (with-no-warnings treemacs-icon-fallback)))))
+     (let ((file-downcased (-> ,file (treemacs--filename) (downcase))))
+       (ht-get treemacs-icons
+               file-downcased
+               (ht-get treemacs-icons
+                       (treemacs--file-extension file-downcased)
+                       (with-no-warnings treemacs-icon-fallback)))))))
 
 ;;;###autoload
 (defun treemacs-resize-icons (size)
