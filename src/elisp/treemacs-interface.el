@@ -904,8 +904,8 @@ Only works with a single project in the workspace."
             (treemacs-pulse-on-success nil))
        (unless (treemacs-is-path old-root :same-as new-root)
          (treemacs-do-remove-project-from-workspace project)
+         (treemacs--reset-dom) ;; remove also the previous root's dom entry
          (treemacs-do-add-project-to-workspace new-root new-name)
-         (treemacs-goto-file-node new-root)
          (treemacs-goto-file-node old-root))))))
 
 (defun treemacs-root-down ()
@@ -924,6 +924,7 @@ Only works with a single project in the workspace."
               (treemacs--no-messages t)
               (treemacs-pulse-on-success nil))
           (treemacs-do-remove-project-from-workspace (treemacs-project-at-point))
+          (treemacs--reset-dom) ;; remove also the previous root's dom entry
           (treemacs-do-add-project-to-workspace new-root (file-name-nondirectory new-root))
           (treemacs-goto-file-node new-root)
           (treemacs-toggle-node)))
