@@ -2,7 +2,16 @@
 #+STARTUP: content
 
 * Changelog
-** Current master
+** current master
+** v2.7
+ - Suppor for icon themes
+ - Integration with bookmarks
+ - Performance improvements
+ - Changed icon selection to allow icons for specific file names
+ - New functions to run shell commands for current node or project
+ - Feature-completion of workspaces api
+ - New Icons
+ - Bug Fixes
 ** v2.6
  - Added ~treemacs-add-and-display-current-project~ (both projectile and project.el)
  - Added ~treemacs-eldoc-display~

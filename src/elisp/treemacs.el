@@ -5,7 +5,7 @@
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "25.2") (cl-lib "0.5") (dash "2.11.0") (s "1.10.0") (f "0.11.0") (ace-window "0.9.0") (pfuture "1.7") (hydra "0.13.2") (ht "2.2"))
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
-;; Version: 2.6
+;; Version: 2.7
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@
 
 (defconst treemacs-version
   (eval-when-compile
-    (format "v2.6-%s @ %s"
+    (format "v2.7-%s @ %s"
             (format-time-string "%Y.%m.%d" (current-time))
             emacs-version)))
 
