@@ -53,7 +53,7 @@ not visible."
     (treemacs-without-following
      (let* ((treemacs-window (treemacs-get-local-window))
             (current-buffer  (current-buffer))
-            (current-file    (-some-> current-buffer (buffer-file-name) (file-truename))))
+            (current-file    (buffer-file-name current-buffer)))
        (when (and treemacs-window
                   current-file
                   (not (s-starts-with? treemacs--buffer-name-prefix (buffer-name current-buffer)))
