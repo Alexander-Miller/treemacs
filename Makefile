@@ -7,7 +7,6 @@ EMACS ?= emacs
 NO_LOAD_WARNINGS = --eval "(defvar treemacs-no-load-time-warnings t)"
 SRC_DIR          = src/elisp
 EXTRA_DIR        = src/extra
-CASK_DIR         = .cask/**
 EMACSFLAGS       = -Q -batch -L $(SRC_DIR) -L $(EXTRA_DIR) $(NO_LOAD_WARNINGS)
 COMPILE_COMMAND  = -f batch-byte-compile $(SRC_DIR)/*.el $(EXTRA_DIR)/*.el
 LINT_DIR         = /tmp/treemacs
