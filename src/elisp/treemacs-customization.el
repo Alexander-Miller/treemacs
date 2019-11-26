@@ -91,6 +91,12 @@
   :prefix "treemacs-"
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
+(defgroup treemacs-follow nil
+  "Customizations for the behaviour of the treemacs' file and tag following."
+  :group 'treemacs
+  :prefix "treemacs-"
+  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
+
 (defgroup treemacs-window nil
   "Customizations for the behaviour of the treemacs window."
   :group 'treemacs
@@ -196,14 +202,6 @@ To keep the alist clean changes should not be made directly, but with
 `treemacs-define-RET-action', for example like this:
 \(treemacs-define-RET-action 'file-node-closed #'treemacs-visit-node-ace\)"
   :type '(alist :key-type symbol :value-type treemacs-ret-action)
-  :group 'treemacs)
-
-(defcustom treemacs-follow-after-init nil
-  "When t always find and focus the current file when treemacs is built.
-
-A treemacs buffer is built when after calling `treemacs-init' or
-`treemacs-projectle-init'. This will ignore `treemacs-follow-mode'."
-  :type 'boolean
   :group 'treemacs)
 
 (defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
@@ -365,49 +363,10 @@ To disable all refresh messages use `treemacs-silent-refresh'."
   :type 'boolean
   :group 'treemacs)
 
-(defcustom treemacs-file-follow-delay 0.2
-  "Delay in seconds of idle time for treemacs to follow the selected window."
-  :type 'number
-  :group 'treemacs)
-
-(defcustom treemacs-tag-follow-delay 1.5
-  "Delay in seconds of inactivity for `treemacs-tag-follow-mode' to trigger."
-  :type 'number
-  :group 'treemacs)
-
 (defcustom treemacs-no-png-images nil
   "When non-nil treemacs will use TUI string icons even when running in a GUI.
 The change will apply the next time a treemacs buffer is created."
   :type 'boolean
-  :group 'treemacs)
-
-(defcustom treemacs-tag-follow-cleanup t
-  "When non-nil `treemacs-tag-follow-mode' will close file nodes it is leaving.
-When jumping between different files this can prevent the view from being
-flooded with their tags."
-  :type 'boolean
-  :group 'treemacs)
-
-(defcustom treemacs-recenter-after-file-follow nil
-  "Decides when to recenter view after following a file.
-Possible values are:
- * nil: never recenter
- * 'always: always recenter
- * 'on-distance: recenter based on `treemacs-recenter-distance'"
-  :type '(choice (const :tag "Always" always)
-                 (const :tag "Based on Distance" on-distance)
-                 (const :tag "Never" nil))
-  :group 'treemacs)
-
-(defcustom treemacs-recenter-after-tag-follow nil
-  "Decides when to recenter view after following a tag.
-Possible values are:
- * nil: never recenter
- * 'always: always recenter
- * 'on-distance: recenter based on `treemacs-recenter-distance'"
-  :type '(choice (const :tag "Always" always)
-                 (const :tag "Based on Distance" on-distance)
-                 (const :tag "Never" nil))
   :group 'treemacs)
 
 (defcustom treemacs-recenter-after-project-jump 'always
@@ -450,23 +409,6 @@ This applies to actions like `treemacs-copy-path-at-point'."
 This applies to actions like treemacs not finding any tags it can show when
 `treemacs-toggle-node' is called on a file node."
   :type 'boolean
-  :group 'treemacs)
-
-(make-obsolete-variable 'treemacs-follow-recenter-distance 'treemacs-recenter-distance "v2.5")
-(defcustom treemacs-follow-recenter-distance 0.1
-  "Minimum distance from the top/bottom for (tag-)follow mode to recenter.
-Treemacs will be calling `recenter' after following a file/tag if the distance
-between point and the top/bottom of the treemacs window is less then this many
-lines. The value is not an absolute line count, but a percentage, with 0.0
-being 0% and 1.0 being 100%. This means that when this variable is set to 0.1
-`recenter' will be called within a 10% distance of the window top/bottom. For a
-window height of 40 lines that means point being within the first or last 4
-lines of the treemacs window.
-Will only take effect if `treemacs-recenter-after-tag-follow' and/or
-`treemacs-recenter-after-file-follow' is non-nil.
-
-Note that this does *not* take `scroll-margin' into account."
-  :type 'float
   :group 'treemacs)
 
 (defcustom treemacs-recenter-distance 0.1
@@ -536,16 +478,6 @@ Note that this does *not* take `scroll-margin' into account."
 More discriminating than the default as it distinguishes between functions,
 inline functions, macros, faces, variables, customizations and types."
   :type 'alist
-  :group 'treemacs)
-
-(defcustom treemacs-project-follow-cleanup nil
-  "When non-nil `treemacs-follow-mode' will close projects it is leaving.
-This means that treemacs will make sure that only the currently followed project
-is expanded while all others will remain collapsed.
-
-Setting this to t might lead to noticeable slowdowns, at least when `treemacs-git-mode'
-is enabled, since constantly expanding an entire project is fairly expensive."
-  :type 'boolean
   :group 'treemacs)
 
 (defcustom treemacs-persist-file
@@ -621,6 +553,80 @@ missing project will not appear in the project list next time Emacs is started."
   "When non-nil treemacs the cursor will remain visible in the treemacs buffer."
   :type 'boolean
   :group 'treemacs)
+
+(make-obsolete-variable 'treemacs-follow-recenter-distance 'treemacs-recenter-distance "v2.5")
+(defcustom treemacs-follow-recenter-distance 0.1
+  "Minimum distance from the top/bottom for (tag-)follow mode to recenter.
+Treemacs will be calling `recenter' after following a file/tag if the distance
+between point and the top/bottom of the treemacs window is less then this many
+lines. The value is not an absolute line count, but a percentage, with 0.0
+being 0% and 1.0 being 100%. This means that when this variable is set to 0.1
+`recenter' will be called within a 10% distance of the window top/bottom. For a
+window height of 40 lines that means point being within the first or last 4
+lines of the treemacs window.
+Will only take effect if `treemacs-recenter-after-tag-follow' and/or
+`treemacs-recenter-after-file-follow' is non-nil.
+
+Note that this does *not* take `scroll-margin' into account."
+  :type 'float
+  :group 'treemacs-follow)
+
+(defcustom treemacs-follow-after-init nil
+  "When t always find and focus the current file when treemacs is built.
+
+A treemacs buffer is built when after calling `treemacs-init' or
+`treemacs-projectle-init'. This will ignore `treemacs-follow-mode'."
+  :type 'boolean
+  :group 'treemacs-follow)
+
+(defcustom treemacs-file-follow-delay 0.2
+  "Delay in seconds of idle time for treemacs to follow the selected window."
+  :type 'number
+  :group 'treemacs-follow)
+
+(defcustom treemacs-tag-follow-delay 1.5
+  "Delay in seconds of inactivity for `treemacs-tag-follow-mode' to trigger."
+  :type 'number
+  :group 'treemacs-follow)
+
+(defcustom treemacs-tag-follow-cleanup t
+  "When non-nil `treemacs-tag-follow-mode' will close file nodes it is leaving.
+When jumping between different files this can prevent the view from being
+flooded with their tags."
+  :type 'boolean
+  :group 'treemacs-follow)
+
+(defcustom treemacs-recenter-after-file-follow nil
+  "Decides when to recenter view after following a file.
+Possible values are:
+ * nil: never recenter
+ * 'always: always recenter
+ * 'on-distance: recenter based on `treemacs-recenter-distance'"
+  :type '(choice (const :tag "Always" always)
+                 (const :tag "Based on Distance" on-distance)
+                 (const :tag "Never" nil))
+  :group 'treemacs-follow)
+
+(defcustom treemacs-recenter-after-tag-follow nil
+  "Decides when to recenter view after following a tag.
+Possible values are:
+ * nil: never recenter
+ * 'always: always recenter
+ * 'on-distance: recenter based on `treemacs-recenter-distance'"
+  :type '(choice (const :tag "Always" always)
+                 (const :tag "Based on Distance" on-distance)
+                 (const :tag "Never" nil))
+  :group 'treemacs-follow)
+
+(defcustom treemacs-project-follow-cleanup nil
+  "When non-nil `treemacs-follow-mode' will close projects it is leaving.
+This means that treemacs will make sure that only the currently followed project
+is expanded while all others will remain collapsed.
+
+Setting this to t might lead to noticeable slowdowns, at least when `treemacs-git-mode'
+is enabled, since constantly expanding an entire project is fairly expensive."
+  :type 'boolean
+  :group 'treemacs-follow)
 
 (defcustom treemacs-deferred-git-apply-delay 0.5
   "Delay in seconds of idle time before git fontification is applied.
