@@ -105,12 +105,19 @@ PATH: String"
                         treemacs--workspaces)
             (car treemacs--workspaces))))))
 
-(defun treemacs--find-project-for-buffer ()
-  "In the current workspace find the project current buffer's file falls under."
-  (unless treemacs--project-of-buffer
-    (when (buffer-file-name)
-      (setq treemacs--project-of-buffer (treemacs-is-path (buffer-file-name) :in-workspace))))
-  treemacs--project-of-buffer)
+(define-inline treemacs--find-project-for-buffer (&optional buffer-file)
+  "In the current workspace find the project current buffer's file falls under.
+Optionally supply the BUFFER-FILE in case it is not available by calling
+`buffer-file-name' (like in dired).
+
+FILE: Filepath"
+  (inline-letevals (buffer-file)
+    (inline-quote
+     (progn
+       (unless treemacs--project-of-buffer
+         (let ((path (or ,buffer-file (buffer-file-name))))
+           (when path (setf treemacs--project-of-buffer (treemacs-is-path path :in-workspace)))))
+       treemacs--project-of-buffer))))
 
 (define-inline treemacs--find-project-for-path (path)
   "Return the project for PATH in the current workspace."

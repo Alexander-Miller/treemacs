@@ -32,6 +32,9 @@
 (eval-and-compile
   (require 'treemacs-macros))
 
+(treemacs-import-functions-from "dired"
+  dired-current-directory)
+
 (defvar treemacs--ready-to-follow nil
   "Signals to `treemacs-follow-mode' if a follow action may be run.
 Must be set to nil when no following should be triggered, e.g. when the
@@ -53,12 +56,14 @@ not visible."
     (treemacs-without-following
      (let* ((treemacs-window (treemacs-get-local-window))
             (current-buffer  (current-buffer))
-            (current-file    (buffer-file-name current-buffer)))
+            (current-file    (or (buffer-file-name current-buffer)
+                                 (when (eq major-mode 'dired-mode)
+                                   (treemacs--canonical-path (dired-current-directory))))))
        (when (and treemacs-window
                   current-file
                   (not (s-starts-with? treemacs--buffer-name-prefix (buffer-name current-buffer)))
                   (f-exists? current-file))
-         (-when-let (project-for-file (treemacs--find-project-for-buffer))
+         (-when-let (project-for-file (treemacs--find-project-for-buffer current-file))
            (with-selected-window treemacs-window
              (-let [selected-file (--if-let (treemacs-current-button)
                                       (treemacs--nearest-path it)
