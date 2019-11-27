@@ -157,9 +157,19 @@ Also start the refresh timer if it's not started already."
          (treemacs--stop-watching ,path))
        (treemacs-run-in-every-buffer
         (--when-let (treemacs-find-in-dom ,location)
-          (let ((flag (cons ,type ,path)))
-            (unless (member flag (treemacs-dom-node->refresh-flag it))
-              (push flag (treemacs-dom-node->refresh-flag it)))))
+          (let ((current-flag (assoc ,path (treemacs-dom-node->refresh-flag it))))
+            (pcase (cdr current-flag)
+              (`nil
+               (push (cons ,path ,type) (treemacs-dom-node->refresh-flag it)))
+              ('created
+               (when (eq ,type 'deleted)
+                 (setf (cdr current-flag) 'deleted)))
+              ('deleted
+               (when (eq ,type 'created)
+                 (setf (cdr current-flag) 'created)))
+              ('changed
+               (when (eq ,type 'deleted)
+                 (setf (cdr current-flag) 'deleted))))))
         (unless treemacs--refresh-timer
           (setf treemacs--refresh-timer
                 (run-with-timer (/ treemacs-file-event-delay 1000) nil

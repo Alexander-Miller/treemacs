@@ -929,10 +929,8 @@ parents' git status can be updated."
             (if (null (treemacs-dom-node->parent node))
                 (treemacs-project->refresh! project)
               (treemacs--refresh-dir (treemacs-dom-node->key node) project)))
-        ;; reverse in case so order is preserved, e.g. first change then delete
-        ;; must be handled in that original order
-        (dolist (change (nreverse change-list))
-          (-let [(type . path) change]
+        (dolist (change change-list)
+          (-let [(path . type) change]
             (pcase type
               ('deleted
                (treemacs-do-delete-single-node path project))
