@@ -768,15 +768,15 @@ SORT-FUNCTION: Button -> Boolean."
          ;; at first dir that fits sort order
          (--when-let (--first (funcall sort-function path (treemacs-dom-node->key it)) dirs)
            (previous-button (or (treemacs-dom-node->position it)
-                                (treemacs-find-node (treemacs-dom-node->key it)))))
+                                (treemacs-find-file-node (treemacs-dom-node->key it)))))
          ;; after last dir
          (--when-let (-last-item dirs)
            (or (treemacs-dom-node->position it)
-               (treemacs-find-node (treemacs-dom-node->key it))))
+               (treemacs-find-file-node (treemacs-dom-node->key it))))
          ;; before first file
          (--when-let (car files)
            (previous-button (or (treemacs-dom-node->position it)
-                                (treemacs-find-node (treemacs-dom-node->key it)))))
+                                (treemacs-find-file-node (treemacs-dom-node->key it)))))
          ;; after parent
          parent-btn)
       ;; insert file ...
@@ -784,15 +784,15 @@ SORT-FUNCTION: Button -> Boolean."
        ;; at first file that fits sort order
        (--when-let (--first (funcall sort-function path (treemacs-dom-node->key it)) files)
          (previous-button (or (treemacs-dom-node->position it)
-                              (treemacs-find-node (treemacs-dom-node->key it)))) )
+                              (treemacs-find-file-node (treemacs-dom-node->key it)))) )
        ;; after last file
        (--when-let (-last-item files)
          (or (treemacs-dom-node->position it)
-             (treemacs-find-node (treemacs-dom-node->key it))) )
+             (treemacs-find-file-node (treemacs-dom-node->key it))) )
        ;; before first dir
        (--when-let (car dirs)
          (previous-button (or (treemacs-dom-node->position it)
-                              (treemacs-find-node (treemacs-dom-node->key it)))))
+                              (treemacs-find-file-node (treemacs-dom-node->key it)))))
        ;; after parent
        parent-btn))))
 
