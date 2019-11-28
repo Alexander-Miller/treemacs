@@ -842,6 +842,20 @@ frame it was found for."
   :type 'hook
   :group 'treemacs-hooks)
 
+(defconst treemacs-last-period-regex-value "\\.[^.]*\\'")
+(defconst treemacs-first-period-regex-value "\\.")
+(defcustom treemacs-file-extension-regex treemacs-last-period-regex-value
+  "Decides how treemacs determines a file's extension.
+There are 2 options:
+ - An extension should be everything past the *last* period of the file name.
+   In this case this shoud be set to `treemacs-last-period-regex-value'
+ - An extension should be everything p
+ast the *first* period of the file name
+   In this case this should be set to `treemacs-first-period-regex-value'"
+  :group 'treemacs
+  :type `(choice (const :tag "Text after first period" ,treemacs-first-period-regex-value)
+                 (const :tag "Text after last period" ,treemacs-last-period-regex-value)))
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

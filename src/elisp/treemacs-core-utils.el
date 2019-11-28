@@ -388,10 +388,10 @@ FILE here is a list consisting of an absolute path and file attributes."
 This is something a of workaround to easily allow assigning icons to a FILENAME
 with a name like '.gitignore' without always having to check for both filename
 extensions and special names like this."
-  (declare (pure t) (side-effect-free t))
+  (declare (side-effect-free t))
   (inline-letevals (filename)
     (inline-quote
-     (if (string-match "\\.[^.]*\\'" ,filename)
+     (if (string-match treemacs-file-extension-regex ,filename)
          (substring ,filename (1+ (match-beginning 0)))
        ,filename))))
 

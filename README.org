@@ -372,6 +372,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-display-in-side-window        t
             treemacs-eldoc-display                 t
             treemacs-file-event-delay              5000
+            treemacs-file-extension-regex          treemacs-last-period-regex-value
             treemacs-file-follow-delay             0.2
             treemacs-follow-after-init             t
             treemacs-git-command-pipe              ""
@@ -494,6 +495,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-no-delete-other-windows       | t                                                | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                                                          |
 | treemacs-eldoc-display                 | t                                                | Enables eldoc display of the file path at point. Requires ~eldoc-mode~.                                                                                                                                                              |
 | treemacs-bookmark-title-template       | "Treemacs - ${project}: ${label}"                | When using ~bookmark-set~ in Treemacs, the default template for a bookmark label. The following patterns are available: "${project}", "${label}", "${label:N}", ${label-path}", "${label-path:N}", "${file-path}", "${file-path:N}". |
+| treemacs-file-extension-regex          | Text after last period                           | Determines how treemacs detects a file extension. Can be set to use text after first or last period.                                                                                                                                 |
 
 ** Faces
 Treemacs defines and uses the following faces:
@@ -544,10 +546,10 @@ The ~:file~ argument is relative to the icon directory of the theme being create
 directly. The TUI fallback is also optional, " " is used by default. Finally the list of extensions determines which
 file extensions the icon should be used for.
 
-For treemacs an extension is either the entire file name or the text after the last period. This means it can match
-normal file names like "init.el", extensionless file names like "Makefile". Because the full name is checked first it is
-possible to give special files their own icon, for example "Readme.md" can use a different icon than normal markdown
-files.
+For treemacs an extension is either the entire file name or the text after the last period (unless
+~treemacs-file-extension-regex~ is customized). This means it can match normal file names like "init.el", extensionless
+file names like "Makefile". Because the full name is checked first it is possible to give special files their own icon,
+for example "Readme.md" can use a different icon than normal markdown files.
 
 Instead of a string extension a symbol can also be used. In this case treemacs will also create a variable for that icon
 named ~treemacs-icon-$symbol~. Treemacs uses several such icon variables and any new theme should define their own
