@@ -25,6 +25,7 @@
 (require 'f)
 (require 'treemacs-follow-mode)
 (require 'treemacs-interface)
+(require 'treemacs-scope)
 (require 'treemacs-tags)
 (eval-and-compile
   (require 'treemacs-macros))

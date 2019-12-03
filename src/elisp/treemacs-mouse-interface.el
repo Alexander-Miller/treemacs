@@ -25,6 +25,7 @@
 (require 'hl-line)
 (require 'treemacs-core-utils)
 (require 'treemacs-tags)
+(require 'treemacs-scope)
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)
 (eval-and-compile (require 'treemacs-macros))

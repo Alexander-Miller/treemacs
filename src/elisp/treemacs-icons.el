@@ -25,12 +25,108 @@
 (require 'dash)
 (require 's)
 (require 'ht)
-(require 'treemacs-visuals)
 (require 'treemacs-themes)
-(require 'treemacs-workspaces)
 (eval-and-compile
   (require 'inline)
   (require 'treemacs-macros))
+
+;; An explanation for the what and why of the icon highlighting code below:
+;; Using png images in treemacs has one annoying visual flaw: they overwrite the overlay
+;; used by hl-line, such that the line marked by hl-line will always show a 22x22 pixel
+;; gap wherever treemacs places an icon, regardess of transparency.
+;; Using xpm instead of png images is one way to work around this, but it degrades icon
+;; quality to an unacceptable degree. Another way is to directly change images' :background
+;; property. The backgrounds colors are derived from the current theme with `treemacs--setup-icon-highlight'
+;; and saved in `treemacs--selected-icon-background' and `treemacs--not-selected-icon-background'.
+;; Every icon string stores two images with the proper :background values in its properties
+;; 'img-selected and 'img-unselected. The 'display property of the icon in the current line
+;; is then highlighted, and the previously highlighted icon unhighlighted, by advising
+;; `hl-line-highlight'. The last displayed icon is saved as a button marker in `treemacs--last-highlight'.
+;; Since it is a marker in the treemacs buffer it is important for it to be reset whenever it might
+;; become invalid.
+
+(defvar treemacs--not-selected-icon-background
+  (pcase (face-attribute 'default :background nil t)
+    ('unspecified
+     (prog1 "#2d2d31"
+       (unless (boundp 'treemacs-no-load-time-warnings)
+         (message "[Treemacs] Warning: coudn't find default background color for icons, falling back on #2d2d31."))))
+    ('unspecified-bg
+     (prog1 "#2d2d31"
+       (unless (boundp 'treemacs-no-load-time-warnings)
+         (message "[Treemacs] Warning: background color is unspecified, icons will likely look wrong. Falling back on #2d2d31."))))
+    (other other))
+  "Background for non-selected icons.")
+
+(defvar treemacs--selected-icon-background
+  (-let [bg (face-attribute 'hl-line :background nil t)]
+    (if (memq bg '(unspecified unspecified-b))
+        (prog1 treemacs--not-selected-icon-background
+          (unless (boundp 'treemacs-no-load-time-warnings)
+            (message "[Treemacs] Warning: couldn't find hl-line-mode's background color for icons, falling back on %s."
+                     treemacs--not-selected-icon-background)))
+      bg))
+  "Background for selected icons.")
+
+(define-inline treemacs--set-img-property (image property value)
+  "Set IMAGE's PROPERTY to VALUE."
+  ;; the emacs26 code where this is copied from says it's for internal
+  ;; use only - let's se how that goes
+  (inline-letevals (image property value)
+    (inline-quote
+     (progn
+       (plist-put (cdr ,image) ,property ,value)
+       ,value))))
+
+(define-inline treemacs--get-img-property (image property)
+  "Return the value of PROPERTY in IMAGE."
+  ;; code aken from emacs 26
+  (declare (side-effect-free t))
+  (inline-letevals (image property)
+    (inline-quote
+     (plist-get (cdr ,image) ,property))))
+(gv-define-setter treemacs--get-img-property (val img prop)
+  `(plist-put (cdr ,img) ,prop ,val))
+
+(defmacro treemacs-get-icon-value (ext &optional tui theme)
+  "Get the value of an icon for extension EXT.
+If TUI is non-nil the terminal fallback value is returned.
+THEME is the name of the theme to look in. Will cause an error if the theme
+does not exist."
+  `(let* ((theme ,(if theme
+                      `(treemacs--find-theme ,theme)
+                    `(treemacs-current-theme)))
+          (icons ,(if tui
+                      `(treemacs-theme->tui-icons theme)
+                    `(treemacs-theme->gui-icons theme))))
+     (ht-get icons ,ext)))
+
+(defun treemacs--setup-icon-background-colors (&rest _)
+  "Align icon backgrounds with current Emacs theme.
+Fetch the current Emacs theme's background & hl-line colors and inject them into
+the gui icons of every theme in `treemacs--themes'.
+Also called as advice after `load-theme', hence the ignored argument."
+  (let* ((default-background (face-attribute 'default :background nil t))
+         (hl-line-background (face-attribute 'hl-line :background nil t))
+         (test-icon          (treemacs-get-icon-value 'dir-open))
+         (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected test-icon) :background))
+         (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected test-icon) :background)))
+    (when (memq default-background '(unspecified-bg unspecified))
+      (treemacs-log "Current theme fails to specify default background color, falling back on #2d2d31")
+      (setq default-background "#2d2d31"))
+    ;; make sure we only change all the icons' colors when we have to
+    (unless (and (string= default-background icon-background)
+                 (string= hl-line-background icon-hl-background))
+      (setf treemacs--selected-icon-background hl-line-background
+            treemacs--not-selected-icon-background default-background)
+      (dolist (theme treemacs--themes)
+        (treemacs--maphash (treemacs-theme->gui-icons theme) (_ icon)
+          (treemacs--set-img-property
+           (get-text-property 0 'img-selected icon)
+           :background treemacs--selected-icon-background)
+          (treemacs--set-img-property
+           (get-text-property 0 'img-unselected icon)
+           :background treemacs--not-selected-icon-background))))))
 
 (define-inline treemacs--is-image-creation-impossible? ()
   "Will return non-nil when Emacs is unable to create images.
@@ -292,19 +388,6 @@ TUI icons will be used if
       (let ((variable (intern (format "treemacs-icon-%s" icon-symbol)))
             (value    (ht-get icons icon-symbol)))
         (set (make-local-variable variable) value)))))
-
-(defmacro treemacs-get-icon-value (ext &optional tui theme)
-  "Get the value of an icon for extension EXT.
-If TUI is non-nil the terminal fallback value is returned.
-THEME is the name of the theme to look in. Will cause an error if the theme
-does not exist."
-  `(let* ((theme ,(if theme
-                      `(treemacs--find-theme ,theme)
-                    `(treemacs-current-theme)))
-          (icons ,(if tui
-                     `(treemacs-theme->tui-icons theme)
-                   `(treemacs-theme->gui-icons theme))))
-     (ht-get icons ,ext)))
 
 ;;;###autoload
 (defun treemacs-define-custom-icon (icon &rest file-extensions)

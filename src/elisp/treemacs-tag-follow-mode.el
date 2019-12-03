@@ -35,6 +35,7 @@
 (require 'treemacs-customization)
 (require 'treemacs-core-utils)
 (require 'treemacs-tags)
+(require 'treemacs-scope)
 (require 'treemacs-follow-mode)
 (eval-and-compile
   (require 'inline)

@@ -30,6 +30,8 @@
 (eval-when-compile
   (require 'gv))
 
+(declare-function treemacs--all-scopes-and-buffers "treemacs-scope")
+
 (defmacro treemacs-import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS.
 Creates a list of `declare-function' statements."
@@ -325,7 +327,7 @@ not work keep it on the same line."
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer (and its frame)."
   (declare (debug t))
-  `(pcase-dolist (`(,--frame-- . ,--buffer--) treemacs--buffer-access)
+  `(pcase-dolist (`(,--frame-- . ,--buffer--) (treemacs--all-scopes-and-buffers))
      (when (buffer-live-p --buffer--)
        (with-selected-frame --frame--
          (with-current-buffer --buffer--

@@ -29,6 +29,7 @@
 (require 'treemacs-faces)
 (require 'treemacs-core-utils)
 (require 'treemacs-icons)
+(require 'treemacs-scope)
 (require 'treemacs-persistence)
 (require 'treemacs-dom)
 (require 'treemacs-workspaces)
@@ -426,10 +427,7 @@ Will simply return `treemacs--eldoc-msg'."
 
   (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
   (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
-  ;; (add-hook 'after-make-frame-functions #'treemacs--remove-treemacs-window-in-new-frames)
-  (add-to-list 'delete-frame-functions #'treemacs--on-frame-kill)
   (add-hook 'post-command-hook #'treemacs--post-command nil t)
-
 
   (treemacs--build-indentation-cache 6)
   (treemacs--select-icon-set)

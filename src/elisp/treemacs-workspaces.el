@@ -24,8 +24,8 @@
 (require 'dash)
 (require 'ht)
 (require 'treemacs-core-utils)
-(require 'treemacs-visuals)
 (require 'treemacs-dom)
+(require 'treemacs-scope)
 (eval-and-compile
   (require 'inline)
   (require 'treemacs-macros))
@@ -48,6 +48,10 @@
 
 (treemacs-import-functions-from "treemacs-persistence"
   treemacs--persist)
+
+(treemacs-import-functions-from "treemacs-visuals"
+  treemacs--forget-last-highlight
+  treemacs-pulse-on-failure)
 
 (treemacs--defstruct treemacs-project name path path-status)
 

@@ -36,6 +36,7 @@
 (require 'treemacs-visuals)
 (require 'treemacs-rendering)
 (require 'treemacs-core-utils)
+(require 'treemacs-scope)
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-mode)

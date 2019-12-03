@@ -28,6 +28,7 @@
 (require 'treemacs-core-utils)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-rendering)
+(require 'treemacs-scope)
 (require 'treemacs-follow-mode)
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-mouse-interface)
