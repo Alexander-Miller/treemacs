@@ -326,11 +326,10 @@ not work keep it on the same line."
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer (and its frame)."
   (declare (debug t))
-  `(pcase-dolist (`(,--frame-- . ,--buffer--) (treemacs--all-scopes-and-buffers))
+  `(pcase-dolist (`(,_ . ,--buffer--) (treemacs--all-scopes-and-buffers))
      (when (buffer-live-p --buffer--)
-       (with-selected-frame --frame--
-         (with-current-buffer --buffer--
-           ,@body)))))
+       (with-current-buffer --buffer--
+         ,@body))))
 
 (defmacro treemacs--defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.
