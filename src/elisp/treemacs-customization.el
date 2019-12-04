@@ -209,7 +209,7 @@ To keep the alist clean changes should not be made directly, but with
   :type 'regexp
   :group 'treemacs)
 
-(defcustom treemacs-sorting 'alphabetic-desc
+(defcustom treemacs-sorting 'alphabetic-asc
   "Indicates how treemacs will sort its files and directories.
 Files will still always be shown after directories.
 

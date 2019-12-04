@@ -97,53 +97,53 @@ the height of treemacs' icons must be taken into account."
   "Sort F1 and F2 alphabetically asc."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
-    (inline-quote (string-lessp ,f2 ,f1))))
+    (inline-quote (string-lessp ,f1 ,f2))))
 
 (define-inline treemacs--sort-alphabetic-desc (f1 f2)
   "Sort F1 and F2 alphabetically desc."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
-    (inline-quote (string-lessp ,f1 ,f2))))
+    (inline-quote (string-lessp ,f2 ,f1))))
 
 (define-inline treemacs--sort-alphabetic-case-insensitive-asc (f1 f2)
   "Sort F1 and F2 case insensitive alphabetically asc."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
-    (inline-quote (string-lessp (downcase ,f2) (downcase ,f1)))))
+    (inline-quote (string-lessp (downcase ,f1) (downcase ,f2)))))
 
 (define-inline treemacs--sort-alphabetic-case-insensitive-desc (f1 f2)
   "Sort F1 and F2 case insensitive alphabetically desc."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
-    (inline-quote (string-lessp (downcase ,f1) (downcase ,f2)))))
+    (inline-quote (string-lessp (downcase ,f2) (downcase ,f1)))))
 
 (define-inline treemacs--sort-size-asc (f1 f2)
   "Sort F1 and F2 by size asc."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote
-     (>= (nth 7 (file-attributes ,f1))
-         (nth 7 (file-attributes ,f2))))))
+     (< (nth 7 (file-attributes ,f1))
+        (nth 7 (file-attributes ,f2))))))
 
 (define-inline treemacs--sort-size-desc (f1 f2)
   "Sort F1 and F2 by size desc."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote
-     (< (nth 7 (file-attributes ,f1))
-        (nth 7 (file-attributes ,f2))))))
+     (>= (nth 7 (file-attributes ,f1))
+         (nth 7 (file-attributes ,f2))))))
 
 (define-inline treemacs--sort-mod-time-asc (f1 f2)
   "Sort F1 and F2 by modification time asc."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
-    (inline-quote (file-newer-than-file-p ,f1 ,f2))))
+    (inline-quote (file-newer-than-file-p ,f2 ,f1))))
 
 (define-inline treemacs--sort-mod-time-desc (f1 f2)
   "Sort F1 and F2 by modification time desc."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
-    (inline-quote (file-newer-than-file-p ,f2 ,f1))))
+    (inline-quote (file-newer-than-file-p ,f1 ,f2))))
 
 (define-inline treemacs--insert-root-separator ()
   "Insert a root-level separator at point, moving point after the separator."
