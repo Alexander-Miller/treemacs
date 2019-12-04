@@ -151,7 +151,7 @@ Not used directly, but as part of `treemacs-without-messages'.")
 
 (defvar-local treemacs--in-this-buffer nil
   "Non-nil only in buffers meant to show treemacs.
-Used to show an error message if someone mistakenly actives `treemacs-mode'.")
+Used to show an error message if someone mistakenly activates `treemacs-mode'.")
 
 (defvar treemacs--pre-peek-state nil
   "List of window, buffer to restore and buffer to kill treemacs used for peeking.")

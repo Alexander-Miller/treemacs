@@ -386,11 +386,12 @@ Will simply return `treemacs--eldoc-msg'."
 (define-derived-mode treemacs-mode special-mode "Treemacs"
   "A major mode for displaying the file system in a tree layout."
 
-  (setq buffer-read-only    t
-        truncate-lines      t
-        indent-tabs-mode    nil
-        desktop-save-buffer nil
-        window-size-fixed   (when treemacs--width-is-locked 'width))
+  (setq buffer-read-only         t
+        truncate-lines           t
+        indent-tabs-mode         nil
+        desktop-save-buffer      nil
+        window-size-fixed        (when treemacs--width-is-locked 'width)
+        treemacs--in-this-buffer t)
 
   (unless treemacs-show-cursor
     (setq cursor-type nil))
