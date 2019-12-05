@@ -94,10 +94,10 @@
 
 (defun treemacs--create-buffer-for-scope (scope)
   "Create and store a new buffer for the given SCOPE."
-  (setf treemacs--buffer-storage (assoc-delete-all scope treemacs--buffer-storage))
+  (setf treemacs--buffer-storage (--reject-first (equal scope (car it)) treemacs--buffer-storage))
   (let* ((name-suffix (or (treemacs-scope->current-scope-name treemacs--current-scope-type scope)
                           (prin1-to-string scope)))
-         (name (format "%sFramebuffer-%s*" treemacs--buffer-name-prefix name-suffix))
+         (name (format "%sScoped-Buffer-%s*" treemacs--buffer-name-prefix name-suffix))
          (buffer (get-buffer-create name)))
     (push (cons scope buffer) treemacs--buffer-storage)
     buffer))
