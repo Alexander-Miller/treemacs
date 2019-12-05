@@ -1,4 +1,4 @@
-# -*- fill-column: 120 org-list-indent-offset: 1 -*-
+# -*- fill-column: 120 org-list-indent-offset: 1 toc-org-max-depth: 2 -*-
 #+STARTUP: noinlineimages
 
 [[https://gitter.im/treemacs/community][file:https://badges.gitter.im/Alexander-Miller/treemacs.png]]
@@ -16,7 +16,6 @@
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
    - [[#projects-and-workspaces][Projects and Workspaces]]
-      - [[#workspace-selection][Workspace Selection]]
    - [[#conveniently-editing-your-projects-and-workspaces][Conveniently Editing Your Projects and Workspaces]]
    - [[#navigation-without-projects-and-workspaces][Navigation without Projects and Workspaces]]
    - [[#frame-locality][Frame Locality]]
@@ -29,17 +28,11 @@
    - [[#session-persistence][Session Persistence]]
    - [[#terminal-compatibility][Terminal Compatibility]]
    - [[#tag-view][Tag View]]
-      - [[#ggtags][ggtags]]
    - [[#current-directory-awareness][Current-Directory Awareness]]
    - [[#tramp-support][Tramp Support]]
    - [[#org-support][Org Support]]
    - [[#theme-support][Theme Support]]
-      - [[#using-themes][Using Themes]]
    - [[#additional-packages][Additional Packages]]
-      - [[#treemacs-evil][treemacs-evil]]
-      - [[#treemacs-projectile][treemacs-projectile]]
-      - [[#treemacs-magit][treemacs-magit]]
-      - [[#treemacs-icons-dired][treemacs-icons-dired]]
    - [[#treemacs-as-a-framework][Treemacs as a Framework]]
 - [[#installation][Installation]]
 - [[#configuration][Configuration]]
@@ -47,21 +40,9 @@
    - [[#faces][Faces]]
    - [[#evil-compatibility][Evil compatibility]]
    - [[#customizing-themes-and-icons][Customizing Themes and Icons]]
-      - [[#creating-and-modifying-themes][Creating and Modifying Themes]]
-      - [[#custom-icons][Custom Icons]]
-         - [[#icons-according-to-auto-mode-alist][Icons according to ~auto-mode-alist~]]
-         - [[#gui-vs-tui][GUI vs TUI]]
-         - [[#resizing-icons][Resizing Icons]]
-      - [[#indent-guide][Indent guide]]
 - [[#keymap][Keymap]]
    - [[#unbound-functions][Unbound functions]]
    - [[#default-keymaps][Default keymaps]]
-      - [[#project-keybinds-prefix-c-c-c-p][Project Keybinds (Prefix ~C-c C-p~)]]
-      - [[#workspaces-keybinds-prefix-c-c-c-w][Workspaces Keybinds (Prefix ~C-c C-w~)]]
-      - [[#node-visit-keybinds-prefix-o][Node Visit Keybinds (Prefix ~o~)]]
-      - [[#toggle-keybinds-prefix-t][Toggle Keybinds (Prefix ~t~)]]
-      - [[#copy-keybinds-prefix-y][Copy Keybinds (Prefix ~y~)]]
-      - [[#general-keybinds][General Keybinds]]
 - [[#compatibility][Compatibility]]
 - [[#faq][FAQ]]
 - [[#contributing][Contributing]]
@@ -312,7 +293,6 @@ However tramp support has some restrictions: ~treemacs-use-collapsed-directories
 ** Org Support
 Treemacs supports storing links to its file nodes by means of ~org-store-link~.
 ** Theme Support
-*** Using Themes
 Using a different treemacs theme works the same way as using a different Emacs theme: just call ~treemacs-load-theme~,
 either programmatically or interactively. In the former case you need to supply the name of the theme as a string, like
 this:
@@ -324,7 +304,7 @@ this:
 Do keep in mind that by default treemacs' theme support is all theory: the standard installation includes only the
 default theme; this feature is meant to easily allow *others* to extend, create and distribute themes for treemacs.
 
-A detailed explanation on modifying themes and icons can be found in the [[Custom Themes and Icons][Configuration]] section.
+A detailed explanation on modifying themes and icons can be found in the [[Customizing Themes and Icons][Configuration]] section.
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 
