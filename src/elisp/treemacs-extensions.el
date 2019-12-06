@@ -544,7 +544,8 @@ rules apply for QUERY-FUNCTION, RENDER-ACTION and ROOT-KEY-FORM."
   ;; to move it right after the `treemacs-mode' call
   ;; the indicator cannot be created before either since the major-mode activation
   ;; wipes out buffer-local variables' values
-  (-let [treemacs-fringe-indicator-mode nil]
+  (let ((treemacs-fringe-indicator-mode nil)
+        (treemacs--in-this-buffer t))
     (treemacs-mode))
   (when treemacs-fringe-indicator-mode
     (treemacs--enable-fringe-indicator))
