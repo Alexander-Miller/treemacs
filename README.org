@@ -370,11 +370,13 @@ setting. Setting them all yourself is not necessary, they are only listed here t
     (progn
       (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
             treemacs-deferred-git-apply-delay      0.5
+            treemacs-directory-name-transformer    #'identity
             treemacs-display-in-side-window        t
             treemacs-eldoc-display                 t
             treemacs-file-event-delay              5000
             treemacs-file-extension-regex          treemacs-last-period-regex-value
             treemacs-file-follow-delay             0.2
+            treemacs-file-name-transformer         #'identity
             treemacs-follow-after-init             t
             treemacs-git-command-pipe              ""
             treemacs-goto-tag-strategy             'refetch-index
@@ -497,6 +499,8 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-eldoc-display                 | t                                                | Enables eldoc display of the file path at point. Requires ~eldoc-mode~.                                                                                                                                                              |
 | treemacs-bookmark-title-template       | "Treemacs - ${project}: ${label}"                | When using ~bookmark-set~ in Treemacs, the default template for a bookmark label. The following patterns are available: "${project}", "${label}", "${label:N}", ${label-path}", "${label-path:N}", "${file-path}", "${file-path:N}". |
 | treemacs-file-extension-regex          | Text after last period                           | Determines how treemacs detects a file extension. Can be set to use text after first or last period.                                                                                                                                 |
+| treemacs-directory-name-transformer    | identity                                         | Transformer function that is applied to directory names before rendering for any sort of cosmetic effect.                                                                                                                            |
+| treemacs-file-name-transformer         | identity                                         | Transformer function that is applied to file names before rendering for any sort of cosmetic effect.                                                                                                                                 |
 
 ** Faces
 Treemacs defines and uses the following faces:

@@ -554,6 +554,16 @@ missing project will not appear in the project list next time Emacs is started."
   :type 'boolean
   :group 'treemacs)
 
+(defcustom treemacs-directory-name-transformer #'identity
+  "Transformer function that is applied to directory names before rendering for any sort of cosmetic effect."
+  :type 'function
+  :group 'treemacs)
+
+(defcustom treemacs-file-name-transformer #'identity
+  "Transformer function that is applied to file names before rendering for any sort of cosmetic effect."
+  :type 'function
+  :group 'treemacs)
+
 (make-obsolete-variable 'treemacs-follow-recenter-distance 'treemacs-recenter-distance "v2.5")
 (defcustom treemacs-follow-recenter-distance 0.1
   "Minimum distance from the top/bottom for (tag-)follow mode to recenter.

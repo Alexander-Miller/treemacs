@@ -187,7 +187,7 @@ DEPTH indicates how deep in the filetree the current button is."
     (inline-quote
      (list
       ,prefix
-      (propertize (file-name-nondirectory ,path)
+      (propertize (->> ,path file-name-nondirectory (funcall treemacs-directory-name-transformer))
                   'button '(t)
                   'category 'default-button
                   'help-echo nil
@@ -210,7 +210,7 @@ DEPTH indicates how deep in the filetree the current button is."
      (list
       ,prefix
       (treemacs-icon-for-file ,path)
-      (propertize (file-name-nondirectory ,path)
+      (propertize (->> ,path file-name-nondirectory (funcall treemacs-file-name-transformer))
                   'button '(t)
                   'category 'default-button
                   'help-echo nil
