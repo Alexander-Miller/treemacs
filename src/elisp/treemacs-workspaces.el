@@ -603,10 +603,12 @@ PROJECT: Project Struct"
            (goto-char next-pos)
            (unless (treemacs-button-get (treemacs-current-button) :custom)
              (push (treemacs-project-at-point) projects-in-buffer)))))
-     ;; remember which ones are expanded
+     ;; remember which ones are expanded, close them so the dom position can be rebuilt
      (dolist (project-in-buffer projects-in-buffer)
-       (when (eq 'root-node-open (-> project-in-buffer (treemacs-project->position) (treemacs-button-get :state)))
-         (push project-in-buffer expanded-projects-in-buffer)))
+       (-let [project-btn (treemacs-project->position project-in-buffer)]
+         (when (eq 'root-node-open (treemacs-button-get project-btn :state))
+           (push project-in-buffer expanded-projects-in-buffer)
+           (treemacs--collapse-root-node project-btn))))
      ;; figure out which ones have been deleted and and remove them from the dom
      (dolist (project-in-buffer projects-in-buffer)
        (unless (--first (treemacs-is-path (treemacs-project->path project-in-buffer)
@@ -614,7 +616,7 @@ PROJECT: Project Struct"
                                           (treemacs-project->path it))
                         projects-in-workspace)
          (treemacs-on-collapse (treemacs-project->path project-in-buffer) :purge)
-         (setq projects-in-buffer (delete project-in-buffer projects-in-buffer))))
+         (setf projects-in-buffer (delete project-in-buffer projects-in-buffer))))
      (treemacs-with-writable-buffer
       (treemacs--forget-last-highlight)
       ;; delete everything's that's visible and render it again - the order of projects could
