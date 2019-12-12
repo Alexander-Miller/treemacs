@@ -13,6 +13,7 @@
 
 * Content                                                                            :TOC:noexport:
 - [[#quick-feature-overview][Quick Feature Overview]]
+   - [[#fancy-gifs][Fancy Gifs!]]
 - [[#quick-start][Quick Start]]
 - [[#detailed-feature-list][Detailed Feature List]]
    - [[#projects-and-workspaces][Projects and Workspaces]]
@@ -84,6 +85,26 @@ overview looks as follows:
    More on both below. You can also summon a helpful hydra with ~?~ that will remind you of treemacs' many keybindings
    and features.
  * Bookmark integration :: Running ~bookmark-set~ on a Treemacs item will store a bookmark to Treemacs buffer for that item.
+
+** Fancy Gifs!
+
+Various ways to open files:
+[[file:screenshots/open-files.gif]]
+
+Workspace administration with org-mode:
+[[file:screenshots/workspace-edit.gif]]
+
+Automatic reaction to changes in the file system:
+[[file:screenshots/filewatch.gif]]
+
+Automatic reaction to changes in git:
+[[file:screenshots/git.gif]]
+
+Full-featured mouse interface:
+[[file:screenshots/mouse-interface.gif]]
+
+Resizable icons:
+[[file:screenshots/icon-resize.gif]]
 
 * Quick Start
 If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
