@@ -325,7 +325,7 @@ this:
 Do keep in mind that by default treemacs' theme support is all theory: the standard installation includes only the
 default theme; this feature is meant to easily allow *others* to extend, create and distribute themes for treemacs.
 
-A detailed explanation on modifying themes and icons can be found in the [[Customizing Themes and Icons][Configuration]] section.
+A detailed explanation on modifying themes and icons can be found in the [[#customizing-themes-and-icons][Configuration]] section.
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 
