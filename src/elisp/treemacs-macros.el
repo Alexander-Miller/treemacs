@@ -30,7 +30,7 @@
 (eval-when-compile
   (require 'gv))
 
-(declare-function treemacs--all-scopes-and-buffers "treemacs-scope")
+(declare-function treemacs--scope-store "treemacs-scope")
 
 (defmacro treemacs-import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS.
@@ -326,10 +326,11 @@ not work keep it on the same line."
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer (and its frame)."
   (declare (debug t))
-  `(pcase-dolist (`(,_ . ,--buffer--) (treemacs--all-scopes-and-buffers))
-     (when (buffer-live-p --buffer--)
-       (with-current-buffer --buffer--
-         ,@body))))
+  `(pcase-dolist (`(,_ . ,shelf) (treemacs--scope-store))
+     (-let [buffer (treemacs-scope-shelf->buffer shelf)]
+       (when (buffer-live-p buffer)
+         (with-current-buffer buffer
+           ,@body)))))
 
 (defmacro treemacs--defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.

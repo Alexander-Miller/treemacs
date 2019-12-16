@@ -94,8 +94,14 @@ not buffer-local values.
 This function can be used with `setf'."
   (declare (side-effect-free t))
   (inline-quote
-   (frame-parameter (selected-frame) 'treemacs-workspace)))
-(gv-define-setter treemacs-current-workspace (val) `(set-frame-parameter (selected-frame) 'treemacs-workspace ,val))
+   (-when-let (shelf (treemacs-current-scope-shelf))
+     (treemacs-scope-shelf->workspace shelf))))
+(gv-define-setter treemacs-current-workspace (val)
+  `(let ((shelf (treemacs-current-scope-shelf)))
+     (unless shelf
+       (setf shelf (make-treemacs-scope-shelf))
+       (push (cons (treemacs-current-scope) shelf) treemacs--buffer-storage))
+     (setf (treemacs-scope-shelf->workspace shelf) ,val)))
 
 (define-inline treemacs--find-workspace (&optional path)
   "Find the right workspace the given PATH.
@@ -107,7 +113,7 @@ PATH: String"
      (setf (treemacs-current-workspace)
            (or (--first (treemacs-is-path ,path :in-workspace it)
                         treemacs--workspaces)
-            (car treemacs--workspaces))))))
+               (car treemacs--workspaces))))))
 
 (define-inline treemacs--find-project-for-buffer (&optional buffer-file)
   "In the current workspace find the project current buffer's file falls under.

@@ -49,10 +49,11 @@
   treemacs-get-local-window
   treemacs-get-local-buffer
   treemacs-get-local-buffer-create
+  treemacs-scope-shelf->buffer
   treemacs-current-visibility
   treemacs--select-visible-window
   treemacs--remove-buffer-after-kill
-  treemacs--all-scopes-and-buffers)
+  treemacs--scope-store)
 
 (treemacs-import-functions-from "treemacs-rendering"
   treemacs-do-delete-single-node

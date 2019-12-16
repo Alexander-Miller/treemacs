@@ -1149,6 +1149,24 @@ absolute path of the node (if it is present)."
         (message "%s" (pfuture-callback-output))
         (kill-buffer buffer)))))
 
+(defun treemacs-select-buffer-scope ()
+  "Select the scope for treemacs buffers.
+The default (and only) option is scoping by frame, which means that every Emacs
+frame (and only an Emacs frame) will have its own unique treemacs buffer.
+Additional scope types can be enbaled by installing the appropriate package.
+
+The following packages offer additional scope types:
+ * treemacs-persp"
+  (interactive)
+  (let* ((selection (completing-read "Select Treemacs Scope: " treemacs--scope-types))
+         (new-scope-type (cdr (assoc selection treemacs--scope-types))))
+    (if (eq new-scope-type treemacs--current-scope-type)
+        (treemacs-log "New scope type is same as old, nothing has changed.")
+      (setf treemacs--current-scope-type new-scope-type)
+      (treemacs--on-scope-type-change)
+      (treemacs-log "Scope of type %s is now in effect."
+        (propertize selection 'face 'font-lock-type-face)))))
+
 (provide 'treemacs-interface)
 
 ;;; treemacs-interface.el ends here
