@@ -127,7 +127,7 @@ Use either the given SCOPE or `treemacs-current-scope' otherwise."
   ;; to remove it from the filewatch list
   (treemacs--stop-filewatch-for-current-buffer)
   (treemacs--tear-down-icon-highlight)
-  (-let [shelf (treemacs-current-scope-shelf)]
+  (-when-let (shelf (treemacs-current-scope-shelf))
     (setf (treemacs-scope-shelf->buffer shelf) nil)))
 
 (defun treemacs--on-scope-kill (scope)
