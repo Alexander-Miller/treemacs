@@ -64,7 +64,7 @@
 
 (defun treemacs--update-icon-selection ()
   "Highlight current icon, unhighlight `treemacs--last-highlight'."
-  (when (eq major-mode 'treemacs-mode)
+  (when treemacs--in-this-buffer
     (condition-case e
         (progn
           (when treemacs-fringe-indicator-mode

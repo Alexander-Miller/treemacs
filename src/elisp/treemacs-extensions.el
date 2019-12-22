@@ -547,8 +547,6 @@ rules apply for QUERY-FUNCTION, RENDER-ACTION and ROOT-KEY-FORM."
   (let ((treemacs-fringe-indicator-mode nil)
         (treemacs--in-this-buffer t))
     (treemacs-mode))
-  (when treemacs-fringe-indicator-mode
-    (treemacs--enable-fringe-indicator))
   (setq-local treemacs--in-this-buffer :extension))
 
 (provide 'treemacs-extensions)

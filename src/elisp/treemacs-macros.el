@@ -324,13 +324,23 @@ not work keep it on the same line."
       ,@final-form)))
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
-  "Run BODY once locally in every treemacs buffer (and its frame)."
+  "Run BODY once locally in every treemacs buffer.
+Only includes treemacs filetree buffers, not extensions."
   (declare (debug t))
   `(pcase-dolist (`(,_ . ,shelf) (treemacs--scope-store))
      (-let [buffer (treemacs-scope-shelf->buffer shelf)]
        (when (buffer-live-p buffer)
          (with-current-buffer buffer
            ,@body)))))
+
+(defmacro treemacs-run-in-all-derived-buffers (&rest body)
+  "Run BODY once locally in every treemacs buffer.
+Inluceds *all* treemacs-mode-derived buffers, including extensions."
+  (declare (debug t))
+  `(dolist (buffer (buffer-list))
+     (when (buffer-local-value 'treemacs--in-this-buffer buffer)
+       (with-current-buffer buffer
+         ,@body))))
 
 (defmacro treemacs--defstruct (name &rest properties)
   "Define a struct with NAME and PROPERTIES.

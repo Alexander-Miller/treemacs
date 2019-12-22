@@ -33,8 +33,9 @@
 (define-inline treemacs--move-fringe-indicator-to-point ()
   "Move the fringe indicator to the position of point."
   (inline-quote
-   (-let [pabol (point-at-bol)]
-     (move-overlay treemacs--fringe-indicator-overlay pabol  (1+ pabol)))))
+   (when treemacs--fringe-indicator-overlay
+     (-let [pabol (point-at-bol)]
+       (move-overlay treemacs--fringe-indicator-overlay pabol  (1+ pabol))))))
 
 (defun treemacs--enable-fringe-indicator ()
   "Enabled the fringe indicator in the current buffer."
@@ -45,20 +46,22 @@
                                (propertize " " 'display '(left-fringe
                                                           treemacs--fringe-indicator-bitmap
                                                           treemacs-fringe-indicator-face)))
-                  ov))))
+                  ov))
+    (treemacs--move-fringe-indicator-to-point)))
 
 (defun treemacs--disable-fringe-indicator ()
   "Enabled the fringe indicator in the current buffer."
   (when treemacs--fringe-indicator-overlay
-    (delete-overlay treemacs--fringe-indicator-overlay)))
+    (delete-overlay treemacs--fringe-indicator-overlay)
+    (setf treemacs--fringe-indicator-overlay nil)))
 
 (defun treemacs--setup-fringe-indicator-mode ()
   "Setup `treemacs-fringe-indicator-mode'."
-  (treemacs-run-in-every-buffer (treemacs--enable-fringe-indicator)))
+  (treemacs-run-in-all-derived-buffers (treemacs--enable-fringe-indicator)))
 
 (defun treemacs--tear-down-fringe-indicator-mode ()
   "Tear down `treemacs-fringe-indicator-mode'."
-  (treemacs-run-in-every-buffer (treemacs--disable-fringe-indicator)))
+  (treemacs-run-in-all-derived-buffers (treemacs--disable-fringe-indicator)))
 
 (define-minor-mode treemacs-fringe-indicator-mode
   "Toggle `treemacs-fringe-indicator-mode'.

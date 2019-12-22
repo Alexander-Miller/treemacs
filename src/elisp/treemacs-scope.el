@@ -127,6 +127,7 @@ Use either the given SCOPE or `treemacs-current-scope' otherwise."
   ;; to remove it from the filewatch list
   (treemacs--stop-filewatch-for-current-buffer)
   (treemacs--tear-down-icon-highlight)
+  ;; not present for extension buffers
   (-when-let (shelf (treemacs-current-scope-shelf))
     (setf (treemacs-scope-shelf->buffer shelf) nil)))
 
@@ -138,7 +139,7 @@ Use either the given SCOPE or `treemacs-current-scope' otherwise."
 
 (defun treemacs--create-buffer-for-scope (scope)
   "Create and store a new buffer for the given SCOPE."
-  (-let [shelf (treemacs-current-scope-shelf scope) value]
+  (-let [shelf (treemacs-current-scope-shelf scope)]
     (unless shelf
       (setf shelf (make-treemacs-scope-shelf))
       (push (cons scope shelf) treemacs--buffer-storage)

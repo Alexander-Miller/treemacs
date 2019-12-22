@@ -346,7 +346,7 @@ With a prefix ARG call `treemacs-kill-buffer' instead."
 (defun treemacs-kill-buffer ()
   "Kill the treemacs buffer."
   (interactive)
-  (when (eq 'treemacs-mode major-mode)
+  (when treemacs--in-this-buffer
     ;; teardown logic handled in kill hook
     (if (one-window-p)
         (kill-this-buffer)
