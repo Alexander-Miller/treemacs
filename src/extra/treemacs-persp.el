@@ -27,6 +27,7 @@
 
 (require 'treemacs)
 (require 'persp-mode)
+(require 'eieio)
 
 (defclass treemacs-persp-scope (treemacs-scope) () :abstract t)
 (add-to-list 'treemacs--scope-types (cons "Perpsectives" 'treemacs-persp-scope))
