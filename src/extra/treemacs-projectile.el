@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((projectile "0.14.0") (treemacs "0.0"))
+;; Package-Requires: ((emacs "25.2") (projectile "0.14.0") (treemacs "0.0"))
 ;; Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
@@ -74,7 +74,19 @@ the current dir."
   (declare (side-effect-free t))
   (-some-> (projectile-project-root) (file-truename) (treemacs--canonical-path)))
 
+(defun treemacs-projectile--add-file-to-projectile-cache (path)
+  "Add created file PATH to projectile's cache."
+  (let ((file-buffer (get-file-buffer path))
+        (kill? nil))
+    (unless file-buffer
+      (setf file-buffer (create-file-buffer path)
+            kill? t))
+    (with-current-buffer file-buffer
+      (projectile-find-file-hook-function))
+    (when kill? (kill-buffer file-buffer))))
+
 (add-to-list 'treemacs--find-user-project-functions #'treemacs--projectile-current-user-project-function)
+(add-hook 'treemacs-create-file-functions #'treemacs-projectile--add-file-to-projectile-cache)
 
 (provide 'treemacs-projectile)
 

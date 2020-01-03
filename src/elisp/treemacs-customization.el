@@ -726,6 +726,13 @@ Will be called with the new project as the sole argument."
   :type 'hook
   :group 'treemacs-hooks)
 
+(defcustom treemacs-create-file-functions nil
+  "Hooks to run whenever a file or directory is created.
+Applies only when using `treemacs-create-file' or `treemacs-create-dir'.
+Will be called with the created file's or dir's path as the sole argument."
+  :type 'hook
+  :group 'treemacs-hooks)
+
 (defcustom treemacs-delete-project-functions nil
   "Hooks to run whenever a project is deleted.
 Will be called with the deleted project as the sole argument *after* it has been
