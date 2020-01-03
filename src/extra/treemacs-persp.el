@@ -1,4 +1,4 @@
-;;; treemacs-persp.el --- Magit integration for treemacs -*- lexical-binding: t -*-
+;;; treemacs-persp.el --- Persp-mode integration for treemacs -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019 Alexander Miller
 
