@@ -79,7 +79,7 @@ the current dir."
   (let ((file-buffer (get-file-buffer path))
         (kill? nil))
     (unless file-buffer
-      (setf file-buffer (create-file-buffer path)
+      (setf file-buffer (find-file-noselect path)
             kill? t))
     (with-current-buffer file-buffer
       (projectile-find-file-hook-function))
