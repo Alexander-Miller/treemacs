@@ -127,6 +127,7 @@ This will make sure the icons' background colors will align with hl-line mode."
   :global     t
   (if treemacs-icons-dired-mode
       (progn
+        (treemacs--setup-icon-background-colors)
         (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
         (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
         (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
