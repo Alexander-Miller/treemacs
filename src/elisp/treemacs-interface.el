@@ -709,7 +709,7 @@ auto-selected name already exists."
       (setf name default-name)))
   (pcase (treemacs-do-add-project-to-workspace path name)
     (`(success ,project)
-     (treemacs-pulse-on-success "Added project %s to the workspace."
+     (treemacs-pulse-on-success "Added project '%s' to the workspace."
        (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))
     (`(invalid-path ,reason)
      (treemacs-pulse-on-failure (concat "Path '%s' is invalid: %s")
@@ -720,8 +720,13 @@ auto-selected name already exists."
        (propertize name 'face 'font-lock-string-face)))
     (`(duplicate-project ,duplicate)
      (goto-char (treemacs-project->position duplicate))
-     (treemacs-pulse-on-success "A project for %s already exists."
+     (treemacs-pulse-on-failure "A project for '%s' already exists. Projects may not overlap."
        (propertize (treemacs-project->path duplicate) 'face 'font-lock-string-face)))
+    (`(includes-project ,project)
+     (goto-char (treemacs-project->position project))
+     (treemacs-pulse-on-failure "Project '%s' is included in '%s'. Projects May not overlap."
+       (propertize (treemacs-project->name project) 'face 'font-lock-type-face)
+       (propertize path 'face 'font-lock-string-face)))
     (`(duplicate-name ,duplicate)
      (goto-char (treemacs-project->position duplicate))
      (treemacs-pulse-on-failure "A project with the name %s already exists."

@@ -402,6 +402,9 @@ Return values may be as follows:
 * If the project for the given path already exists:
   - the symbol `duplicate-project'
   - the project the PATH falls into
+* If a project under given path already exists:
+  - the symbol `includes-project'
+  - the project the PATH contains
 * If a project for the given name already exists:
   - the symbol `duplicate-name'
   - the project with the duplicate name
@@ -423,6 +426,9 @@ NAME: String"
      (setq path (-> path (file-truename) (treemacs--canonical-path)))
      (-when-let (project (treemacs--find-project-for-path path))
        (treemacs-return `(duplicate-project ,project)))
+     (-when-let (project (--first (treemacs-is-path (treemacs-project->path it) :in path)
+                                  (treemacs-workspace->projects (treemacs-current-workspace))))
+       (treemacs-return `(includes-project ,project)))
      (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
             (project (make-treemacs-project :name name :path path :path-status path-status)))
        (treemacs-return-if (treemacs--is-name-invalid? name)
