@@ -270,6 +270,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "cpp.png"         :extensions ("cpp" "cxx" "hpp" "tpp" "cc" "hh"))
     (treemacs-create-icon :file "haskell.png"     :extensions ("hs" "lhs"))
     (treemacs-create-icon :file "cabal.png"       :extensions ("cabal"))
+    (treemacs-create-icon :file "lock.png"        :extensions ("lock"))
     (treemacs-create-icon :file "python.png"      :extensions ("py" "pyc"))
     (treemacs-create-icon :file "markdown.png"    :extensions ("md"))
     (treemacs-create-icon :file "asciidoc.png"    :extensions ("adoc" "asciidoc"))
