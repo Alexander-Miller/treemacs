@@ -298,6 +298,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "elx.png"         :extensions ("ex"))
     (treemacs-create-icon :file "elx-light.png"   :extensions ("exs" "eex"))
     (treemacs-create-icon :file "ocaml.png"       :extensions ("ml" "mli"))
+    (treemacs-create-icon :file "direnv.png"      :extensions ("envrc"))
     (treemacs-create-icon :file "puppet.png"      :extensions ("pp"))
     (treemacs-create-icon :file "docker.png"      :extensions ("dockerfile"))
     (treemacs-create-icon :file "vagrant.png"     :extensions ("vagrantfile"))
