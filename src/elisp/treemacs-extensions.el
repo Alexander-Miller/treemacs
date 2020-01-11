@@ -205,7 +205,6 @@ node for quick retrieval later."
                        'button '(t)
                        'category 'default-button
                        ,@(when face `((quote face) ,face))
-                       'help-echo nil
                        :custom t
                        :state ,state
                        :parent node
