@@ -249,15 +249,15 @@ Necessary since root icons are not rectangular."
   :config
   (progn
     ;; directory and other icons
-    (treemacs-create-icon :file "root.png"        :extensions (root)       :fallback "")
-    (treemacs-create-icon :file "dir-closed.png"  :extensions (dir-closed) :fallback (propertize "+ " 'face 'treemacs-term-node-face))
-    (treemacs-create-icon :file "dir-open.png"    :extensions (dir-open)   :fallback (propertize "- " 'face 'treemacs-term-node-face))
-    (treemacs-create-icon :file "tags-leaf.png"   :extensions (tag-leaf)   :fallback (propertize "• " 'face 'font-lock-constant-face))
-    (treemacs-create-icon :file "tags-open.png"   :extensions (tag-open)   :fallback (propertize "▸ " 'face 'font-lock-string-face))
-    (treemacs-create-icon :file "tags-closed.png" :extensions (tag-closed) :fallback (propertize "▾ " 'face 'font-lock-string-face))
-    (treemacs-create-icon :file "error.png"       :extensions (error)      :fallback (propertize "• " 'face 'font-lock-string-face))
-    (treemacs-create-icon :file "warning.png"     :extensions (warning)    :fallback (propertize "• " 'face 'font-lock-string-face))
-    (treemacs-create-icon :file "info.png"        :extensions (info)       :fallback (propertize "• " 'face 'font-lock-string-face))
+    (treemacs-create-icon :file "vsc/root-closed.png" :extensions (root)       :fallback "")
+    (treemacs-create-icon :file "vsc/dir-closed.png"  :extensions (dir-closed) :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-open.png"    :extensions (dir-open)   :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "tags-leaf.png"       :extensions (tag-leaf)   :fallback (propertize "• " 'face 'font-lock-constant-face))
+    (treemacs-create-icon :file "tags-open.png"       :extensions (tag-open)   :fallback (propertize "▸ " 'face 'font-lock-string-face))
+    (treemacs-create-icon :file "tags-closed.png"     :extensions (tag-closed) :fallback (propertize "▾ " 'face 'font-lock-string-face))
+    (treemacs-create-icon :file "error.png"           :extensions (error)      :fallback (propertize "• " 'face 'font-lock-string-face))
+    (treemacs-create-icon :file "warning.png"         :extensions (warning)    :fallback (propertize "• " 'face 'font-lock-string-face))
+    (treemacs-create-icon :file "info.png"            :extensions (info)       :fallback (propertize "• " 'face 'font-lock-string-face))
 
     ;; ;; file icons
     (treemacs-create-icon :file "txt.png"         :extensions (fallback))
