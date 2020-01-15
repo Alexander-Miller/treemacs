@@ -138,20 +138,21 @@ An event counts as relevant when
   (declare (side-effect-free t))
   (inline-letevals (event)
     (inline-quote
-     (let* ((action   (cl-second ,event))
-            (dir      (cl-third ,event))
-            (filename (treemacs--filename dir)))
-       (not (or (eq action 'stopped)
-                (and (eq action 'changed)
-                     (not treemacs-git-mode))
-                (--any? (funcall it filename dir) treemacs-ignored-file-predicates)))))))
+     (when (with-no-warnings treemacs-filewatch-mode)
+       (let ((action (cl-second ,event)))
+         (not (or (eq action 'stopped)
+                  (and (eq action 'changed)
+                       (not treemacs-git-mode))
+                  (let* ((dir (cl-third ,event))
+                         (filename (treemacs--filename dir)))
+                    (--any? (funcall it filename dir) treemacs-ignored-file-predicates)))))))))
 
 (define-inline treemacs--set-refresh-flags (location type path)
   "Set refresh flags at LOCATION for TYPE and PATH in the dom of every buffer.
 Also start the refresh timer if it's not started already."
   (inline-letevals (location type path)
     (inline-quote
-     (when (with-no-warnings treemacs-filewatch-mode)
+     (progn
        (when (ht-get treemacs--collapsed-filewatch-index ,path)
          (ht-remove! treemacs--collapsed-filewatch-index ,path)
          (treemacs--stop-watching ,path))
