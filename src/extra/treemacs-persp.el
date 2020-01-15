@@ -30,7 +30,7 @@
 (require 'eieio)
 
 (defclass treemacs-persp-scope (treemacs-scope) () :abstract t)
-(add-to-list 'treemacs--scope-types (cons "Perpsectives" 'treemacs-persp-scope))
+(add-to-list 'treemacs-scope-types (cons 'Perspectives 'treemacs-persp-scope))
 
 (cl-defmethod treemacs-scope->current-scope ((_ (subclass treemacs-persp-scope)))
   (or (get-current-persp) 'none))

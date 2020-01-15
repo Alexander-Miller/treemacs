@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'dash)
 (require 'eieio)
 (require 'treemacs-core-utils)
@@ -48,16 +49,7 @@
 
 (treemacs--defstruct treemacs-scope-shelf buffer workspace)
 
-(define-inline treemacs-scope-shelf->kill-buffer (self)
-  "Kill the buffer stored in SELF."
-  (inline-letevals (self)
-    (inline-quote
-     (progn
-       (let ((buffer (treemacs-scope-shelf->buffer ,self)))
-         (when (buffer-live-p buffer) (kill-buffer buffer)))
-       (setf (treemacs-scope-shelf->buffer ,self) nil)))))
-
-(defvar treemacs--scope-types (list (cons "Frames" 'treemacs-frame-scope))
+(defvar treemacs-scope-types (list (cons 'Frames 'treemacs-frame-scope))
   "List of all known scope types.
 The car is the name seen in interactive selection. The cdr is the eieio class
 name.")
@@ -68,6 +60,15 @@ name.")
 (defvar treemacs--buffer-storage nil
   "Alist of all active scopes mapped to their buffers & workspaces.
 The car is the scope, the cdr is a `treemacs-scope-shelf'.")
+
+(define-inline treemacs-scope-shelf->kill-buffer (self)
+  "Kill the buffer stored in SELF."
+  (inline-letevals (self)
+    (inline-quote
+     (progn
+       (let ((buffer (treemacs-scope-shelf->buffer ,self)))
+         (when (buffer-live-p buffer) (kill-buffer buffer)))
+       (setf (treemacs-scope-shelf->buffer ,self) nil)))))
 
 (define-inline treemacs--scope-store ()
   "Return `treemacs--buffer-storage'."
@@ -121,6 +122,32 @@ Use either the given SCOPE or `treemacs-current-scope' otherwise."
 (cl-defmethod treemacs-scope->cleanup ((_ (subclass treemacs-frame-scope)))
   (remove-hook 'delete-frame-functions #'treemacs--on-scope-kill))
 
+(defun treemacs-set-scope-type (new-scope-type)
+  "Set a NEW-SCOPE-TYPE for treemacs buffers.
+Valid values for TYPE are the `car's of the elements of `treemacs-scope-types'.
+
+This is meant for programmatic use. For an interactive selection see
+`treemacs-select-buffer-scope-type'."
+  (-let [class (alist-get new-scope-type treemacs-scope-types)]
+    (unless class (user-error "'%s' is not a valid scope new-scope-type. Valid types are: %s"
+                              new-scope-type
+                              (-map #'car treemacs-scope-types)))
+    (treemacs--do-set-scope-type class)))
+
+(defun treemacs--do-set-scope-type (new-scope-type)
+  "Set NEW-SCOPE-TYPE as the scope managing class.
+Kill all treemacs buffers and windows and reset the buffer store.
+
+NEW-SCOPE-TYPE: T: treemacs-scope"
+  (setf treemacs--current-scope-type new-scope-type)
+  (dolist (frame (frame-list))
+    (dolist (window (window-list frame))
+      (when (treemacs-is-treemacs-window? window)
+        (delete-window window))))
+  (dolist (it treemacs--buffer-storage)
+    (treemacs-scope-shelf->kill-buffer (cdr it)))
+  (setf treemacs--buffer-storage nil))
+
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
   ;; stop watch must come first since we need a reference to the killed buffer
@@ -159,16 +186,6 @@ Use either the given SCOPE or `treemacs-current-scope' otherwise."
       (with-selected-window it
         (treemacs-quit))
       (treemacs-select-window))))
-
-(defun treemacs--on-scope-type-change ()
-  "Purge the buffer storage after the active scope type was changed."
-  (dolist (frame (frame-list))
-    (dolist (window (window-list frame))
-      (when (treemacs-is-treemacs-window? window)
-        (delete-window window))))
-  (dolist (it treemacs--buffer-storage)
-    (treemacs-scope-shelf->kill-buffer (cdr it)))
-  (setf treemacs--buffer-storage nil))
 
 (defun treemacs--select-visible-window ()
   "Switch to treemacs buffer, given that it is currently visible."
