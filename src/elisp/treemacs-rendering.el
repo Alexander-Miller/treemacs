@@ -709,8 +709,9 @@ Remove DOM-NODE from the dom if the entire line was deleted.
 Btn: Button
 DELETED-PATH: File Path
 DOM-NODE: Dom Node"
-  (let ((key (treemacs-button-get btn :key))
-        (curr-collapse-steps (cdr (treemacs-button-get btn :collapsed))))
+  (let* ((key (treemacs-button-get btn :key))
+         (coll-status (treemacs-button-get btn :collapsed))
+         (curr-collapse-steps (cdr coll-status)))
     (if (string= deleted-path key)
         (progn
           ;; remove full dom entry if entire line was deleted
@@ -721,13 +722,14 @@ DOM-NODE: Dom Node"
              (new-path (treemacs--parent deleted-path))
              (delete-offset (- (length path) (length new-path)))
              (new-label (substring new-path (length key)))
+             (old-coll-count (car coll-status))
              (new-coll-count (length (cdr (f-split new-label)))))
         (treemacs-button-put btn :path new-path)
         (end-of-line)
         ;; delete just enough to get rid of the deleted dirs
         (delete-region (- (point) delete-offset) (point))
         ;; then remove the deleted directories from the dom
-        (-let [removed-collapse-keys (last curr-collapse-steps (1+ new-coll-count))]
+        (-let [removed-collapse-keys (last curr-collapse-steps (- old-coll-count new-coll-count))]
           (treemacs-dom-node->remove-collapse-keys! dom-node removed-collapse-keys)
           (-each removed-collapse-keys #'treemacs--stop-watching))
         ;; and update inline collpase info
