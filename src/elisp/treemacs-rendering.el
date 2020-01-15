@@ -264,8 +264,8 @@ NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
            (push it strings))))
      (nreverse strings)))
 
-(defun treemacs--collapse-dirs (dirs)
-  "Display DIRS as collpased.
+(defun treemacs--flatten-dirs (dirs)
+  "Display DIRS as flattened.
 Go to each dir button, expand its label with the collapsed dirs, set its new
 path and give it a special parent-path property so opening it will add the
 correct cache entries.
@@ -457,7 +457,7 @@ set to PARENT."
          (insert (apply #'concat file-strings))
 
          (save-excursion
-           (treemacs--collapse-dirs (treemacs--parse-collapsed-dirs ,collapse-process))
+           (treemacs--flatten-dirs (treemacs--parse-collapsed-dirs ,collapse-process))
            (treemacs--reentry ,root ,git-future))
          (point-at-eol))))))
 
