@@ -340,6 +340,9 @@ will inform treemacs about (un)staging of files and commits happening in magit.
 *** treemacs-icons-dired
 Allows you to use treemacs icons in dired buffers with ~treemacs-icons-dired-mode~:
 [[file:screenshots/dired-icons.png]]
+*** treemacs-persp
+Integration with persp-mode that allows treemacs buffers to be unique inside the active perspective instead of the
+default frame-based buffer scope.
 ** Treemacs as a Framework
 Treemacs can be extended to display arbitrary nodes as well as be used as a general rendering backend for any tree-like
 structures. [[file:Extensions.org][See here]] for an extended tutorial and demonstration.
@@ -443,6 +446,11 @@ setting. Setting them all yourself is not necessary, they are only listed here t
   (use-package treemacs-magit
     :after treemacs magit
     :ensure t)
+
+  (use-package treemacs-persp
+    :after treemacs persp-mode
+    :ensure t
+    :config (treemacs-set-scope-type 'Perspectives))
 #+END_SRC
 
 * Configuration
@@ -654,6 +662,7 @@ These functions are not bound to any keys by default. It's left up to users to f
 |------------------------------------------+----------------------------------------------------------------------------|
 | treemacs-projectile                      | Add a project from projectile to treemacs.                                 |
 | treemacs-add-and-display-current-project | Add current project to treemacs and open it.                               |
+| treemacs-select-scope-type               | Select the scope of treemacs buffers in which they are unique              |
 
 ** Default keymaps
 
