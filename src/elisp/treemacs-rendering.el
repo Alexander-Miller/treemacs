@@ -908,9 +908,11 @@ WHEN can take the following values:
 
 (defun treemacs--recursive-refresh ()
   "Recursively descend the dom, updating only the refresh-marked nodes."
-  (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
-    (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
-      (treemacs--recursive-refresh-descent root-node project))))
+  (pcase-dolist (`(,_ . ,shelf) treemacs--buffer-storage)
+    (-let [workspace (treemacs-scope-shelf->workspace shelf)]
+      (dolist (project (treemacs-workspace->projects workspace))
+        (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
+          (treemacs--recursive-refresh-descent root-node project))))))
 
 (defun treemacs--recursive-refresh-descent (node project)
   "The recursive descent implementation of `treemacs--recursive-refresh'.

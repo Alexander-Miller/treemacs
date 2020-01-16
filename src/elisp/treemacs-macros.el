@@ -325,13 +325,17 @@ not work keep it on the same line."
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer.
-Only includes treemacs filetree buffers, not extensions."
+Only includes treemacs filetree buffers, not extensions.
+Sets `treemacs-override-workspace' so calls to `treemacs-current-workspace'
+return the workspace of the active treemacs buffer."
   (declare (debug t))
   `(pcase-dolist (`(,_ . ,shelf) (treemacs--scope-store))
-     (-let [buffer (treemacs-scope-shelf->buffer shelf)]
+     (let ((buffer (treemacs-scope-shelf->buffer shelf))
+           (workspace (treemacs-scope-shelf->workspace shelf)))
        (when (buffer-live-p buffer)
-         (with-current-buffer buffer
-           ,@body)))))
+         (-let [treemacs-override-workspace workspace]
+           (with-current-buffer buffer
+             ,@body))))))
 
 (defmacro treemacs-run-in-all-derived-buffers (&rest body)
   "Run BODY once locally in every treemacs buffer.

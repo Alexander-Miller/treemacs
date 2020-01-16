@@ -70,6 +70,12 @@
 (defvar-local treemacs--project-of-buffer nil
   "The project that the current buffer falls under, if any.")
 
+(defvar treemacs-override-workspace nil
+  "Used to override the return value of `treemacs-current-workspace'.
+Used by `treemacs-run-in-every-buffer' to make sure all workspace-related
+functions can be used since make functions (like `treemacs-find-file-node')
+rely on the current buffer and workspace being aligned.")
+
 (define-inline treemacs--invalidate-buffer-project-cache ()
   "Set all buffers' `treemacs--project-of-buffer' to nil.
 To be called whenever a project or workspace changes."
@@ -89,13 +95,16 @@ To be called whenever a project or workspace changes."
 
 (define-inline treemacs-current-workspace ()
   "Get the current workspace.
-Workspaces are local to frames and are therefore stored as frame parameters and
-not buffer-local values.
+The return value can be overriden by let-binding `treemacs-override-workspace'.
+This will happen when using `treemacs-run-in-every-buffer' to make sure that
+this function returns the right workspace for the iterated-over buffers.
+
 This function can be used with `setf'."
   (declare (side-effect-free t))
   (inline-quote
-   (-when-let (shelf (treemacs-current-scope-shelf))
-     (treemacs-scope-shelf->workspace shelf))))
+   (or treemacs-override-workspace
+       (-when-let (shelf (treemacs-current-scope-shelf))
+         (treemacs-scope-shelf->workspace shelf)))))
 (gv-define-setter treemacs-current-workspace (val)
   `(let ((shelf (treemacs-current-scope-shelf)))
      (unless shelf
