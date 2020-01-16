@@ -365,36 +365,36 @@ will instead be wiped irreversibly."
      (treemacs-error-return-if (not (memq (treemacs-button-get btn :state)
                                           '(file-node-open file-node-closed dir-node-open dir-node-closed)))
        "Only files and directories can be deleted.")
-     (let* ((delete-by-moving-to-trash (not arg))
-            (path (treemacs-button-get btn :path))
-            (file-name (propertize (treemacs--filename path) 'face 'font-lock-string-face)))
-       (cond
-        ((f-symlink? path)
-         (when (yes-or-no-p (format "Remove link '%s -> %s' ? "
-                                    file-name
-                                    (propertize (file-symlink-p path) 'face 'font-lock-face)))
-           (treemacs--without-filewatch (delete-file path delete-by-moving-to-trash))
-           t))
-        ((f-file? path)
-         (when (yes-or-no-p (format "Delete '%s' ? " file-name))
-           (treemacs--without-filewatch (delete-file path delete-by-moving-to-trash))
-           t))
-        ((f-directory? path)
-         (when (yes-or-no-p (format "Recursively delete '%s' ? " file-name))
-           (treemacs--without-filewatch (delete-directory path t delete-by-moving-to-trash))
-           t))
-        (t
-         (treemacs-error-return
-             (treemacs-pulse-on-failure
-                 "Item is neither a file, a link or a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)"))))
-       (treemacs--on-file-deletion path)
-       (treemacs-without-messages
-        (treemacs-run-in-every-buffer
-         (when (treemacs-is-path-visible? path)
-           (treemacs-delete-single-node path))))
-       (treemacs-log "Deleted %s."
-         (propertize path 'face 'font-lock-string-face))))
-   (treemacs--evade-image)))
+     (treemacs--without-filewatch
+      (let* ((delete-by-moving-to-trash (not arg))
+             (path (treemacs-button-get btn :path))
+             (file-name (propertize (treemacs--filename path) 'face 'font-lock-string-face)))
+        (cond
+         ((f-symlink? path)
+          (when (yes-or-no-p (format "Remove link '%s -> %s' ? "
+                                     file-name
+                                     (propertize (file-symlink-p path) 'face 'font-lock-face)))
+            (delete-file path delete-by-moving-to-trash)
+            t))
+         ((f-file? path)
+          (when (yes-or-no-p (format "Delete '%s' ? " file-name))
+            (delete-file path delete-by-moving-to-trash)
+            t))
+         ((f-directory? path)
+          (when (yes-or-no-p (format "Recursively delete '%s' ? " file-name))
+            (delete-directory path t delete-by-moving-to-trash)
+            t))
+         (t
+          (treemacs-error-return
+              (treemacs-pulse-on-failure
+                  "Item is neither a file, a link or a directory - treemacs does not know how to delete it. (Maybe it no longer exists?)"))))
+        (treemacs--on-file-deletion path)
+        (treemacs-without-messages
+         (treemacs-run-in-every-buffer
+          (treemacs-delete-single-node path)))
+        (treemacs-log "Deleted %s."
+          (propertize path 'face 'font-lock-string-face))))
+     (treemacs--evade-image))))
 
 (defun treemacs-create-file ()
   "Create a new file.
