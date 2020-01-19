@@ -536,6 +536,18 @@ If any of the IGNORED-ERRORS matches, the error is suppressed and nil returned."
                 (signal (car ,err) (cdr ,err)))))
           ignored-errors))))
 
+(defmacro treemacs-debounce (guard delay &rest body)
+  "Debounce a function call.
+Based on a timer GUARD variable run function BODY with the given DELAY."
+  (declare (indent 2))
+  `(unless ,guard
+     (setf ,guard
+           (run-with-idle-timer
+            ,delay nil
+            (lambda ()
+              ,@body
+              (setf ,guard nil))))))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here
