@@ -334,6 +334,7 @@ return the workspace of the active treemacs buffer."
            (workspace (treemacs-scope-shelf->workspace shelf)))
        (when (buffer-live-p buffer)
          (-let [treemacs-override-workspace workspace]
+           (ignore treemacs-override-workspace)
            (with-current-buffer buffer
              ,@body))))))
 
