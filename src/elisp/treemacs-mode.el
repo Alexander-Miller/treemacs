@@ -40,7 +40,8 @@
 
 (treemacs-import-functions-from  "treemacs"
   treemacs-refresh
-  treemacs-version)
+  treemacs-version
+  treemacs-edit-workspaces)
 (treemacs-import-functions-from "treemacs-bookmarks"
   treemacs-add-bookmark
   treemacs--make-bookmark-record)
@@ -114,6 +115,7 @@ to it will instead show a blank."
              (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))
              (column-toggles     (propertize "Toggles " 'face 'treemacs-help-column-face))
              (column-projects    (propertize "Projects" 'face 'treemacs-help-column-face))
+             (column-ws          (propertize "Workspaces" 'face 'treemacs-help-column-face))
              (column-misc        (propertize "Misc." 'face 'treemacs-help-column-face))
              (key-next-line      (treemacs--find-keybind #'treemacs-next-line))
              (key-prev-line      (treemacs--find-keybind #'treemacs-previous-line))
@@ -154,32 +156,38 @@ to it will instead show a blank."
              (key-remove-project (treemacs--find-keybind #'treemacs-remove-project-from-workspace 12))
              (key-rename-project (treemacs--find-keybind #'treemacs-rename-project 12))
              (key-close-above    (treemacs--find-keybind #'treemacs-collapse-parent-node))
+             (key-edit-ws        (treemacs--find-keybind #'treemacs-edit-workspaces 12))
+             (key-create-ws      (treemacs--find-keybind #'treemacs-create-workspace 12))
+             (key-remove-ws      (treemacs--find-keybind #'treemacs-remove-workspace 12))
+             (key-rename-ws      (treemacs--find-keybind #'treemacs-rename-workspace 12))
+             (key-switch-ws      (treemacs--find-keybind #'treemacs-switch-workspace 12))
+             (key-fallback-ws    (treemacs--find-keybind #'treemacs-set-fallback-workspace 12))
              (hydra-str
               (format
                "
 %s
-%s              │ %s              │ %s    │ %s                │ %s                  │ %s
-――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-%s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode      │ %s add project    │ %s refresh
-%s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode   │ %s remove project │ %s (re)set width
-%s next neighbour   │ %s open no split       │ %s rename      │ %s git mode         │ %s rename project │ %s copy path
-%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                           │ %s copy root
-%s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                           │ %s re-sort
-%s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                           │ %s bookmark
-%s up next window   │ %s open ace horizontal │                    │                         │                           │
-                        │ %s open ace vertical   │                    │                         │                           │
-                        │ %s open mru window     │                    │                         │                           │
-                        │ %s open externally     │                    │                         │                           │
-                        │ %s close parent        │                    │                         │                           │
+%s              │ %s              │ %s    │ %s                │ %s                  │ %s                  │ %s
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+%s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode      │ %s add project    │ %s Edit Workspaces  │ %s refresh
+%s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode   │ %s remove project │ %s Create Workspace │ %s (re)set width
+%s next neighbour   │ %s open no split       │ %s rename      │ %s git mode         │ %s rename project │ %s Remove Workspace │ %s copy path
+%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                           │ %s Rename Workspace │ %s copy root
+%s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                           │ %s Switch Workspace │ %s re-sort
+%s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                           │ %s Set Fallback     │ %s bookmark
+%s up next window   │ %s open ace horizontal │                    │                         │                           │                             │
+                        │ %s open ace vertical   │                    │                         │                           │                             │
+                        │ %s open mru window     │                    │                         │                           │                             │
+                        │ %s open externally     │                    │                         │                           │                             │
+                        │ %s close parent        │                    │                         │                           │                             │
 "
                title
-               column-nav               column-nodes          column-files           column-toggles          column-projects          column-misc
-               (car key-next-line)      (car key-tab)         (car key-create-file)  (car key-follow-mode)   (car key-add-project)    (car key-refresh)
-               (car key-prev-line)      (car key-ret)         (car key-create-dir)   (car key-fwatch-mode)   (car key-remove-project) (car key-set-width)
-               (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-rename-project) (car key-copy-path)
-               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles)                          (car key-copy-root)
-               (car key-goto-parent)    (car key-open-vert)   (car key-copy-file)    (car key-toggle-width)                           (car key-resort)
-               (car key-down-next-w)    (car key-open-ace)    (car key-move-file)    (car key-fringe-mode)                            (car key-bookmark)
+               column-nav               column-nodes          column-files           column-toggles          column-projects          column-ws             column-misc
+               (car key-next-line)      (car key-tab)         (car key-create-file)  (car key-follow-mode)   (car key-add-project)    (car key-edit-ws)     (car key-refresh)
+               (car key-prev-line)      (car key-ret)         (car key-create-dir)   (car key-fwatch-mode)   (car key-remove-project) (car key-create-ws)   (car key-set-width)
+               (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-rename-project) (car key-remove-ws)   (car key-copy-path)
+               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles)                          (car key-rename-ws)   (car key-copy-root)
+               (car key-goto-parent)    (car key-open-vert)   (car key-copy-file)    (car key-toggle-width)                           (car key-switch-ws)   (car key-resort)
+               (car key-down-next-w)    (car key-open-ace)    (car key-move-file)    (car key-fringe-mode)                            (car key-fallback-ws) (car key-bookmark)
                (car key-up-next-w)      (car key-open-ace-h)
                                         (car key-open-ace-v)
                                         (car key-open-mru)
@@ -228,6 +236,12 @@ to it will instead show a blank."
               (,(cdr key-remove-project) #'treemacs-remove-project-from-workspace)
               (,(cdr key-rename-project) #'treemacs-rename-project)
               (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
+              (,(cdr key-edit-ws)        #'treemacs-edit-workspaces)
+              (,(cdr key-create-ws)      #'treemacs-create-workspace)
+              (,(cdr key-remove-ws)      #'treemacs-remove-workspace)
+              (,(cdr key-rename-ws)      #'treemacs-rename-workspace)
+              (,(cdr key-switch-ws)      #'treemacs-switch-workspace)
+              (,(cdr key-fallback-ws)    #'treemacs-set-fallback-workspace)
               ("?" nil "Exit"))))
         (treemacs--helpful-hydra/body))
     (treemacs-log "The helpful hydra cannot be summoned without an existing treemacs buffer.")))

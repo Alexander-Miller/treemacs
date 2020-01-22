@@ -235,11 +235,17 @@ ignore any prefix argument."
 
                    ["--" #'ignore t]
                    ("Projects"
-                    ;; TODO(2019/01/17): Edit with Org
                     ["Add Project"            treemacs-add-project]
                     ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
                     ["Remove Project"         treemacs-remove-project-from-workspace :visible ,(check project)]
                     ["Rename Project"         treemacs-rename-project                :visible ,(check project)])
+                   ("Workspaces"
+                    ["Edit Workspaces"       treemacs-edit-workspaces]
+                    ["Create Workspace"      treemacs-create-workspace]
+                    ["Remove Worspace"       treemacs-remove-workspace]
+                    ["Rename Workspace"      treemacs-rename-workspace]
+                    ["Switch Worspaces"      treemacs-switch-workspace]
+                    ["Set Fallback Worspace" treemacs-set-fallback-workspace])
                    ("Toggles"
                     [,(format "Dotfile Visibility (Currently %s)"
                               (if treemacs-show-hidden-files "Enabled" "Disabled"))
