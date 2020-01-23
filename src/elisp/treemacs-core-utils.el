@@ -50,6 +50,7 @@
   treemacs-get-local-buffer
   treemacs-get-local-buffer-create
   treemacs-scope-shelf->buffer
+  treemacs-scope-shelf->workspace
   treemacs-current-visibility
   treemacs--select-visible-window
   treemacs--remove-buffer-after-kill
