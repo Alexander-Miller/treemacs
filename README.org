@@ -158,8 +158,8 @@ The used org-format is quite simple: level 1 headlines are names of workspaces, 
 in a workspace, and every project's path is given as a description list, starting with a ~-~ (and an optional leading
 space). Empty lines and lines starting with ~#~ are ignored, and everything else leads to an error.
 
-You needn't worry about making mistakes either. If there's something wrong when you call ~treemacs-finish-edit~ then
-treemacs will point you at the incorrect line and tell you what's missing:
+You needn't worry about making mistakes either. If there's something wrong when you call ~treemacs-finish-edit~
+(C-c C-c) then treemacs will point you at the incorrect line and tell you what's missing:
 
 [[file:screenshots/workspace-edit.png]]
 
