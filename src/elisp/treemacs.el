@@ -155,9 +155,10 @@ treemacs buffer for this frame."
 (defun treemacs-show-changelog ()
   "Show the changelog of treemacs."
   (interactive)
-  (-> "Changelog.org"
-      (locate-file (list treemacs-dir))
-      (find-file-existing)))
+  (let ((log-file (locate-file "Changelog.org" (list treemacs-dir))))
+    (if (null log-file)
+        (message "[Treemacs] Error: Changelog.org not found")
+      (find-file-existing log-file))))
 
 ;;;###autoload
 (defun treemacs-edit-workspaces ()
