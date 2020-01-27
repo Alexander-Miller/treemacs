@@ -1,7 +1,7 @@
+.POSIX:
+
 MAKEFLAGS += k
-
 CASK = cask
-
 EMACS ?= emacs
 
 NO_LOAD_WARNINGS = --eval "(defvar treemacs-no-load-time-warnings t)"
