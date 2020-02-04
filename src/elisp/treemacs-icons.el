@@ -237,6 +237,10 @@ Necessary since root icons are not rectangular."
         `(progn
            (ignore icon-path)
            (ignore icons-dir)))
+     ;; prefer to have icons as empty strings with a display property for compatibility
+     ;; in e.g. dired, where an actual text icon would break `dired-goto-file-1'
+     (unless (get-text-property 0 'display gui-icon)
+       (setf gui-icon (propertize " " 'display gui-icon)))
      ,@(->> (-filter #'symbolp extensions)
             (--map `(progn (add-to-list 'treemacs--icon-symbols ',it)
                            (defvar ,(intern (format "treemacs-icon-%s" it)) nil))))
