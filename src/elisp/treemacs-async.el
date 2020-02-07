@@ -32,23 +32,20 @@
   (require 'inline)
   (require 'treemacs-macros))
 
-(defvar treemacs--dirs-to-collpase.py
-  (eval-when-compile
-    (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
-        (f-join treemacs-dir "treemacs-dirs-to-collapse.py")
-      (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py"))))
+(defconst treemacs--dirs-to-collpase.py
+  (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
+      (f-join treemacs-dir "treemacs-dirs-to-collapse.py")
+    (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py")))
 
-(defvar treemacs--git-status.py
-  (eval-when-compile
-    (if (member "treemacs-git-status.py" (directory-files treemacs-dir))
-        (f-join treemacs-dir "treemacs-git-status.py")
-      (f-join treemacs-dir "src/scripts/treemacs-git-status.py"))))
+(defconst treemacs--git-status.py
+  (if (member "treemacs-git-status.py" (directory-files treemacs-dir))
+      (f-join treemacs-dir "treemacs-git-status.py")
+    (f-join treemacs-dir "src/scripts/treemacs-git-status.py")))
 
-(defvar treemacs--single-file-git-status.py
-  (eval-when-compile
-    (if (member "treemacs-single-file-git-status.py" (directory-files treemacs-dir))
-        (f-join treemacs-dir "treemacs-single-file-git-status.py")
-      (f-join treemacs-dir "src/scripts/treemacs-single-file-git-status.py"))))
+(defconst treemacs--single-file-git-status.py
+  (if (member "treemacs-single-file-git-status.py" (directory-files treemacs-dir))
+      (f-join treemacs-dir "treemacs-single-file-git-status.py")
+    (f-join treemacs-dir "src/scripts/treemacs-single-file-git-status.py")))
 
 (defvar treemacs--git-cache-max-size 60
   "Maximum size for `treemacs--git-cache'.
