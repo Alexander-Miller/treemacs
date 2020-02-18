@@ -677,9 +677,10 @@ to reduce the size of the output to a manageable volume for treemacs."
   :group 'treemacs-git)
 
 (defcustom treemacs-is-never-other-window nil
-  "When non-nil treemacs will never be used as `other-window'.
-This can prevent other packages from opening other buffers in the treemacs
-window. It also means treemacs is never selected by calls to `other-window'."
+  "When non-nil treemacs will use the `no-other-window' parameter.
+
+In practice means that treemacs will become invisible to commands like
+`other-window' or `evil-window-left'."
   :type 'boolean
   :group 'treemacs-window)
 
