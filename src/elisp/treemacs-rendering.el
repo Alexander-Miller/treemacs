@@ -390,9 +390,6 @@ set to PARENT."
                 :node-name node
                 :node-action (treemacs--create-file-button-strings node prefix ,parent ,depth)))
 
-         (--when-let (file-truename (treemacs-button-get ,parent :path))
-           (setq ,root it))
-
          (end-of-line)
 
          ;; the files list contains 3 item tuples: the prefix the icon and the filename
@@ -987,8 +984,8 @@ GIT-INFO is passed through from the previous branch build.
 
 PATH: Node Path
 GIT-INFO: Pfuture | Map<String, String>"
-  (let* ((dom-node (treemacs-find-in-dom path))
-         (reopen-list (treemacs-dom-node->reentry-nodes dom-node)))
+  (-when-let* ((dom-node (treemacs-find-in-dom path))
+               (reopen-list (treemacs-dom-node->reentry-nodes dom-node)))
     ;; get rid of the reentry-remnant so it wont pollute the actual dom
     (setf (treemacs-dom-node->reentry-nodes dom-node) nil)
     (dolist (to-reopen-dom-node reopen-list)
