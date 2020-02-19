@@ -142,13 +142,17 @@ Nonetheless the pros certainly outweigh the cons, as a multiroot setup allows to
 combination concern/buffer separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for
 concurrent display not only of the file system, but e.g. the currently open buffers.
 *** Workspace Selection
-On first load treemacs will select a workspace in the following manner:
+When a workspace is first needed, treemacs will select a workspace in the following manner:
 
 If the current buffer is editing a file then treemacs will try to find the first workspace with a project containing
-that file. If that fails treemacs will simply fall back on the /first/ element in the list of all workspace.
+that file. If that fails treemacs will resort to using the /fallback workspace/ which is defined as simply the /first/
+element in the list of all workspace.
 
-The order of workspaces is the same that you see when calling ~treemacs-edit-workspaces~ (see next chapter). You can set
-the fall backback workspace by calling ~treemacs-set-fallback-workspace~.
+The order of workspaces is the same that you see when calling ~treemacs-edit-workspaces~ (see next chapter). You can
+interactively set the fall backback workspace by calling ~treemacs-set-fallback-workspace~.
+
+This selection will happen when treemacs is first started (with a command like ~treemacs-select-window~) or when a
+function that requires the current workspace to be known is used (like adding or removing a project).
 ** Conveniently Editing Your Projects and Workspaces
 There are two ways to edit your projects and workspaces: call up single add/remove/rename/switch commands under either
 the ~C-c C-p~ or ~C-c C-w~ prefix, or call ~treemacs-edit-workspaces~ and edit your entire layout in the form of a

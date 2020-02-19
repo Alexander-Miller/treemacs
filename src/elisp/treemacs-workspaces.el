@@ -47,7 +47,8 @@
   treemacs-next-project)
 
 (treemacs-import-functions-from "treemacs-persistence"
-  treemacs--persist)
+  treemacs--persist
+  treemacs--maybe-load-workspaces)
 
 (treemacs-import-functions-from "treemacs-visuals"
   treemacs--forget-last-highlight
@@ -80,8 +81,8 @@ rely on the current buffer and workspace being aligned.")
   "Set all buffers' `treemacs--project-of-buffer' to nil.
 To be called whenever a project or workspace changes."
   (inline-quote
-   (dolist (buf (buffer-list (selected-frame)))
-     (setf (buffer-local-value 'treemacs--project-of-buffer buf) nil))))
+  (dolist (buf (buffer-list))
+    (setf (buffer-local-value 'treemacs--project-of-buffer buf) nil))))
 
 (defun treemacs--default-current-user-project-function ()
   "Find the current project.el project."
@@ -103,8 +104,16 @@ This function can be used with `setf'."
   (declare (side-effect-free t))
   (inline-quote
    (or treemacs-override-workspace
-       (-when-let (shelf (treemacs-current-scope-shelf))
-         (treemacs-scope-shelf->workspace shelf)))))
+       (-if-let (shelf (treemacs-current-scope-shelf))
+           (treemacs-scope-shelf->workspace shelf)
+         (treemacs--maybe-load-workspaces)
+         (let* ((workspace (treemacs--find-workspace (buffer-file-name (current-buffer))))
+                (new-shelf (make-treemacs-scope-shelf :workspace workspace)))
+           (setf (treemacs-current-scope-shelf) new-shelf)
+           (run-hook-with-args treemacs-workspace-first-found-functions
+                               workspace (selected-frame))
+           workspace)))))
+
 (gv-define-setter treemacs-current-workspace (val)
   `(let ((shelf (treemacs-current-scope-shelf)))
      (unless shelf

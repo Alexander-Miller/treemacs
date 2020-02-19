@@ -504,11 +504,6 @@ Add a project for ROOT and NAME if they are non-nil."
       ('none
        (treemacs--setup-buffer)
        (treemacs-mode)
-       (unless current-workspace
-         (treemacs--find-workspace (buffer-file-name origin-buffer))
-         (setq current-workspace (treemacs-current-workspace))
-         (run-hook-with-args treemacs-workspace-first-found-functions
-                             current-workspace (selected-frame)))
        ;; Render the projects even if there are none. This ensures that top-level
        ;; extensions are always rendered, and the project markers are initialized.
        (treemacs--render-projects (treemacs-workspace->projects current-workspace))

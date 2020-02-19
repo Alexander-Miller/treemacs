@@ -87,11 +87,19 @@ The car is the scope, the cdr is a `treemacs-scope-shelf'.")
 
 (define-inline treemacs-current-scope-shelf (&optional scope)
   "Return the current scope shelf, containing the active workspace and buffer.
-Use either the given SCOPE or `treemacs-current-scope' otherwise."
+Use either the given SCOPE or `treemacs-current-scope' otherwise.
+
+Can be used with `setf'."
   (declare (side-effect-free t))
   (inline-letevals (scope)
     (inline-quote
      (cdr (assoc (or ,scope (treemacs-current-scope)) treemacs--buffer-storage)))))
+(gv-define-setter treemacs-current-scope-shelf (val)
+  `(let* ((current-scope (treemacs-current-scope))
+          (shelf-mapping (assoc current-scope treemacs--buffer-storage)))
+     (if (cdr shelf-mapping)
+         (setf (cdr shelf-mapping) ,val)
+       (push (cons current-scope ,val) treemacs--buffer-storage))))
 
 (defclass treemacs-scope () () :abstract t)
 
