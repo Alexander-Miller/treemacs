@@ -95,7 +95,7 @@
               (cp (copy-sequence img)))
          ;; Icons may not always be images, as extensions may use text and e.g.
          ;; all-the-icons font icons as the icon.
-         (when (eq (car cp) 'image)
+         (when (eq (car-safe cp) 'image)
            (treemacs--set-img-property cp :background
                                        (face-attribute
                                         (overlay-get pulse-momentary-overlay 'face)
