@@ -147,6 +147,7 @@ This is meant for programmatic use. For an interactive selection see
 Kill all treemacs buffers and windows and reset the buffer store.
 
 NEW-SCOPE-TYPE: T: treemacs-scope"
+  (treemacs-scope->cleanup treemacs--current-scope-type)
   (setf treemacs--current-scope-type new-scope-type)
   (dolist (frame (frame-list))
     (dolist (window (window-list frame))
@@ -154,7 +155,8 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
         (delete-window window))))
   (dolist (it treemacs--buffer-storage)
     (treemacs-scope-shelf->kill-buffer (cdr it)))
-  (setf treemacs--buffer-storage nil))
+  (setf treemacs--buffer-storage nil)
+  (treemacs-scope->setup new-scope-type))
 
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."

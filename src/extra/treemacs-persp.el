@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((emacs "25.2") (treemacs "0.0") (persp-mode "2.9.7"))
+;; Package-Requires: ((emacs "25.2") (treemacs "0.0") (persp-mode "2.9.7") (dash "2.11.0"))
 ;; Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
@@ -28,6 +28,10 @@
 (require 'treemacs)
 (require 'persp-mode)
 (require 'eieio)
+(require 'dash)
+
+;; remove base compatibility hook
+(remove-hook 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames)
 
 (defclass treemacs-persp-scope (treemacs-scope) () :abstract t)
 (add-to-list 'treemacs-scope-types (cons 'Perspectives 'treemacs-persp-scope))
@@ -41,12 +45,62 @@
     (persp-name persp)))
 
 (cl-defmethod treemacs-scope->setup ((_ (subclass treemacs-persp-scope)))
-  (add-hook 'persp-activated-functions #'treemacs--change-buffer-on-scope-change)
+  (add-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
   (add-hook 'persp-before-kill-functions #'treemacs--on-scope-kill))
 
 (cl-defmethod treemacs-scope->cleanup ((_ (subclass treemacs-persp-scope)))
-  (remove-hook 'persp-activated-functions #'treemacs--change-buffer-on-scope-change)
+  (remove-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
   (remove-hook 'persp-before-kill-functions #'treemacs--on-scope-kill))
+
+(defun treemacs-persp--on-perspective-switch (&rest _)
+  "Hook running after the perspective was switched.
+Will select a workspace for the now active perspective, creating it if necessary."
+  (treemacs-without-following
+   (when (null (treemacs-get-local-buffer))
+     (treemacs-persp--ensure-workspace-exists (get-current-persp)))
+   (treemacs--change-buffer-on-scope-change)))
+
+(defun treemacs-persp--ensure-workspace-exists (persp)
+  "Make sure a workspace exists for the given PERSP.
+Matching happens by name. If no workspace can be found it will be created."
+  (let* ((name (persp-name persp))
+         (workspace (or (treemacs--select-workspace-by-name name)
+                        (treemacs-persp--create-workspace name))))
+    (setf (treemacs-current-workspace) workspace)
+    (treemacs--invalidate-buffer-project-cache)
+    (run-hooks 'treemacs-switch-workspace-hook)
+    workspace))
+
+(defun treemacs-persp--create-workspace (name)
+  "Create a new workspace for the given persp NAME.
+Projects will be found as per `treemacs--find-user-project-functions'. If that
+does not return anything the projects of the fallback workspace will be copied."
+  (treemacs-block
+   (let* ((ws-result (treemacs-do-create-workspace name))
+          (ws-status (car ws-result))
+          (ws (cadr ws-result))
+          (root-path (treemacs--find-current-user-project))
+          (project-list))
+     (unless (eq ws-status 'success)
+       (treemacs-log "Failed to create workspace for perspective: %s, using fallback instead." ws)
+       (treemacs-return (car treemacs--workspaces)))
+     (if root-path
+         (setf project-list
+               (list (make-treemacs-project
+                      :name (treemacs--filename root-path)
+                      :path root-path
+                      :path-status (treemacs--get-path-status root-path))))
+       (-let [fallback-workspace (car treemacs--workspaces)]
+         ;; copy the projects instead of reusing them so we don't accidentially rename
+         ;; a project in 2 workspaces
+         (dolist (project (treemacs-workspace->projects fallback-workspace))
+           (push (make-treemacs-project
+                  :name (treemacs-project->name project)
+                  :path (treemacs-project->path project)
+                  :path-status (treemacs-project->path-status project))
+                 project-list))))
+     (setf (treemacs-workspace->projects ws) project-list)
+     (treemacs-return ws))))
 
 (provide 'treemacs-persp)
 

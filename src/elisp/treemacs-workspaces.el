@@ -274,8 +274,8 @@ Does not preserve the current position in the buffer."
          (next-single-property-change :project)
          (null)))))
 
-(defun treemacs-do-create-workspace ()
-  "Create a new workspace.
+(defun treemacs-do-create-workspace (&optional name)
+  "Create a new workspace with optional NAME.
 Return values may be as follows:
 
 * If a workspace for the given name already exists:
@@ -288,7 +288,7 @@ Return values may be as follows:
   - the symbol `success'
   - the created workspace"
   (treemacs-block
-   (-let [name (read-string "Workspace name: ")]
+   (-let [name (or name (read-string "Workspace name: "))]
      (treemacs-return-if (treemacs--is-name-invalid? name)
        `(invalid-name ,name))
      (-when-let (ws (--first (string= name (treemacs-workspace->name it))
