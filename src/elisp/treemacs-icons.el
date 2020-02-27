@@ -366,7 +366,7 @@ Resizing the icons only works if Emacs was built with ImageMagick support. If
 this is not the case this function will report an error.
 
 Custom icons are not taken into account, only the size of treemacs' own icons
-is changed."
+png are changed."
   (interactive "nIcon size in pixels: ")
   (setq treemacs--icon-size size)
   (treemacs--maphash (treemacs-theme->gui-icons treemacs--current-theme) (_ icon)
@@ -375,11 +375,12 @@ is changed."
           (img-unselected (get-text-property 0 'img-unselected icon))
           (width          treemacs--icon-size)
           (height         treemacs--icon-size))
-      (when (s-ends-with? "root.png" (plist-get (cdr display) :file))
-        (treemacs--root-icon-size-adjust width height))
-      (dolist (property (list display img-selected img-unselected))
-        (plist-put (cdr property) :height height)
-        (plist-put (cdr property) :width width)))))
+      (when (eq 'image (car-safe display))
+        (when (s-ends-with? "root.png" (plist-get (cdr display) :file))
+          (treemacs--root-icon-size-adjust width height))
+        (dolist (property (list display img-selected img-unselected))
+          (plist-put (cdr property) :height height)
+          (plist-put (cdr property) :width width))))))
 
 (defun treemacs--select-icon-set ()
   "Select the right set of icons for the current buffer.
