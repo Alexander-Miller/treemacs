@@ -976,8 +976,8 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
      (or (string-equal ,file ".DS_Store")
          (string-equal ,file ".localized")))))
 
-(defun treemacs--setup-buffer ()
-  "Create and setup a buffer for treemacs in the right position and size."
+(defun treemacs--popup-window ()
+  "Pop up a side window and buffer for treemacs."
   (if treemacs-display-in-side-window
       (-> (treemacs-get-local-buffer-create)
           (display-buffer-in-side-window `((side . ,treemacs-position)))
@@ -986,8 +986,20 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
         (frame-root-window)
         (split-window nil treemacs-position)
         (select-window))
-      (-let [buf (treemacs-get-local-buffer-create)]
-        (switch-to-buffer buf)))
+    (-let [buf (treemacs-get-local-buffer-create)]
+      (switch-to-buffer buf))))
+
+(defun treemacs--setup-buffer ()
+  "Create and setup a buffer for treemacs in the right position and size."
+  (-if-let (lv-buffer (-some->
+                       (--find (string= " *LV*" (buffer-name (window-buffer it)))
+                               (window-list (selected-frame)))
+                       (window-buffer)))
+      (progn
+        (setf (buffer-local-value 'window-size-fixed lv-buffer) nil)
+        (treemacs--popup-window)
+        (setf (buffer-local-value 'window-size-fixed lv-buffer) t))
+    (treemacs--popup-window))
   (treemacs--forget-last-highlight)
   (set-window-dedicated-p (selected-window) t)
   (setq-local treemacs--in-this-buffer t)
