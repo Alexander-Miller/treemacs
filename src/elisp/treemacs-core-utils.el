@@ -996,6 +996,9 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
                                (window-list (selected-frame)))
                        (window-buffer)))
       (progn
+        ;; workaround for LV windows like spacemacs' transient states preventing
+        ;; side windows from popping up right
+        ;; see https://github.com/abo-abo/hydra/issues/362
         (setf (buffer-local-value 'window-size-fixed lv-buffer) nil)
         (treemacs--popup-window)
         (setf (buffer-local-value 'window-size-fixed lv-buffer) t))
