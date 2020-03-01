@@ -874,6 +874,17 @@ ast the *first* period of the file name
   :type `(choice (const :tag "Text after first period" ,treemacs-first-period-regex-value)
                  (const :tag "Text after last period" ,treemacs-last-period-regex-value)))
 
+(defcustom treemacs-user-mode-line-format nil
+  "Custom mode line format to be used in `treemacs-mode'.
+
+If nil treemacs will look for default value provided by `spaceline', `moody'
+or `doom-modeline' in that order. Finally, if none of these packages is
+available \"Treemacs\" text will be displayed.
+
+For more specific information about formatting mode line check `mode-line-format'."
+  :type 'sexp
+  :group 'treemacs)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

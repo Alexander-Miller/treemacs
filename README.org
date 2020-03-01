@@ -410,6 +410,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-space-between-root-nodes      t
             treemacs-tag-follow-cleanup            t
             treemacs-tag-follow-delay              1.5
+            treemacs-user-mode-line-format         nil
             treemacs-width                         35)
 
       ;; The default width and height of the icons is 22 pixels. If you are
@@ -513,6 +514,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-file-extension-regex          | Text after last period                           | Determines how treemacs detects a file extension. Can be set to use text after first or last period.                                                                                                                                 |
 | treemacs-directory-name-transformer    | identity                                         | Transformer function that is applied to directory names before rendering for any sort of cosmetic effect.                                                                                                                            |
 | treemacs-file-name-transformer         | identity                                         | Transformer function that is applied to file names before rendering for any sort of cosmetic effect.                                                                                                                                 |
+| treemacs-user-mode-line-format nil     | nil                                              | When non-nil treemacs will use it as a mode line format (otherwise format provided by ~spaceline~, ~moody-mode-line~ and ~doom-modeline~ will be used or, finally, "Treemacs" text will be displayed)                                    |
 
 ** Faces
 Treemacs defines and uses the following faces:

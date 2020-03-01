@@ -353,7 +353,9 @@ to it will instead show a blank."
 (defun treemacs--setup-mode-line ()
   "Create either a simple modeline, or integrate into spaceline."
   (setq mode-line-format
-        (cond ((fboundp 'spaceline-install)
+        (cond (treemacs-user-mode-line-format
+               treemacs-user-mode-line-format)
+              ((fboundp 'spaceline-install)
                (spaceline-install
                 "treemacs" '((workspace-number
                               :face highlight-face)
