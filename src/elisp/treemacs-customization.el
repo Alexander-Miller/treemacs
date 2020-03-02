@@ -856,7 +856,7 @@ general window selection commands like `other-window'."
 (defcustom treemacs-workspace-first-found-functions nil
   "Hooks that run when treemacs finds a workspace for the first time.
 Hooks are expected to take 2 arguments: the workspace that was found and the
-frame it was found for."
+current scope (frame or perspective) it was found for."
   :type 'hook
   :group 'treemacs-hooks)
 

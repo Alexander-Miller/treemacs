@@ -100,6 +100,9 @@ The return value can be overriden by let-binding `treemacs-override-workspace'.
 This will happen when using `treemacs-run-in-every-buffer' to make sure that
 this function returns the right workspace for the iterated-over buffers.
 
+If no workspace is assigned to the current scope the persisted workspaces will
+be loaded and a workspace will be found based on the `currebt-buffer'.
+
 This function can be used with `setf'."
   (declare (side-effect-free t))
   (inline-quote
@@ -111,7 +114,7 @@ This function can be used with `setf'."
                 (new-shelf (make-treemacs-scope-shelf :workspace workspace)))
            (setf (treemacs-current-scope-shelf) new-shelf)
            (run-hook-with-args treemacs-workspace-first-found-functions
-                               workspace (selected-frame))
+                               workspace (treemacs-current-scope))
            workspace)))))
 
 (gv-define-setter treemacs-current-workspace (val)
