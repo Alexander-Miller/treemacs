@@ -54,7 +54,7 @@
     (when (or t(eq persp-activated-for 'frame))
       (-when-let (w (--first (treemacs-is-treemacs-window? it)
                              (window-list)))
-        (unless (assoc (treemacs-scope->current-scope treemacs--current-scope-type) treemacs--buffer-storage)
+        (unless (assoc (treemacs-scope->current-scope treemacs--current-scope-type) treemacs--scope-storage)
           (delete-window w)))))
   (declare-function treemacs--remove-treemacs-window-in-new-frames "treemacs-compatibility")
   (if (boundp 'persp-activated-functions)

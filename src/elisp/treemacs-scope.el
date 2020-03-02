@@ -57,7 +57,7 @@ name.")
 (defvar treemacs--current-scope-type 'treemacs-frame-scope
   "The general type of objects/items treemacs is curretly scoped to.")
 
-(defvar treemacs--buffer-storage nil
+(defvar treemacs--scope-storage nil
   "Alist of all active scopes mapped to their buffers & workspaces.
 The car is the scope, the cdr is a `treemacs-scope-shelf'.")
 
@@ -71,8 +71,8 @@ The car is the scope, the cdr is a `treemacs-scope-shelf'.")
        (setf (treemacs-scope-shelf->buffer ,self) nil)))))
 
 (define-inline treemacs--scope-store ()
-  "Return `treemacs--buffer-storage'."
-  (inline-quote treemacs--buffer-storage))
+  "Return `treemacs--scope-storage'."
+  (inline-quote treemacs--scope-storage))
 
 (define-inline treemacs-current-scope-type ()
   "Return the current scope type."
@@ -93,13 +93,13 @@ Can be used with `setf'."
   (declare (side-effect-free t))
   (inline-letevals (scope)
     (inline-quote
-     (cdr (assoc (or ,scope (treemacs-current-scope)) treemacs--buffer-storage)))))
+     (cdr (assoc (or ,scope (treemacs-current-scope)) treemacs--scope-storage)))))
 (gv-define-setter treemacs-current-scope-shelf (val)
   `(let* ((current-scope (treemacs-current-scope))
-          (shelf-mapping (assoc current-scope treemacs--buffer-storage)))
+          (shelf-mapping (assoc current-scope treemacs--scope-storage)))
      (if (cdr shelf-mapping)
          (setf (cdr shelf-mapping) ,val)
-       (push (cons current-scope ,val) treemacs--buffer-storage))))
+       (push (cons current-scope ,val) treemacs--scope-storage))))
 
 (defclass treemacs-scope () () :abstract t)
 
@@ -153,9 +153,9 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
     (dolist (window (window-list frame))
       (when (treemacs-is-treemacs-window? window)
         (delete-window window))))
-  (dolist (it treemacs--buffer-storage)
+  (dolist (it treemacs--scope-storage)
     (treemacs-scope-shelf->kill-buffer (cdr it)))
-  (setf treemacs--buffer-storage nil)
+  (setf treemacs--scope-storage nil)
   (treemacs-scope->setup new-scope-type))
 
 (defun treemacs--on-buffer-kill ()
@@ -172,14 +172,14 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
   "Kill and remove the buffer assigned to the given SCOPE."
   (-when-let (shelf (treemacs-current-scope-shelf scope))
     (treemacs-scope-shelf->kill-buffer shelf)
-    (setf treemacs--buffer-storage (--reject-first (equal (car it) scope) treemacs--buffer-storage))))
+    (setf treemacs--scope-storage (--reject-first (equal (car it) scope) treemacs--scope-storage))))
 
 (defun treemacs--create-buffer-for-scope (scope)
   "Create and store a new buffer for the given SCOPE."
   (-let [shelf (treemacs-current-scope-shelf scope)]
     (unless shelf
       (setf shelf (make-treemacs-scope-shelf))
-      (push (cons scope shelf) treemacs--buffer-storage)
+      (push (cons scope shelf) treemacs--scope-storage)
       (treemacs--find-workspace (buffer-file-name)))
     (treemacs-scope-shelf->kill-buffer shelf)
     (let* ((name-suffix (or (treemacs-scope->current-scope-name treemacs--current-scope-type scope)
@@ -199,7 +199,7 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
 
 (defun treemacs--select-visible-window ()
   "Switch to treemacs buffer, given that it is currently visible."
-  (-some->> treemacs--buffer-storage
+  (-some->> treemacs--scope-storage
             (assoc (treemacs-scope->current-scope treemacs--current-scope-type))
             (cdr)
             (treemacs-scope-shelf->buffer)
@@ -212,7 +212,7 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
 Returns nil if no such buffer exists.."
   (declare (side-effect-free t))
   (let* ((scope (treemacs-scope->current-scope treemacs--current-scope-type))
-         (buffer (-some->> treemacs--buffer-storage
+         (buffer (-some->> treemacs--scope-storage
                            (assoc scope)
                            (cdr)
                            (treemacs-scope-shelf->buffer))))

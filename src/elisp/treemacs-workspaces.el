@@ -118,7 +118,7 @@ This function can be used with `setf'."
   `(let ((shelf (treemacs-current-scope-shelf)))
      (unless shelf
        (setf shelf (make-treemacs-scope-shelf))
-       (push (cons (treemacs-current-scope) shelf) treemacs--buffer-storage))
+       (push (cons (treemacs-current-scope) shelf) treemacs--scope-storage))
      (setf (treemacs-scope-shelf->workspace shelf) ,val)))
 
 (define-inline treemacs--find-workspace (&optional path)

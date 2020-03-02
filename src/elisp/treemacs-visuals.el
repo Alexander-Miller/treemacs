@@ -57,7 +57,7 @@
 (defun treemacs--tear-down-icon-highlight ()
   "Tear down highlighting advice when no treemacs buffer exists anymore."
   (treemacs--forget-last-highlight)
-  (unless treemacs--buffer-storage
+  (unless treemacs--scope-storage
     (advice-remove #'hl-line-highlight #'treemacs--update-icon-selection)
     (advice-remove #'enable-theme      #'treemacs--setup-icon-background-colors)
     (advice-remove #'disable-theme     #'treemacs--setup-icon-background-colors)))

@@ -218,6 +218,7 @@ GIT-FUTURE: Pfuture"
                   (setq i (1+ i)))))))))
     git-info-hash))
 
+;; TODO(2019/11/06): re-get git status when btn is flattened
 (defun treemacs--apply-deferred-git-state (parent-btn git-future buffer)
   "Apply the git fontification for direct children of PARENT-BTN.
 GIT-FUTURE is parsed the same way as in `treemacs--create-branch'. Additionally
