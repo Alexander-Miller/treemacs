@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((evil "1.2.12") (treemacs "0.0"))
+;; Package-Requires: ((emacs "25") (evil "1.2.12") (treemacs "0.0"))
 ;; Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
@@ -28,6 +28,8 @@
 (require 'evil)
 (require 'treemacs)
 
+(declare-function treemacs-add-bookmark "treemacs-bookmarks.el")
+
 (evil-define-state treemacs
   "Treemacs state"
   :cursor '(bar . 0)
@@ -35,7 +37,7 @@
 
 (evil-set-initial-state 'treemacs-mode 'treemacs)
 
-(defun treemacs--turn-off-visual-state-after-click (&rest _)
+(defun treemacs-evil---turn-off-visual-state-after-click (&rest _)
   "Go back to `evil-treemacs-state' after a mouse click."
   ;; a double click will likely have opened a file so we need to make
   ;; sure to go back in the right buffer
@@ -43,7 +45,7 @@
     (with-current-buffer it
       (evil-treemacs-state))))
 
-(defun treemacs--evil-window-move-compatibility-advice (orig-fun &rest args)
+(defun treemacs-evil--window-move-compatibility-advice (orig-fun &rest args)
   "Close Treemacs while moving windows around.
 Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
   (let* ((treemacs-window (treemacs-get-local-window))
@@ -58,10 +60,10 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
                 evil-window-move-far-right
                 evil-window-move-very-top
                 evil-window-move-very-bottom))
-  (advice-add func :around #'treemacs--evil-window-move-compatibility-advice))
+  (advice-add func :around #'treemacs-evil--window-move-compatibility-advice))
 
-(advice-add 'treemacs-leftclick-action   :after #'treemacs--turn-off-visual-state-after-click)
-(advice-add 'treemacs-doubleclick-action :after #'treemacs--turn-off-visual-state-after-click)
+(advice-add 'treemacs-leftclick-action   :after #'treemacs-evil---turn-off-visual-state-after-click)
+(advice-add 'treemacs-doubleclick-action :after #'treemacs-evil---turn-off-visual-state-after-click)
 
 (define-key evil-treemacs-state-map (kbd "j")   #'treemacs-next-line)
 (define-key evil-treemacs-state-map (kbd "k")   #'treemacs-previous-line)
