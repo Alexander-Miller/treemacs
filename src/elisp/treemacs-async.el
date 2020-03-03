@@ -125,13 +125,15 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
     (let* ((file-name-handler-alist nil)
            (git-root (expand-file-name git-root))
            (default-directory path)
-           (open-dirs (-some->>
+           (open-dirs (cons
                        path
-                       (treemacs-find-in-dom)
-                       (treemacs-dom-node->reentry-nodes)
-                       (-map #'treemacs-dom-node->key)
-                       ;; Remove extension nodes
-                       (-filter #'stringp)))
+                       (-some->>
+                        path
+                        (treemacs-find-in-dom)
+                        (treemacs-dom-node->reentry-nodes)
+                        (-map #'treemacs-dom-node->key)
+                        ;; Remove extension nodes
+                        (-filter #'stringp))))
            (command `(,treemacs-python-executable
                       "-O"
                       ,treemacs--git-status.py
