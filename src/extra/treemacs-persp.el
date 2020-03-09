@@ -46,7 +46,8 @@
 
 (cl-defmethod treemacs-scope->setup ((_ (subclass treemacs-persp-scope)))
   (add-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
-  (add-hook 'persp-before-kill-functions #'treemacs--on-scope-kill))
+  (add-hook 'persp-before-kill-functions #'treemacs--on-scope-kill)
+  (treemacs-persp--ensure-workspace-exists))
 
 (cl-defmethod treemacs-scope->cleanup ((_ (subclass treemacs-persp-scope)))
   (remove-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
@@ -62,16 +63,16 @@ Will select a workspace for the now active perspective, creating it if necessary
    0.1 nil
    (lambda ()
      (treemacs-without-following
-      (treemacs-persp--ensure-workspace-exists
-       ;; TODO(2020/03/01): simplify
-       (treemacs-scope->current-scope-name (treemacs-current-scope-type) (treemacs-current-scope)))
+      (treemacs-persp--ensure-workspace-exists)
       (treemacs--change-buffer-on-scope-change)))))
 
-(defun treemacs-persp--ensure-workspace-exists (persp-name)
+(defun treemacs-persp--ensure-workspace-exists ()
   "Make sure a workspace exists for the given PERSP-NAME.
 Matching happens by name. If no workspace can be found it will be created."
-  (let ((workspace (or (treemacs--select-workspace-by-name persp-name)
-                       (treemacs-persp--create-workspace persp-name))))
+  (let* ((persp-name (treemacs-scope->current-scope-name
+                      (treemacs-current-scope-type) (treemacs-current-scope)))
+         (workspace (or (treemacs--select-workspace-by-name persp-name)
+                        (treemacs-persp--create-workspace persp-name))))
     (setf (treemacs-current-workspace) workspace)
     (treemacs--invalidate-buffer-project-cache)
     (run-hooks 'treemacs-switch-workspace-hook)
