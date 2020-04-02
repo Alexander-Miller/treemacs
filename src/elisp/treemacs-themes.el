@@ -38,6 +38,9 @@
 
 (defvar treemacs--themes nil "List of all known themes.")
 
+(defvar treemacs-modes '(treemacs-mode dired-mode)
+  "The list of modes that have `treemacs' icons.")
+
 (define-inline treemacs-current-theme ()
   "Get the current theme."
   (declare (side-effect-free t))
@@ -123,7 +126,7 @@ and restored."
       (treemacs-log "Cannot find theme '%s'." name)
     (setq treemacs--current-theme theme)
     (dolist (buffer (buffer-list))
-      (when (memq (buffer-local-value 'major-mode buffer) '(treemacs-mode dired-mode))
+      (when (memq (buffer-local-value 'major-mode buffer) treemacs-modes)
         (with-current-buffer buffer
           (treemacs--select-icon-set))))))
 
