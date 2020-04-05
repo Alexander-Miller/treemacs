@@ -891,7 +891,9 @@ PROJECT: Project Struct"
              (-when-let (result (,find-function ,(quote ,path) ,@(when has-project '(,project))))
                (treemacs--evade-image)
                (hl-line-highlight)
-               (set-window-point (get-buffer-window) (point))
+               ;; Only change window point if the current buffer is actually visible
+               (-when-let (window (get-buffer-window))
+                 (set-window-point window (point)))
                result))))))
 
   (define-goto treemacs-goto-file-node treemacs-find-file-node t
