@@ -371,19 +371,19 @@ will instead be wiped irreversibly."
              (file-name (propertize (treemacs--filename path) 'face 'font-lock-string-face)))
         (cond
          ((f-symlink? path)
-          (when (yes-or-no-p (format "Remove link '%s -> %s' ? "
+          (if (yes-or-no-p (format "Remove link '%s -> %s' ? "
                                      file-name
                                      (propertize (file-symlink-p path) 'face 'font-lock-face)))
-            (delete-file path delete-by-moving-to-trash)
-            t))
+              (delete-file path delete-by-moving-to-trash)
+            (treemacs-return (treemacs-log "Cancelled."))))
          ((f-file? path)
-          (when (yes-or-no-p (format "Delete '%s' ? " file-name))
-            (delete-file path delete-by-moving-to-trash)
-            t))
+          (if (yes-or-no-p (format "Delete '%s' ? " file-name))
+              (delete-file path delete-by-moving-to-trash)
+            (treemacs-return (treemacs-log "Cancelled."))))
          ((f-directory? path)
-          (when (yes-or-no-p (format "Recursively delete '%s' ? " file-name))
-            (delete-directory path t delete-by-moving-to-trash)
-            t))
+          (if (yes-or-no-p (format "Recursively delete '%s' ? " file-name))
+              (delete-directory path t delete-by-moving-to-trash)
+            (treemacs-return (treemacs-log "Cancelled."))))
          (t
           (treemacs-error-return
               (treemacs-pulse-on-failure
