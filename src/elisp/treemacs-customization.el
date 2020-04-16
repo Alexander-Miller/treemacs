@@ -867,8 +867,7 @@ current scope (frame or perspective) it was found for."
 There are 2 options:
  - An extension should be everything past the *last* period of the file name.
    In this case this shoud be set to `treemacs-last-period-regex-value'
- - An extension should be everything p
-ast the *first* period of the file name
+ - An extension should be everything past the *first* period of the file name.
    In this case this should be set to `treemacs-first-period-regex-value'"
   :group 'treemacs
   :type `(choice (const :tag "Text after first period" ,treemacs-first-period-regex-value)
