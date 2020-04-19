@@ -114,6 +114,11 @@ indentation will be a space INTEGER pixels wide."
                        (const :tag "" px)))
   :group 'treemacs)
 
+(defcustom treemacs-move-forward-on-expand nil
+  "When non-nil treemacs will move to the first child of an expanded node."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs-eldoc-display t
   "Enables eldoc display of the file path at point.
 Requires eldoc mode to be enabled."

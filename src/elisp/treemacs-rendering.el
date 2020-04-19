@@ -228,20 +228,22 @@ Gives the button a NEW-STATE, and, optionally, a NEW-ICON. Performs OPEN-ACTION
 and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
 and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
-  `(save-excursion
-     (-let [p (point)]
-       (treemacs-with-writable-buffer
-        (treemacs-button-put ,button :state ,new-state)
-        ,@(when new-icon
-            `((beginning-of-line)
-              (treemacs--button-symbol-switch ,new-icon)))
-        (goto-char (treemacs-button-end ,button))
-        ,@(if immediate-insert
-              `((progn
-                  (insert (apply #'concat ,open-action))))
-            `(,open-action))
-        ,post-open-action)
-       (count-lines p (point)))))
+  `(prog1
+     (save-excursion
+       (-let [p (point)]
+         (treemacs-with-writable-buffer
+          (treemacs-button-put ,button :state ,new-state)
+          ,@(when new-icon
+              `((beginning-of-line)
+                (treemacs--button-symbol-switch ,new-icon)))
+          (goto-char (treemacs-button-end ,button))
+          ,@(if immediate-insert
+                `((progn
+                    (insert (apply #'concat ,open-action))))
+              `(,open-action))
+          ,post-open-action)
+         (count-lines p (point))))
+     (treemacs--maybe-move-forward)))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
   "Building block macro for creating buttons from a list of items.
