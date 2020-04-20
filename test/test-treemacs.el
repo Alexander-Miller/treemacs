@@ -1289,6 +1289,42 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
         (expect (treemacs-find-in-dom "Key 3") :to-be nil)
         (expect (treemacs-dom-node->collapse-keys dom-node) :to-equal '("Key 2"))))))
 
+(describe "treemacs--find-repeated-file-name"
+  :var (fake-file-exists)
+  (before-each
+    (fset 'fake-file-exists
+          (lambda (p)
+            (pcase p
+              ("/a/file.el" t)
+              ("/c/file" t)
+              ((guard (and (s-starts-with? "/b/" p)
+                           (not (s-contains? "5" p))))
+               t)
+              ((guard (and (s-starts-with? "/d/" p)
+                           (not (s-contains? "5" p))))
+               t) )))
+    (spy-on 'file-exists-p :and-call-fake #'fake-file-exists))
+
+  (it "Returns input when it does not already exist"
+    (expect (treemacs--find-repeated-file-name "/X/Y/Z")
+            :to-equal "/X/Y/Z"))
+
+  (it "Find a (Copy 1) file with extension"
+    (expect (treemacs--find-repeated-file-name "/a/file.el")
+            :to-equal "/a/file (Copy 1).el"))
+
+  (it "Find a (Copy 5) file with extension"
+    (expect (treemacs--find-repeated-file-name "/b/file.el")
+            :to-equal "/b/file (Copy 5).el"))
+
+  (it "Find a (Copy 1) file without extension"
+    (expect (treemacs--find-repeated-file-name "/c/file")
+            :to-equal "/c/file (Copy 1)"))
+
+  (it "Find a (Copy 5) file without extension"
+    (expect (treemacs--find-repeated-file-name "/d/file")
+            :to-equal "/d/file (Copy 5)")))
+
 (provide 'test-treemacs)
 
 ;;; test-treemacs.el ends here

@@ -1196,22 +1196,9 @@ from `treemacs-copy-file' or `treemacs-move-file'."
        (treemacs-error-return-if (not (treemacs-is-node-file-or-dir? node))
          wrong-type-msg)
        (let* ((source (treemacs-button-get node :path))
-              (destination (file-name-as-directory (read-directory-name prompt nil default-directory :must-match)))
+              (destination-dir (file-name-as-directory (read-directory-name prompt nil default-directory :must-match)))
               (filename (treemacs--filename source))
-              (move-to-on-success (f-join destination filename)))
-         (when (file-exists-p (f-join destination filename))
-           (let* ((filename-no-ext (f-no-ext filename))
-                  (filename-ext (f-ext filename))
-                  (copy-template (if filename-ext " (Copy %s)." " (Copy %s)"))
-                  (new-name (concat filename-no-ext (format copy-template 1) filename-ext))
-                  (new-dest (f-join destination new-name)))
-             ;; if even "destfile (Copy 1).ext" already exists try "destfile (Copy 2).ext" etc.
-             (-let [n 1]
-               (while (file-exists-p new-dest)
-                 (cl-incf n)
-                 (setf new-dest (f-join destination (concat filename-no-ext (format copy-template n) filename-ext)))))
-             (setf destination new-dest
-                   move-to-on-success destination)))
+              (destination (treemacs--find-repeated-file-name (f-join destination-dir filename))))
          (when (eq action :move)
            ;; do the deletion *before* moving the file, otherwise it will no longer exist and treemacs will
            ;; not recognize it as a file path
@@ -1219,13 +1206,29 @@ from `treemacs-copy-file' or `treemacs-move-file'."
          (treemacs--without-filewatch
           (funcall action-function source destination))
          ;; no waiting for filewatch, if we copied to an expanded directory refresh it immediately
-         (-let [parent (treemacs--parent move-to-on-success)]
+         (-let [parent (treemacs--parent destination)]
            (when (treemacs-is-path-visible? parent)
              (treemacs-do-update-node parent)))
-         (treemacs-goto-file-node move-to-on-success)
+         (treemacs-goto-file-node destination)
          (treemacs-pulse-on-success finish-msg
            (propertize filename 'face 'font-lock-string-face)
            (propertize destination 'face 'font-lock-string-face)))))))
+
+(defun treemacs--find-repeated-file-name (path)
+  "Find a fitting copy name for given file PATH.
+Returns a name in the /file/name (Copy 1).ext. If that also already
+exists it returns /file/name (Copy 2).ext etc."
+  (let* ((n 0)
+         (dir (treemacs--parent-dir path))
+         (filename (treemacs--filename path))
+         (filename-no-ext (file-name-sans-extension path))
+         (ext (--when-let (file-name-extension filename) (concat "." it)))
+         (template " (Copy %d)")
+         (new-path path))
+    (while (file-exists-p new-path)
+      (cl-incf n)
+      (setf new-path (f-join dir (concat filename-no-ext (format template n) ext))))
+    new-path))
 
 (provide 'treemacs-core-utils)
 
