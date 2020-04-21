@@ -94,7 +94,7 @@ To be called whenever a project or workspace changes."
   (declare (side-effect-free t))
   (inline-quote treemacs--workspaces))
 
-(define-inline treemacs-current-workspace ()
+(defun treemacs-current-workspace ()
   "Get the current workspace.
 The return value can be overriden by let-binding `treemacs-override-workspace'.
 This will happen when using `treemacs-run-in-every-buffer' to make sure that
@@ -105,17 +105,16 @@ be loaded and a workspace will be found based on the `currebt-buffer'.
 
 This function can be used with `setf'."
   (declare (side-effect-free t))
-  (inline-quote
-   (or treemacs-override-workspace
-       (-if-let (shelf (treemacs-current-scope-shelf))
-           (treemacs-scope-shelf->workspace shelf)
-         (treemacs--maybe-load-workspaces)
-         (let* ((workspace (treemacs--find-workspace (buffer-file-name (current-buffer))))
-                (new-shelf (make-treemacs-scope-shelf :workspace workspace)))
-           (setf (treemacs-current-scope-shelf) new-shelf)
-           (run-hook-with-args treemacs-workspace-first-found-functions
-                               workspace (treemacs-current-scope))
-           workspace)))))
+  (or treemacs-override-workspace
+      (-if-let (shelf (treemacs-current-scope-shelf))
+          (treemacs-scope-shelf->workspace shelf)
+        (treemacs--maybe-load-workspaces)
+        (let* ((workspace (treemacs--find-workspace (buffer-file-name (current-buffer))))
+               (new-shelf (make-treemacs-scope-shelf :workspace workspace)))
+          (setf (treemacs-current-scope-shelf) new-shelf)
+          (run-hook-with-args treemacs-workspace-first-found-functions
+                              workspace (treemacs-current-scope))
+          workspace))))
 
 (gv-define-setter treemacs-current-workspace (val)
   `(let ((shelf (treemacs-current-scope-shelf)))
