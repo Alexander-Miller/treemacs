@@ -278,13 +278,13 @@ Go to each dir button, expand its label with the collapsed dirs, set its new
 path and give it a special parent-path property so opening it will add the
 correct cache entries.
 
-DIRS: List of Collapse Paths. Each Collapse Path is a list of
+DIRS: List of Collapse Paths.  Each Collapse Path is a list of
  1) the extra text that must be appended in the view,
  2) The original full and uncollapsed path,
  3) a series of intermediate steps which are the result of appending the
     collapsed path elements onto the original, ending in
  4) the full path to the
-    directory that the collapsing leads to. For Example:
+    directory that the collapsing leads to.  For Example:
     (\"/26.0/elpa\"
      \"/home/a/Documents/git/treemacs/.cask\"
      \"/home/a/Documents/git/treemacs/.cask/26.0\"
@@ -673,7 +673,7 @@ FORCE-EXPAND: Boolean"
 
 (defun treemacs-delete-single-node (path &optional project)
   "Delete single node at given PATH and PROJECT.
-Does nothing when the given node is not visible. Must be run in a treemacs
+Does nothing when the given node is not visible.  Must be run in a treemacs
 buffer.
 
 This will also take care of all the necessary house-keeping like making sure
@@ -690,7 +690,7 @@ Project: Project Struct"
 
 (defun treemacs-do-delete-single-node (path &optional project)
   "Actual implementation of single node deletion.
-Will delete node at given PATH and PROJECT. See also
+Will delete node at given PATH and PROJECT.  See also
 `treemacs-delete-single-node'.
 
 PATH: Node Path
@@ -923,7 +923,7 @@ WHEN can take the following values:
   "The recursive descent implementation of `treemacs--recursive-refresh'.
 If NODE under PROJECT is marked for refresh and in an open state (since it could
 have been collapsed in the meantime) it will simply be collapsed and
-re-expanded. If NODE is node marked its children will be recursively
+re-expanded.  If NODE is node marked its children will be recursively
 investigated instead.
 Additionally all the refreshed nodes are collected and returned so their
 parents' git status can be updated."

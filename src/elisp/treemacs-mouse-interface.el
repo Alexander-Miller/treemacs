@@ -73,7 +73,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 (defun treemacs-single-click-expand-action (event)
   "A modified single-leftclick action that expands the clicked nodes.
 Can be bound to <mouse1> if you prefer to expand nodes with a single click
-instead of a double click. Either way it must be bound to a mouse click, or
+instead of a double click.  Either way it must be bound to a mouse click, or
 EVENT will not be supplied.
 
 Clicking on icons will expand a file's tags, just like
@@ -122,8 +122,8 @@ ACTION should be one of the `treemacs-visit-node-*' commands."
 ;;;###autoload
 (defun treemacs-node-buffer-and-position (&optional _)
   "Return source buffer or list of buffer and position for the current node.
-This information can be used for future display. Stay in the selected window and
-ignore any prefix argument."
+This information can be used for future display.  Stay in the selected window
+and ignore any prefix argument."
   (interactive "P")
   (treemacs-without-messages
     (treemacs--execute-button-action

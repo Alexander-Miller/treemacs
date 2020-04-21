@@ -66,12 +66,12 @@ list of consecutive path and face items.
 File paths should use treemacs' canonical format - they should be absolute,
 expanded and *not* have a trailing slash.
 
-The diagnostic faces could be any face symbols or raw face literals. Treemacs
+The diagnostic faces could be any face symbols or raw face literals.  Treemacs
 features several pre-made faces named `treemacs-diagnostic-*-face'.
 
 This method is debounced, it will never run more often than once every 3
-seconds. In addition the use of a lazy thunk ensures that potentially expensive
-transformations happen only once and only when required. Performance is thus not
+seconds.  In addition the use of a lazy thunk ensures that potentially expensive
+transformations happen only once and only when required.  Performance is thus not
 expected to be a major issue.
 
 A basic example use would look like this:

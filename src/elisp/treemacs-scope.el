@@ -51,7 +51,7 @@
 
 (defvar treemacs-scope-types (list (cons 'Frames 'treemacs-frame-scope))
   "List of all known scope types.
-The car is the name seen in interactive selection. The cdr is the eieio class
+The car is the name seen in interactive selection.  The cdr is the eieio class
 name.")
 
 (defvar treemacs--current-scope-type 'treemacs-frame-scope
@@ -134,10 +134,10 @@ Can be used with `setf'."
   "Set a NEW-SCOPE-TYPE for treemacs buffers.
 Valid values for TYPE are the `car's of the elements of `treemacs-scope-types'.
 
-This is meant for programmatic use. For an interactive selection see
+This is meant for programmatic use.  For an interactive selection see
 `treemacs-select-buffer-scope-type'."
   (-let [class (alist-get new-scope-type treemacs-scope-types)]
-    (unless class (user-error "'%s' is not a valid scope new-scope-type. Valid types are: %s"
+    (unless class (user-error "'%s' is not a valid scope new-scope-type.  Valid types are: %s"
                               new-scope-type
                               (-map #'car treemacs-scope-types)))
     (treemacs--do-set-scope-type class)))

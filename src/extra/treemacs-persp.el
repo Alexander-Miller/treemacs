@@ -68,7 +68,7 @@ Will select a workspace for the now active perspective, creating it if necessary
 
 (defun treemacs-persp--ensure-workspace-exists ()
   "Make sure a workspace exists for the given PERSP-NAME.
-Matching happens by name. If no workspace can be found it will be created."
+Matching happens by name.  If no workspace can be found it will be created."
   (let* ((persp-name (treemacs-scope->current-scope-name
                       (treemacs-current-scope-type) (treemacs-current-scope)))
          (workspace (or (treemacs--select-workspace-by-name persp-name)
@@ -80,7 +80,7 @@ Matching happens by name. If no workspace can be found it will be created."
 
 (defun treemacs-persp--create-workspace (name)
   "Create a new workspace for the given persp NAME.
-Projects will be found as per `treemacs--find-user-project-functions'. If that
+Projects will be found as per `treemacs--find-user-project-functions'.  If that
 does not return anything the projects of the fallback workspace will be copied."
   (treemacs-block
    (let* ((ws-result (treemacs-do-create-workspace name))

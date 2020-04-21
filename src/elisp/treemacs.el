@@ -114,8 +114,8 @@ For the most part only useful when `treemacs-follow-mode' is not active."
 Most likley to be useful when `treemacs-tag-follow-mode' is not active.
 
 Will ask to change the treemacs root if the file to find is not under the
-root. If no treemacs buffer exists it will be created with the current file's
-containing directory as root. Will do nothing if the current buffer is not
+root.  If no treemacs buffer exists it will be created with the current file's
+containing directory as root.  Will do nothing if the current buffer is not
 visiting a file or Emacs cannot find any tags for the current file."
   (interactive)
   (treemacs-block

@@ -175,8 +175,8 @@ This function is installed as the `bookmark-make-record-function'."
 ;;;###autoload
 (defun treemacs-add-bookmark ()
   "Add the current node to Emacs' list of bookmarks.
-For file and directory nodes their absolute path is saved. Tag nodes
-additionally also save the tag's position. A tag can only be bookmarked if the
+For file and directory nodes their absolute path is saved.  Tag nodes
+additionally also save the tag's position.  A tag can only be bookmarked if the
 treemacs node is pointing to a valid buffer position."
   (interactive)
   (treemacs-with-current-button

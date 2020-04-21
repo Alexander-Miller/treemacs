@@ -773,7 +773,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
 (defun treemacs-find-visible-node (path)
   "Find position of node at PATH.
 Unlike `treemacs-find-node' this will not expand other nodes in the view, but
-only look among those currently visible. The result however is the same: either
+only look among those currently visible.  The result however is the same: either
 a marker ponting to the found node or nil.
 
 Unlike `treemacs-find-node', this function does not go to the node.
@@ -789,25 +789,25 @@ PATH: Node Path"
 Inspite the signature this function effectively supports two different calling
 conventions.
 
-The first one is for movement towards a node that identifies a file. In this
+The first one is for movement towards a node that identifies a file.  In this
 case the signature is applied as is, and this function diverges simply into
-`treemacs-goto-file-node'. PATH is a filepath string while PROJECT is fully
+`treemacs-goto-file-node'.  PATH is a filepath string while PROJECT is fully
 optional, as treemacs is able to determine which project, if any, a given file
-belongs to. Providing the project is therefore only a matter of efficiency and
-convenience. If PROJECT is not given it will be found with
-`treemacs--find-project-for-path'. No attempt is made to verify that PATH falls
-under a project in the workspace. It is assumed that this check has already been
+belongs to.  Providing the project is therefore only a matter of efficiency and
+convenience.  If PROJECT is not given it will be found with
+`treemacs--find-project-for-path'.  No attempt is made to verify that PATH falls
+under a project in the workspace.  It is assumed that this check has already been
 made.
 
 The second calling convention deals with custom nodes defined by an extension
-for treemacs. In this case the PATH is made up of all the node keys that lead to
+for treemacs.  In this case the PATH is made up of all the node keys that lead to
 the node to be moved to.
 
 For a directory extension, created with `treemacs-define-directory-extension',
-that means that the path's first element must be the filepath of its parent. For
+that means that the path's first element must be the filepath of its parent.  For
 a project extension, created with `treemacs-define-project-extension', the
 first element of the path must instead be the keyword `:custom', followed by the
-node's unique path. The second argument is therefore ignored in this case.
+node's unique path.  The second argument is therefore ignored in this case.
 
 Either way this fuction will return a marker to the moved to position if it was
 successful.
@@ -823,12 +823,12 @@ PROJECT Project Struct"
 (defun treemacs-goto-node (path &optional project ignore-file-exists)
   "Move point to button identified by PATH under PROJECT in the current buffer.
 Falls under the same constraints as `treemacs-find-node', but will actually move
-point. Will do nothing if file at PATH does not exist, unless IGNORE-FILE-EXISTS
+point.  Will do nothing if file at PATH does not exist, unless IGNORE-FILE-EXISTS
 is non-nil.
 
 PATH: Filepath | Node Path
 PROJECT Project Struct
-IGNORE-FILE-EXISTS. Boolean"
+IGNORE-FILE-EXISTS Boolean"
   (treemacs-with-path path
     :file-action (when (or ignore-file-exists (file-exists-p path)) (treemacs-goto-file-node path project))
     :top-level-extension-action (treemacs--goto-custom-top-level-node path)
@@ -1059,7 +1059,7 @@ Retursns a cons cell of a descriptive string name and the sorting symbol."
 
 (defun treemacs--kill-buffers-after-deletion (path is-file)
   "Clean up after a deleted file or directory.
-Just kill the buffer visiting PATH if IS-FILE. Otherwise, go
+Just kill the buffer visiting PATH if IS-FILE.  Otherwise, go
 through the buffer list and kill buffer if PATH is a prefix."
   (if is-file
       (let ((buf (get-file-buffer path)))
@@ -1216,7 +1216,7 @@ from `treemacs-copy-file' or `treemacs-move-file'."
 
 (defun treemacs--find-repeated-file-name (path)
   "Find a fitting copy name for given file PATH.
-Returns a name in the /file/name (Copy 1).ext. If that also already
+Returns a name in the /file/name (Copy 1).ext.  If that also already
 exists it returns /file/name (Copy 2).ext etc."
   (let* ((n 0)
          (dir (treemacs--parent-dir path))

@@ -51,7 +51,7 @@ Creates a list of `declare-function' statements."
 (defmacro treemacs-static-assert (predicate error-msg &rest error-args)
   "Assert for macros that triggers at expansion time.
 Tests PREDICATE and, if it evaluates to nil, throws an error with ERROR-MSG and
-ERROR-ARGS. Basically the same thing as `cl-assert', but does not (seem to)
+ERROR-ARGS.  Basically the same thing as `cl-assert', but does not (seem to)
 interfere with auto-completion."
   (declare (indent 1))
   `(unless ,predicate
@@ -254,7 +254,7 @@ the on-delete code will run twice."
 Finally execute FINAL-FORM after the code to restore the position has run.
 
 This macro is meant for cases where a simple `save-excursion' will not do, like
-a refresh, which can potentially change the entire buffer layout. In pratice
+a refresh, which can potentially change the entire buffer layout.  In pratice
 this means attempt first to keep point on the same file/tag, and if that does
 not work keep it on the same line."
   (declare (debug (form body)))
@@ -454,7 +454,7 @@ take the following forms:
  * `:parent-of' will check whether LEFT is a parent of, and not equal to, RIGHT
  * `:in-project' will check whether LEFT is part of the project RIGHT
  * `:in-workspace' will check whether LEFT is part of the workspace RIGHT and
-   return the appropriate project when it is. If RIGHT is not given it will
+   return the appropriate project when it is.  If RIGHT is not given it will
    default to calling `treemacs-current-workspace'.
 
 LEFT and RIGHT are expected to be in treemacs canonical file path format (see

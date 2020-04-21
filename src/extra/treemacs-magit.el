@@ -79,8 +79,8 @@ filewatch-mode's mechanics to update the entire project."
 (defun treemacs-magit--extended-git-mode-update (magit-root)
   "Update the project at the given MAGIT-ROOT.
 This runs due to a commit or stash action, so we know that no files have
-actually been added or deleted. This allows us to forego rebuilding the entire
-project structure just to be sure we caught everything. Instead we grab the
+actually been added or deleted.  This allows us to forego rebuilding the entire
+project structure just to be sure we caught everything.  Instead we grab the
 current git status and just go through the lines as they are right now."
   ;; we run a single git process to update every buffer, so we need to gather
   ;; the visible dirs in every buffer

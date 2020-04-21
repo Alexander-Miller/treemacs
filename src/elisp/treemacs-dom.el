@@ -226,7 +226,7 @@ DONT-RENAME-INITIAL: Boolean"
 (defun treemacs-walk-dom (node fn)
   "Recursively walk the dom starting at NODE.
 Calls FN on every node encountered in a depth-first pattern, starting with the
-deepest. This assures that FN may destructively modify the dom, at least on
+deepest.  This assures that FN may destructively modify the dom, at least on
 levels the one currently visiting.
 
 NODE: Dom Node Struct
@@ -250,7 +250,7 @@ FN: (Dom Node) -> Any"
 Unlike `treemacs-walk-dom' only expanded nodes are selected.
 
 Calls FN on every node encountered in a depth-first pattern, starting with the
-deepest. This assures that FN may destructively modify the dom, at least on
+deepest.  This assures that FN may destructively modify the dom, at least on
 levels the one currently visiting.
 
 NODE: Dom Node Struct

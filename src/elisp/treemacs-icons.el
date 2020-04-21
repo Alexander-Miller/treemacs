@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Most of everything related to icons is handled here. Specifically the
+;;; Most of everything related to icons is handled here.  Specifically the
 ;;; definition, instantiation, customization, resizing and resetting of icons.
 
 ;;; Code:
@@ -91,7 +91,7 @@
 (defmacro treemacs-get-icon-value (ext &optional tui theme)
   "Get the value of an icon for extension EXT.
 If TUI is non-nil the terminal fallback value is returned.
-THEME is the name of the theme to look in. Will cause an error if the theme
+THEME is the name of the theme to look in.  Will cause an error if the theme
 does not exist."
   `(let* ((theme ,(if theme
                       `(treemacs--find-theme ,theme)
@@ -433,7 +433,7 @@ If SIZE is 'nil' the icons are not resized and will retain their default size of
 There is only one size, the icons are square and the aspect ratio will be
 preserved when resizing them therefore width and height are the same.
 
-Resizing the icons only works if Emacs was built with ImageMagick support. If
+Resizing the icons only works if Emacs was built with ImageMagick support.  If
 this is not the case this function will report an error.
 
 Custom icons are not taken into account, only the size of treemacs' own icons
@@ -476,7 +476,7 @@ TUI icons will be used if
 
 Note that treemacs has a very loose definition of what constitutes a file
 extension - it's either everything past the last period, or just the file's full
-name if there is no period. This makes it possible to match file names like
+name if there is no period.  This makes it possible to match file names like
 '.gitignore' and 'Makefile'.
 
 Additionally FILE-EXTENSIONS are also not case sensitive and will be stored in a

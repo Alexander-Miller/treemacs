@@ -21,7 +21,7 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Treemacs icons for dired. Code is based on all-the-icons-dired.el
+;;; Treemacs icons for dired.  Code is based on all-the-icons-dired.el
 
 ;;; Code:
 

@@ -26,6 +26,7 @@
 (require 'treemacs-core-utils)
 (require 'treemacs-dom)
 (require 'treemacs-scope)
+
 (eval-and-compile
   (require 'inline)
   (require 'treemacs-macros))

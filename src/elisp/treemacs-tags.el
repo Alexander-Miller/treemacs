@@ -18,7 +18,7 @@
 ;;; Commentary:
 ;;; Tags display functionality.
 ;;; Need to be very careful here - many of the functions in this module need to be run inside the treemacs buffer, while
-;;; the `treemacs--execute-button-action' macro that runs them will switch windows before doing so. Heavy use of
+;;; the `treemacs--execute-button-action' macro that runs them will switch windows before doing so.  Heavy use of
 ;;; `treemacs-safe-button-get' or `treemacs-with-button-buffer' is necessary.
 
 ;;; Code:
@@ -217,7 +217,7 @@ context and decides whether to find the window to display in (if the tag is
 visited instead of the node being expanded).
 
 On the one hand it can be called based on `treemacs-RET-actions-config' (or
-TAB). The functions in these configs  are expected to find the windows they need
+TAB).  The functions in these configs  are expected to find the windows they need
 to display in themselves, so FIND-WINDOW must be t. On the other hand this
 function is also called from the top level vist-node functions like
 `treemacs-visit-node-vertical-split' which delegates to the
@@ -315,7 +315,7 @@ Open all tag section under BTN when call is RECURSIVE."
 (defun treemacs--collapse-tag-node-recursive (btn)
   "Recursively close tag section BTN.
 Workaround for tag section having no easy way to purge all open tags below a
-button from cache. Easiest way is to just do it manually here."
+button from cache.  Easiest way is to just do it manually here."
   (--each (treemacs-collect-child-nodes btn)
     (when (eq 'tag-node-open (treemacs-button-get it :state))
       (treemacs--collapse-tag-node-recursive it)
