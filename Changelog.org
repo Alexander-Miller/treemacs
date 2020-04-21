@@ -3,12 +3,15 @@
 
 * Changelog
 ** current master
+** v2.8
  - Made workspaces lazy-loaded as needed
  - Published ~treemacs-persp~
  - Added ~treemacs-file-extension-regex~
  - Added ~treemacs-directory-name-transformer~
  - Added ~treemacs-file-name-transformer~
- - More and better icons.
+ - Added ~treemacs-move-forward-on-expand~
+ - Added ~treemacs-user-mode-line-format~
+ - Many more and better icons.
  - Bug fixes
 ** v2.7
  - Suppor for icon themes
