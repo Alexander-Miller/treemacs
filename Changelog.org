@@ -3,6 +3,7 @@
 
 * Changelog
 ** current master
+ - New icons
 ** v2.8
  - Made workspaces lazy-loaded as needed
  - Published ~treemacs-persp~
