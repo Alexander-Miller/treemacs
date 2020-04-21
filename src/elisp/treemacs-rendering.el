@@ -243,7 +243,11 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
               `(,open-action))
           ,post-open-action)
          (count-lines p (point))))
-     (treemacs--maybe-move-forward)))
+     (when treemacs-move-forward-on-expand
+       (let* ((parent (treemacs-current-button))
+              (child (next-button parent)))
+         (when (equal parent (treemacs-button-get child :parent))
+           (forward-line 1))))))
 
 (cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
   "Building block macro for creating buttons from a list of items.
