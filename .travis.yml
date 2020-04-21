@@ -30,6 +30,7 @@ install:
   # verbose flag prevents https://github.com/cask/cask/issues/367
   - cask install --verbose
 script:
+  - make lint
   - make compile
   - make test
 notifications:
