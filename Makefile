@@ -9,6 +9,7 @@ SRC_DIR          = src/elisp
 EXTRA_DIR        = src/extra
 EMACSFLAGS       = -Q -batch -L $(SRC_DIR) -L $(EXTRA_DIR) $(NO_LOAD_WARNINGS)
 COMPILE_COMMAND  = -f batch-byte-compile $(SRC_DIR)/*.el $(EXTRA_DIR)/*.el
+CHECKDOC_COMMAND = -l "test/checkdock.el"
 LINT_DIR         = /tmp/treemacs
 LINT_FLAG        = --eval "(setq byte-compile-dest-file-function (lambda (f) (concat \"$(LINT_DIR)\" (file-name-nondirectory f) \"c\")))"
 TEST_COMMAND     = buttercup -L . $(NO_LOAD_WARNINGS)
@@ -36,8 +37,11 @@ clean:
 	@rm -f $(EXTRA_DIR)/*.elc
 
 lint: EMACSFLAGS += $(LINT_FLAG)
-lint: .prepare-lint compile
+lint: .prepare-lint compile checkdoc
 	@rm -rf $(LINT_DIR)
+
+checkdoc:
+	@$(CASK) exec $(EMACS) $(EMACSFLAGS) $(CHECKDOC_COMMAND)
 
 clean-start: prepare
 	@$(CASK) exec $(EMACS) -Q -L $(SRC_DIR) --eval "(require 'treemacs)" &
