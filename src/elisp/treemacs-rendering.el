@@ -328,27 +328,9 @@ DIRS: List of Collapse Paths.  Each Collapse Path is a list of
                    beg (point)
                    '(face treemacs-directory-collapsed-face)))))))))))
 
-(defmacro treemacs--map-when-unrolled (items interval &rest mapper)
-  "Unrolled variant of dash.el's `--map-when'.
-Specialized towards applying MAPPER to ITEMS on a given INTERVAL."
-  (declare (indent 2))
-  `(let* ((ret nil)
-          (--items-- ,items)
-          (reps (/ (length --items--) ,interval))
-          (--loop-- 0))
-     (while (< --loop-- reps)
-       ,@(-repeat
-          (1- interval)
-          '(setq ret (cons (pop --items--) ret)))
-       (setq ret
-             (-let [it (pop --items--)]
-               (cons ,@mapper ret)))
-       (cl-incf --loop--))
-     (nreverse (nconc --items-- ret))))
-
-(defmacro treemacs--inplace-map-when-unrolled (items interval &rest map-body)
+(defmacro treemacs--inplace-map-when-unrolled (items interval &rest mapper)
   "Unrolled in-place mappig operation.
-Applies MAP-BODY to every element in ITEMS at the given INTERVAL."
+Maps ITEMS at given index INTERVAL using MAPPER function."
   (declare (indent 2))
   (let ((l (make-symbol "list"))
         (tail-op (cl-case interval
@@ -360,7 +342,7 @@ Applies MAP-BODY to every element in ITEMS at the given INTERVAL."
        (while ,l
          (setq ,l (,tail-op ,l))
          (let ((it (pop ,l)))
-           ,@map-body)))))
+           ,@mapper)))))
 
 (define-inline treemacs--create-branch (root depth git-future collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.

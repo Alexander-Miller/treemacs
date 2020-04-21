@@ -378,7 +378,7 @@ Specifically only run it when (featurep 'treemacs) returns nil."
      ,@body))
 
 (defmacro treemacs--maphash (table names &rest body)
-  "Iterate over entries of TABLE in BODY.
+  "Iterate over entries of TABLE with NAMES in BODY.
 Entry variables will bound based on NAMES which is a list of two elements."
   (declare (debug (sexp sexp body))
            (indent 2))
@@ -446,8 +446,8 @@ This pattern is oftentimes used in treemacs, see also `treemacs-return-if',
 
 (defmacro treemacs-is-path (left op &optional right)
   "Readable utility macro for various path predicates.
-LEFT is a file path, RIGHT is either a path, project, or workspace while OP can
-take the following forms:
+LEFT is a file path, OP is the operator and RIGHT is either a path, project, or
+workspace.  OP can be one of the following:
 
  * `:same-as' will check for string equality
  * `:in' will check will check whether LEFT is a child or the same as RIGHT.
@@ -521,7 +521,7 @@ treemacs buffer exists at all, BODY will be executed."
      ,@body))
 
 (defmacro treemacs-with-ignored-errors (ignored-errors &rest body)
-  "Evaluate BODY with specific errors ignored.
+  "Given list of specifically IGNORED-ERRORS evaluate BODY.
 
 IGNORED-ERRORS is a list of errors to ignore.  Each element is a list whose car
 is the error's type, and second item is a regex to match against error messages.
@@ -538,7 +538,7 @@ If any of the IGNORED-ERRORS matches, the error is suppressed and nil returned."
 
 (defmacro treemacs-debounce (guard delay &rest body)
   "Debounce a function call.
-Based on a timer GUARD variable run function BODY with the given DELAY."
+Based on a timer GUARD variable run function with the given DELAY and BODY."
   (declare (indent 2))
   `(unless ,guard
      (setf ,guard

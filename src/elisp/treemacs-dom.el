@@ -237,7 +237,7 @@ FN: (Dom Node) -> Any"
   (funcall fn node))
 
 (defun treemacs-walk-dom-exclusive (node fn)
-  "Same as `treemacs-walk-dom', but FN is not invoked on initial NODE.
+  "Same as `treemacs-walk-dom', but start NODE will not be passed to FN.
 
 NODE: Dom Node Struct
 FN: (Dom Node) -> Any"
@@ -261,7 +261,7 @@ FN: (Dom Node) -> Any"
   (funcall fn node))
 
 (defun treemacs-walk-reentry-dom-exclusive (node fn)
-  "Same as `treemacs-walk-reentry-dom', but FN is not invoked on initial NODE.
+  "Same as `treemacs-walk-reentry-dom', but start NODE will not be passed to FN.
 
 NODE: Dom Node Struct
 FN: (Dom Node) -> Any"

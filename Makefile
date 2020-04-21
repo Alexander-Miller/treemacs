@@ -14,7 +14,7 @@ LINT_DIR         = /tmp/treemacs
 LINT_FLAG        = --eval "(setq byte-compile-dest-file-function (lambda (f) (concat \"$(LINT_DIR)\" (file-name-nondirectory f) \"c\")))"
 TEST_COMMAND     = buttercup -L . $(NO_LOAD_WARNINGS)
 
-.PHONY: test compile clean lint prepare clean-start .prepare-lint
+.PHONY: test compile checkdoc clean lint prepare clean-start .prepare-lint
 
 .ONESHELL:
 

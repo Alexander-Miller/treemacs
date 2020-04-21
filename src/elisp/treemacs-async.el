@@ -270,12 +270,12 @@ states of all its parents they will likewise be updated by this function.  If
 the file's current and new git status are the same this function will do
 nothing.
 
-When OVERRIDE-STATUS is non-nil the FILE's cached git status will not be used.
-
 When EXCLUDE-PARENTS is non-nil only the given FILE only the file node is
 updated.  This is only used in case a file-watch update requires the insertion
 of a new file that, due to being recently created, does not have a git status
 cache entry.
+
+When OVERRIDE-STATUS is non-nil the FILE's cached git status will not be used.
 
 FILE: Filepath
 EXCLUDE-PARENTS: Boolean
