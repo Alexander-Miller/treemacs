@@ -32,6 +32,8 @@
 (require 'treemacs-customization)
 (require 'treemacs-dom)
 (require 'treemacs-workspaces)
+(require 'treemacs-visuals)
+
 (eval-and-compile
   (require 'treemacs-macros)
   (require 'inline))
