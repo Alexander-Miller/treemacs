@@ -12,7 +12,7 @@ COMPILE_COMMAND  = -f batch-byte-compile $(SRC_DIR)/*.el $(EXTRA_DIR)/*.el
 CHECKDOC_COMMAND = -l "test/checkdock.el"
 LINT_DIR         = /tmp/treemacs
 LINT_FLAG        = --eval "(setq byte-compile-dest-file-function (lambda (f) (concat \"$(LINT_DIR)\" (file-name-nondirectory f) \"c\")))"
-TEST_COMMAND     = buttercup -L . $(NO_LOAD_WARNINGS)
+TEST_COMMAND     = buttercup -L $(SRC_DIR) -L $(EXTRA_DIR) $(NO_LOAD_WARNINGS)
 
 .PHONY: test compile checkdoc clean lint prepare clean-start .prepare-lint
 
