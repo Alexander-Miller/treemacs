@@ -98,7 +98,7 @@
              ,config
              (treemacs--propagate-new-icons theme))
          (setf (treemacs-theme->path theme) original-icon-dir))
-       (treemacs-theme->name theme))))
+       nil)))
 
 (defun treemacs--propagate-new-icons (theme)
   "Add THEME's new icons to the other themes."
