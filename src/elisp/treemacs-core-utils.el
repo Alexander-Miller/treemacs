@@ -29,6 +29,7 @@
 (require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
+(require 'treemacs-logging)
 (eval-and-compile
   (require 'inline)
   (require 'cl-lib)
@@ -143,10 +144,6 @@ Used in `treemacs-is-node-expanded?'")
         (-> dir (f-parent) (f-parent))
       dir))
   "The directory treemacs.el is stored in.")
-
-(defvar treemacs--no-messages nil
-  "When set to t `treemacs-log' will produce no output.
-Not used directly, but as part of `treemacs-without-messages'.")
 
 (defvar-local treemacs--width-is-locked t
   "Keeps track of whether the width of the treemacs window is locked.")

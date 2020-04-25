@@ -30,6 +30,7 @@
 (require 's)
 (require 'f)
 (require 'treemacs-customization)
+(require 'treemacs-logging)
 (require 'treemacs-themes)
 (require 'treemacs-icons)
 (require 'treemacs-faces)

@@ -34,6 +34,7 @@
 (require 'treemacs-visuals)
 (require 'treemacs-dom)
 (require 'treemacs-icons)
+(require 'treemacs-logging)
 (eval-and-compile
   (require 'inline)
   (require 'cl-lib)
@@ -107,7 +108,7 @@ should be placed under."
             (unless (equal result '(nil))
               (treemacs--post-process-index result mode))))
       (imenu-unavailable (ignore e))
-      (error (prog1 nil (treemacs-log "Encountered error while following tag at point: %s" e))))))
+      (error (prog1 nil (treemacs-log-err "Encountered error while following tag at point: %s" e))))))
 
 (define-inline treemacs--insert-tag-leaf (item path prefix parent depth)
   "Return the text to insert for a tag leaf ITEM with given PATH.
@@ -391,7 +392,7 @@ headline with subelements is saved in an 'org-imenu-marker' text property."
                          (fboundp 'org-reveal))
                 (org-reveal)))))
       (error
-       (treemacs-log "Something went wrong when finding tag '%s': %s"
+       (treemacs-log-err "Something went wrong when finding tag '%s': %s"
          (propertize tag 'face 'treemacs-tags-face)
          e)))))
 

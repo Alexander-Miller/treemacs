@@ -27,6 +27,7 @@
 (require 'inline)
 (require 'treemacs-macros)
 (require 'treemacs-core-utils)
+(require 'treemacs-logging)
 
 (treemacs-import-functions-from "treemacs-icons"
   treemacs--select-icon-set)
@@ -67,7 +68,7 @@
      (add-to-list 'treemacs--themes theme)
      ,(when extends
         `(treemacs-unless-let (base-theme (treemacs--find-theme ,extends))
-             (treemacs-log "Could not find base theme %s when creating theme %s." ,extends ,name)
+             (treemacs-log-failure "Could not find base theme %s when creating theme %s." ,extends ,name)
            (treemacs--maphash (treemacs-theme->gui-icons base-theme) (ext icon)
              (ht-set! gui-icons ext icon))
            (treemacs--maphash (treemacs-theme->tui-icons base-theme) (ext icon)
@@ -120,7 +121,7 @@ and restored."
   (interactive
    (list (completing-read "Theme: " (-map #'treemacs-theme->name treemacs--themes))))
   (treemacs-unless-let (theme (treemacs--find-theme name))
-      (treemacs-log "Cannot find theme '%s'." name)
+      (treemacs-log-failure "Cannot find theme '%s'." name)
     (setq treemacs--current-theme theme)
     (dolist (buffer (buffer-list))
       (when (memq (buffer-local-value 'major-mode buffer) '(treemacs-mode dired-mode))

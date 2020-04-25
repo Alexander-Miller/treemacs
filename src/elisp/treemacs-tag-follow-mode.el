@@ -37,6 +37,7 @@
 (require 'treemacs-tags)
 (require 'treemacs-scope)
 (require 'treemacs-follow-mode)
+(require 'treemacs-logging)
 (eval-and-compile
   (require 'inline)
   (require 'cl-lib)
@@ -280,7 +281,7 @@ PROJECT: Project Struct"
               (setq-local treemacs--imenu-cache (copy-sequence index)))
             (treemacs--do-follow-tag index treemacs-window buffer-file project))
         (imenu-unavailable (ignore e))
-        (error (treemacs-log "Encountered error while following tag at point: %s" e))))))
+        (error (treemacs-log-err "Encountered error while following tag at point: %s" e))))))
 
 (defun treemacs--setup-tag-follow-mode ()
   "Setup tag follow mode."

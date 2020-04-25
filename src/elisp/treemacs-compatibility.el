@@ -23,6 +23,7 @@
 
 (require 'dash)
 (require 'treemacs-customization)
+(require 'treemacs-logging)
 (require 'treemacs-scope)
 (require 'treemacs-core-utils)
 (require 'treemacs-interface)
@@ -59,7 +60,7 @@
   (declare-function treemacs--remove-treemacs-window-in-new-frames "treemacs-compatibility")
   (if (boundp 'persp-activated-functions)
       (add-to-list 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames)
-    (treemacs-log "`persp-activated-functions' not defined - couldn't add compatibility.")))
+    (treemacs-log-failure "`persp-activated-functions' not defined - couldn't add compatibility.")))
 
 (defun treemacs--split-window-advice (original-split-function &rest args)
   "Advice to make sure window splits are sized correctly with treemacs.

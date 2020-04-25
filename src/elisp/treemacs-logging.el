@@ -1,0 +1,61 @@
+;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
+
+;; Copyright (C) 2020 Alexander Miller
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;;; Implementation for logging messages.
+
+;;; Code:
+
+(defvar treemacs--no-messages nil
+  "When set to t `treemacs-log' will produce no output.
+Not used directly, but as part of `treemacs-without-messages'.")
+
+(defmacro treemacs-without-messages (&rest body)
+  "Temporarily turn off messages to execute BODY."
+  (declare (debug t))
+  `(let ((treemacs--no-messages t))
+     ,@body))
+
+(defmacro treemacs--do-log (prefix msg &rest args)
+  "Print a log statement with the given PREFIX and MSG and format ARGS."
+  `(unless treemacs--no-messages
+     (message "%s %s" ,prefix (format ,msg ,@args))))
+
+(defmacro treemacs-log (msg &rest args)
+  "Write an info/success log statement given format string MSG and ARGS."
+  (declare (indent 1))
+  `(treemacs--do-log
+    (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
+    ,msg ,@args))
+
+(defmacro treemacs-log-failure (msg &rest args)
+  "Write a warning/failure log statement given format string MSG and ARGS."
+  (declare (indent 1))
+  `(treemacs--do-log
+    (propertize "[Treemacs Failure]" 'face '((:inherit warning :weight bold)))
+    ,msg ,@args))
+
+(defmacro treemacs-log-err (msg &rest args)
+  "Write an error log statement given format string MSG and ARGS."
+  (declare (indent 1))
+  `(treemacs--do-log
+    (propertize "[Treemacs Error]" 'face '((:inherit warning :weight bold)))
+    ,msg ,@args))
+
+(provide 'treemacs-logging)
+
+;;; treemacs-logging.el ends here

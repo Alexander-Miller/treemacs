@@ -36,6 +36,7 @@
 (require 'treemacs-workspaces)
 (require 'treemacs-persistence)
 (require 'treemacs-extensions)
+(require 'treemacs-logging)
 (eval-and-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
@@ -831,7 +832,7 @@ workspaces."
   "Refresh the project at point."
   (interactive)
   (treemacs-unless-let (btn (treemacs-current-button))
-      (treemacs-log "There is nothing to refresh.")
+      (treemacs-log-failure "There is nothing to refresh.")
     (treemacs--do-refresh (current-buffer) (treemacs-project-of-node btn))))
 
 (defun treemacs-collapse-project (&optional arg)
@@ -1107,7 +1108,7 @@ absolute path of the project root."
            (kill-buffer buffer))
          :on-error
          (progn
-           (treemacs-log "Shell command failed with exit code %s and output:" (process-exit-status process))
+           (treemacs-log-failure "Shell command failed with exit code %s and output:" (process-exit-status process))
            (message "%s" (pfuture-callback-output))
            (kill-buffer buffer)))))))
 
@@ -1157,7 +1158,7 @@ absolute path of the node (if it is present)."
         (kill-buffer buffer))
       :on-error
       (progn
-        (treemacs-log "Shell command failed with exit code %s and output:" (process-exit-status process))
+        (treemacs-log-failure "Shell command failed with exit code %s and output:" (process-exit-status process))
         (message "%s" (pfuture-callback-output))
         (kill-buffer buffer)))))
 

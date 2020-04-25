@@ -27,6 +27,7 @@
 (require 'cl-lib)
 (require 'treemacs-workspaces)
 (require 'treemacs-customization)
+(require 'treemacs-logging)
 (eval-when-compile
   (require 'inline)
   (require 'treemacs-macros))
@@ -113,16 +114,16 @@ ITER: Treemacs-Iter struct"
         (while (s-matches? treemacs--persist-kv-regex (treemacs-iter->peek iter))
           (push (treemacs-iter->next! iter) kv-lines))
         (if (null kv-lines)
-            (treemacs-log "Project %s has no path and will be ignored."
-                          (propertize (treemacs-project->name project)
-                                      'face 'font-lock-type-face))
+            (treemacs-log-failure "Project %s has no path and will be ignored."
+              (propertize (treemacs-project->name project)
+                          'face 'font-lock-type-face))
           (dolist (kv-line kv-lines)
             (-let [(key val) (s-split " :: " kv-line)]
               (pcase (s-trim key)
                 ("- path"
                  (setf (treemacs-project->path project) (treemacs--canonical-path val)))
                 (_
-                 (treemacs-log "Encountered unknown project key-value in line [%s]" kv-line)))))
+                 (treemacs-log-failure "Encountered unknown project key-value in line [%s]" kv-line)))))
           (let ((action 'retry))
             (while (eq action 'retry)
               (setf (treemacs-project->path-status project)
@@ -145,9 +146,9 @@ ITER: Treemacs-Iter struct"
                                     completions))))
                      (treemacs-missing-project-action))))
             (if (eq action 'remove)
-                (treemacs-log "The location of project %s at %s cannot be read. Project was removed from the project list."
-                              (propertize (treemacs-project->name project) 'face 'font-lock-type-face)
-                              (propertize (treemacs-project->path project) 'face 'font-lock-string-face))
+                (treemacs-log-failure "The location of project %s at %s cannot be read. Project was removed from the project list."
+                  (propertize (treemacs-project->name project) 'face 'font-lock-type-face)
+                  (propertize (treemacs-project->path project) 'face 'font-lock-string-face))
               (push project projects))))))
     (nreverse projects)))
 
@@ -179,7 +180,7 @@ ITER: Treemacs-Iter struct"
             (insert (apply #'concat (nreverse txt)))
             (-let [inhibit-message t] (save-buffer))
             (unless no-kill (kill-buffer))))
-      (error (treemacs-log "Error '%s' when persisting workspace." e)))))
+      (error (treemacs-log-err "Error '%s' when persisting workspace." e)))))
 
 (defun treemacs--read-persist-lines (&optional txt)
   "Read the relevant lines from given TXT or `treemacs-persist-file'.
@@ -279,7 +280,7 @@ CONTEXT: Keyword"
                  (setf treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list lines))))
                 (`(error ,line ,error-msg)
                  (treemacs--write-error-persist-state lines (format "'%s' in line '%s'" error-msg line))
-                 (treemacs-log "Could not restore saved state, %s:\n%s\n%s"
+                 (treemacs-log-err "Could not restore saved state, %s:\n%s\n%s"
                    (pcase line
                      (:start "found error in the first line")
                      (:end "found error in the last line")
@@ -290,7 +291,7 @@ CONTEXT: Keyword"
             (error
              (progn
                (treemacs--write-error-persist-state lines e)
-               (treemacs-log "Error '%s' when loading the persisted workspace.\n%s"
+               (treemacs-log-err "Error '%s' when loading the persisted workspace.\n%s"
                  e
                  (format "Broken state was saved to %s"
                          (propertize treemacs-last-error-persist-file 'face 'font-lock-string-face)))))))))))

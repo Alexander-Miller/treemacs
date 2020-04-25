@@ -33,6 +33,7 @@
 (require 'treemacs-dom)
 (require 'treemacs-workspaces)
 (require 'treemacs-visuals)
+(require 'treemacs-logging)
 
 (eval-and-compile
   (require 'treemacs-macros)
@@ -933,7 +934,7 @@ parents' git status can be updated."
               (_
                ;; Renaming is handled as a combination of delete+create, so
                ;; this case should never be taken
-               (treemacs-log "Unusual change event: %s" change)
+               (treemacs-log-failure "Unknown change event: %s" change)
                (setf recurse nil)
                (if (null (treemacs-dom-node->parent node))
                    (treemacs-project->refresh! project)

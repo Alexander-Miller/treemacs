@@ -28,6 +28,7 @@
 (require 'treemacs-customization)
 (require 'treemacs-workspaces)
 (require 'treemacs-dom)
+(require 'treemacs-logging)
 (eval-and-compile
   (require 'inline)
   (require 'treemacs-macros))
@@ -164,8 +165,8 @@ GIT-FUTURE: Pfuture"
                                       (s-truncate 80 it)
                                       (propertize it 'face 'error))))
               (if (< (length git-stderr) 80)
-                  (treemacs-log "treemacs-git-status.py wrote to stderr: %s" visible-error)
-                (treemacs-log "treemacs-git-status.py wrote to stderr (see full output in *Messages*): %s" visible-error)
+                  (treemacs-log-err "treemacs-git-status.py wrote to stderr: %s" visible-error)
+                (treemacs-log-err "treemacs-git-status.py wrote to stderr (see full output in *Messages*): %s" visible-error)
                 (let ((inhibit-message t))
                   (treemacs-log "treemacs-git-status.py wrote to stderr: %s" git-stderr)))))
           (when (= 0 (process-exit-status git-future))
@@ -173,8 +174,8 @@ GIT-FUTURE: Pfuture"
               (if (hash-table-p parsed-output)
                   parsed-output
                 (let ((inhibit-message t))
-                  (treemacs-log "treemacs-git-status.py output: %s" git-output))
-                (treemacs-log "treemacs-git-status.py did not output a valid hash table. See full output in *Messages*.")
+                  (treemacs-log-err "treemacs-git-status.py output: %s" git-output))
+                (treemacs-log-err "treemacs-git-status.py did not output a valid hash table. See full output in *Messages*.")
                 nil)))))
       (ht)))
 
@@ -327,9 +328,9 @@ OVERRIDE-STATUS: Boolean"
             (2 (ignore "No Change, Do Nothing"))
             (_
              (-let [err-str (treemacs--remove-trailing-newline (pfuture-output-from-buffer pfuture-buffer))]
-               (treemacs-log "Update of node \"%s\" failed with status \"%s\" and result"
+               (treemacs-log-err "Update of node \"%s\" failed with status \"%s\" and result"
                  file (treemacs--remove-trailing-newline status))
-               (treemacs-log "\"%s\"" (treemacs--remove-trailing-newline err-str))))))))))
+               (treemacs-log-err "\"%s\"" (treemacs--remove-trailing-newline err-str))))))))))
 
 (defun treemacs--collapsed-dirs-process (path project)
   "Start a new process to determine dirs to collpase under PATH.
@@ -456,7 +457,7 @@ FUTURE: Pfuture process"
      (setf treemacs-collapse-dirs 3))
 
    (unless (or has-python (boundp 'treemacs-no-load-time-warnings))
-     (treemacs-log "Python3 not found, advanced git-mode and directory flattening features will be disabled."))))
+     (treemacs-log-failure "Python3 not found, advanced git-mode and directory flattening features will be disabled."))))
 
 (provide 'treemacs-async)
 

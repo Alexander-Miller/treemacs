@@ -244,7 +244,7 @@ to it will instead show a blank."
               (,(cdr key-fallback-ws)    #'treemacs-set-fallback-workspace)
               ("?" nil "Exit"))))
         (treemacs--helpful-hydra/body))
-    (treemacs-log "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
+    (treemacs-log-failure "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
 
 ;; no warning - we cannot require treemacs.el where all the autoloaded functions
 ;; are defined or we get a recursive require, so it's either this or an equally

@@ -39,15 +39,6 @@ Creates a list of `declare-function' statements."
   (let ((imports (--map (list 'declare-function it file) functions)))
     `(progn ,@imports)))
 
-(defmacro treemacs-log (msg &rest args)
-  "Write a log statement given format string MSG and ARGS."
-  (declare (indent 1))
-  `(unless treemacs--no-messages
-     (message
-      "%s %s"
-      (propertize "[Treemacs]" 'face 'font-lock-keyword-face)
-      (format ,msg ,@args))))
-
 (defmacro treemacs-static-assert (predicate error-msg &rest error-args)
   "Assert for macros that triggers at expansion time.
 Tests PREDICATE and, if it evaluates to nil, throws an error with ERROR-MSG and
@@ -63,12 +54,6 @@ interfere with auto-completion."
   "Temporarily turn off read-ony mode to execute BODY."
   (declare (debug t))
   `(let (buffer-read-only)
-     ,@body))
-
-(defmacro treemacs-without-messages (&rest body)
-  "Temporarily turn off messages to execute BODY."
-  (declare (debug t))
-  `(let ((treemacs--no-messages t))
      ,@body))
 
 (defmacro treemacs-safe-button-get (button &rest properties)

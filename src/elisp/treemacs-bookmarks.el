@@ -26,6 +26,7 @@
 (require 'treemacs-follow-mode)
 (require 'treemacs-interface)
 (require 'treemacs-scope)
+(require 'treemacs-logging)
 (require 'treemacs-tags)
 (eval-and-compile
   (require 'treemacs-macros))
@@ -193,7 +194,7 @@ treemacs node is pointing to a valid buffer position."
              `((filename . ,(buffer-file-name tag-buffer))
                (position . ,tag-pos))
              nil)
-          (treemacs-log "Tag info can not be saved because it is not pointing to a live buffer."))))
+          (treemacs-log-failure "Tag info can not be saved because it is not pointing to a live buffer."))))
      ((or 'tag-node-open 'tag-node-closed)
       (treemacs-pulse-on-failure "There is nothing to bookmark here.")))))
 
