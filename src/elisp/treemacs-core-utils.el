@@ -1021,14 +1021,15 @@ PATH: Node Path"
        :directory-extension-action (if (> (length ,path) 2) (butlast ,path) (car ,path))
        :project-extension-action (if (> (length ,path) 2) (butlast ,path) (treemacs-project->path (car ,path)))))))
 
-(defun treemacs--evade-image ()
+(define-inline treemacs--evade-image ()
   "The cursor visibly blinks when on top of an icon.
 It needs to be moved aside in a way that works for all indent depths and
 `treemacs-indentation' settings."
-  (when (eq major-mode 'treemacs-mode)
-    (beginning-of-line)
-    (when (eq 'image (car-safe (get-text-property (point) 'display)))
-      (forward-char 1))))
+  (inline-quote
+   (when (eq major-mode 'treemacs-mode)
+     (beginning-of-line)
+     (when (eq 'image (car-safe (get-text-property (point) 'display)))
+       (forward-char 1)))))
 
 (defun treemacs--read-first-project-path ()
   "Read the first project on init with an empty workspace.
