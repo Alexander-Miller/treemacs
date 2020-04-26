@@ -474,6 +474,15 @@ TUI icons will be used if
             (value    (ht-get icons icon-symbol)))
         (set (make-local-variable variable) value)))))
 
+(define-inline treemacs-current-icons (&optional tui)
+  "Return the current theme's icons.
+Return the fallback icons if TUI is non-nil."
+  (inline-letevals (tui)
+    (inline-quote
+     (if ,tui
+         (treemacs-theme->tui-icons treemacs--current-theme)
+       (treemacs-theme->gui-icons treemacs--current-theme)))))
+
 ;;;###autoload
 (defun treemacs-define-custom-icon (icon &rest file-extensions)
   "Define a custom ICON for the current theme to use for FILE-EXTENSIONS.
