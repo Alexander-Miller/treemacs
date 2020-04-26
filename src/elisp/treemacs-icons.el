@@ -436,24 +436,26 @@ There is only one size, the icons are square and the aspect ratio will be
 preserved when resizing them therefore width and height are the same.
 
 Resizing the icons only works if Emacs was built with ImageMagick support.  If
-this is not the case this function will report an error.
+this is not the case this function will not have any effect.
 
 Custom icons are not taken into account, only the size of treemacs' own icons
 png are changed."
   (interactive "nIcon size in pixels: ")
-  (setq treemacs--icon-size size)
-  (treemacs--maphash (treemacs-theme->gui-icons treemacs--current-theme) (_ icon)
-    (let ((display        (get-text-property 0 'display icon))
-          (img-selected   (get-text-property 0 'img-selected icon))
-          (img-unselected (get-text-property 0 'img-unselected icon))
-          (width          treemacs--icon-size)
-          (height         treemacs--icon-size))
-      (when (eq 'image (car-safe display))
-        (when (s-ends-with? "root.png" (plist-get (cdr display) :file))
-          (treemacs--root-icon-size-adjust width height))
-        (dolist (property (list display img-selected img-unselected))
-          (plist-put (cdr property) :height height)
-          (plist-put (cdr property) :width width))))))
+  (if (not (image-type-available-p 'imagemagick))
+      (treemacs-log-failure "Icons cannot be resized without imagemagick support.")
+    (setq treemacs--icon-size size)
+    (treemacs--maphash (treemacs-theme->gui-icons treemacs--current-theme) (_ icon)
+      (let ((display        (get-text-property 0 'display icon))
+            (img-selected   (get-text-property 0 'img-selected icon))
+            (img-unselected (get-text-property 0 'img-unselected icon))
+            (width          treemacs--icon-size)
+            (height         treemacs--icon-size))
+        (when (eq 'image (car-safe display))
+          (when (s-ends-with? "root.png" (plist-get (cdr display) :file))
+            (treemacs--root-icon-size-adjust width height))
+          (dolist (property (list display img-selected img-unselected))
+            (plist-put (cdr property) :height height)
+            (plist-put (cdr property) :width width)))))))
 
 (defun treemacs--select-icon-set ()
   "Select the right set of icons for the current buffer.
