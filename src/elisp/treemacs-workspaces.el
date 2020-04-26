@@ -412,7 +412,7 @@ Does not verify the readability - the cached state is used."
   (declare (side-effect-free t))
   (inline-quote (eq (treemacs-project->path-status ,self) 'local-readable)))
 
-(defun treemacs-do-add-project-to-workspace (path &optional name)
+(defun treemacs-do-add-project-to-workspace (path name)
   "Add project at PATH to the current workspace.
 NAME is provided during ad-hoc navigation only.
 Return values may be as follows:
@@ -443,17 +443,16 @@ NAME: String"
      `(invalid-path "Path is nil."))
    (let ((path-status (treemacs--get-path-status path)))
      (treemacs-error-return-if (not (file-readable-p path))
-       `(invalid-path "Path does not exist."))
+       `(invalid-path "Path is not readable does not exist."))
      (setq path (-> path (file-truename) (treemacs--canonical-path)))
      (-when-let (project (treemacs--find-project-for-path path))
        (treemacs-return `(duplicate-project ,project)))
+     (treemacs-return-if (treemacs--is-name-invalid? name)
+       `(invalid-name ,name))
      (-when-let (project (--first (treemacs-is-path (treemacs-project->path it) :in path)
                                   (treemacs-workspace->projects (treemacs-current-workspace))))
        (treemacs-return `(includes-project ,project)))
-     (let* ((name (or name (read-string "Project Name: " (treemacs--filename path))))
-            (project (make-treemacs-project :name name :path path :path-status path-status)))
-       (treemacs-return-if (treemacs--is-name-invalid? name)
-         `(invalid-name ,name))
+     (let ((project (make-treemacs-project :name name :path path :path-status path-status)))
        (-when-let (double (--first (string= name (treemacs-project->name it))
                                    (treemacs-workspace->projects (treemacs-current-workspace))))
          (treemacs-return `(duplicate-name ,double)))
