@@ -171,7 +171,8 @@ ITER: Treemacs-Iter struct"
             (setq buffer (find-file-noselect treemacs-persist-file :no-warn)
                   desktop-save-buffer nil))
           (with-current-buffer buffer
-            (dolist (ws (treemacs-workspaces))
+            (dolist (ws (--reject (null (treemacs-workspace->projects it))
+                                  (treemacs-workspaces)))
               (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
               (dolist (pr (treemacs-workspace->projects ws))
                 (push (format "** %s\n" (treemacs-project->name pr)) txt)
