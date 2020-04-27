@@ -1195,22 +1195,25 @@ from `treemacs-copy-file' or `treemacs-move-file'."
        (treemacs-error-return-if (not (treemacs-is-node-file-or-dir? node))
          wrong-type-msg)
        (let* ((source (treemacs-button-get node :path))
-              (destination-dir (file-name-as-directory (read-directory-name prompt nil default-directory :must-match)))
-              (filename (treemacs--filename source))
-              (destination (treemacs--find-repeated-file-name (f-join destination-dir filename))))
+              (source-name (treemacs--filename source))
+              (destination (treemacs--unslash (read-file-name prompt nil default-directory :must-match)))
+              (target-is-dir? (file-directory-p destination))
+              (target-name (if target-is-dir? (treemacs--filename source) (treemacs--filename destination)))
+              (destination-dir (if target-is-dir? destination (treemacs--parent-dir destination)))
+              (target (treemacs--find-repeated-file-name (f-join destination-dir target-name))))
          (when (eq action :move)
            ;; do the deletion *before* moving the file, otherwise it will no longer exist and treemacs will
            ;; not recognize it as a file path
            (treemacs-do-delete-single-node source))
          (treemacs--without-filewatch
-          (funcall action-function source destination))
+          (funcall action-function source target))
          ;; no waiting for filewatch, if we copied to an expanded directory refresh it immediately
-         (-let [parent (treemacs--parent destination)]
+         (-let [parent (treemacs--parent target)]
            (when (treemacs-is-path-visible? parent)
              (treemacs-do-update-node parent)))
-         (treemacs-goto-file-node destination)
+         (treemacs-goto-file-node target)
          (treemacs-pulse-on-success finish-msg
-           (propertize filename 'face 'font-lock-string-face)
+           (propertize source-name 'face 'font-lock-string-face)
            (propertize destination 'face 'font-lock-string-face)))))))
 
 (defun treemacs--find-repeated-file-name (path)

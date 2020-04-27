@@ -407,12 +407,16 @@ itself, using $HOME when there is no path at or near point to grab."
   (treemacs--create-file/dir t))
 
 (defun treemacs-move-file ()
-  "Move file (or directory) at point."
+  "Move file (or directory) at point.
+Destination may also be a filename, in which case the moved file will also
+be renamed."
   (interactive)
   (treemacs--copy-or-move :move))
 
 (defun treemacs-copy-file ()
-  "Copy file (or directory) at point."
+  "Copy file (or directory) at point.
+Destination may also be a filename, in which case the copied file will also
+be renamed."
   (interactive)
   (treemacs--copy-or-move :copy))
 
