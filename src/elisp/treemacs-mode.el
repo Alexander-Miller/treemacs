@@ -117,6 +117,8 @@ to it will instead show a blank."
              (column-projects    (propertize "Projects" 'face 'treemacs-help-column-face))
              (column-ws          (propertize "Workspaces" 'face 'treemacs-help-column-face))
              (column-misc        (propertize "Misc." 'face 'treemacs-help-column-face))
+             (key-root-up        (treemacs--find-keybind #'treemacs-root-up))
+             (key-root-down      (treemacs--find-keybind #'treemacs-root-down))
              (key-next-line      (treemacs--find-keybind #'treemacs-next-line))
              (key-prev-line      (treemacs--find-keybind #'treemacs-previous-line))
              (key-next-neighbour (treemacs--find-keybind #'treemacs-next-neighbour))
@@ -175,8 +177,8 @@ to it will instead show a blank."
 %s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                           │ %s Switch Workspace │ %s re-sort
 %s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                           │ %s Set Fallback     │ %s bookmark
 %s up next window   │ %s open ace horizontal │                    │                         │                           │                             │
-                        │ %s open ace vertical   │                    │                         │                           │                             │
-                        │ %s open mru window     │                    │                         │                           │                             │
+%s root up          │ %s open ace vertical   │                    │                         │                           │                             │
+%s root down        │ %s open mru window     │                    │                         │                           │                             │
                         │ %s open externally     │                    │                         │                           │                             │
                         │ %s close parent        │                    │                         │                           │                             │
 "
@@ -189,8 +191,8 @@ to it will instead show a blank."
                (car key-goto-parent)    (car key-open-vert)   (car key-copy-file)    (car key-toggle-width)                           (car key-switch-ws)   (car key-resort)
                (car key-down-next-w)    (car key-open-ace)    (car key-move-file)    (car key-fringe-mode)                            (car key-fallback-ws) (car key-bookmark)
                (car key-up-next-w)      (car key-open-ace-h)
-                                        (car key-open-ace-v)
-                                        (car key-open-mru)
+               (car key-root-up)        (car key-open-ace-v)
+               (car key-root-down)      (car key-open-mru)
                                         (car key-open-ext)
                                         (car key-close-above)
                )))
@@ -199,6 +201,8 @@ to it will instead show a blank."
               ,hydra-str
               (,(cdr key-next-line)      #'treemacs-next-line)
               (,(cdr key-prev-line)      #'treemacs-previous-line)
+              (,(cdr key-root-up)        #'treemacs-root-up)
+              (,(cdr key-root-down)      #'treemacs-root-down)
               (,(cdr key-down-next-w)    #'treemacs-next-line-other-window)
               (,(cdr key-up-next-w)      #'treemacs-previous-line-other-window)
               (,(cdr key-next-neighbour) #'treemacs-next-neighbour)
