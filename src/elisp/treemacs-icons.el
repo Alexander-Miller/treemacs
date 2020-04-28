@@ -302,7 +302,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "json.png"          :extensions ("json"))
     (treemacs-create-icon :file "julia.png"         :extensions ("jl"))
     (treemacs-create-icon :file "elx.png"           :extensions ("ex"))
-    (treemacs-create-icon :file "elx-light.png"     :extensions ("exs" "eex"))
+    (treemacs-create-icon :file "elx-light.png"     :extensions ("exs" "eex" "leex"))
     (treemacs-create-icon :file "ocaml.png"         :extensions ("ml" "mli" "merlin" "ocaml"))
     (treemacs-create-icon :file "direnv.png"        :extensions ("envrc"))
     (treemacs-create-icon :file "puppet.png"        :extensions ("pp"))
