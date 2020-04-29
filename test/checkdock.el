@@ -1,4 +1,5 @@
-;; Based on https://github.com/flycheck/flycheck/blob/master/maint/flycheck-checkdoc.el
+;;; -*- lexical-binding: t -*-
+;;; Based on https://github.com/flycheck/flycheck/blob/master/maint/flycheck-checkdoc.el
 
 (require 'checkdoc)
 (require 'dash)
@@ -8,6 +9,8 @@
                                (directory-files "./src/extra" :full ".el")))
 
 (defun checkdoc-buffer (filename)
+  ;; output only /src/elisp/filename.el as when compiling
+  (message "Checkdoc %s" (substring filename (1+ (s-index-of "/src" filename))))
   (with-temp-buffer
     ;; Visit the file to make sure that the filename is set, as some checkdoc
     ;; lints only apply for buffers with filenames
