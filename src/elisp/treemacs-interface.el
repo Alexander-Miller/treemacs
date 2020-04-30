@@ -1192,6 +1192,38 @@ To programmatically set the scope type see `treemacs-set-scope-type'."
       (treemacs-log "Scope of type %s is now in effect."
         (propertize selection 'face 'font-lock-type-face))))))
 
+(defun treemacs-icon-catalogue ()
+  "Showcase a catalogue of all treemacs themes and their icons."
+  (interactive)
+  (switch-to-buffer (get-buffer-create "*Treemacs Icons*"))
+  (erase-buffer)
+  (dolist (theme treemacs--themes)
+    (insert (format "* Theme %s\n\n" (treemacs-theme->name theme)))
+    (insert " |------+------------|\n")
+    (insert " | Icon | Extensions |\n")
+    (insert " |------+------------|\n")
+    (let* ((icons (treemacs-theme->gui-icons theme))
+           (rev-icons (make-hash-table :size (ht-size icons) :test 'equal))
+           (txt))
+      (treemacs--maphash  icons (ext icon)
+        (let* ((display (get-text-property 0 'display icon))
+               (saved-exts (ht-get rev-icons display)))
+          (if saved-exts
+              (cl-pushnew ext saved-exts)
+            (setf saved-exts (list ext)))
+          (ht-set! rev-icons display saved-exts)))
+      (treemacs--maphash rev-icons (display exts)
+        (push
+         (format " | %s | %s |\n"
+                 (propertize "x" 'display display)
+                 (s-join " " (-map #'prin1-to-string exts)))
+         txt))
+      (insert (apply #'concat (nreverse txt)))
+      (with-no-warnings
+        (org-mode)
+        (org-table-align))
+      (goto-char 0))))
+
 (provide 'treemacs-interface)
 
 ;;; treemacs-interface.el ends here
