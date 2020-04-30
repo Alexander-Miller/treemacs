@@ -265,8 +265,14 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "error.png"           :extensions (error)      :fallback (propertize "• " 'face 'font-lock-string-face))
     (treemacs-create-icon :file "warning.png"         :extensions (warning)    :fallback (propertize "• " 'face 'font-lock-string-face))
     (treemacs-create-icon :file "info.png"            :extensions (info)       :fallback (propertize "• " 'face 'font-lock-string-face))
+    (treemacs-create-icon :file "mail.png"            :extensions (mail)       :fallback "")
+    (treemacs-create-icon :file "bookmark.png"        :extensions (bookmark)   :fallback "")
+    (treemacs-create-icon :file "svgrepo/screen.png"  :extensions (screen)     :fallback "")
+    (treemacs-create-icon :file "svgrepo/house.png"   :extensions (house)      :fallback "")
+    (treemacs-create-icon :file "svgrepo/list.png"    :extensions (list)       :fallback "")
+    (treemacs-create-icon :file "svgrepo/repeat.png"  :extensions (repeat)     :fallback "")
 
-    ;; ;; file icons
+    ;; file icons
     (treemacs-create-icon :file "txt.png"           :extensions (fallback))
     (treemacs-create-icon :file "emacs.png"         :extensions ("el" "elc"))
     (treemacs-create-icon :file "ledger.png"        :extensions ("ledger"))
