@@ -183,6 +183,39 @@ treemacs buffer for this frame."
   (goto-char 0))
 
 ;;;###autoload
+(defun treemacs-display-current-project-exclusively ()
+  "Display the current project, and *only* the current project.
+Like `treemacs-add-and-display-current-project' this will add the current
+project to treemacs based on either projectile or the built projectl.el.
+However the 'exclusive' part means that it will make the current project the
+only project, all other projects *will be removed* from the current workspace."
+  (interactive)
+  (treemacs-block
+   (treemacs-unless-let (root (treemacs--find-current-user-project))
+       (treemacs-error-return-if (null root)
+         "Not in a project.")
+     (let* ((path (treemacs--canonical-path root))
+            (name (treemacs--filename path))
+            (ws (treemacs-current-workspace)))
+       (treemacs-return-if (and (= 1 (length (treemacs-workspace->projects ws)))
+                                (string= path (-> ws (treemacs-workspace->projects) (car) (treemacs-project->path))))
+         (treemacs-pulse-on-success "Current project is already shown."))
+       (if (treemacs-workspace->is-empty?)
+           (progn
+             (treemacs-do-add-project-to-workspace path name)
+             (treemacs-select-window)
+             (treemacs-pulse-on-success))
+         (setf (treemacs-workspace->projects (treemacs-current-workspace)) nil)
+         (let ((treemacs--no-messages t)
+               (treemacs-pulse-on-success nil))
+           (treemacs-add-project-to-workspace path name))
+         (treemacs-select-window)
+         (treemacs--consolidate-projects)
+         (goto-char 2)
+         (treemacs--expand-root-node (treemacs-current-button))
+         (treemacs-pulse-on-success))))))
+
+;;;###autoload
 (defun treemacs-add-and-display-current-project ()
   "Open treemacs and add the current project root to the workspace.
 The project is determined first by projectile (if treemacs-projectile is

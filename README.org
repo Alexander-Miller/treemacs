@@ -173,9 +173,12 @@ indentation is caused by ~org-indent-mode~)
 ** Navigation without Projects and Workspaces
 If a strict workspace and project structure, as described above, is too stringent for your use-case you can, under
 certain circumstances, use treemacs to freely navigate through your your file system, similar to dired: When your
-workspace contains /exactly/ a single project you can use ~h~ and ~l~ (or ~treemacs-root-up~ and ~treemacs-root-down~) to
-arbitrarily change the single project's root. ~h~ will navigate one level upward in the file system, ~l~ will move into
-the directory at point.
+workspace contains /exactly/ a single project you can use ~h~ and ~l~ (or ~treemacs-root-up~ and ~treemacs-root-down~)
+to arbitrarily change the single project's root. ~h~ will navigate one level upward in the file system, ~l~ will move
+into the directory at point.
+
+You can also use ~treemacs-display-current-project-exclusively~ to switch to the current project (deleting any others
+that might be present).
 
 ** Frame Locality
 Treemacs buffers have a limited scope they are visible in: the frames they are created in. A treemacs buffer, once
@@ -657,21 +660,22 @@ selecting appropriate values for ~treemacs-indentation~ and ~treemacs-indentatio
 ** Unbound functions
 These functions are not bound to any keys by default. It's left up to users to find the most convenient key binds.
 
-| Action                                   | Description                                                                |
-|------------------------------------------+----------------------------------------------------------------------------|
-| treemacs                                 | Show/Hide/Initialize treemacs.                                             |
-| treemacs-bookmark                        | Find a bookmark in treemacs.                                               |
-| treemacs-find-file                       | Find and focus the current file in treemacs.                               |
-| treemacs-find-tag                        | Find and focus the current tag in treemacs.                                |
-| treemacs-select-window                   | Select the treemacs window if it is visible. Call ~treemacs~ if it is not. |
-| treemacs-delete-other-windows            | Same as ~delete-other-windows~, but will not delete the treemacs window.   |
-| treemacs-show-changelog                  | Opens a buffer showing the changelog.                                      |
-| treemacs-load-theme                      | Load a different icon theme.                                               |
-| treemacs-icon-catalogue                  | Showcases all themes and their icons.                                      |
-|------------------------------------------+----------------------------------------------------------------------------|
-| treemacs-projectile                      | Add a project from projectile to treemacs.                                 |
-| treemacs-add-and-display-current-project | Add current project to treemacs and open it.                               |
-| treemacs-select-scope-type               | Select the scope of treemacs buffers in which they are unique              |
+| Action                                       | Description                                                                |
+|----------------------------------------------+----------------------------------------------------------------------------|
+| treemacs                                     | Show/Hide/Initialize treemacs.                                             |
+| treemacs-bookmark                            | Find a bookmark in treemacs.                                               |
+| treemacs-find-file                           | Find and focus the current file in treemacs.                               |
+| treemacs-find-tag                            | Find and focus the current tag in treemacs.                                |
+| treemacs-select-window                       | Select the treemacs window if it is visible. Call ~treemacs~ if it is not. |
+| treemacs-delete-other-windows                | Same as ~delete-other-windows~, but will not delete the treemacs window.   |
+| treemacs-show-changelog                      | Opens a buffer showing the changelog.                                      |
+| treemacs-load-theme                          | Load a different icon theme.                                               |
+| treemacs-icon-catalogue                      | Showcases all themes and their icons.                                      |
+|----------------------------------------------+----------------------------------------------------------------------------|
+| treemacs-projectile                          | Add a project from projectile to treemacs.                                 |
+| treemacs-add-and-display-current-project     | Add current project to treemacs and open it.                               |
+| treemacs-display-current-project-exclusively | Add current project to treemacs and open it, deleting all others.          |
+| treemacs-select-scope-type                   | Select the scope of treemacs buffers in which they are unique              |
 
 ** Default keymaps
 
