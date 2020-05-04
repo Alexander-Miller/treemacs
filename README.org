@@ -647,7 +647,7 @@ files with ~auto-mode-alist~ would look like this:
 It is possible to force treemacs to use the simple TUI icons in GUI mode by setting ~treemacs-no-png-images~ to t.
 
 **** Resizing Icons
-If your emacs has been compiled with imagemagick support you can arbitrarily change the size of treemacs' icons by
+If your emacs has been compiled with Imagemagick support, or you're using Emacs >= 27.1, you can arbitrarily change the size of treemacs' icons by
 (interactively or programmatically) calling ~treemacs-resize-icons~.
 *** Indent guide
 Not really part of the icons, but a useful visual feature nonetheless: An indent guide like effect can be created by

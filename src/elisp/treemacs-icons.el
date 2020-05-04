@@ -443,14 +443,16 @@ If SIZE is 'nil' the icons are not resized and will retain their default size of
 There is only one size, the icons are square and the aspect ratio will be
 preserved when resizing them therefore width and height are the same.
 
-Resizing the icons only works if Emacs was built with ImageMagick support.  If
-this is not the case this function will not have any effect.
+Resizing the icons only works if Emacs was built with ImageMagick support, or if
+using Emacs >= 27.1,which has native image resizing support.  If this is not the
+case this function will not have any effect.
 
 Custom icons are not taken into account, only the size of treemacs' own icons
 png are changed."
   (interactive "nIcon size in pixels: ")
-  (if (not (image-type-available-p 'imagemagick))
-      (treemacs-log-failure "Icons cannot be resized without imagemagick support.")
+  (if (not (or  (and (functionp 'image-transforms-p) (member 'scale (image-transforms-p)))
+                (image-type-available-p 'imagemagick)))
+      (treemacs-log-failure "Icons cannot be resized without image transforms or imagemagick support.")
     (setq treemacs--icon-size size)
     (treemacs--maphash (treemacs-theme->gui-icons treemacs--current-theme) (_ icon)
       (let ((display        (get-text-property 0 'display icon))
