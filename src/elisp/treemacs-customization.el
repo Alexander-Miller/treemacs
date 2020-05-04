@@ -716,6 +716,13 @@ included in `treemacs-display-in-side-window'."
   :type 'boolean
   :group 'treemacs-window)
 
+(defcustom treemacs-user-header-line-format nil
+  "The header line used in the treemacs window.
+Can be set either to `treemacs-header-buttons-format' or any one of its
+constituent parts, or any other value acceptable for `header-line-format'."
+  :type 'string
+  :group 'treemacs-window)
+
 (defcustom treemacs-position 'left
   "Position of treemacs buffer.
 

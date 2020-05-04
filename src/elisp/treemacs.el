@@ -50,6 +50,7 @@
 (require 'treemacs-compatibility)
 (require 'treemacs-workspaces)
 (require 'treemacs-fringe-indicator)
+(require 'treemacs-header-line)
 (require 'treemacs-extensions)
 (eval-and-compile
   (require 'cl-lib)

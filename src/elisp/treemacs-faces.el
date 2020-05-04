@@ -137,6 +137,14 @@ variant), so it will only be used if git-mode is disabled or set to simple."
   "Face for the fringe indicator."
   :group 'treemacs-faces)
 
+(defface treemacs-header-button-face
+  '((t :inherit 'font-lock-keyword-face))
+  "Face used for header buttons like
+ - `treemacs-header-close-button'
+ - `treemacs-header-projects-button'
+ - `treemacs-header-workspace-button'"
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here

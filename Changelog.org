@@ -3,6 +3,7 @@
 
 * Changelog
 ** current master
+- Added ~treemacs-user-header-line-format~
 - Added ~treemacs-display-current-project-exclusively~
 - Added ~treemacs-icon-catalogue~
 - New icons
