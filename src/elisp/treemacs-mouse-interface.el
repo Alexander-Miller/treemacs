@@ -28,6 +28,7 @@
 (require 'treemacs-scope)
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)
+(require 'treemacs-logging)
 (eval-and-compile (require 'treemacs-macros))
 
 (defun treemacs-leftclick-action (event)
@@ -151,7 +152,7 @@ and ignore any prefix argument."
               ;; a raw buffer position (an int) to move to
 	      (list (or buf (get-file-buffer file)) pos))))
       (error
-       (treemacs-log "Something went wrong when finding tag '%s': %s"
+       (treemacs-log-err "Something went wrong when finding tag '%s': %s"
                       (propertize tag 'face 'treemacs-tags-face)
                       e)))))
 
@@ -188,7 +189,7 @@ and ignore any prefix argument."
              (when xref
                (list (xref-item-buffer xref) (xref-item-position xref)))))
           ('issue-warning
-           (treemacs-log "Tag '%s' is located in a buffer that does not exist."
+           (treemacs-log-failure "Tag '%s' is located in a buffer that does not exist."
                           (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
           (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))))))
 
@@ -201,71 +202,69 @@ and ignore any prefix argument."
      (select-window (treemacs-get-local-window)))
    (goto-char (posn-point (cadr event)))
    (hl-line-highlight)
-   ;; need this timer workaround because otherwise point and hl-line
-   ;; don't move properly
-   (run-with-idle-timer
-    0.001 nil
-    (lambda ()
-      (cl-labels ((check (value) (not (null value))))
-        (let* ((node    (treemacs-node-at-point))
-               (state   (-some-> node (treemacs-button-get :state)))
-               (project (treemacs-project-at-point))
-               (menu
-                (easy-menu-create-menu
-                 nil
-                 `(("New"
-                    ["New File"      treemacs-create-file]
-                    ["New Directory" treemacs-create-dir])
-                   ["Open"   treemacs-visit-node-no-split :visible ,(check node)]
-                   ("Open With" :visible ,(not (null node))
-                    ["Open Directly"                    treemacs-visit-node-no-split]
-                    ["Open With Vertical Split"         treemacs-visit-node-vertical-split]
-                    ["Open With Horizontal Split"       treemacs-visit-node-horizontal-split]
-                    ["Open With Ace"                    treemacs-visit-node-ace]
-                    ["Open With Ace & Vertical Split"   treemacs-visit-node-ace-vertical-split]
-                    ["Open With Ace & Horizontal Split" treemacs-visit-node-ace-horizontal-split])
-                   ["Open Tags"  treemacs-toggle-node :visible ,(check (memq state '(file-node-closed tag-node-closed)))]
-                   ["Close Tags" treemacs-toggle-node :visible ,(check (memq state '(file-node-open tag-node-open)))]
+   ;; need to redisplay manually so hl-line and point move correctly
+   ;; and visibly
+   (redisplay)
+   (cl-labels ((check (value) (not (null value))))
+     (let* ((node    (treemacs-node-at-point))
+            (state   (-some-> node (treemacs-button-get :state)))
+            (project (treemacs-project-at-point))
+            (menu
+             (easy-menu-create-menu
+              nil
+              `(("New"
+                 ["New File"      treemacs-create-file]
+                 ["New Directory" treemacs-create-dir])
+                ["Open"   treemacs-visit-node-no-split :visible ,(check node)]
+                ("Open With" :visible ,(not (null node))
+                 ["Open Directly"                    treemacs-visit-node-no-split]
+                 ["Open With Vertical Split"         treemacs-visit-node-vertical-split]
+                 ["Open With Horizontal Split"       treemacs-visit-node-horizontal-split]
+                 ["Open With Ace"                    treemacs-visit-node-ace]
+                 ["Open With Ace & Vertical Split"   treemacs-visit-node-ace-vertical-split]
+                 ["Open With Ace & Horizontal Split" treemacs-visit-node-ace-horizontal-split])
+                ["Open Tags"  treemacs-toggle-node :visible ,(check (memq state '(file-node-closed tag-node-closed)))]
+                ["Close Tags" treemacs-toggle-node :visible ,(check (memq state '(file-node-open tag-node-open)))]
 
-                   ["--" #'ignore                         :visible ,(check node)]
-                   ["Rename"           treemacs-rename    :visible ,(check node)]
-                   ["Delete"           treemacs-delete    :visible ,(check node)]
-                   ["Copy"             treemacs-copy-file :visible ,(check node)]
-                   ["Move"             treemacs-move-file :visible ,(check node)]
+                ["--" #'ignore                         :visible ,(check node)]
+                ["Rename"           treemacs-rename    :visible ,(check node)]
+                ["Delete"           treemacs-delete    :visible ,(check node)]
+                ["Copy"             treemacs-copy-file :visible ,(check node)]
+                ["Move"             treemacs-move-file :visible ,(check node)]
 
-                   ["--" #'ignore t]
-                   ("Projects"
-                    ["Add Project"            treemacs-add-project]
-                    ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
-                    ["Remove Project"         treemacs-remove-project-from-workspace :visible ,(check project)]
-                    ["Rename Project"         treemacs-rename-project                :visible ,(check project)])
-                   ("Workspaces"
-                    ["Edit Workspaces"       treemacs-edit-workspaces]
-                    ["Create Workspace"      treemacs-create-workspace]
-                    ["Remove Worspace"       treemacs-remove-workspace]
-                    ["Rename Workspace"      treemacs-rename-workspace]
-                    ["Switch Worspaces"      treemacs-switch-workspace]
-                    ["Set Fallback Worspace" treemacs-set-fallback-workspace])
-                   ("Toggles"
-                    [,(format "Dotfile Visibility (Currently %s)"
-                              (if treemacs-show-hidden-files "Enabled" "Disabled"))
-                     treemacs-toggle-show-dotfiles]
-                    [,(format "Follow-Mode (Currently %s)"
-                              (if treemacs-follow-mode "Enabled" "Disabled"))
-                     treemacs-follow-mode]
-                    [,(format "Filewatch-Mode (Currently %s)"
-                              (if treemacs-filewatch-mode "Enabled" "Disabled"))
-                     treemacs-filewatch-mode]
-                    [,(format "Fringe-Indicator-Mode (Currently %s)"
-                              (if treemacs-fringe-indicator-mode "Enabled" "Disabled"))
-                     treemacs-fringe-indicator-mode])
-                   ("Help"
-                    ["Show Helpful Hydra"     treemacs-helpful-hydra]
-                    ["Show Active Extensions" treemacs-show-extensions]
-                    ["Show Changelog"         treemacs-show-changelog]))))
-               (choice (x-popup-menu event menu)))
-          (when choice (call-interactively (lookup-key menu (apply 'vector choice))))
-          (hl-line-highlight)))))))
+                ["--" #'ignore t]
+                ("Projects"
+                 ["Add Project"            treemacs-add-project]
+                 ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
+                 ["Remove Project"         treemacs-remove-project-from-workspace :visible ,(check project)]
+                 ["Rename Project"         treemacs-rename-project                :visible ,(check project)])
+                ("Workspaces"
+                 ["Edit Workspaces"       treemacs-edit-workspaces]
+                 ["Create Workspace"      treemacs-create-workspace]
+                 ["Remove Worspace"       treemacs-remove-workspace]
+                 ["Rename Workspace"      treemacs-rename-workspace]
+                 ["Switch Worspaces"      treemacs-switch-workspace]
+                 ["Set Fallback Worspace" treemacs-set-fallback-workspace])
+                ("Toggles"
+                 [,(format "Dotfile Visibility (Currently %s)"
+                           (if treemacs-show-hidden-files "Enabled" "Disabled"))
+                  treemacs-toggle-show-dotfiles]
+                 [,(format "Follow-Mode (Currently %s)"
+                           (if treemacs-follow-mode "Enabled" "Disabled"))
+                  treemacs-follow-mode]
+                 [,(format "Filewatch-Mode (Currently %s)"
+                           (if treemacs-filewatch-mode "Enabled" "Disabled"))
+                  treemacs-filewatch-mode]
+                 [,(format "Fringe-Indicator-Mode (Currently %s)"
+                           (if treemacs-fringe-indicator-mode "Enabled" "Disabled"))
+                  treemacs-fringe-indicator-mode])
+                ("Help"
+                 ["Show Helpful Hydra"     treemacs-helpful-hydra]
+                 ["Show Active Extensions" treemacs-show-extensions]
+                 ["Show Changelog"         treemacs-show-changelog]))))
+            (choice (x-popup-menu event menu)))
+       (when choice (call-interactively (lookup-key menu (apply 'vector choice))))
+       (hl-line-highlight)))))
 
 (provide 'treemacs-mouse-interface)
 
