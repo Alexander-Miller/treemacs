@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 'treemacs)
+(require 'treemacs-logging)
 (require 'hl-line)
 (require 'dired)
 (require 'cl-lib)
