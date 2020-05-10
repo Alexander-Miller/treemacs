@@ -136,6 +136,7 @@ This will make sure the icons' background colors will align with hl-line mode."
         (dolist (buffer (buffer-list))
           (with-current-buffer buffer
             (when (derived-mode-p 'dired-mode)
+              (treemacs--select-icon-set)
               (treemacs-icons-dired--enable-highlight-correction)
               (treemacs-icons-dired--display)))))
     (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
