@@ -449,7 +449,9 @@ this is not the case this function will not have any effect.
 Custom icons are not taken into account, only the size of treemacs' own icons
 png are changed."
   (interactive "nIcon size in pixels: ")
-  (if (not (image-type-available-p 'imagemagick))
+  (if (and (not (image-type-available-p 'imagemagick))
+           ;; Emacs 27 comes with native image scaling.
+           (< emacs-major-version 27))
       (treemacs-log-failure "Icons cannot be resized without imagemagick support.")
     (setq treemacs--icon-size size)
     (treemacs--maphash (treemacs-theme->gui-icons treemacs--current-theme) (_ icon)
