@@ -312,7 +312,8 @@ OVERRIDE-STATUS: Boolean"
                    (when git-cache
                      (ht-set! git-cache file state))
                    (-when-let (pos (treemacs-find-visible-node file))
-                     (-let [face (treemacs--git-status-face state 'treemacs-git-unmodified-face)]
+                     (let* ((default (if (file-directory-p file) 'treemacs-directory-face 'treemacs-git-unmodified-face))
+                            (face (treemacs--git-status-face state default)))
                        (put-text-property
                         (treemacs-button-start pos) (treemacs-button-end pos)
                         'face face))))
