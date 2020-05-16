@@ -94,28 +94,6 @@ width of the new window when the treemacs window is visible."
         (org-link-set-parameters "treemacs" :store #'treemacs-store-org-link)
       (add-hook 'org-store-link-functions #'treemacs-store-org-link))))
 
-(with-eval-after-load 'which-key
-
-  (defun treemacs--fix-width-after-which-key (func &rest args)
-      "Advice to sure treemacs' window size stays put when which-key is active.
-  Wraps original FUNC + ARGS."
-      (let* ((window (treemacs-get-local-window))
-             (should-toggle (and (with-no-warnings (which-key--popup-showing-p))
-                                 (when window
-                                   (not (buffer-local-value 'treemacs--width-is-locked
-                                                            (window-buffer window))))))
-             (treemacs--no-messages t))
-        (when should-toggle
-          (with-selected-window window
-            (treemacs-toggle-fixed-width)))
-        (apply func args)
-        (when should-toggle
-          (with-selected-window window
-            (treemacs-toggle-fixed-width)))))
-
-  (advice-add 'which-key--update :around 'treemacs--fix-width-after-which-key)
-  (advice-add 'which-key--hide-buffer-side-window :around 'treemacs--fix-width-after-which-key))
-
 (with-eval-after-load 'evil-escape
   (when (boundp 'evil-escape-excluded-major-modes)
     (add-to-list 'evil-escape-excluded-major-modes 'treemacs-mode)))
