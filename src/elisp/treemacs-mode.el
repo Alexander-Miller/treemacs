@@ -439,8 +439,10 @@ Will simply return `treemacs--eldoc-msg'."
   ;; invoke the movement of the fringe overlay that would otherwise be nil
   (when treemacs-fringe-indicator-mode
     (treemacs--enable-fringe-indicator))
-  (when treemacs-user-header-line-format
-    (setf header-line-format treemacs-user-header-line-format))
+  (if treemacs-user-header-line-format
+      (setf header-line-format treemacs-user-header-line-format)
+    (when header-line-format
+      (setf header-line-format nil)))
   (hl-line-mode t)
 
   ;; needs to run manually the first time treemacs is loaded, since the hook is only added *after*
