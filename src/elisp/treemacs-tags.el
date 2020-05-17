@@ -164,7 +164,8 @@ DEPTH: Int"
   "Open tag items for file BTN.
 Recursively open all tags below BTN when RECURSIVE is non-nil."
   (let* ((path (treemacs-button-get btn :path))
-         (parent-dom-node (treemacs-find-in-dom path)))
+         (parent-dom-node (treemacs-find-in-dom path))
+         (recursive (treemacs--prefix-arg-to-recurse-depth recursive)))
     (-if-let (index (treemacs--get-imenu-index path))
         (treemacs--button-open
          :button btn
@@ -194,11 +195,12 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
            (treemacs-on-expand path btn)
            (treemacs--reentry path)
            (end-of-line)
-           (when recursive
+           (when (> recursive 0)
+             (cl-decf recursive)
              (--each (treemacs-collect-child-nodes btn)
                (when (eq 'tag-node-closed (treemacs-button-get it :state))
                  (goto-char (treemacs-button-start it))
-                 (treemacs--expand-tag-node it t))))))
+                 (treemacs--expand-tag-node it recursive))))))
       (treemacs-pulse-on-failure "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
 
 (defun treemacs--collapse-file-node (btn &optional recursive)

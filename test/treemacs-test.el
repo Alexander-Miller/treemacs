@@ -1308,21 +1308,35 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
     (expect (treemacs--find-repeated-file-name "/X/Y/Z")
             :to-equal "/X/Y/Z"))
 
-  (it "Find a (Copy 1) file with extension"
+  (it "Find a '(Copy 1)' file with extension"
     (expect (treemacs--find-repeated-file-name "/a/file.el")
             :to-equal "/a/file (Copy 1).el"))
 
-  (it "Find a (Copy 5) file with extension"
+  (it "Find a '(Copy 5)' file with extension"
     (expect (treemacs--find-repeated-file-name "/b/file.el")
             :to-equal "/b/file (Copy 5).el"))
 
-  (it "Find a (Copy 1) file without extension"
+  (it "Find a '(Copy 1)' file without extension"
     (expect (treemacs--find-repeated-file-name "/c/file")
             :to-equal "/c/file (Copy 1)"))
 
-  (it "Find a (Copy 5) file without extension"
+  (it "Find a '(Copy 5)' file without extension"
     (expect (treemacs--find-repeated-file-name "/d/file")
             :to-equal "/d/file (Copy 5)")))
+
+(describe "treemacs--prefix-arg-to-recurse-depth"
+  (it "Nil translates to 0"
+    (expect (treemacs--prefix-arg-to-recurse-depth nil) :to-be 0))
+
+  (it "Numbers translate to themselves"
+    (dotimes (n 10)
+      (expect (treemacs--prefix-arg-to-recurse-depth n) :to-be n)))
+
+  (it "Other values translate to 999"
+    (expect (treemacs--prefix-arg-to-recurse-depth '(4)) :to-be 999)
+    (expect (treemacs--prefix-arg-to-recurse-depth "str") :to-be 999)
+    (expect (treemacs--prefix-arg-to-recurse-depth (list 1 2 3)) :to-be 999)
+    (expect (treemacs--prefix-arg-to-recurse-depth (treemacs-current-workspace)) :to-be 999)))
 
 (provide 'test-treemacs)
 

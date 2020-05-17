@@ -1232,6 +1232,18 @@ exists it returns /file/name (Copy 2).ext etc."
       (setf new-path (f-join dir (concat filename-no-ext (format template n) ext))))
     new-path))
 
+(define-inline treemacs--prefix-arg-to-recurse-depth (arg)
+  "Translates prefix ARG into a number.
+Used for depth-based expansion of nodes - a numeric prefix will translate to
+itself, the default representation translates to 9999."
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (arg)
+    (inline-quote
+     (cond
+      ((null ,arg) 0)
+      ((numberp ,arg) ,arg)
+      (t 999)))))
+
 (provide 'treemacs-core-utils)
 
 ;;; treemacs-core-utils.el ends here

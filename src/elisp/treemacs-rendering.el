@@ -522,7 +522,7 @@ Remove all open entries below BTN when RECURSIVE is non-nil."
 
 BTN: Button
 GIT-FUTURE: Pfuture|Hashtable
-RECURSIVE: Bool"
+RECURSIVE: Prefix-Arg"
   (-let [path (treemacs-button-get btn :path)]
     (if (not (f-readable? path))
         (treemacs-pulse-on-failure
@@ -531,7 +531,8 @@ RECURSIVE: Bool"
              (git-future (if (treemacs-button-get btn :symlink)
                              (treemacs--git-status-process (file-truename path) project)
                            (or git-future (treemacs--git-status-process path project))))
-             (collapse-future (treemacs--collapsed-dirs-process path project)))
+             (collapse-future (treemacs--collapsed-dirs-process path project))
+             (recursive (treemacs--prefix-arg-to-recurse-depth recursive)))
         (treemacs--button-open
          :immediate-insert nil
          :button btn
@@ -545,11 +546,12 @@ RECURSIVE: Bool"
            (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
            (treemacs--apply-directory-bottom-extensions btn path)
            (treemacs--start-watching path)
-           (when recursive
+           (when (> recursive 0)
+             (cl-decf recursive)
              (--each (treemacs-collect-child-nodes btn)
                (when (eq 'dir-node-closed (treemacs-button-get it :state))
                  (goto-char (treemacs-button-start it))
-                 (treemacs--expand-dir-node it :git-future git-future :recursive t))))))))))
+                 (treemacs--expand-dir-node it :git-future git-future :recursive recursive))))))))))
 
 (defun treemacs--collapse-dir-node (btn &optional recursive)
   "Close node given by BTN.
