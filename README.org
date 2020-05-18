@@ -815,9 +815,13 @@ Aside from this there are the following known incompatibilities:
    Short answer:
 
    #+BEGIN_SRC emacs-lisp
+     (treemacs-git-mode 'extended)
      (with-eval-after-load 'treemacs
        (add-to-list 'treemacs-pre-file-insert-predicates #'treemacs-is-file-git-ignored?))
    #+END_SRC
+
+   (~simple~ git-mode would also work, but only for files. ~deferred~ mode with its delay would always use the last run's git
+   information, so it might look like it's reacting incorrectly, especially on the first run)
 
    A slightly longer explanation about how you can hook into the render process can be found in the documentation string
    of ~treemacs-pre-file-insert-predicates~.
