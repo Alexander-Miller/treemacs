@@ -185,7 +185,7 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
          :post-open-action
          (progn
            (-let [dom-nodes
-                  (--map (make-treemacs-dom-node
+                  (--map (treemacs-dom-node->create!
                           :key (list path (car it))
                           :parent parent-dom-node)
                          index)]
@@ -299,7 +299,7 @@ Open all tag section under BTN when call is RECURSIVE."
      :post-open-action
      (progn
        (-let [dom-nodes
-              (--map (make-treemacs-dom-node
+              (--map (treemacs-dom-node->create!
                       :key (append tag-path (list (car it)))
                       :parent parent-dom-node)
                      index)]

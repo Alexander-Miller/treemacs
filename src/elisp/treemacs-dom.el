@@ -29,9 +29,13 @@
   (require 'inline)
   (require 'treemacs-macros))
 
+(cl-declaim (optimize (speed 3) (safety 0)))
+
 (defvar-local treemacs-dom nil)
 
-(treemacs--defstruct treemacs-dom-node
+(cl-defstruct (treemacs-dom-node
+               (:conc-name treemacs-dom-node->)
+               (:constructor treemacs-dom-node->create!))
   key
   parent
   children
@@ -130,7 +134,7 @@ POS: Marker"
              (setf (treemacs-dom-node->reentry-nodes parent-dom-node)
                    (cons dom-node (treemacs-dom-node->reentry-nodes parent-dom-node)))))
        ;; expansion of root
-       (setf dom-node (make-treemacs-dom-node :key ,key :position ,pos))
+       (setf dom-node (treemacs-dom-node->create! :key ,key :position ,pos))
        (treemacs-dom-node->insert-into-dom! dom-node)))))
 
 (define-inline treemacs-on-collapse (key &optional purge)

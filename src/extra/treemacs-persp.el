@@ -97,7 +97,7 @@ does not return anything the projects of the fallback workspace will be copied."
        (treemacs-return (car treemacs--workspaces)))
      (if root-path
          (setf project-list
-               (list (make-treemacs-project
+               (list (treemacs-project->create!
                       :name (treemacs--filename root-path)
                       :path root-path
                       :path-status (treemacs--get-path-status root-path))))
@@ -105,7 +105,7 @@ does not return anything the projects of the fallback workspace will be copied."
          ;; copy the projects instead of reusing them so we don't accidentially rename
          ;; a project in 2 workspaces
          (dolist (project (treemacs-workspace->projects fallback-workspace))
-           (push (make-treemacs-project
+           (push (treemacs-project->create!
                   :name (treemacs-project->name project)
                   :path (treemacs-project->path project)
                   :path-status (treemacs-project->path-status project))

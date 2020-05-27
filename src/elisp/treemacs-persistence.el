@@ -33,6 +33,8 @@
   (require 'inline)
   (require 'treemacs-macros))
 
+(cl-declaim (optimize (speed 3) (safety 0)))
+
 (defconst treemacs--org-edit-buffer-name "*Edit Treemacs Workspaces*"
   "The name of the buffer used to edit treemacs' workspace.")
 
@@ -60,7 +62,10 @@
   (rx bol "** " (1+ any) eol)
   "The regular expression to match lines with projects names.")
 
-(treemacs--defstruct treemacs-iter list)
+(cl-defstruct (treemacs-iter
+               (:conc-name treemacs-iter->)
+               (:constructor treemacs-iter->create!))
+  list)
 
 (define-inline treemacs-iter->next! (self)
   "Get the next element of iterator SELF.
@@ -94,7 +99,7 @@ SELF: Treemacs-Iter struct."
 ITER: Treemacs-Iter struct."
   (let (workspaces)
     (while (s-matches? treemacs--persist-workspace-name-regex (treemacs-iter->peek iter))
-      (-let [workspace (make-treemacs-workspace)]
+      (-let [workspace (treemacs-workspace->create!)]
         (setf (treemacs-workspace->name workspace)
               (substring (treemacs-iter->next! iter) 2)
               (treemacs-workspace->projects workspace)
@@ -109,7 +114,7 @@ ITER: Treemacs-Iter struct"
   (let (projects)
     (while (s-matches? treemacs--persist-project-name-regex (treemacs-iter->peek iter))
       (let ((kv-lines nil)
-            (project (make-treemacs-project)))
+            (project (treemacs-project->create!)))
         (setf (treemacs-project->name project)
               (substring (treemacs-iter->next! iter) 3))
         (while (s-matches? treemacs--persist-kv-regex (treemacs-iter->peek iter))
@@ -267,7 +272,7 @@ CONTEXT: Keyword"
   "Restore treemacs' state from `treemacs-persist-file'."
   (unless (treemacs--should-not-run-persistence?)
     (treemacs-unless-let (lines (treemacs--read-persist-lines))
-        (setf treemacs--workspaces (list (make-treemacs-workspace :name "Default"))
+        (setf treemacs--workspaces (list (treemacs-workspace->create! :name "Default"))
               (treemacs-current-workspace) (car treemacs--workspaces))
       ;; Don't persist during restore. Otherwise, if the user would quit
       ;; Emacs during restore, for example during the completing read for
@@ -279,7 +284,7 @@ CONTEXT: Keyword"
           (condition-case e
               (pcase (treemacs--validate-persist-lines lines)
                 ('success
-                 (setf treemacs--workspaces (treemacs--read-workspaces (make-treemacs-iter :list lines))))
+                 (setf treemacs--workspaces (treemacs--read-workspaces (treemacs-iter->create! :list lines))))
                 (`(error ,line ,error-msg)
                  (treemacs--write-error-persist-state lines (format "'%s' in line '%s'" error-msg line))
                  (treemacs-log-err "Could not restore saved state, %s:\n%s\n%s"

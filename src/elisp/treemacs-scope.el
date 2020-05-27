@@ -36,6 +36,8 @@
   (require 'treemacs-macros)
   (require 'cl-lib))
 
+(cl-declaim (optimize (speed 3) (safety 0)))
+
 (treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--stop-filewatch-for-current-buffer)
 
@@ -49,7 +51,12 @@
 (treemacs-import-functions-from "treemacs-workspaces"
   treemacs--find-workspace)
 
-(treemacs--defstruct treemacs-scope-shelf buffer workspace)
+
+(cl-defstruct (treemacs-scope-shelf
+               (:conc-name treemacs-scope-shelf->)
+               (:constructor treemacs-scope-shelf->create!))
+  buffer
+  workspace)
 
 (defvar treemacs-scope-types (list (cons 'Frames 'treemacs-frame-scope))
   "List of all known scope types.
@@ -180,7 +187,7 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
   "Create and store a new buffer for the given SCOPE."
   (-let [shelf (treemacs-current-scope-shelf scope)]
     (unless shelf
-      (setf shelf (make-treemacs-scope-shelf))
+      (setf shelf (treemacs-scope-shelf->create!))
       (push (cons scope shelf) treemacs--scope-storage)
       (treemacs--find-workspace (buffer-file-name)))
     (treemacs-scope-shelf->kill-buffer shelf)

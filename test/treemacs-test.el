@@ -35,7 +35,7 @@
   "Set PR as the only project in current workspace and then run BODY."
   (declare (indent 1))
   `(let ((--original-- (treemacs-current-workspace))
-         (ws (make-treemacs-workspace :name "FAKE" :projects ,(when pr `(list ,pr)))))
+         (ws (treemacs-workspace->create! :name "FAKE" :projects ,(when pr `(list ,pr)))))
      (unwind-protect
          (progn
            (setf (treemacs-current-workspace) ws)
@@ -78,30 +78,30 @@
 
     (it "Identifies that a path is in a project"
       (let ((path "~/P/A/B/C/D/E/F/file")
-            (project (make-treemacs-project :name "P" :path "~/P/A/B/C" :path-status 'local-readable)))
+            (project (treemacs-project->create! :name "P" :path "~/P/A/B/C" :path-status 'local-readable)))
         (expect (treemacs-is-path path :in-project project) :to-be-truthy)))
 
        (it "Identifies that a path is not in a project"
          (let ((path "~/X/abc")
-               (project (make-treemacs-project :name "P" :path "~/P" :path-status 'local-readable)))
+               (project (treemacs-project->create! :name "P" :path "~/P" :path-status 'local-readable)))
            (expect (treemacs-is-path path :in-project project) :not :to-be-truthy))))
 
   (describe ":in-workspace matcher"
 
     (it "Finds project of path in the workspace"
       (let* ((path "~/C/abc")
-             (p1 (make-treemacs-project :name "P1" :path "~/A" :path-status 'local-readable))
-             (p2 (make-treemacs-project :name "P2" :path "~/B" :path-status 'local-readable))
-             (p3 (make-treemacs-project :name "P3" :path "~/C" :path-status 'local-readable))
-             (ws (make-treemacs-workspace :name "WS" :projects (list p1 p2 p3))))
+             (p1 (treemacs-project->create! :name "P1" :path "~/A" :path-status 'local-readable))
+             (p2 (treemacs-project->create! :name "P2" :path "~/B" :path-status 'local-readable))
+             (p3 (treemacs-project->create! :name "P3" :path "~/C" :path-status 'local-readable))
+             (ws (treemacs-workspace->create! :name "WS" :projects (list p1 p2 p3))))
         (expect (treemacs-is-path path :in-workspace ws) :to-be p3)))
 
     (it "Identifies path not in the workspace" ()
         (let* ((path "~/D/abc")
-               (p1 (make-treemacs-project :name "P1" :path "~/A" :path-status 'local-readable))
-               (p2 (make-treemacs-project :name "P2" :path "~/B" :path-status 'local-readable))
-               (p3 (make-treemacs-project :name "P3" :path "~/C" :path-status 'local-readable))
-               (ws (make-treemacs-workspace :name "WS" :projects (list p1 p2 p3))))
+               (p1 (treemacs-project->create! :name "P1" :path "~/A" :path-status 'local-readable))
+               (p2 (treemacs-project->create! :name "P2" :path "~/B" :path-status 'local-readable))
+               (p3 (treemacs-project->create! :name "P3" :path "~/C" :path-status 'local-readable))
+               (ws (treemacs-workspace->create! :name "WS" :projects (list p1 p2 p3))))
           (expect (treemacs-is-path path :in-workspace ws) :to-be nil)))))
 
 (describe "treemacs--reject-ignored-files"
@@ -360,11 +360,11 @@
     (expect (treemacs--parent '("/test1" "a")) :to-equal "/test1"))
 
   (it "Returns project extension of a project sub-item node."
-    (let ((p (make-treemacs-project :path "/A" :path-status 'local-readable)))
+    (let ((p (treemacs-project->create! :path "/A" :path-status 'local-readable)))
       (expect (treemacs--parent (list p "a" "b")) :to-equal (list p "a"))))
 
   (it "Returns project of a project extension node."
-    (let ((p (make-treemacs-project :path "/A" :path-status 'local-readable)))
+    (let ((p (treemacs-project->create! :path "/A" :path-status 'local-readable)))
       (expect (treemacs--parent (list p "a")) :to-equal "/A"))))
 
 (describe "treemacs--get-or-parse-git-result"
@@ -403,7 +403,7 @@
 
   (it "Does nothing when the old key is not in the dom"
     (with-temp-buffer
-      (-let [treemacs-dom (ht ("A" (make-treemacs-dom-node :key "A")))]
+      (-let [treemacs-dom (ht ("A" (treemacs-dom-node->create! :key "A")))]
         (treemacs--on-rename "OLD" "NEW" nil)
         (expect (ht-size treemacs-dom) :to-equal 1)
         (expect (ht-get treemacs-dom "A") :to-be-truthy))))
@@ -411,15 +411,15 @@
   (it "Correctly renamed a full subtree"
     (with-temp-buffer
       (let* ((default-directory "/A")
-             (root (make-treemacs-dom-node :key "/A"))
-             (node1 (make-treemacs-dom-node :key "/A/OLD"))
-             (node2 (make-treemacs-dom-node :key "/A/OLD/X"))
-             (node3 (make-treemacs-dom-node :key "/A/OLD/X/Y"))
-             (node4 (make-treemacs-dom-node :key (list "/A/OLD/X/Y" "Classes")))
-             (node5 (make-treemacs-dom-node :key (list "/A/OLD/X/Y" "Classes" "Class Foo")))
-             (node6 (make-treemacs-dom-node :key (list "/A/OLD/X/Y" "Classes" "Class Foo" "void bar()")))
-             (nodex (make-treemacs-dom-node :key "/A/B"))
-             (nodey (make-treemacs-dom-node :key "/A/B/C")))
+             (root (treemacs-dom-node->create! :key "/A"))
+             (node1 (treemacs-dom-node->create! :key "/A/OLD"))
+             (node2 (treemacs-dom-node->create! :key "/A/OLD/X"))
+             (node3 (treemacs-dom-node->create! :key "/A/OLD/X/Y"))
+             (node4 (treemacs-dom-node->create! :key (list "/A/OLD/X/Y" "Classes")))
+             (node5 (treemacs-dom-node->create! :key (list "/A/OLD/X/Y" "Classes" "Class Foo")))
+             (node6 (treemacs-dom-node->create! :key (list "/A/OLD/X/Y" "Classes" "Class Foo" "void bar()")))
+             (nodex (treemacs-dom-node->create! :key "/A/B"))
+             (nodey (treemacs-dom-node->create! :key "/A/B/C")))
         (setf (treemacs-dom-node->parent nodex) root
               (treemacs-dom-node->parent nodey) root
               (treemacs-dom-node->parent node1) root
@@ -462,12 +462,12 @@
  (it "Won't rename initial node when filewatch is enabled"
     (with-temp-buffer
       (let* ((default-directory "/A")
-             (root (make-treemacs-dom-node :key "/A"))
-             (node1 (make-treemacs-dom-node :key "/A/OLD"))
-             (node2 (make-treemacs-dom-node :key "/A/OLD/X"))
-             (node3 (make-treemacs-dom-node :key "/A/OLD/X/Y"))
-             (nodex (make-treemacs-dom-node :key "/A/B"))
-             (nodey (make-treemacs-dom-node :key "/A/B/C")))
+             (root (treemacs-dom-node->create! :key "/A"))
+             (node1 (treemacs-dom-node->create! :key "/A/OLD"))
+             (node2 (treemacs-dom-node->create! :key "/A/OLD/X"))
+             (node3 (treemacs-dom-node->create! :key "/A/OLD/X/Y"))
+             (nodex (treemacs-dom-node->create! :key "/A/B"))
+             (nodey (treemacs-dom-node->create! :key "/A/B/C")))
         (setf (treemacs-dom-node->parent nodex) root
               (treemacs-dom-node->parent nodey) root
               (treemacs-dom-node->parent node1) root
@@ -503,11 +503,11 @@
              (treemacs-dom (ht))
              (root (progn
                      (ht-set! treemacs-dom default-directory
-                              (make-treemacs-dom-node :key default-directory))
+                              (treemacs-dom-node->create! :key default-directory))
                      (treemacs-find-in-dom default-directory)))
              (node (progn
                      (ht-set! treemacs-dom "/A/B"
-                              (make-treemacs-dom-node :key "/A/B"))
+                              (treemacs-dom-node->create! :key "/A/B"))
                      (treemacs-find-in-dom "/A/B"))))
         (setf (treemacs-dom-node->parent node) root
               (treemacs-dom-node->children root) (list node)
@@ -521,15 +521,15 @@
              (treemacs-dom (ht))
              (root (progn
                      (ht-set! treemacs-dom default-directory
-                              (make-treemacs-dom-node :key default-directory))
+                              (treemacs-dom-node->create! :key default-directory))
                      (treemacs-find-in-dom default-directory)))
              (node1 (progn
                       (ht-set! treemacs-dom "/A/B"
-                               (make-treemacs-dom-node :key "/A/B"))
+                               (treemacs-dom-node->create! :key "/A/B"))
                       (treemacs-find-in-dom "/A/B")))
              (node2 (progn
                       (ht-set! treemacs-dom "/A/B/C"
-                               (make-treemacs-dom-node :key "/A/B/C"))
+                               (treemacs-dom-node->create! :key "/A/B/C"))
                       (treemacs-find-in-dom "/A/B/C"))))
         (setf (treemacs-dom-node->parent node1) root
               (treemacs-dom-node->parent node2) node1
@@ -557,14 +557,14 @@
              (treemacs-dom (ht))
              (root (progn
                      (ht-set! treemacs-dom default-directory
-                              (make-treemacs-dom-node :key default-directory))
+                              (treemacs-dom-node->create! :key default-directory))
                      (treemacs-find-in-dom default-directory)))
              (node1 (progn
                       (ht-set! treemacs-dom "/A/B"
-                               (make-treemacs-dom-node :key "/A/B"))
+                               (treemacs-dom-node->create! :key "/A/B"))
                       (treemacs-find-in-dom "/A/B")))
              (node2 (progn
-                      (ht-set! treemacs-dom "/A/B/C" (make-treemacs-dom-node :key "/A/B/C"))
+                      (ht-set! treemacs-dom "/A/B/C" (treemacs-dom-node->create! :key "/A/B/C"))
                       (treemacs-find-in-dom "/A/B/C"))))
         (setf (treemacs-dom-node->parent node1) root
               (treemacs-dom-node->parent node2) node1
@@ -605,11 +605,11 @@
              (treemacs-dom (ht))
              (root (progn
                      (ht-set! treemacs-dom default-directory
-                              (make-treemacs-dom-node :key default-directory))
+                              (treemacs-dom-node->create! :key default-directory))
                      (treemacs-find-in-dom default-directory)))
              (node (progn
                      (ht-set! treemacs-dom "/A/B"
-                              (make-treemacs-dom-node :key "/A/B"))
+                              (treemacs-dom-node->create! :key "/A/B"))
                      (treemacs-find-in-dom "/A/B"))))
         (setf (treemacs-dom-node->parent node) root
               (treemacs-dom-node->children root) (list node))
@@ -788,7 +788,7 @@
 (describe "treemacs--find-project-for-path"
 
   (it "Returns nil when input is nil"
-    (treemacs--with-project (make-treemacs-project :path "/A" :path-status 'local-readable)
+    (treemacs--with-project (treemacs-project->create! :path "/A" :path-status 'local-readable)
       (expect (treemacs--find-project-for-path nil) :to-be nil)))
 
   (it "Returns nil when the workspace is empty"
@@ -796,11 +796,11 @@
       (expect (treemacs--find-project-for-path "/A") :to-be nil)))
 
   (it "Returns nil when path does not fit any project"
-    (treemacs--with-project (make-treemacs-project :path "/A/B" :path-status 'local-readable)
+    (treemacs--with-project (treemacs-project->create! :path "/A/B" :path-status 'local-readable)
       (expect (treemacs--find-project-for-path "/A/C") :to-be nil)))
 
   (it "Returns project when path fits"
-    (-let [project (make-treemacs-project :path "/A/B" :path-status 'local-readable)]
+    (-let [project (treemacs-project->create! :path "/A/B" :path-status 'local-readable)]
       (treemacs--with-project project
         (expect (treemacs--find-project-for-path "/A/B/C")
                 :to-equal project)))))
@@ -995,14 +995,14 @@
       (spy-on 'treemacs--git-status-process-function)
       (-> treemacs-dir
           (f-join "test")
-          (treemacs--git-status-process (make-treemacs-project :name "P" :path treemacs-dir :path-status status)))
+          (treemacs--git-status-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status status)))
       (expect 'treemacs--git-status-process-function
               :not :to-have-been-called)))
 
   (it "Calls treemacs--git-status-process-function with local readable path"
     (spy-on 'treemacs--git-status-process-function)
     (let ((path (f-join treemacs-dir "test")))
-      (treemacs--git-status-process path (make-treemacs-project :name "P" :path treemacs-dir :path-status 'local-readable))
+      (treemacs--git-status-process path (treemacs-project->create! :name "P" :path treemacs-dir :path-status 'local-readable))
       (expect 'treemacs--git-status-process-function
               :to-have-been-called-with path))))
 
@@ -1013,7 +1013,7 @@
       (dolist (status '(local-unreadable remote-readable remote-unreadable remote-disconnected extension))
         (expect (-> treemacs-dir
                     (f-join "test")
-                    (treemacs--collapsed-dirs-process (make-treemacs-project :name "P" :path treemacs-dir :path-status status)))
+                    (treemacs--collapsed-dirs-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status status)))
                 :to-equal
                 nil)))))
 
@@ -1024,7 +1024,7 @@
       (expect (-> treemacs-dir
                   (f-join "test")
                   (treemacs--collapsed-dirs-process
-                   (make-treemacs-project
+                   (treemacs-project->create!
                     :name "P"
                     :path treemacs-dir
                     :path-status 'local-readable))
@@ -1039,7 +1039,7 @@
     (-let [treemacs-collapse-dirs 3]
       (expect (-> treemacs-dir
                   (f-join "test/testdir1/testdir2")
-                  (treemacs--collapsed-dirs-process (make-treemacs-project :name "P" :path treemacs-dir :path-status 'local-readable))
+                  (treemacs--collapsed-dirs-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status 'local-readable))
                   (treemacs--parse-collapsed-dirs))
               :to-be nil))))
 
@@ -1105,28 +1105,28 @@
 
   (it "Finds the first workspace when there is no current file"
     (treemacs--save-workspace
-     (let* ((ws1 (make-treemacs-workspace :name "A"))
-            (ws2 (make-treemacs-workspace :name "B"))
+     (let* ((ws1 (treemacs-workspace->create! :name "A"))
+            (ws2 (treemacs-workspace->create! :name "B"))
             (treemacs--workspaces (list ws1 ws2)))
        (treemacs--find-workspace)
        (expect (treemacs-current-workspace) :to-be ws1))))
 
   (it "Finds the first workspace when nothing fits the current file"
     (treemacs--save-workspace
-     (let* ((p1  (make-treemacs-project :name "P1" :path "P1"))
-            (p2  (make-treemacs-project :name "P2" :path "P2"))
-            (ws1 (make-treemacs-workspace :name "A" :projects (list p1)))
-            (ws2 (make-treemacs-workspace :name "B" :projects (list p2)))
+     (let* ((p1  (treemacs-project->create! :name "P1" :path "P1"))
+            (p2  (treemacs-project->create! :name "P2" :path "P2"))
+            (ws1 (treemacs-workspace->create! :name "A" :projects (list p1)))
+            (ws2 (treemacs-workspace->create! :name "B" :projects (list p2)))
             (treemacs--workspaces (list ws1 ws2)))
        (treemacs--find-workspace "X")
        (expect (treemacs-current-workspace) :to-be ws1))))
 
   (it "Finds workspace which contains current file"
     (treemacs--save-workspace
-     (let* ((p1  (make-treemacs-project :name "P1" :path "P1"))
-            (p2  (make-treemacs-project :name "P2" :path "/A"))
-            (ws1 (make-treemacs-workspace :name "A" :projects (list p1)))
-            (ws2 (make-treemacs-workspace :name "B" :projects (list p2)))
+     (let* ((p1  (treemacs-project->create! :name "P1" :path "P1"))
+            (p2  (treemacs-project->create! :name "P2" :path "/A"))
+            (ws1 (treemacs-workspace->create! :name "A" :projects (list p1)))
+            (ws2 (treemacs-workspace->create! :name "B" :projects (list p2)))
             (treemacs--workspaces (list ws1 ws2)))
        (treemacs--find-workspace "/A/B/C")
        (expect (treemacs-current-workspace) :to-be ws2)))))
@@ -1138,7 +1138,7 @@ In BODY, variable PROJECT is defined."
   (declare (indent 0))
   (let ((parent-marker (make-symbol "parent-marker")))
     `(with-temp-buffer
-       (let ((project (make-treemacs-project :name "Project" :path "/project"))
+       (let ((project (treemacs-project->create! :name "Project" :path "/project"))
              (,parent-marker nil))
          (insert-text-button "Project"
                              :path "/project"
@@ -1276,7 +1276,7 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
 (describe "treemacs-dom-node->remove-collapse-keys!"
   (it "Removes and deletes all collapse entries"
     (with-temp-buffer
-      (let* ((dom-node (make-treemacs-dom-node
+      (let* ((dom-node (treemacs-dom-node->create!
                         :key "Main Key"
                         :collapse-keys '("Key 1" "Key 2" "Key 3")))
              (treemacs-dom (ht ("Main Key" dom-node)
