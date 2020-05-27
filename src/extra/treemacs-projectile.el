@@ -28,6 +28,9 @@
 (require 'treemacs)
 (require 'projectile)
 
+(eval-when-compile
+  (require 'treemacs-macros))
+
 ;;;###autoload
 (defun treemacs-projectile (&optional arg)
   "Add one of `projectile-known-projects' to the treemacs workspace.

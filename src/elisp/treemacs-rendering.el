@@ -25,7 +25,6 @@
 (require 's)
 (require 'ht)
 (require 'f)
-(require 'cl-lib)
 (require 'treemacs-core-utils)
 (require 'treemacs-icons)
 (require 'treemacs-async)
@@ -35,7 +34,8 @@
 (require 'treemacs-visuals)
 (require 'treemacs-logging)
 
-(eval-and-compile
+(eval-when-compile
+  (require 'cl-lib)
   (require 'treemacs-macros)
   (require 'inline))
 
@@ -177,8 +177,8 @@ the height of treemacs' icons must be taken into account."
               (sort-func (treemacs--get-sort-fuction))
               (entries (-> ,dir (directory-files :absolute-names nil :no-sort) (treemacs--filter-files-to-be-shown)))
               (dirs-files (-separate #'file-directory-p entries)))
-         (list (sort (cl-first dirs-files) sort-func)
-               (sort (cl-second dirs-files) sort-func)))))))
+         (list (sort (car dirs-files) sort-func)
+               (sort (cadr dirs-files) sort-func)))))))
 
 (define-inline treemacs--create-dir-button-strings (path prefix parent depth)
   "Return the text to insert for a directory button for PATH.
@@ -225,6 +225,7 @@ DEPTH indicates how deep in the filetree the current button is."
                   :parent ,parent
                   :depth ,depth)))))
 
+;; TODO document open-action return strings
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action immediate-insert)
   "Building block macro to open a BUTTON.
 Gives the button a NEW-STATE, and, optionally, a NEW-ICON. Performs OPEN-ACTION
@@ -264,9 +265,11 @@ NODE-ACTION is the button creating form inserted for every NODE.
 NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
   `(let* ((depth ,depth)
           (prefix (concat "\n" (treemacs--get-indentation depth)))
-          (,node-name (cl-first ,nodes))
+          (,node-name (car ,nodes))
           (strings)
           ,@extra-vars)
+     ;; extensions only implicitly use the prefix by calling into `treemacs-render-node'
+     ;; (ignore prefix)
      (when ,node-name
        (dolist (,node-name ,nodes)
          (--each ,node-action
@@ -355,11 +358,11 @@ set to PARENT."
     (inline-quote
      (save-excursion
        (let* ((dirs-and-files (treemacs--get-dir-content ,root))
-              (dirs (cl-first dirs-and-files))
-              (files (cl-second dirs-and-files))
+              (dirs (car dirs-and-files))
+              (files (cadr dirs-and-files))
               (parent-node (treemacs-find-in-dom ,root))
-              (dir-dom-nodes (--map (make-treemacs-dom-node :parent parent-node :key it) dirs))
-              (file-dom-nodes (--map (make-treemacs-dom-node :parent parent-node :key it) files))
+              (dir-dom-nodes (--map (treemacs-dom-node->create! :parent parent-node :key it) dirs))
+              (file-dom-nodes (--map (treemacs-dom-node->create! :parent parent-node :key it) files))
               (git-info)
               (file-strings)
               (dir-strings))
@@ -409,11 +412,11 @@ set to PARENT."
              (while file-strings
                (let* ((prefix (car file-strings))
                       (icon (cadr file-strings))
-                      (filename (cl-third file-strings))
+                      (filename (caddr file-strings))
                       (filepath (concat ,root "/" filename)))
                  (unless (--any? (funcall it filepath git-info) treemacs-pre-file-insert-predicates)
                    (setq result (cons filename (cons icon (cons prefix result))))))
-               (setq file-strings (cl-cdddr file-strings)))
+               (setq file-strings (cdddr file-strings)))
              (setq file-strings (nreverse result)))
            (-let [result nil]
              (while dir-strings
@@ -579,7 +582,7 @@ PROJECT: Project Struct"
   (insert treemacs-icon-root)
   (let* ((pos (point-marker))
          (path (treemacs-project->path project))
-         (dom-node (make-treemacs-dom-node :key path :position pos)))
+         (dom-node (treemacs-dom-node->create! :key path :position pos)))
     (treemacs-dom-node->insert-into-dom! dom-node)
     (treemacs--set-project-position project pos)
     (insert
@@ -800,14 +803,14 @@ PARENT-PATH: File Path"
                  (null (treemacs-first-child-node-where parent-btn t)))
             (treemacs-insert-new-flattened-directory path parent-btn parent-dom-node)
           (when (treemacs-is-node-expanded? parent-btn)
-            (treemacs-with-writable-buffer;; TODO(2019/11/04): just one global call for refresh?
+            (treemacs-with-writable-buffer
              (let* ((sort-function (treemacs--get-sort-fuction))
                     (insert-after (treemacs--determine-insert-position path parent-btn sort-function)))
                (goto-char insert-after)
                (end-of-line)
                (insert "\n" (treemacs--create-string-for-single-insert
                              path parent-btn (1+ (button-get parent-btn :depth))))
-               (-let [new-dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)]
+               (-let [new-dom-node (treemacs-dom-node->create! :key path :parent parent-dom-node)]
                  (treemacs-dom-node->insert-into-dom! new-dom-node)
                  (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
                (when treemacs-git-mode
@@ -902,6 +905,7 @@ WHEN can take the following values:
         (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
           (treemacs--recursive-refresh-descent root-node project))))))
 
+;; TODO(201/10/30): update of parents
 (defun treemacs--recursive-refresh-descent (node project)
   "The recursive descent implementation of `treemacs--recursive-refresh'.
 If NODE under PROJECT is marked for refresh and in an open state (since it could

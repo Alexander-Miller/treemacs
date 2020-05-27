@@ -29,7 +29,8 @@
 (require 'treemacs-dom)
 (require 'treemacs-async)
 (require 'treemacs-core-utils)
-(eval-and-compile
+
+(eval-when-compile
   (require 'treemacs-macros))
 
 (treemacs-import-functions-from "dired"

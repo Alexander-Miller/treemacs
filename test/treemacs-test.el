@@ -23,6 +23,7 @@
 (require 'dash)
 (require 'pfuture)
 (require 'treemacs)
+(require 'treemacs-macros)
 (require 'treemacs-bookmarks)
 (require 'treemacs-core-utils)
 (require 'org)

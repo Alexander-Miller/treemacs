@@ -23,13 +23,15 @@
 (require 'dash)
 (require 'ht)
 (require 's)
+(require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-core-utils)
 (require 'treemacs-customization)
 (require 'treemacs-workspaces)
 (require 'treemacs-dom)
 (require 'treemacs-logging)
-(eval-and-compile
+
+(eval-when-compile
   (require 'inline)
   (require 'treemacs-macros))
 

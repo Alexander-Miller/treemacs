@@ -26,11 +26,11 @@
 (require 'ht)
 (require 'f)
 (require 'ace-window)
-(require 'vc-hooks)
 (require 'pfuture)
 (require 'treemacs-customization)
 (require 'treemacs-logging)
-(eval-and-compile
+
+(eval-when-compile
   (require 'inline)
   (require 'cl-lib)
   (require 'treemacs-macros))

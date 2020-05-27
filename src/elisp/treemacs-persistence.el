@@ -23,12 +23,13 @@
 (require 'f)
 (require 's)
 (require 'dash)
-(require 'rx)
-(require 'cl-lib)
 (require 'treemacs-workspaces)
 (require 'treemacs-customization)
 (require 'treemacs-logging)
+
 (eval-when-compile
+  (require 'rx)
+  (require 'cl-lib)
   (require 'inline)
   (require 'treemacs-macros))
 

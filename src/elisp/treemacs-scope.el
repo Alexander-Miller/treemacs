@@ -26,13 +26,15 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'dash)
 (require 'eieio)
 (require 'treemacs-core-utils)
-(require 'treemacs-macros)
 (require 's)
 (require 'inline)
+
+(eval-when-compile
+  (require 'treemacs-macros)
+  (require 'cl-lib))
 
 (treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--stop-filewatch-for-current-buffer)

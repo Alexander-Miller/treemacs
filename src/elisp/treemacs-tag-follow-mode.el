@@ -38,7 +38,8 @@
 (require 'treemacs-scope)
 (require 'treemacs-follow-mode)
 (require 'treemacs-logging)
-(eval-and-compile
+
+(eval-when-compile
   (require 'inline)
   (require 'cl-lib)
   (require 'treemacs-macros))

@@ -23,7 +23,9 @@
 (require 'dash)
 (require 'treemacs-faces)
 (require 'treemacs-interface)
-(require 'cl-lib)
+
+(eval-when-compile
+  (require 'cl-lib))
 
 (cl-macrolet
     ((make-local-map

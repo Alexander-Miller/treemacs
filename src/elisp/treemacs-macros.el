@@ -26,8 +26,9 @@
 (require 'f)
 (require 's)
 (require 'pcase)
-(require 'cl-lib)
+
 (eval-when-compile
+  (require 'cl-lib)
   (require 'gv))
 
 (declare-function treemacs--scope-store "treemacs-scope")
@@ -367,8 +368,8 @@ Specifically only run it when (featurep 'treemacs) returns nil."
 Entry variables will bound based on NAMES which is a list of two elements."
   (declare (debug (sexp sexp body))
            (indent 2))
-  (let ((key-name (cl-first names))
-        (val-name (cl-second names)))
+  (let ((key-name (car names))
+        (val-name (cadr names)))
     `(maphash
       (lambda (,key-name ,val-name) ,@body)
       ,table)))

@@ -22,7 +22,10 @@
 
 (require 'ht)
 (require 'dash)
-(eval-and-compile
+(require 's)
+
+(eval-when-compile
+  (require 'cl-lib)
   (require 'inline)
   (require 'treemacs-macros))
 

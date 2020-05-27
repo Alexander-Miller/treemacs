@@ -27,7 +27,9 @@
 (require 'ht)
 (require 'treemacs-themes)
 (require 'treemacs-logging)
-(eval-and-compile
+
+(eval-when-compile
+  (require 'cl-lib)
   (require 'inline)
   (require 'treemacs-macros))
 

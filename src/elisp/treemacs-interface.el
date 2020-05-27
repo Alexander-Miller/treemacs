@@ -37,7 +37,8 @@
 (require 'treemacs-persistence)
 (require 'treemacs-extensions)
 (require 'treemacs-logging)
-(eval-and-compile
+
+(eval-when-compile
   (require 'cl-lib)
   (require 'treemacs-macros))
 

@@ -52,8 +52,8 @@
 (require 'treemacs-fringe-indicator)
 (require 'treemacs-header-line)
 (require 'treemacs-extensions)
-(eval-and-compile
-  (require 'cl-lib)
+
+(eval-when-compile
   (require 'treemacs-macros))
 
 (defconst treemacs-version

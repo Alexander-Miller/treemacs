@@ -25,10 +25,12 @@
 (require 'dash)
 (require 'overlay)
 (require 'treemacs-dom)
-(require 'treemacs-macros)
 (require 'treemacs-scope)
 (require 'treemacs-workspaces)
 (require 'treemacs-core-utils)
+
+(eval-when-compile
+  (require 'treemacs-macros))
 
 (defconst treemacs--diag-store (make-hash-table :size 50 :test 'equal))
 

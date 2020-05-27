@@ -29,7 +29,10 @@
 (require 'treemacs-follow-mode)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-logging)
-(eval-and-compile (require 'treemacs-macros))
+
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
 (defun treemacs-leftclick-action (event)
   "Move focus to the clicked line.

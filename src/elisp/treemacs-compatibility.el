@@ -27,7 +27,9 @@
 (require 'treemacs-scope)
 (require 'treemacs-core-utils)
 (require 'treemacs-interface)
-(eval-and-compile (require 'treemacs-macros))
+
+(eval-when-compile
+  (require 'treemacs-macros))
 
 (treemacs-only-during-init
  ;; make sure frame params are not persisted by desktop-save-mode

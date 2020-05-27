@@ -23,11 +23,13 @@
 (require 'f)
 (require 'dash)
 (require 'ht)
-(require 'cl-lib)
-(require 'inline)
-(require 'treemacs-macros)
 (require 'treemacs-core-utils)
 (require 'treemacs-logging)
+
+(eval-when-compile
+  (require 'inline)
+  (require 'treemacs-macros)
+  (require 'cl-lib))
 
 (treemacs-import-functions-from "treemacs-icons"
   treemacs--select-icon-set)

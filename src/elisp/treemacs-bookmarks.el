@@ -28,9 +28,11 @@
 (require 'treemacs-scope)
 (require 'treemacs-logging)
 (require 'treemacs-tags)
-(eval-and-compile
-  (require 'treemacs-macros))
 (require 'treemacs-workspaces)
+
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'treemacs-macros))
 
 (treemacs-import-functions-from "treemacs"
   treemacs-select-window)

@@ -23,7 +23,6 @@
 (require 'eldoc)
 (require 's)
 (require 'f)
-(require 'hydra)
 (require 'treemacs-interface)
 (require 'treemacs-customization)
 (require 'treemacs-faces)
@@ -34,7 +33,11 @@
 (require 'treemacs-dom)
 (require 'treemacs-workspaces)
 (require 'treemacs-visuals)
-(eval-and-compile (require 'treemacs-macros))
+
+(eval-when-compile
+  (require 'treemacs-macros)
+  (require 'cl-lib))
+
 (with-eval-after-load 'bookmark
   (require 'treemacs-bookmarks))
 

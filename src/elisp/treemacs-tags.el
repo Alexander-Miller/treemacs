@@ -35,7 +35,8 @@
 (require 'treemacs-dom)
 (require 'treemacs-icons)
 (require 'treemacs-logging)
-(eval-and-compile
+
+(eval-when-compile
   (require 'inline)
   (require 'cl-lib)
   (require 'treemacs-macros))

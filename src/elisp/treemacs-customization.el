@@ -20,10 +20,12 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'widget)
 (require 'dash)
 (require 'f)
+
+(eval-when-compile
+  (require 'cl-lib))
 
 (defun treemacs--find-python3 ()
   "Determine the location of python 3."

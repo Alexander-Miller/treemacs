@@ -30,6 +30,10 @@
 (require 'eieio)
 (require 'dash)
 
+(eval-when-compile
+  (require 'treemacs-macros)
+  (require 'cl-lib))
+
 ;; remove base compatibility hook
 (remove-hook 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames)
 

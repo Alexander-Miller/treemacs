@@ -30,7 +30,8 @@
 (require 'treemacs-customization)
 (require 'treemacs-fringe-indicator)
 (require 'treemacs-logging)
-(eval-and-compile
+
+(eval-when-compile
   (require 'inline)
   (require 'treemacs-macros))
 

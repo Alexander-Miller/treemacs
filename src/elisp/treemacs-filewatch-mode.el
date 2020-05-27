@@ -27,13 +27,12 @@
 (require 's)
 (require 'ht)
 (require 'filenotify)
-(require 'cl-lib)
 (require 'treemacs-core-utils)
 (require 'treemacs-async)
 (require 'treemacs-dom)
 (require 'treemacs-tags)
-(require 'treemacs-macros)
-(eval-and-compile
+(eval-when-compile
+  (require 'treemacs-macros)
   (require 'inline))
 
 (defvar treemacs--collapsed-filewatch-index (make-hash-table :size 100 :test #'equal)
@@ -139,11 +138,11 @@ An event counts as relevant when
   (inline-letevals (event)
     (inline-quote
      (when (with-no-warnings treemacs-filewatch-mode)
-       (let ((action (cl-second ,event)))
+       (let ((action (cadr ,event)))
          (not (or (eq action 'stopped)
                   (and (eq action 'changed)
                        (not treemacs-git-mode))
-                  (let* ((dir (cl-third ,event))
+                  (let* ((dir (caddr ,event))
                          (filename (treemacs--filename dir)))
                     (--any? (funcall it filename dir) treemacs-ignored-file-predicates)))))))))
 
@@ -189,7 +188,7 @@ processing."
         (treemacs--on-file-deletion path :no-buffer-delete))
       (if (eq 'renamed event-type)
           (let ((old-name path)
-                (new-name (cl-fourth event)))
+                (new-name (cadddr event)))
             (treemacs-run-in-every-buffer
              (treemacs--on-rename old-name new-name (with-no-warnings treemacs-filewatch-mode)))
             (treemacs--set-refresh-flags (treemacs--parent old-name) 'deleted old-name)

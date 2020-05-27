@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
-;; Package-Requires: ((treemacs "0.0") (emacs "25.2") (cl-lib "0.5"))
+;; Package-Requires: ((treemacs "0.0") (emacs "25.2"))
 ;; Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
@@ -28,8 +28,10 @@
 (require 'treemacs)
 (require 'hl-line)
 (require 'dired)
-(require 'cl-lib)
 (require 'pcase)
+
+(eval-when-compile
+  (require 'treemacs-macros))
 
 (defvar-local treemacs-icons-dired-displayed nil
   "Flags whether icons have been added.")
