@@ -655,11 +655,9 @@ PROJECT: Project Struct"
            (treemacs--collapse-root-node project-btn))))
      ;; figure out which ones have been deleted and and remove them from the dom
      (dolist (project-in-buffer projects-in-buffer)
-       (unless (--first (treemacs-is-path (treemacs-project->path project-in-buffer)
-                                          :same-as
-                                          (treemacs-project->path it))
-                        projects-in-workspace)
+       (unless (treemacs-is-path (treemacs-project->path project-in-buffer) :in-workspace current-workspace)
          (treemacs-on-collapse (treemacs-project->path project-in-buffer) :purge)
+         (ht-remove! treemacs-dom (treemacs-project->path project-in-buffer))
          (setf projects-in-buffer (delete project-in-buffer projects-in-buffer))))
      (treemacs-with-writable-buffer
       (treemacs--forget-last-highlight)
