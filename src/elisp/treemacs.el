@@ -27,8 +27,7 @@
 ;;; Code:
 
 (require 'dash)
-(require 's)
-(require 'f)
+(require 'treemacs-macros)
 (require 'treemacs-customization)
 (require 'treemacs-logging)
 (require 'treemacs-themes)
