@@ -196,7 +196,7 @@ node for quick retrieval later."
   (treemacs-static-assert (and icon label-form state key-form)
     "All values except :more-properties and :face are mandatory")
   `(let* ((path (append (treemacs-button-get node :path) (list ,key-form)))
-          (dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)))
+          (dom-node (treemacs-dom-node->create! :key path :parent parent-dom-node)))
      (treemacs-dom-node->insert-into-dom! dom-node)
      (when parent-dom-node
        (treemacs-dom-node->add-child! parent-dom-node dom-node))
@@ -431,7 +431,7 @@ additional keys."
                                     (treemacs-button-get parent :key))
                                 ,root-key-form))
                     (parent-dom-node (treemacs-find-in-dom (treemacs-button-get parent :path)))
-                    (new-dom-node (make-treemacs-dom-node :key path :parent parent-dom-node)))
+                    (new-dom-node (treemacs-dom-node->create! :key path :parent parent-dom-node)))
                (treemacs-dom-node->insert-into-dom! new-dom-node)
                (when parent-dom-node
                  (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
@@ -465,12 +465,12 @@ additional keys."
                     `(defun ,ext-name ()
                          (treemacs-with-writable-buffer
                           (save-excursion
-                            (let* ((pr (make-treemacs-project
+                            (let* ((pr (treemacs-project->create!
                                         :name ,root-label
                                         :path ,root-key-form
                                         :path-status 'extension))
                                    (button-start (point-marker))
-                                   (dom-node (make-treemacs-dom-node
+                                   (dom-node (treemacs-dom-node->create!
                                               :key ,root-key-form
                                               :position button-start)))
                               (treemacs--set-project-position ,root-key-form (point-marker))
@@ -493,7 +493,7 @@ additional keys."
                   `(progn
                      (defun ,ext-name (&rest _)
                        (treemacs-with-writable-buffer
-                        (-let [pr (make-treemacs-project
+                        (-let [pr (treemacs-project->create!
                                    :name ,root-label
                                    :path ,root-key-form
                                    :path-status 'extension)]
