@@ -46,6 +46,7 @@ ELS += $(SRC_DIR)/treemacs-workspaces.el
 ELS += $(EXTRA_DIR)/treemacs-evil.el
 ELS += $(EXTRA_DIR)/treemacs-icons-dired.el
 ELS += $(EXTRA_DIR)/treemacs-persp.el
+ELS += $(EXTRA_DIR)/treemacs-perspective.el
 ELS += $(EXTRA_DIR)/treemacs-projectile.el
 ELCS = $(ELS:.el=.elc)
 
