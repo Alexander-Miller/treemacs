@@ -1177,6 +1177,7 @@ Additional scope types can be enbaled by installing the appropriate package.
 
 The following packages offer additional scope types:
  * treemacs-persp
+ * treemacs-perspective
 
 To programmatically set the scope type see `treemacs-set-scope-type'."
   (interactive)

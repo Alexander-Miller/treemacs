@@ -139,7 +139,7 @@ the current root's parent. Another restriction is that the same part of the file
 part of the workspace. For example it is not possible to have both /Documents and /Documents/ProjectX as projects in the
 same workspace, since internally treemacs heavily relies on every node having a unique natural key in its absolute path.
 Nonetheless the pros certainly outweigh the cons, as a multiroot setup allows to work on multiple projects with any
-combination concern/buffer separating frameworks, be it persp, eyebrowse, or projectile. It also opens the potential for
+combination concern/buffer separating frameworks, be it persp/perspective, eyebrowse, or projectile. It also opens the potential for
 concurrent display not only of the file system, but e.g. the currently open buffers.
 *** Workspace Selection
 When a workspace is first needed, treemacs will select a workspace in the following manner:
@@ -347,8 +347,8 @@ will inform treemacs about (un)staging of files and commits happening in magit.
 *** treemacs-icons-dired
 Allows you to use treemacs icons in dired buffers with ~treemacs-icons-dired-mode~:
 [[file:screenshots/dired-icons.png]]
-*** treemacs-persp
-Integration with persp-mode that allows treemacs buffers to be unique inside the active perspective instead of the
+*** treemacs-persp/treemacs-perspective
+Integration with persp-mode or perspective.el that allows treemacs buffers to be unique inside the active perspective instead of the
 default frame-based buffer scope.
 ** Treemacs as a Framework
 Treemacs can be extended to display arbitrary nodes as well as be used as a general rendering backend for any tree-like
@@ -457,8 +457,8 @@ setting. Setting them all yourself is not necessary, they are only listed here t
     :after treemacs magit
     :ensure t)
 
-  (use-package treemacs-persp
-    :after treemacs persp-mode
+  (use-package treemacs-persp ;;treemacs-persective if you use perspective.el vs. persp-mode
+    :after treemacs persp-mode ;;or perspective vs. persp-mode
     :ensure t
     :config (treemacs-set-scope-type 'Perspectives))
 #+END_SRC
@@ -781,7 +781,7 @@ The correctness of treemacs' display behaviour is, to a large degree, ensured th
 changes in the window configuration. The packages most likely to cause trouble for treemacs are therefore those that
 interfere with Emacs' buffer spawning and window splitting behaviour. Treemacs is included in Spacemacs and I am a
 Spacemacs user, therefore treemacs guarantees first-class support & compatibility for window-managing packages used in
-Spacemacs, namely [[https://github.com/Bad-ptr/persp-mode.el][persp]], [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/m2ym/popwin-el][popwin]] and [[https://github.com/bmag/emacs-purpose][window-purpose]], as well as [[https://github.com/wasamasa/shackle][shackle]]. For everything else there may be
+Spacemacs, namely [[https://github.com/Bad-ptr/persp-mode.el][persp]]/[[https://github.com/nex3/perspective-el][perspective]], [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/m2ym/popwin-el][popwin]] and [[https://github.com/bmag/emacs-purpose][window-purpose]], as well as [[https://github.com/wasamasa/shackle][shackle]]. For everything else there may be
 issues and, depending on the complexity of the problem, I may decide it is not worth fixing.
 
 Aside from this there are the following known incompatibilities:
