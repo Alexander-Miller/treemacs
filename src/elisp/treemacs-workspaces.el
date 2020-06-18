@@ -418,14 +418,15 @@ Returns either
    (t 'remote-unreadable)))
 
 (define-inline treemacs-project->is-unreadable? (self)
-  "Return t if the project SELF is definitely unreadable.
+  "Return non-nil if the project SELF is definitely unreadable.
 
 If `path-status' of the project is `remote-disconnected', the return value will
 be nil even though the path might still be unreadable.  Does not verify the
-readability, the cached path-state is used."
+readability, the cached path-state is used.  Extension projects will count as
+readable."
   (declare (side-effect-free t))
   (inline-quote (memq (treemacs-project->path-status ,self)
-                      '(local-unreadable remote-unreadable extension))))
+                      '(local-unreadable remote-unreadable))))
 
 (define-inline treemacs-project->is-readable? (self)
   "Return t if the project SELF is definitely readable for file operations.

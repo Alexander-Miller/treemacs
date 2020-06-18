@@ -248,7 +248,8 @@ Used as a post command hook."
          (insert newline-char)
          ;; make sure that the projects-end marker keeps pointing at
          ;; the end of the last project button
-         (when (equal (point) (marker-position (treemacs--projects-end)))
+         (when (and (eq t treemacs--in-this-buffer)
+                    (equal (point) (marker-position (treemacs--projects-end))))
            (move-marker (treemacs--projects-end) (1- (point))))))))
   (-when-let (btn (treemacs-current-button))
     (when (treemacs-button-get btn 'invisible)

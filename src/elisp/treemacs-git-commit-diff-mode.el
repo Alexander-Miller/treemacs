@@ -47,18 +47,22 @@
 Look for the PROJECT either in BUFFER or the local treemacs buffer."
   (let ((path (treemacs-project->path project))
         (buffer (or buffer (treemacs-get-local-buffer))))
-    (pfuture-callback `(,treemacs-python-executable "-O" ,treemacs--git-commit-diff.py ,path)
-      :directory path
-      :on-success
-      (when (buffer-live-p buffer)
-        (-let [out (-> (pfuture-callback-output)
-                       (string-trim-right)
-                       (read))]
-          (with-current-buffer buffer
-            (if out
-                (treemacs-set-annotation-suffix path out treemacs--commit-diff-ann-source)
-              (treemacs-remove-annotation-suffix path treemacs--commit-diff-ann-source))
-            (treemacs-apply-single-annotation path)))))))
+    (treemacs-with-path path
+      :no-match-action
+      (ignore)
+      :file-action
+      (pfuture-callback `(,treemacs-python-executable "-O" ,treemacs--git-commit-diff.py ,path)
+        :directory path
+        :on-success
+        (when (buffer-live-p buffer)
+          (-let [out (-> (pfuture-callback-output)
+                         (string-trim-right)
+                         (read))]
+            (with-current-buffer buffer
+              (if out
+                  (treemacs-set-annotation-suffix path out treemacs--commit-diff-ann-source)
+                (treemacs-remove-annotation-suffix path treemacs--commit-diff-ann-source))
+              (treemacs-apply-single-annotation path))))))))
 
 (defun treemacs--update-commit-diff-in-every-project ()
   "Update diffs for every project in the current scope.

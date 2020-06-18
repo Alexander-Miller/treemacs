@@ -16,6 +16,7 @@
             "api"
             "arg"
             "args"
+            "async"
             "baz"
             "boolean"
             "bool"

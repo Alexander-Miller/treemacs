@@ -162,6 +162,11 @@ Applies to buttons like
   "Face for `treemacs-git-commit-diff-mode' annotations."
   :group 'treemacs-faces)
 
+(defface treemacs-async-loading-face
+  '((t :inherit 'font-lock-comment-face :height 0.8))
+  "Face used for the \"Loading…\" string used by asynchronous extensions."
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here

@@ -266,7 +266,7 @@ either OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
           ,@(when new-icon
               `((beginning-of-line)
                 (treemacs--button-symbol-switch ,new-icon)))
-          (goto-char (treemacs-button-end ,button))
+          (goto-char (point-at-eol))
           ,@(if immediate-insert
                 `((progn
                     (insert (apply #'concat ,open-action))))
@@ -575,8 +575,9 @@ RECURSIVE: Bool"
              ;; expand first because it creates a dom node entry
              (treemacs-on-expand path btn)
              (treemacs--apply-project-top-extensions btn project)
-             (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
-             (treemacs--apply-project-bottom-extensions btn project)
+             (save-excursion
+               (treemacs--apply-project-bottom-extensions btn project))
+             (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn)
              (treemacs--start-watching path)
              ;; Performing FS ops on a disconnected Tramp project
              ;; might have changed the state to connected.

@@ -489,12 +489,11 @@ they will be evaluated only once."
          `(--first (treemacs-is-path ,left :in-project it)
                    (treemacs-workspace->projects ,ws)))))))
 
-(cl-defmacro treemacs-with-path (path &key file-action top-level-extension-action directory-extension-action project-extension-action no-match-action)
+(cl-defmacro treemacs-with-path (path &key file-action extension-action no-match-action)
   "Execute an action depending on the type of PATH.
 
 FILE-ACTION is the action to perform when PATH is a regular file node.
-TOP-LEVEL-EXTENSION-ACTION, DIRECTORY-EXTENSION-ACTION, and
-PROJECT-EXTENSION-ACTION operate on paths for the different extension types.
+EXTENSION-ACTION is performed on extension-created nodes.
 
 If none of the path types matches, NO-MATCH-ACTION is executed."
   (declare (indent 1))
@@ -503,12 +502,11 @@ If none of the path types matches, NO-MATCH-ACTION is executed."
        (cond
         ,@(when file-action
             `(((stringp ,path-symbol) ,file-action)))
-        ,@(when top-level-extension-action
-            `(((eq :custom (car ,path-symbol)) ,top-level-extension-action)))
-        ,@(when directory-extension-action
-            `(((stringp (car ,path-symbol)) ,directory-extension-action)))
-        ,@(when project-extension-action
-            `(((treemacs-project-p (car ,path-symbol)) ,project-extension-action)))
+        ,@(when extension-action
+            `(((or (symbolp ,path)
+                   (symbolp (car ,path))
+                   (stringp (car ,path)))
+               ,extension-action)))
         (t
          ,(if no-match-action
               no-match-action
