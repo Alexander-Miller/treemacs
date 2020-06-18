@@ -1,7 +1,13 @@
 # -*- fill-column: 120 -*-
 
 * Content                                                                            :TOC:noexport:
-- [[#treemacs-extension-tutorial][Treemacs Extension Tutorial]]
+- [[#new-version][[NEW VERSION]]]
+   - [[#setup-basics][Setup Basics]]
+   - [[#node-types][Node Types]]
+   - [[#groups-in-their-own-buffer][Groups in their own Buffer]]
+   - [[#asynchronous-nodes][Asynchronous Nodes]]
+   - [[#monotyped-nodes][Monotyped nodes]]
+- [[#old-version-treemacs-extension-tutorial][[OLD VERSION] Treemacs Extension Tutorial]]
    - [[#try-it][Try it]]
    - [[#extensions-for-projects][Extensions for Projects]]
    - [[#extension-for-directories][Extension for Directories]]
@@ -11,7 +17,234 @@
    - [[#setting-the-working-directory][Setting the Working Directory]]
    - [[#about-properties][About Properties]]
 
-* Treemacs Extension Tutorial
+* [NEW VERSION]
+** Setup Basics
+
+First our dependencies:
+
+#+BEGIN_SRC emacs-lisp
+  ;; -*- lexical-binding: t -*-
+
+  (require 'dash)
+  (require 'treemacs)
+  (require 'treemacs-treelib)
+#+END_SRC
+
+Data sources:
+
+#+BEGIN_SRC emacs-lisp
+  (defun treemacs-showcase--buffer-major-modes ()
+    (->> (buffer-list)
+         (--reject (eq ?\ (aref (buffer-name it) 0)))
+         (--map (buffer-local-value 'major-mode it))
+         (-distinct)))
+
+  (defun treemacs-showcase--buffers-by-mode (mode)
+    (->> (buffer-list)
+         (--filter (eq mode (buffer-local-value 'major-mode it)))
+         (--reject (eq ?\ (aref (buffer-name it) 0)))))
+#+END_SRC
+
+An action to open the buffer on RET:
+
+#+BEGIN_SRC emacs-lisp
+  (defun treemacs-showcase-RET-buffer-action (&optional _)
+    (-> (treemacs-current-button)
+        (treemacs-button-get :buffer)
+        (pop-to-buffer)))
+#+END_SRC
+
+** Node Types
+
+Bottom-up definition. First the leaves - nodes for single buffers:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-leaf-node-type showcase-buffer-leaf
+    :icon "• "
+    :label (buffer-name item)
+    :key (buffer-name item)
+    :face 'font-lock-string-face
+    :more-properties `(:buffer ,item)
+    :ret-action #'treemacs-showcase-RET-buffer-action)
+#+END_SRC
+
+Then major-mode buffer groups:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-expandable-node-type showcase-buffer-group
+    :closed-icon "+ "
+    :open-icon "- "
+    :label (symbol-name item)
+    :face 'font-lock-variable-name-face
+    :key item
+    :children (treemacs-showcase--buffers-by-mode (treemacs-button-get btn :major-mode))
+    :child-type 'showcase-buffer-leaf
+    :more-properties `(:major-mode ,item))
+#+END_SRC
+
+Then a top-level entry point:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-entry-node-type showcase-buffers
+    :key 'SHOWCASE-BUFFERS
+    :label "Buffers"
+    :open-icon (treemacs-get-icon-value 'list)
+    :closed-icon (treemacs-get-icon-value 'list)
+    :children (treemacs-showcase--buffer-major-modes)
+    :face 'font-lock-keyword-face
+    :child-type 'showcase-buffer-group)
+#+END_SRC
+
+Put it at the top of the treemacs buffer:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-enable-top-level-extension
+   :extension treemacs-showcase-buffers-extension-instance
+   :position 'top)
+#+END_SRC
+
+** Groups in their own Buffer
+
+Reuse types from above, but create new 'variadic' entry point that can produce multiple items at once.
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-variadic-entry-node-type showcase-variadic-buffers
+    :key 'SHOWCASE-VARIADIC-BUFFERS
+    :label (symbol-name (car item))
+    :open-icon (treemacs-get-icon-value 'list)
+    :closed-icon (treemacs-get-icon-value 'list)
+    :children (->> (buffer-list)
+                   (--reject (eq ?\ (aref (buffer-name it) 0)))
+                   (--map (buffer-local-value 'major-mode it))
+                   (-distinct))
+    :face 'font-lock-variable-name-face
+    :child-type 'showcase-buffer-group)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (defun showcase-buffer-groups ()
+    (interactive)
+    (-let [bufname "*Showcase Buffers*"]
+      (--when-let (get-buffer bufname) (kill-buffer it))
+      (-let [buf (get-buffer-create bufname)]
+        (pop-to-buffer buf)
+        (treemacs-initialize)
+        (setq-local treemacs-space-between-root-nodes nil)
+        (treemacs-render-extension treemacs-showcase-variadic-buffers-extension-instance))))
+#+END_SRC
+
+** Asynchronous Nodes
+
+New buffer group type that fetches buffers with a fake delay:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-expandable-node-type showcase-async-buffer-group
+    :closed-icon "+ "
+    :open-icon "- "
+    :label (symbol-name item)
+    :face 'font-lock-variable-name-face
+    :key item
+    :children
+    (let ((items (treemacs-showcase--buffers-by-mode (treemacs-button-get btn :major-mode))))
+      (run-with-timer
+       (1+ (random 3)) nil
+       (lambda ()
+         (funcall callback items))))
+    :child-type 'showcase-buffer-leaf
+    :more-properties `(:major-mode ,item)
+    :async? t)
+#+END_SRC
+
+Leaf type can be resused, we just need another entry point:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-entry-node-type showcase-async-buffers
+    :key 'SHOWCASE-ASYNC-BUFFERS
+    :label "Async Buffers"
+    :open-icon (treemacs-get-icon-value 'list)
+    :closed-icon (treemacs-get-icon-value 'list)
+    :children (treemacs-showcase--buffer-major-modes)
+    :face 'font-lock-keyword-face
+    :child-type 'showcase-async-buffer-group)
+#+END_SRC
+
+Enable it in the /first/ project in treemacs:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-enable-project-extension
+   :extension treemacs-showcase-async-buffers-extension-instance
+   :predicate (lambda (project) (eq project (car (treemacs-workspace->projects (treemacs-current-workspace)))))
+   :position 'top)
+#+END_SRC
+
+** Monotyped nodes
+
+Defining every node type individually is not necessary, it is possible to make do with a single definition. Some
+verbosity will remain because now it is necessary to dispatch (at a high enough scale, probably thousands of items, it
+might even impact performance), but it can still be worth it if the number of node types is exceptionally high.
+
+Treemacs calls this the ~monotyped~ approach to defining extensions.
+
+Here we combine both the buffer groups and individual buffer leaves into a single definition:
+(Note how the name of the extension and the ~:child-type~ are one and the same)
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-expandable-node-type showcase-monotype-buffers
+    :closed-icon
+    (if (bufferp item)
+        "• "
+      "+ ")
+    :open-icon
+    (if (bufferp item)
+        "•"
+      "- ")
+    :label
+    (if (bufferp item)
+        (buffer-name item)
+      (symbol-name item))
+    :face
+    (if (bufferp item)
+        'font-lock-string-face
+      'font-lock-variable-name-face)
+    :key
+    (if (bufferp item)
+        (buffer-name item)
+      item)
+    :children
+    (when (symbolp item)
+      (treemacs-showcase--buffers-by-mode item))
+    :child-type
+    'showcase-monotype-buffers
+    :more-properties
+    (if (bufferp item)
+        `(:buffer ,item)
+      `(:major-mode ,item)))
+#+END_SRC
+
+Entry points cannot be combined, they still need to be set up individually:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-entry-node-type showcase-monotype-buffers-entry
+    :key 'SHOWCASE-MONOTYPE-BUFFERS
+    :label "Monotype Buffers"
+    :open-icon (treemacs-get-icon-value 'list)
+    :closed-icon (treemacs-get-icon-value 'list)
+    :children (treemacs-showcase--buffer-major-modes)
+    :more-properties nil
+    :face 'font-lock-keyword-face
+    :child-type 'showcase-monotype-buffers)
+#+END_SRC
+
+Finally we'll enable the new extension to appear in out /second/ project:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-enable-project-extension
+   :extension treemacs-showcase-monotype-buffers-entry-extension-instance
+   :predicate (lambda (project) (eq project (cadr (treemacs-workspace->projects (treemacs-current-workspace)))))
+   :position 'top)
+#+END_SRC
+
+* [OLD VERSION] Treemacs Extension Tutorial                                          :ARCHIVE:
 ** Try it
 The code in this file is loadable with ~org-babel-load-file~, you can see tehe results by calling
 ~showcase-display-buffer-list~.
@@ -19,7 +252,7 @@ The code in this file is loadable with ~org-babel-load-file~, you can see tehe r
 
 First our dependencies:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (require 'treemacs)
   (require 'dash)
 #+END_SRC
@@ -29,7 +262,7 @@ transient buffers (whose names start with a space) removed. It doesn't really ma
 that under some project, but this example is 1) reasonably practical, and 2) very simple, allowing us to concentrate on
 integrating it with treemacs.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defun showcase--get-buffer-groups ()
     "Get the list of buffers, grouped by their major mode."
     (->> (buffer-list)
@@ -39,7 +272,7 @@ integrating it with treemacs.
 
 The output of this function would look roughly like this. This is the structure our extension will have when we're done.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   ; ((org-mode
   ;   #<buffer Extensions.org>)
   ;  (emacs-lisp-mode
@@ -63,7 +296,7 @@ property, so all we need to do is extract it, make sure it's alive, and show it 
 make use of the prefix argument, but we won't us it here. This function can now be used to give our leaf nodes a TAB,
 RET, or double-mouse1 action (the latter is a work in progress).
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defun showcase-visit-buffer (&rest _)
     "Switch to the buffer saved in node at point."
     (let* ((node (treemacs-current-button))
@@ -79,7 +312,7 @@ icon, and optional keyword arguments for TAB, RET, and doubleclick actions. This
 command in advance. Instead of using ~treemacs-as-icon~ to iconize a string you can also use ~treemacs-icon-for-file~ or
 directly use one of treemacs' own icons (like ~treemacs-icon-css~).
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (treemacs-define-leaf-node buffer-leaf
     (treemacs-as-icon "• " 'face 'font-lock-builtin-face)
     :ret-action #'showcase-visit-buffer
@@ -110,7 +343,7 @@ name for the display label. Buffers are also unique, so we can use them as the n
 requirements for the choice of the face. Finally we also store the buffer in every node's ~:buffer~ property so we can
 later use it in ~showcase-visit-buffer~.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (treemacs-define-expandable-node buffer-group
     :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
     :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
@@ -131,7 +364,7 @@ rendered by buffers groups, buffer groups are rendered by the buffer root, but t
 next highest node, but by treemacs itself. So we set ~:root-marker~ to t and provide a ~:root-label~, ~:root-face~ and a
 ~:root-key-form~, same as when calling into ~treemacs-render-node~.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (treemacs-define-expandable-node buffers-root
     :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
     :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
@@ -155,7 +388,7 @@ first we need another, final building block. We are building an extension for pr
 /which/ projects it is for. In other words we need a predicate. So let's assume we want our extension to show up only
 for the first project in the workspace.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defun showcase-extension-predicate (project)
     (eq project
         (-> (treemacs-current-workspace)
@@ -166,7 +399,7 @@ for the first project in the workspace.
 With everything in place we can now tell treemacs about our extension. The final argument ~:position~ decides whether
 the extension will be rendered at the very start or the very end of the project's immediate children.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (treemacs-define-project-extension
    :extension #'treemacs-BUFFERS-ROOT-extension
    :predicate #'showcase-extension-predicate
@@ -185,7 +418,7 @@ work ~treemacs-define-expandable-node~ must receive not a ~:root-marker~, but a 
 nothing changes and the same restrictions apply, but the ~treemacs-BUFFERS-ROOT-extension~ that we've created in our
 example will be able to be passed to ~treemacs-define-top-level-extension~.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (treemacs-define-top-level-extension
    :extension #'treemacs-BUFFERS-ROOT-extension
    :position 'top)
@@ -204,7 +437,7 @@ Finally you can also use the extensions api as a generalized set of building blo
 any other buffer. First let's define an appropriate extension. We will re-use the ~buffer-root~ code from above, except
 this time we'll mark it as a ~:project~ and call it ~buffer-root-top~.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (treemacs-define-expandable-node buffers-root-top
     :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
     :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
@@ -226,7 +459,7 @@ this time we'll mark it as a ~:project~ and call it ~buffer-root-top~.
 With this we have all we need to display the buffer overview in any buffer of our choice. The required setup is minimal,
 we just need to display such a buffer and call ~treemacs-initialize~ inside it, and the extension can be used:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defun showcase-display-buffer-list ()
     (interactive)
     (let* ((buffer (get-buffer-create "*Showcase Buffer List*"))

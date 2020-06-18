@@ -12,8 +12,10 @@
   (append checkdoc-ispell-lisp-words
           '("accessor"
             "adoc"
+            "api"
             "arg"
             "args"
+            "async"
             "boolean"
             "bool"
             "btn"
