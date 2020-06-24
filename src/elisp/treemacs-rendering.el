@@ -931,6 +931,7 @@ parents' git status can be updated."
               ('deleted
                (treemacs-do-delete-single-node path project))
               ('changed
+               (treemacs-do-update-node path)
                (when (memq treemacs-git-mode '(extended deferred))
                  (treemacs-update-single-file-git-state path)))
               ('created
