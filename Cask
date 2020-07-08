@@ -15,7 +15,7 @@
  (depends-on "projectile")
  (depends-on "magit")
  (depends-on "persp-mode")
- (depends-on "perspective-mode")
+ (depends-on "perspective")
  (depends-on "with-editor")
  (depends-on "buttercup")
  (depends-on "el-mock")
