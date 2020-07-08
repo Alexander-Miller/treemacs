@@ -894,6 +894,8 @@ If nil treemacs will look for default value provided by `spaceline', `moody'
 or `doom-modeline' in that order.  Finally, if none of these packages is
 available \"Treemacs\" text will be displayed.
 
+Setting this to `none' will disable the modeline.
+
 For more specific information about formatting mode line check `mode-line-format'."
   :type 'sexp
   :group 'treemacs)
