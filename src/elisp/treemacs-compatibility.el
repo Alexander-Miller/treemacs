@@ -52,9 +52,9 @@
   (when (boundp 'indent-guide-inhibit-modes)
     (push 'treemacs-mode indent-guide-inhibit-modes)))
 
-(defun persp-after-load ()
+(with-eval-after-load 'persp-mode
   (defun treemacs--remove-treemacs-window-in-new-frames (persp-activated-for)
-    (when (or t(eq persp-activated-for 'frame))
+    (when (eq persp-activated-for 'frame)
       (-when-let (w (--first (treemacs-is-treemacs-window? it)
                              (window-list)))
         (unless (assoc (treemacs-scope->current-scope treemacs--current-scope-type) treemacs--scope-storage)
@@ -64,12 +64,16 @@
       (add-to-list 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames)
     (treemacs-log-failure "`persp-activated-functions' not defined - couldn't add compatibility.")))
 
-(with-eval-after-load 'persp-mode
-  (persp-after-load))
-
 (with-eval-after-load 'perspective
-  (persp-after-load))
-
+  (defun treemacs--remove-treemacs-window-in-new-frames (_)
+    (-when-let (w (--first (treemacs-is-treemacs-window? it)
+                           (window-list)))
+      (unless (assoc (treemacs-scope->current-scope treemacs--current-scope-type) treemacs--scope-storage)
+        (delete-window w))))
+  (declare-function treemacs--remove-treemacs-window-in-new-frames "treemacs-compatibility")
+  (if (boundp 'persp-activated-hook)
+      (add-to-list 'persp-activated-hook #'treemacs--remove-treemacs-window-in-new-frames)
+    (treemacs-log-failure "`persp-activated-hook' not defined - couldn't add compatibility.")))
 
 (defun treemacs--split-window-advice (original-split-function &rest args)
   "Advice to make sure window splits are sized correctly with treemacs.
