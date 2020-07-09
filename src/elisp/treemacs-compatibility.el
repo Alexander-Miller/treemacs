@@ -65,7 +65,7 @@
     (treemacs-log-failure "`persp-activated-functions' not defined - couldn't add compatibility.")))
 
 (with-eval-after-load 'perspective
-  (defun treemacs--remove-treemacs-window-in-new-frames (_)
+  (defun treemacs--remove-treemacs-window-in-new-frames (&rest _)
     (-when-let (w (--first (treemacs-is-treemacs-window? it)
                            (window-list)))
       (unless (assoc (treemacs-scope->current-scope treemacs--current-scope-type) treemacs--scope-storage)
