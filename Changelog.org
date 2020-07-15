@@ -3,6 +3,8 @@
 
 * Changelog
 ** current master
+- Added ~treemacs-workspace-switch-cleanup~
+- Added support for disabling the mode line
 - Added ~treemacs-user-header-line-format~
 - Added ~treemacs-display-current-project-exclusively~
 - Added ~treemacs-icon-catalogue~

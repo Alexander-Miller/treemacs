@@ -1290,6 +1290,47 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
         (expect (treemacs-find-in-dom "Key 3") :to-be nil)
         (expect (treemacs-dom-node->collapse-keys dom-node) :to-equal '("Key 2"))))))
 
+(describe "treemacs--maybe-clean-buffers-on-workspace-switch"
+  :var* ((tmp-file (make-temp-file "TESTFILE"))
+         (scratch (get-buffer-create "*scratch*"))
+         (file-buffer)
+         (non-file-buffer)
+         (fake-buffer-list))
+
+  (before-each
+    (setf file-buffer (find-file-noselect tmp-file)
+          non-file-buffer (get-buffer-create "TESTBUFFER")
+          fake-buffer-list (list file-buffer non-file-buffer scratch)))
+
+  (after-all
+    (when file-buffer (kill-buffer file-buffer))
+    (when non-file-buffer (kill-buffer non-file-buffer))
+    (delete-file tmp-file))
+
+  (it "Does nothing when cleanup is set to 'nil'"
+    (-let [treemacs-workspace-switch-cleanup nil]
+      (spy-on #'buffer-list :and-return-value fake-buffer-list)
+      (treemacs--maybe-clean-buffers-on-workspace-switch treemacs-workspace-switch-cleanup)
+      (expect (buffer-live-p scratch) :to-be t)
+      (expect (buffer-live-p file-buffer) :to-be t)
+      (expect (buffer-live-p non-file-buffer) :to-be t)))
+
+  (it "Kills file buffers when cleanup is set to 'files'"
+    (-let [treemacs-workspace-switch-cleanup 'files]
+      (spy-on #'buffer-list :and-return-value fake-buffer-list)
+      (treemacs--maybe-clean-buffers-on-workspace-switch treemacs-workspace-switch-cleanup)
+      (expect (buffer-live-p scratch) :to-be t)
+      (expect (buffer-live-p file-buffer) :to-be nil)
+      (expect (buffer-live-p non-file-buffer) :to-be t)))
+
+  (it "Kills all buffers when cleanup is set to 'all'"
+    (-let [treemacs-workspace-switch-cleanup 'all]
+      (spy-on #'buffer-list :and-return-value fake-buffer-list)
+      (treemacs--maybe-clean-buffers-on-workspace-switch treemacs-workspace-switch-cleanup)
+      (expect (buffer-live-p scratch) :to-be t)
+      (expect (buffer-live-p file-buffer) :to-be nil)
+      (expect (buffer-live-p non-file-buffer) :to-be nil))))
+
 (describe "treemacs--find-repeated-file-name"
   (before-each
     (fset 'fake-file-exists

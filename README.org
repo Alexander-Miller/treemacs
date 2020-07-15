@@ -416,7 +416,8 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-tag-follow-delay              1.5
             treemacs-user-mode-line-format         nil
             treemacs-user-header-line-format       nil
-            treemacs-width                         35)
+            treemacs-width                         35
+            treemacs-workspace-switch-cleanup      nil)
 
       ;; The default width and height of the icons is 22 pixels. If you are
       ;; using a Hi-DPI display, uncomment this to double the icon size.
@@ -522,6 +523,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-user-mode-line-format         | nil                                              | When non-nil treemacs will use it as a mode line format (otherwise format provided by ~spaceline~, ~moody-mode-line~ and ~doom-modeline~ will be used or, finally, "Treemacs" text will be displayed)                                |
 | treemacs-user-header-line-format       | nil                                              | When non-nil treemacs will use it as a header line format                                                                                                                                                                            |
 | treemacs-move-forward-on-expand        | nil                                              | When non-nil treemacs will move to the first child of an expanded node.                                                                                                                                                              |
+| treemacs-workspace-switch-cleanup      | nil                                              | Indicates which, if any, buffers should be deleted on a workspace switch. Valid values are ~nil~, ~files~, ~all~.                                                                                                                                                                                             |
 
 ** Faces
 Treemacs defines and uses the following faces:

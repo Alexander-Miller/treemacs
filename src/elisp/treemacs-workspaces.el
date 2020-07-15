@@ -725,6 +725,29 @@ PROJECT: Project Struct"
     (--first (string= name (treemacs-workspace->name it))
              treemacs--workspaces)))
 
+(defun treemacs--maybe-clean-buffers-on-workspace-switch (which)
+  "Delete buffers depending on the value of WHICH.
+
+ - When it is nil do nothing.
+ - When it is `files' delete all buffers visiting files.
+ - When it is `all' delete all buffers
+
+In any case treemacs itself, and the scratch and messages buffers will be left
+alive."
+  (when which
+    (let* ((scratch (get-buffer-create "*scratch*"))
+           (messages (get-buffer "*Messages*"))
+           (no-delete-test
+            (pcase which
+              ('files (lambda (b) (null (buffer-file-name b))))
+              ('all (lambda (_) nil)))))
+      (dolist (buffer (buffer-list))
+        (unless (or (eq t (buffer-local-value 'treemacs--in-this-buffer buffer))
+                    (eq buffer scratch)
+                    (eq buffer messages)
+                    (funcall no-delete-test buffer))
+          (kill-buffer buffer))))))
+
 (provide 'treemacs-workspaces)
 
 ;;; treemacs-workspaces.el ends here
