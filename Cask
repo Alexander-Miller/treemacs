@@ -9,6 +9,7 @@
  (depends-on "s")
  (depends-on "ht")
  (depends-on "ace-window")
+ (depends-on "all-the-icons")
  (depends-on "pfuture")
  (depends-on "hydra")
  (depends-on "evil")

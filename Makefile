@@ -43,6 +43,7 @@ ELS += $(SRC_DIR)/treemacs-tags.el
 ELS += $(SRC_DIR)/treemacs-themes.el
 ELS += $(SRC_DIR)/treemacs-visuals.el
 ELS += $(SRC_DIR)/treemacs-workspaces.el
+ELS += $(EXTRA_DIR)/treemacs-all-the-icons.el
 ELS += $(EXTRA_DIR)/treemacs-evil.el
 ELS += $(EXTRA_DIR)/treemacs-icons-dired.el
 ELS += $(EXTRA_DIR)/treemacs-persp.el
