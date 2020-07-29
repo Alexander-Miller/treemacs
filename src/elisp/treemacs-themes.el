@@ -61,6 +61,7 @@
 (cl-defmacro treemacs-create-theme (name &key icon-directory extends config)
   "Create a new (bare) theme with the given NAME.
 - ICON-DIRECTORY is the (mandatory) theme's location.
+- EXTENDS is the theme to be extended.
 - BASED-ON is the name of a theme whose icons this one should start with.
 - CONFIG is a code block to fill the created theme with icons via
   `treemacs-create-icon'."
