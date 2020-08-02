@@ -348,8 +348,10 @@ will inform treemacs about (un)staging of files and commits happening in magit.
 Allows you to use treemacs icons in dired buffers with ~treemacs-icons-dired-mode~:
 [[file:screenshots/dired-icons.png]]
 *** treemacs-persp/treemacs-perspective
-Integration with persp-mode or perspective.el that allows treemacs buffers to be unique inside the active perspective instead of the
-default frame-based buffer scope.
+Integration with persp-mode or perspective.el that allows treemacs buffers to be unique inside the active perspective
+instead of the default frame-based buffer scope.
+*** treemacs-all-the-icons
+Provides a theme using [[https://github.com/domtronn/all-the-icons.el][all-the-icons]].
 ** Treemacs as a Framework
 Treemacs can be extended to display arbitrary nodes as well as be used as a general rendering backend for any tree-like
 structures. [[file:Extensions.org][See here]] for an extended tutorial and demonstration.
