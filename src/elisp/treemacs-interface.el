@@ -1211,7 +1211,7 @@ To programmatically set the scope type see `treemacs-set-scope-type'."
   (interactive)
   (switch-to-buffer (get-buffer-create "*Treemacs Icons*"))
   (erase-buffer)
-  (dolist (theme treemacs--themes)
+  (dolist (theme (nreverse treemacs--themes))
     (insert (format "* Theme %s\n\n" (treemacs-theme->name theme)))
     (insert " |------+------------|\n")
     (insert " | Icon | Extensions |\n")
@@ -1235,8 +1235,8 @@ To programmatically set the scope type see `treemacs-set-scope-type'."
       (insert (apply #'concat (nreverse txt)))
       (with-no-warnings
         (org-mode)
-        (org-table-align))
-      (goto-char 0))))
+        (org-table-align))))
+  (goto-char 0))
 
 (provide 'treemacs-interface)
 
