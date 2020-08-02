@@ -400,7 +400,8 @@ set to PARENT."
          ;; produce an empty hash table
          (pcase treemacs-git-mode
            ((or 'simple 'extended)
-            (setq git-info (treemacs--get-or-parse-git-result ,git-future)))
+            (setf git-info (treemacs--get-or-parse-git-result ,git-future))
+            (ht-set! treemacs--git-cache ,root git-info))
            ('deferred
              (setq git-info (or (ht-get treemacs--git-cache ,root) (ht)))
              (run-with-timer 0.5 nil #'treemacs--apply-deferred-git-state ,parent ,git-future (current-buffer)))
