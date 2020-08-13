@@ -431,6 +431,7 @@ Will simply return `treemacs--eldoc-msg'."
   ;; and make a switch to visual state
   (setq-local double-click-fuzz 15)
   (setq-local show-paren-mode nil)
+  (setq-local tab-width 1)
   (setq-local eldoc-documentation-function #'treemacs--eldoc-function)
   (setq-local eldoc-message-commands treemacs--eldoc-obarray)
   ;; integrate with bookmark.el
