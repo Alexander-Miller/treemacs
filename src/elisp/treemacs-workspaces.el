@@ -114,7 +114,7 @@ This will happen when using `treemacs-run-in-every-buffer' to make sure that
 this function returns the right workspace for the iterated-over buffers.
 
 If no workspace is assigned to the current scope the persisted workspaces will
-be loaded and a workspace will be found based on the `currebt-buffer'.
+be loaded and a workspace will be found based on the `current-buffer'.
 
 This function can be used with `setf'."
   (or treemacs-override-workspace
@@ -740,6 +740,7 @@ PROJECT: Project Struct"
 
 (defun treemacs--select-workspace-by-name (&optional name)
   "Interactivly select the workspace with the given NAME."
+  (treemacs--maybe-load-workspaces)
   (-let [name (or name
                    (completing-read
                     "Workspace: "
