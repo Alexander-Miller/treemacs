@@ -497,11 +497,16 @@ NAME: String"
 (with-no-warnings
   (make-obsolete #'treemacs-add-project-at #'treemacs-do-add-project-to-workspace "v.2.2.1"))
 
-(defun treemacs-do-remove-project-from-workspace (project)
+(defun treemacs-do-remove-project-from-workspace (project &optional ignore-last-project-restriction)
   "Add the given PROJECT to the current workspace.
 
 PROJECT may either be a `treemacs-project' instance or a string path.  In the
 latter case the project containing the path will be selected.
+
+When IGNORE-LAST-PROJECT-RESTRICTION removing the last project will not count
+as an error.  This is meant to be used in non-interactive code, where another
+project is immediately added afterwards, as leaving the project list empty is
+probably a bad idea.
 
 Return values may be as follows:
 
@@ -513,8 +518,9 @@ Return values may be as follows:
 * If everything went well:
   - the symbol `success'"
   (treemacs-block
-   (treemacs-error-return-if (>= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
-     'cannot-delete-last-project)
+   (unless ignore-last-project-restriction
+     (treemacs-error-return-if (>= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
+       'cannot-delete-last-project))
    (treemacs-error-return-if (null project)
      `(invalid-project "Project is nil"))
    ;; when used from outside treemacs it is much easier to supply a path string than to
