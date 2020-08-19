@@ -653,6 +653,25 @@ It is possible to force treemacs to use the simple TUI icons in GUI mode by sett
 **** Resizing Icons
 If your emacs has been compiled with Imagemagick support, or you're using Emacs >= 27.1, you can arbitrarily change the size of treemacs' icons by
 (interactively or programmatically) calling ~treemacs-resize-icons~.
+*** all-the-icons indent issues
+Depending on your font you may experience the problem of treemacs' icons seemingly jumping around left and right when
+they are expanded and collapsed when using the all-the-icons theme. The straighforward solution is to use a different
+font. You may also try a workaround of using a different font that applies onyl to the TAB characters used to align
+treemacs' all-the-icons-based icons. To do that do not load ~treemacs-all-the-icons~ with ~require~. Instead use the
+following alternative provided by treemacs itself:
+
+#+BEGIN_SRC elisp
+  (treemacs-load-all-the-icons-with-workaround-font "Hermit")
+#+END_SRC
+
+The Hermit font used here is just an example - you will need to pick a font that is available on your system and does
+not suffer from the tab width issue.
+
+This line will load ~treemacs-all-the-icons~ (*it must not have been loaded previously*) and enable the all-the-icons
+theme. The given font argument will be used as the font for the alignment tabs used for the icons, hopefully alleviating
+the indentation problem. In addition ~treemacs-indentation~ and ~treemacs-indentation-string~ will be set to 1 and a
+(font-changed) TAB character respectively, so customizing them is (probably) not possible.
+
 *** Indent guide
 Not really part of the icons, but a useful visual feature nonetheless: An indent guide like effect can be created by
 selecting appropriate values for ~treemacs-indentation~ and ~treemacs-indentation-string~:

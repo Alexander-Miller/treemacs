@@ -111,6 +111,27 @@ width of the new window when the treemacs window is visible."
   (when (boundp 'evil-escape-excluded-major-modes)
     (add-to-list 'evil-escape-excluded-major-modes 'treemacs-mode)))
 
+(defun treemacs-load-all-the-icons-with-workaround-font (font)
+  "Load the `treemacs-all-the-icons' package using a workaround FONT for tabs.
+Use this if you experience the issue of icons jumping around when they are
+closed or opened which can appear when using specific fonts.
+
+FONT should be a simple string name, for exmaple \"Hermit\".
+
+Finding the right FONT is a matter of trial and error, you can quickly try
+different fonts using `set-frame-font'.
+
+The workaround will overwrite the values for `treemacs-indentation' and
+`treemacs-indentation-string', using your own values for them is no lolger
+possible.
+
+Can only work if the `treemacs-all-the-icons' module has not been loaded yet."
+  (defvar treemacs-all-the-icons-tab-font font)
+  (setf treemacs-indentation 1
+        treemacs-indentation-string (propertize "\t" 'face `((:family ,treemacs-all-the-icons-tab-font))))
+  (require 'treemacs-all-the-icons)
+  (treemacs-load-theme "all-the-icons"))
+
 (provide 'treemacs-compatibility)
 
 ;;; treemacs-compatibility.el ends here
