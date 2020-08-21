@@ -117,6 +117,8 @@ Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
                                        (treemacs-workspace->projects (treemacs-current-workspace)))))
                            (treemacs-find-in-dom (treemacs-project->path project))))))
        (when (and dom-node
+                  (treemacs-dom-node->position dom-node)
+                  (treemacs-is-node-expanded? (treemacs-dom-node->position dom-node))
                   (null (treemacs-dom-node->refresh-flag dom-node)))
          (save-excursion
            (goto-char (treemacs-dom-node->position dom-node))
