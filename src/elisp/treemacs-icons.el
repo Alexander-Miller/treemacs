@@ -433,11 +433,10 @@ Uses `treemacs-icon-fallback' as fallback."
   (inline-letevals (file)
     (inline-quote
      (let ((file-downcased (-> ,file (treemacs--filename) (downcase))))
-       (ht-get treemacs-icons
-               file-downcased
-               (ht-get treemacs-icons
-                       (treemacs--file-extension file-downcased)
-                       (with-no-warnings treemacs-icon-fallback)))))))
+       (or (ht-get treemacs-icons file-downcased)
+           (ht-get treemacs-icons
+                   (treemacs--file-extension file-downcased)
+                   (with-no-warnings treemacs-icon-fallback)))))))
 
 ;;;###autoload
 (defun treemacs-resize-icons (size)
