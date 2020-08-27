@@ -33,7 +33,8 @@
   (require 'inline)
   (require 'treemacs-macros))
 
-(cl-declaim (optimize (speed 3) (safety 0)))
+(eval-when-compile
+  (cl-declaim (optimize (speed 3) (safety 0))))
 
 (defconst treemacs--org-edit-buffer-name "*Edit Treemacs Workspaces*"
   "The name of the buffer used to edit treemacs' workspace.")

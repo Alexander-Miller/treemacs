@@ -36,7 +36,8 @@
   (require 'treemacs-macros)
   (require 'cl-lib))
 
-(cl-declaim (optimize (speed 3) (safety 0)))
+(eval-when-compile
+  (cl-declaim (optimize (speed 3) (safety 0))))
 
 (treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--stop-filewatch-for-current-buffer)

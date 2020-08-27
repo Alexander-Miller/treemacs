@@ -29,7 +29,8 @@
   (require 'inline)
   (require 'treemacs-macros))
 
-(cl-declaim (optimize (speed 3) (safety 0)))
+(eval-when-compile
+  (cl-declaim (optimize (speed 3) (safety 0))))
 
 (defvar-local treemacs-dom nil)
 
