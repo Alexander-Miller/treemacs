@@ -44,8 +44,8 @@
     (setq-local treemacs--fringe-indicator-overlay
                 (-let [ov (make-overlay 1 1 (current-buffer))]
                   (overlay-put ov 'before-string
-                               (propertize " " 'display '(left-fringe
-                                                          treemacs--fringe-indicator-bitmap
+                               (propertize " " 'display `(left-fringe
+                                                          ,treemacs--fringe-indicator-bitmap
                                                           treemacs-fringe-indicator-face)))
                   ov))
     (treemacs--move-fringe-indicator-to-point)))
