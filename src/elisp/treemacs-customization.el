@@ -524,7 +524,12 @@ missing project will not appear in the project list next time Emacs is started."
       (define-fringe-bitmap 'treemacs--fringe-indicator-bitmap-default (make-vector 200 #b00000111))
     'vertical-bar)
   "The fringe bitmap used by the fringe-indicator minor mode."
-  :type 'symbol
+  :type (append '(choice)
+                ;; :type is evaluated before the call to define-fringe-bitmap
+                ;; so 'treemacs--fringe-indicator-bitmap-default is not yet in
+                ;; fringe-bitmaps
+                '((const treemacs--fringe-indicator-bitmap-default))
+                (mapcar (lambda (sym) `(const ,sym)) fringe-bitmaps))
   :group 'treemacs)
 
 (defcustom treemacs-show-cursor nil
