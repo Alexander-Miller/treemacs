@@ -529,7 +529,9 @@ missing project will not appear in the project list next time Emacs is started."
                 ;; so 'treemacs--fringe-indicator-bitmap-default is not yet in
                 ;; fringe-bitmaps
                 '((const treemacs--fringe-indicator-bitmap-default))
-                (mapcar (lambda (sym) `(const ,sym)) fringe-bitmaps))
+                ;; `fringe-bitmpas' is void in the CI build Emacs
+                (when (bound-and-true-p fringe-bitmaps)
+                  (mapcar (lambda (sym) `(const ,sym)) fringe-bitmaps)))
   :group 'treemacs)
 
 (defcustom treemacs-show-cursor nil
