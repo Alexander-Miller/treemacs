@@ -799,10 +799,11 @@ PARENT-PATH: File Path"
     ;; file events can be chaotic to the point that something is "created"
     ;; that is already present
     (unless (treemacs-find-in-dom path)
-      (-let [parent-btn (treemacs-dom-node->position parent-dom-node)]
+      (let* ((parent-btn (treemacs-dom-node->position parent-dom-node))
+             (parent-collapse-info (treemacs-button-get parent-btn :collapsed)))
         (if (and (file-directory-p path)
-                 (null (treemacs-first-child-node-where parent-btn t)))
-            (treemacs-insert-new-flattened-directory path parent-btn parent-dom-node)
+                 parent-collapse-info)
+            (treemacs--insert-new-flattened-directory path parent-btn parent-dom-node parent-collapse-info)
           (when (treemacs-is-node-expanded? parent-btn)
             (treemacs-with-writable-buffer
              (let* ((sort-function (treemacs--get-sort-fuction))
@@ -817,28 +818,32 @@ PARENT-PATH: File Path"
                (when treemacs-git-mode
                  (treemacs-do-update-single-file-git-state path :exclude-parents :override-status))))))))))
 
-(defun treemacs-insert-new-flattened-directory (path parent-btn parent-dom-node)
+(defun treemacs--insert-new-flattened-directory (path parent-btn parent-dom-node parent-collapse-info)
   "Insert PATH as new flattened directory under PARENT-BTN.
 Create a new dom node as child of PARENT-DOM-NODE and start watching PATH.
+Will do nothing if PARENT-COLLAPSE-INFO indicates that maximum collapse depth is
+already reached.
 
 PATH: File Path
 PARENT-BTN: Button
-PARENT-DOM-NODE: Dom Node Struct"
-  (treemacs-with-writable-buffer
-   (-let [current-path (treemacs-button-get parent-btn :path)]
-     (-if-let (collapse-info (treemacs-button-get parent-btn :collapsed))
-         (progn
-           (cl-incf (car collapse-info))
-           (setf (cdr collapse-info) (nconc (cdr collapse-info) (list path))))
-       (treemacs-button-put parent-btn :collapsed (list 2 current-path path)))
-     (treemacs-button-put parent-btn :path path)
-     (setf (treemacs-dom-node->collapse-keys parent-dom-node)
-           (cons path (treemacs-dom-node->collapse-keys parent-dom-node)))
-     (ht-set! treemacs-dom path parent-dom-node)
-     (treemacs--start-watching path :collapse)
-     (-let [props (text-properties-at parent-btn)]
-       (goto-char (treemacs-button-end parent-btn))
-       (insert (apply #'propertize (substring path (length current-path)) props))))))
+PARENT-DOM-NODE: Dom Node Struct
+PARENT-COLLPASE-INFO: [Int Path...]"
+  (unless (>= (car parent-collapse-info) treemacs-collapse-dirs)
+    (treemacs-with-writable-buffer
+     (-let [current-path (treemacs-button-get parent-btn :path)]
+       (-if-let (collapse-info (treemacs-button-get parent-btn :collapsed))
+           (progn
+             (cl-incf (car collapse-info))
+             (setf (cdr collapse-info) (nconc (cdr collapse-info) (list path))))
+         (treemacs-button-put parent-btn :collapsed (list 2 current-path path)))
+       (treemacs-button-put parent-btn :path path)
+       (setf (treemacs-dom-node->collapse-keys parent-dom-node)
+             (cons path (treemacs-dom-node->collapse-keys parent-dom-node)))
+       (ht-set! treemacs-dom path parent-dom-node)
+       (treemacs--start-watching path :collapse)
+       (-let [props (text-properties-at parent-btn)]
+         (goto-char (treemacs-button-end parent-btn))
+         (insert (apply #'propertize (substring path (length current-path)) props)))))))
 
 (define-inline treemacs--create-string-for-single-insert (path parent depth)
   "Create the necessary strings to insert a new file node.
