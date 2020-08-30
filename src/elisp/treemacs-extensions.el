@@ -174,11 +174,11 @@ Optionally include MORE-PROPERTIES (like `face' or `display')."
 Meant to be used as a `:render-action' for `treemacs-define-expandable-node'.
 
 ICON is a simple string serving as the node's icon, and must be created with
-`treemacs-as-icon'. If the icon is for a file you can also use
+`treemacs-as-icon'.  If the icon is for a file you can also use
 `treemacs-icon-for-file'.
 
 LABEL-FORM must return the string that will serve as the node's label text,
-based on the element that should be rendered being bound as `item'. So for
+based on the element that should be rendered being bound as `item'.  So for
 example if rendering a list of buffers RENDER-FORM would look like
 `(buffer-name item)'.
 
@@ -219,16 +219,16 @@ node for quick retrieval later."
   "Define a type of node that is a leaf and cannot be further expanded.
 
 Based on the given NAME this macro will define a `treemacs-${name}-state' state
-variable and a `treemacs-${name}-icon' icon variable. If the icon should not be
+variable and a `treemacs-${name}-icon' icon variable.  If the icon should not be
 static, and should be instead computed every time this node is rendered in its
 parent's :render-action use 'dynamic-icon as a value for ICON.
 
-The ICON is a string that should be created with `treemacs-as-icon'. If the icon
+The ICON is a string that should be created with `treemacs-as-icon'.  If the icon
 is for a file you can also use `treemacs-icon-for-file'.
 
 RET-ACTION, TAB-ACTION and MOUSE1-ACTION are function references that will be
 invoked when RET or TAB are pressed or mouse1 is double-clicked a node of this
-type. VISIT-ACTION is used in `treemacs-visit-node-no-split' actions."
+type.  VISIT-ACTION is used in `treemacs-visit-node-no-split' actions."
   (declare (indent 1))
   (let ((state-name (intern (format "treemacs-%s-state" name)))
         (icon-name  (intern (format "treemacs-%s-icon" name))))
@@ -252,48 +252,48 @@ type. VISIT-ACTION is used in `treemacs-visit-node-no-split' actions."
           icon-closed
           icon-open-form
           icon-closed-form
-          query-function
           render-action
+          query-function
           ret-action
           visit-action
           after-expand
           after-collapse
-          top-level-marker
           root-marker
           root-label
           root-face
-          root-key-form)
-  "Define a type of node that can be further expanded.
+          root-key-form
+          top-level-marker)
+  "Define a type of node with given NAME that can be further expanded.
 
 ICON-OPEN and ICON-CLOSED are strings and must be created by `treemacs-as-icon'.
 They will be defvar'd as 'treemacs-icon-${name}-open/closed'.
 As an alternative to static icons you can also supply ICON-OPEN-FORM and
 ICON-CLOSED-FORM that will be dynamically executed whenever a new icon is
-needed. Keep in mind that, since child nodes are first rendered by their
-parents, a CLOSED-ICON-FORM will need to be repeated in the parent's
+needed.  Keep in mind that, since child nodes are first rendered by their
+parents, an ICON-CLOSED-FORM will need to be repeated in the parent's
 RENDER-ACTION.
 
-QUERY-FUNCTION is a form and will be invoked when the node is expanded. It must
+QUERY-FUNCTION is a form and will be invoked when the node is expanded.  It must
 provide the list of elements that will be rendered with RENDER-ACTION.
 
 RENDER-ACTION is another form that will render the single items provided by
-QUERY-FUNCTION. For every RENDER-FORM invocation the element to be rendered is
-bound under the name `item'. The form itself should end in a call to
+QUERY-FUNCTION.  For every RENDER-FORM invocation the element to be rendered is
+bound under the name `item'.  The form itself should end in a call to
 `treemacs-render-node'.
 
 RET-ACTION will define what function is called when RET is pressed on this type
-of node. Only RET, without TAB and mouse1 can be defined since for expandable
-nodes both TAB and RET should toggle expansion/collapse. VISIT-ACTION is used in
+of node.  Only RET, without TAB and mouse1 can be defined since for expandable
+nodes both TAB and RET should toggle expansion/collapse.  VISIT-ACTION is used in
 `treemacs-visit-node-no-split' actions.
 
 AFTER-EXPAND and AFTER-COLLAPSE are optional forms that will be called after a
-node has been expanded or collapsed. The closed or opened node marker will be
+node has been expanded or collapsed.  The closed or opened node marker will be
 visible under the name `node' in their scope.
 
-ROOT-MARKER is a simple boolean. It indicates the special case that the node
-being defined is a top level entry point. When this value is non-nil this macro
+ROOT-MARKER is a simple boolean.  It indicates the special case that the node
+being defined is a top level entry point.  When this value is non-nil this macro
 will create an additional function in the form `treemacs-${NAME}-extension'
-that can be passed to `treemacs-define-project-extension'. It also means that
+that can be passed to `treemacs-define-project-extension'.  It also means that
 the following pieces of additional information are required to render this node:
 
 ROOT-LABEL is the displayed label of the root node.
@@ -304,9 +304,9 @@ ROOT-KEY-FORM is the form that will give the root node its unique key, the same
 way as the KEY-FORM argument in `treemacs-render-node'.
 
 TOP-LEVEL-MARKER works much the same way as ROOT-MARKER (and is mutually
-exclusive with it). The difference is that it declares the node defined here to
-a top-level element with nothing above it, like a project, instead of a
-top-level node *inside* a project. Other than that things work the same. Setting
+exclusive with it).  The difference is that it declares the node defined here to
+a top level element with nothing above it, like a project, instead of a
+top level node *inside* a project.  Other than that things work the same.  Setting
 TOP-LEVEL-MARKER will define a function named `treemacs-${NAME}-extension' that
 can be passed to `treemacs-define-root-extension', and it requires the same
 additional keys."
@@ -516,7 +516,7 @@ additional keys."
           query-function
           render-action
           root-key-form)
-  "Define a variadic top-level node with given NAME.
+  "Define a variadic top level node with given NAME.
 The term \"variadic\" means that the node will produce an unknown amount of
 child nodes when expanded. For example think of an extension that groups buffers
 based on the major mode, with each major-mode being its own top-level group, so

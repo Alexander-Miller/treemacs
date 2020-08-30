@@ -215,17 +215,17 @@ Necessary since root icons are not rectangular."
 (cl-defmacro treemacs-create-icon (&key file icon (fallback " ") icons-dir extensions)
   "Create an icon for the current theme.
 - FILE is a file path relative to the icon directory of the current theme.
-- ICON is a string of an already created icon. Mutually exclusive with FILE.
+- ICON is a string of an already created icon.  Mutually exclusive with FILE.
+- FALLBACK is the fallback string for situations where png images are
+  unavailable.
 - ICONS-DIR can optionally be used to overwrite the path used to find icons.
   Normally the current theme's icon-path is used, but it may be convenient to
   use another when calling `treemacs-modify-theme'.
-- FALLBACK is the fallback string for situations where png images are
-  unavailable.
 - EXTENSIONS is a list of file extensions the icon should be used for.
   Note that treemacs has a loose understanding of what constitutes an extension:
   it's either the text past the last period or the entire filename, so names
   like \".gitignore\" and \"Makefile\" can be matched as well.
-  An extension may also be a symbol instead of a string. In this case treemacs
+  An extension may also be a symbol instead of a string.  In this case treemacs
   will also create a variable named \"treemacs-icon-%s\" making it universally
   accessible."
   (treemacs-static-assert (or (null icon) (null file))

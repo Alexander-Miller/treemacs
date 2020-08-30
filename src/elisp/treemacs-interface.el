@@ -424,7 +424,7 @@ be renamed."
 (cl-defun treemacs-rename ()
   "Rename the currently selected node.
 Buffers visiting the renamed file or visiting a file inside a renamed directory
-and windows showing them will be reloaded. The list of recent files will
+and windows showing them will be reloaded.  The list of recent files will
 likewise be updated."
   (interactive)
   (treemacs-block
