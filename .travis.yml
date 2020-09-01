@@ -20,6 +20,11 @@ branches:
   only:
     - master
     - dev
+addons:
+  apt:
+    packages:
+      - aspell
+      - aspell-en
 before_install:
   - $CURL -O https://github.com/npostavs/emacs-travis/releases/download/bins/emacs-bin-${EMACS_VERSION}.tar.gz
   - tar -xaf emacs-bin-${EMACS_VERSION}.tar.gz -C /

@@ -12,16 +12,15 @@
   (append checkdoc-ispell-lisp-words
           '("arg"
             "args"
-            "Bool"
-            "BTN"
-            "Btn"
+            "boolean"
+            "bool"
+            "btn"
             "changelog"
             "config"
             "configs"
             "cpp"
             "customisations"
-            "Debounce"
-            "Debounced"
+            "debounce"
             "debounced"
             "dir"
             "dirs"
@@ -34,6 +33,7 @@
             "eldoc"
             "elisp"
             "elpa"
+            "filename"
             "filesystem"
             "FilePath"
             "filepath"
@@ -48,14 +48,15 @@
             "HashMap"
             "hoc"
             "ImageMagick"
-            "Imenu"
+            "imenu"
             "iter"
             "keybind"
             "keybinds"
             "leftclick"
             "linux"
             "macos"
-            "Makefile"
+            "makefile"
+            "metadata"
             "modeline"
             "org"
             "org's"
@@ -69,10 +70,13 @@
             "px"
             "py"
             "recentering"
-            "Recentering"
+            "regex"
+            "resize"
+            "resized"
+            "resizing"
             "spaceline"
             "splittable"
-            "Struct"
+            "struct"
             "subdir"
             "treemacs"
             "tui"
@@ -80,6 +84,7 @@
             "untracked"
             "variadic"
             "whitespace"
+            "workspace"
             "workspaces")))
 
 (defun checkdoc-buffer (filename)
@@ -91,7 +96,8 @@
     (insert-file-contents filename :visit)
     (set-buffer-modified-p nil)
     (delay-mode-hooks (emacs-lisp-mode))
-    (setf delay-mode-hooks nil)
+    (setf delay-mode-hooks nil
+          ispell-dictionary "british")
     (let ((checkdoc-autofix-flag 'never)
           (checkdoc-force-docstrings-flag t)
           (checkdoc-force-history-flag nil)
