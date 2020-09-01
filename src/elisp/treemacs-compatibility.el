@@ -116,13 +116,13 @@ width of the new window when the treemacs window is visible."
 Use this if you experience the issue of icons jumping around when they are
 closed or opened which can appear when using specific fonts.
 
-FONT should be a simple string name, for exmaple \"Hermit\".
+FONT should be a simple string name, for example \"Hermit\".
 
 Finding the right FONT is a matter of trial and error, you can quickly try
 different fonts using `set-frame-font'.
 
 The workaround will overwrite the values for `treemacs-indentation' and
-`treemacs-indentation-string', using your own values for them is no lolger
+`treemacs-indentation-string', using your own values for them is no longer
 possible.
 
 Can only work if the `treemacs-all-the-icons' module has not been loaded yet."

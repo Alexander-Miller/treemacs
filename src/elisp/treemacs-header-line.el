@@ -109,7 +109,7 @@
           " " treemacs-header-workspace-button
           " " treemacs-header-toggles-button)
   "Possible value setting for `treemacs-header-line-format'.
-Conisits for 4 different buttons:
+Consists for 4 different buttons:
 - `treemacs-header-close-button'
 - `treemacs-header-projects-button'
 - `treemacs-header-workspace-button'

@@ -110,7 +110,7 @@ To be called whenever a project or workspace changes."
 
 (defun treemacs-current-workspace ()
   "Get the current workspace.
-The return value can be overriden by let-binding `treemacs-override-workspace'.
+The return value can be overridden by let-binding `treemacs-override-workspace'.
 This will happen when using `treemacs-run-in-every-buffer' to make sure that
 this function returns the right workspace for the iterated-over buffers.
 
@@ -746,7 +746,7 @@ PROJECT: Project Struct"
        (treemacs-return it)))))
 
 (defun treemacs--select-workspace-by-name (&optional name)
-  "Interactivly select the workspace with the given NAME."
+  "Interactively select the workspace with the given NAME."
   (treemacs--maybe-load-workspaces)
   (-let [name (or name
                    (completing-read

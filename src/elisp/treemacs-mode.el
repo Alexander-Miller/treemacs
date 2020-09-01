@@ -79,7 +79,7 @@ Will be set by `treemacs--post-command'.")
 (cl-defun treemacs--find-keybind (func &optional (pad 8))
   "Find the keybind for FUNC in treemacs.
 Return of cons of the key formatted for inclusion in the hydra string, including
-a minimum width for alignment, and the key itself for the hydra heads.
+a minimum PAD width for alignment, and the key itself for the hydra heads.
 Prefer evil keybinds, otherwise pick the first result."
   (-if-let (keys (where-is-internal func))
     (let ((key

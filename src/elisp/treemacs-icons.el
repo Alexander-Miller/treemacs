@@ -39,7 +39,7 @@
 ;; gap wherever treemacs places an icon, regardess of transparency.
 ;; Using xpm instead of png images is one way to work around this, but it degrades icon
 ;; quality to an unacceptable degree. Another way is to directly change images' :background
-;; property. The backgrounds colors are derived from the current theme with `treemacs--setup-icon-highlight'
+;; property. The backgrounds colours are derived from the current theme with `treemacs--setup-icon-highlight'
 ;; and saved in `treemacs--selected-icon-background' and `treemacs--not-selected-icon-background'.
 ;; Every icon string stores two images with the proper :background values in its properties
 ;; 'img-selected and 'img-unselected. The 'display property of the icon in the current line
@@ -54,11 +54,11 @@
       ('unspecified
        (prog1 "#2d2d31"
          (unless (boundp 'treemacs-no-load-time-warnings)
-           (message "[Treemacs] Warning: coudn't find default background color for icons, falling back on #2d2d31."))))
+           (message "[Treemacs] Warning: coudn't find default background colour for icons, falling back on #2d2d31."))))
       ('unspecified-bg
        (prog1 "#2d2d31"
          (unless (boundp 'treemacs-no-load-time-warnings)
-           (message "[Treemacs] Warning: background color is unspecified, icons will likely look wrong. Falling back on #2d2d31."))))
+           (message "[Treemacs] Warning: background colour is unspecified, icons will likely look wrong. Falling back on #2d2d31."))))
       (other other)))
   "Background for non-selected icons.")
 
@@ -108,8 +108,8 @@ does not exist."
 
 (defun treemacs--setup-icon-background-colors (&rest _)
   "Align icon backgrounds with current Emacs theme.
-Fetch the current Emacs theme's background & hl-line colors and inject them into
-the gui icons of every theme in `treemacs--themes'.
+Fetch the current Emacs theme's background & hl-line colours and inject them
+into the gui icons of every theme in `treemacs--themes'.
 Also called as advice after `load-theme', hence the ignored argument."
   (let* ((default-background (face-attribute 'default :background nil t))
          (hl-line-background (face-attribute 'hl-line :background nil t))
@@ -157,7 +157,7 @@ Aliased to the current theme's gui or tui icons.")
   "List of icons with variables.
 Every symbol S maps to a variable named \"treemacs-icons-S\". In addition S is
 also the key for the icon in both `treemacs-gui-icons' and `treemacs-tui-icons'.
-This combination alllows these icons-with-variables to be correctly changed in
+This combination allows these icons-with-variables to be correctly changed in
 `treemacs--select-icon-set'.")
 
 (defvar treemacs--icon-size 22
@@ -508,7 +508,7 @@ name if there is no period.  This makes it possible to match file names like
 '.gitignore' and 'Makefile'.
 
 Additionally FILE-EXTENSIONS are also not case sensitive and will be stored in a
-downcased state."
+down-cased state."
   (unless icon
     (user-error "Custom icon cannot be nil"))
   (dolist (ext file-extensions)
@@ -522,7 +522,7 @@ downcased state."
 EXTENSIONS should be a list of file extensions such that they match the regex
 stored in `auto-mode-alist', for example '\(\".cc\"\).
 MODE-ICON-ALIST is an alist that maps which mode from `auto-mode-alist' should
-be assigned which treemacs icon, for exmaple
+be assigned which treemacs icon, for example
 '\(\(c-mode . treemacs-icon-c\)
   \(c++-mode . treemacs-icon-cpp\)\)"
   (dolist (extension extensions)

@@ -202,7 +202,7 @@ DOM-NODE: Dom Node Struct"
 
 (defun treemacs--on-rename (old-name new-name dont-rename-initial)
   "Renames dom entries after a file was renamed from OLD-NAME to NEW-NAME.
-Renames the initial dom entry (the one backing the file that was acutally
+Renames the initial dom entry (the one backing the file that was actually
 renamed) only if DONT-RENAME-INITIAL is nil in case the entry is required for
 filewatch-mode to work.
 

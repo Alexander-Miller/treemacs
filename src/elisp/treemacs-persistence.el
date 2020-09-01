@@ -97,7 +97,7 @@ SELF: Treemacs-Iter struct."
 (defun treemacs--read-workspaces (iter)
   "Read a list of workspaces from the lines in ITER.
 
-ITER: Treemacs-Iter struct."
+ITER: Treemacs-Iter Struct."
   (let (workspaces)
     (while (s-matches? treemacs--persist-workspace-name-regex (treemacs-iter->peek iter))
       (-let [workspace (treemacs-workspace->create!)]
@@ -111,7 +111,7 @@ ITER: Treemacs-Iter struct."
 (defun treemacs--read-projects (iter)
   "Read a list of projects from ITER until another section is found.
 
-ITER: Treemacs-Iter struct"
+ITER: Treemacs-Iter Struct"
   (let (projects)
     (while (s-matches? treemacs--persist-project-name-regex (treemacs-iter->peek iter))
       (let ((kv-lines nil)
@@ -205,13 +205,14 @@ Will read all lines, except those that start with # or contain only whitespace."
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.
 Lines must start with a workspace name, followed by a project name, followed by
 the project's path property, followed by either the next project or the next
-workspace. The previously looked at line type is given by CONTEXT. PATHS contains
-all the project paths previously seen in the current workspace. These are used to
-make sure that no file path appears in the workspaces more than once.
+workspace.  The previously looked at line type is given by CONTEXT.  The
+previously looked at line is given by PREV.  PATHS contains all the project
+paths previously seen in the current workspace.  These are used to make sure
+that no file path appears in the workspaces more than once.
 
 A successful validation returns just the symbol 'success, in case of an error a
 list of 3 items is returned: the symbol 'error, the exact line where the error
-happened, and the error message. In some circumstances (for example when a
+happened, and the error message.  In some circumstances (for example when a
 project is missing a path property) it makes sense to display the error not in
 the currently looked at line, but the one above, which is why the previously
 looked at line PREV is given as well.

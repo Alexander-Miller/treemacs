@@ -8,6 +8,80 @@
 (defconst all-el-files (append (directory-files "./src/elisp" :full ".el")
                                (directory-files "./src/extra" :full ".el")))
 
+(defconst valid-doc-words
+  (append checkdoc-ispell-lisp-words
+          '("arg"
+            "args"
+            "Bool"
+            "BTN"
+            "Btn"
+            "changelog"
+            "config"
+            "configs"
+            "cpp"
+            "customisations"
+            "Debounce"
+            "Debounced"
+            "debounced"
+            "dir"
+            "dirs"
+            "dir's"
+            "dom"
+            "Dotfiles"
+            "dotfiles"
+            "eieio"
+            "el"
+            "eldoc"
+            "elisp"
+            "elpa"
+            "filesystem"
+            "FilePath"
+            "filepath"
+            "filepaths"
+            "filewatch"
+            "flycheck"
+            "fontification"
+            "git"
+            "gitignore"
+            "goto"
+            "gui"
+            "HashMap"
+            "hoc"
+            "ImageMagick"
+            "Imenu"
+            "iter"
+            "keybind"
+            "keybinds"
+            "leftclick"
+            "linux"
+            "macos"
+            "Makefile"
+            "modeline"
+            "org"
+            "org's"
+            "persp"
+            "Pfuture"
+            "pfuture"
+            "plist"
+            "png"
+            "plaintext"
+            "programmatically"
+            "px"
+            "py"
+            "recentering"
+            "Recentering"
+            "spaceline"
+            "splittable"
+            "Struct"
+            "subdir"
+            "treemacs"
+            "tui"
+            "txt"
+            "untracked"
+            "variadic"
+            "whitespace"
+            "workspaces")))
+
 (defun checkdoc-buffer (filename)
   ;; output only /src/elisp/filename.el as when compiling
   (message "Checkdoc %s" (substring filename (1+ (s-index-of "/src" filename))))
@@ -23,6 +97,7 @@
           (checkdoc-force-history-flag nil)
           (checkdoc-permit-comma-termination-flag nil)
           (checkdoc-spellcheck-documentation-flag t)
+          (checkdoc-ispell-lisp-words valid-doc-words)
           (checkdoc-arguments-in-order-flag t)
           (checkdoc-verb-check-experimental-flag t))
       (checkdoc-current-buffer :take-notes))

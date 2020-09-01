@@ -65,7 +65,7 @@
     (advice-remove #'disable-theme     #'treemacs--setup-icon-background-colors)))
 
 (defun treemacs--update-icon-selection ()
-  "Highlight current icon, unhighlight `treemacs--last-highlight'."
+  "Highlight current icon, un-highlight `treemacs--last-highlight'."
   (when treemacs--in-this-buffer
     (condition-case e
         (progn
@@ -87,7 +87,7 @@
        (treemacs-log-err "Error on highlight, this shouldn't happen: %s" e)))))
 
 (defun treemacs--pulse-png-advice (&rest _)
-  "Make sure icons' background are pusled alongside the entire line."
+  "Make sure icons' background are pulsed alongside the entire line."
   (when (eq 'treemacs-mode major-mode)
     (treemacs-with-writable-buffer
      (-when-let (btn (treemacs-current-button))
@@ -112,7 +112,7 @@
 
 (defsubst treemacs-pulse-on-success (&rest log-args)
   "Pulse current line with `treemacs-on-success-pulse-face'.
-Optionally issue a log statment with LOG-ARGS."
+Optionally issue a log statement with LOG-ARGS."
   (declare (indent 1))
   (when log-args
     (treemacs-log (apply #'format log-args)))
@@ -121,7 +121,7 @@ Optionally issue a log statment with LOG-ARGS."
 
 (defsubst treemacs-pulse-on-failure (&rest log-args)
   "Pulse current line with `treemacs-on-failure-pulse-face'.
-Optionally issue a log statment with LOG-ARGS."
+Optionally issue a log statement with LOG-ARGS."
   (declare (indent 1))
   (when log-args
     (treemacs-log-failure (apply #'format log-args)))

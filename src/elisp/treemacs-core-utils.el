@@ -489,7 +489,7 @@ buffer."
   (make-obsolete #'treemacs--get-children-of #'treemacs-collect-child-nodes "v2.7"))
 
 (defun treemacs--init (&optional root name)
-  "Initialize a treemacs buffer from the current workspace.
+  "Initialise a treemacs buffer from the current workspace.
 Add a project for ROOT and NAME if they are non-nil."
   (treemacs--maybe-load-workspaces)
   (let ((origin-buffer (current-buffer))
@@ -772,7 +772,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
   "Find position of node at PATH.
 Unlike `treemacs-find-node' this will not expand other nodes in the view, but
 only look among those currently visible.  The result however is the same: either
-a marker ponting to the found node or nil.
+a marker pointing to the found node or nil.
 
 Unlike `treemacs-find-node', this function does not go to the node.
 
@@ -784,7 +784,7 @@ PATH: Node Path"
 
 (defun treemacs-find-node (path &optional project)
   "Find position of node identified by PATH under PROJECT in the current buffer.
-Inspite the signature this function effectively supports two different calling
+In spite of the signature this function effectively supports two different calling
 conventions.
 
 The first one is for movement towards a node that identifies a file.  In this
@@ -807,7 +807,7 @@ a project extension, created with `treemacs-define-project-extension', the
 first element of the path must instead be the keyword `:custom', followed by the
 node's unique path.  The second argument is therefore ignored in this case.
 
-Either way this fuction will return a marker to the moved to position if it was
+Either way this function will return a marker to the moved to position if it was
 successful.
 
 PATH: Filepath | Node Path
@@ -1033,7 +1033,7 @@ It needs to be moved aside in a way that works for all indent depths and
        (forward-char 1)))))
 
 (defun treemacs--read-first-project-path ()
-  "Read the first project on init with an empty workspace.
+  "Read the first project on start with an empty workspace.
 This function is extracted here specifically so that treemacs-projectile can
 overwrite it so as to present the project root instead of the current dir as the
 first choice."
@@ -1042,7 +1042,7 @@ first choice."
 
 (defun treemacs--sort-value-selection ()
   "Interactive selection for a new `treemacs-sorting' value.
-Retursns a cons cell of a descriptive string name and the sorting symbol."
+Returns a cons cell of a descriptive string name and the sorting symbol."
   (declare (side-effect-free t))
   (let* ((sort-names '(("Sort Alphabetically Ascending" . alphabetic-asc)
                        ("Sort Alphabetically Descending" . alphabetic-desc)
@@ -1169,7 +1169,7 @@ PATH: Node Path"
 
 (defun treemacs--copy-or-move (action)
   "Internal implementation for copying and moving files.
-ACTION will be either `:copy' or `:move', depenting on whether we are calling
+ACTION will be either `:copy' or `:move', depending on whether we are calling
 from `treemacs-copy-file' or `treemacs-move-file'."
   (let ((no-node-msg)
         (wrong-type-msg)

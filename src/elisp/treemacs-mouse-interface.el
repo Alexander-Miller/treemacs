@@ -54,7 +54,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (treemacs--evade-image)))
 
 (defun treemacs-doubleclick-action (event)
-  "Run the appropriate doubeclick action for the current node.
+  "Run the appropriate doube-click action for the current node.
 In the default configuration this means to do the same as `treemacs-RET-action'.
 
 This function's exact configuration is stored in

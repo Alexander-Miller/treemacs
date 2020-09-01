@@ -71,7 +71,7 @@
 
 ;;;###autoload
 (defun treemacs ()
-  "Initialize or toggle treemacs.
+  "Initialise or toggle treemacs.
 * If the treemacs window is visible hide it.
 * If a treemacs buffer exists, but is not visible show it.
 * If no treemacs buffer exists for the current frame create and show it.
@@ -112,7 +112,7 @@ For the most part only useful when `treemacs-follow-mode' is not active."
 ;;;###autoload
 (defun treemacs-find-tag ()
   "Find and move point to the tag at point in the treemacs view.
-Most likley to be useful when `treemacs-tag-follow-mode' is not active.
+Most likely to be useful when `treemacs-tag-follow-mode' is not active.
 
 Will ask to change the treemacs root if the file to find is not under the
 root.  If no treemacs buffer exists it will be created with the current file's
@@ -144,7 +144,7 @@ visiting a file or Emacs cannot find any tags for the current file."
 (defun treemacs-select-window ()
   "Select the treemacs window if it is visible.
 Bring it to the foreground if it is not visible.
-Initialize a new treemacs buffer as calling `treemacs' would if there is no
+Initialise a new treemacs buffer as calling `treemacs' would if there is no
 treemacs buffer for this frame."
   (interactive)
   (pcase (treemacs-current-visibility)
@@ -186,7 +186,7 @@ treemacs buffer for this frame."
 (defun treemacs-display-current-project-exclusively ()
   "Display the current project, and *only* the current project.
 Like `treemacs-add-and-display-current-project' this will add the current
-project to treemacs based on either projectile or the built projectl.el.
+project to treemacs based on either projectile or the built-in project.el.
 However the 'exclusive' part means that it will make the current project the
 only project, all other projects *will be removed* from the current workspace."
   (interactive)

@@ -46,7 +46,7 @@
 
 (defvar treemacs--tag-follow-timer nil
   "The idle timer object for `treemacs-tag-follow-mode'.
-Active while tag follow mode is enabled and nil/canceled otherwise.")
+Active while tag follow mode is enabled and nil/cancelled otherwise.")
 
 (defvar-local treemacs--previously-followed-tag-position nil
   "Records the last node and path whose tags were expanded by tag follow mode.
@@ -125,7 +125,7 @@ PATH: String List"
     result))
 
 (defun treemacs--flatten-org-mode-imenu-index (index &optional path)
-  "Specialization of `treemacs--flatten-imenu-index' for org mode.
+  "Specialisation of `treemacs--flatten-imenu-index' for org mode.
 An index produced in an `org-mode' buffer is special in that tag sections act
 not just as a means of grouping tags (being bags of functions, classes etc).
 Each tag section is instead also a headline which can be moved to.  The
@@ -183,8 +183,8 @@ LIST: Sorted Tag Path List"
        (t (treemacs--binary-index-search point list))))))
 
 (cl-defun treemacs--binary-index-search (point list &optional (start 0) (end (1- (length list))))
-  "Finds the position of POINT in LIST using a binary search.
-Continuation of `treemacs--find-index-pos'. Search LIST between START & END.
+  "Find the position of POINT in LIST using a binary search.
+Continuation of `treemacs--find-index-pos'.  Search LIST between START & END.
 
 POINT: Integer
 LIST: Sorted Tag Path List

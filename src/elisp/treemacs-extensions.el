@@ -188,7 +188,7 @@ FACE is its face.
 
 KEY-FORM is the form that will give the node a unique key, necessary for
 the node's (and the full custom tree's) ability to stay expanded and visible
-when the project is refreshed, but also for compatiblity and integration with
+when the project is refreshed, but also for compatibility and integration with
 `follow-mode' and `filewatch-mode.'
 
 MORE-PROPERTIES is a plist of text properties that can arbitrarily added to the
@@ -536,7 +536,7 @@ rules apply for QUERY-FUNCTION, RENDER-ACTION and ROOT-KEY-FORM."
      :root-key-form ,root-key-form))
 
 (defun treemacs-initialize ()
-  "Initialize treemacs in an external buffer for extension use."
+  "Initialise treemacs in an external buffer for extension use."
   (treemacs--disable-fringe-indicator)
   (treemacs-with-writable-buffer
    (erase-buffer))

@@ -52,7 +52,7 @@ interfere with auto-completion."
                    (list ,@error-args)))))
 
 (defmacro treemacs-with-writable-buffer (&rest body)
-  "Temporarily turn off read-ony mode to execute BODY."
+  "Temporarily turn off read-only mode to execute BODY."
   (declare (debug t))
   `(let (buffer-read-only)
      ,@body))
@@ -61,7 +61,7 @@ interfere with auto-completion."
   "Safely extract BUTTON's PROPERTIES.
 
 Using `button-get' on a button located in a buffer that is not the current
-buffer does not work, so this function will run the property extaction from
+buffer does not work, so this function will run the property extraction from
 inside BUTTON's buffer."
   `(with-current-buffer (marker-buffer ,button)
      ,(if (= 1 (length properties))
@@ -104,7 +104,8 @@ Log ERROR-MSG if no button is selected, otherwise run BODY."
      ,@body))
 
 (cl-defmacro treemacs-do-for-button-state
-    (&key on-root-node-open
+    (&key no-error
+          on-root-node-open
           on-root-node-closed
           on-file-node-open
           on-file-node-closed
@@ -113,12 +114,15 @@ Log ERROR-MSG if no button is selected, otherwise run BODY."
           on-tag-node-open
           on-tag-node-closed
           on-tag-node-leaf
-          on-nil
-          no-error)
+          on-nil)
   "Building block macro to execute a form based on the current node state.
-Will bind to current button to 'btn' for the executon of the action forms.
+Will bind to current button to 'btn' for the execution of the action forms.
 When NO-ERROR is non-nil no error will be thrown if no match for the button
-state is achieved."
+state is achieved.
+Otherwise either one of ON-ROOT-NODE-OPEN, ON-ROOT-NODE-CLOSED,
+ON-FILE-NODE-OPEN, ON-FILE-NODE-CLOSED, ON-DIR-NODE-OPEN, ON-DIR-NODE-CLOSED,
+ON-TAG-NODE-OPEN, ON-TAG-NODE-CLOSED, ON-TAG-NODE-LEAF or ON-NIL will be
+executed."
   (declare (debug (&rest [sexp form])))
   `(-if-let (btn (treemacs-current-button))
        (pcase (treemacs-button-get btn :state)
@@ -180,7 +184,7 @@ under or below it.
 
 DIR-ACTION, FILE-ACTION, TAG-SECTION-ACTION and TAG-ACTION are inserted into a
 `pcase' statement matching the buttons state.  Project root nodes are treated
-the same common directory nodes. "
+the same common directory nodes."
   (declare (debug (&rest [sexp form])))
   (let ((valid-states (list)))
     (when dir-action
@@ -247,7 +251,7 @@ the on-delete code will run twice."
 Finally execute FINAL-FORM after the code to restore the position has run.
 
 This macro is meant for cases where a simple `save-excursion' will not do, like
-a refresh, which can potentially change the entire buffer layout.  In pratice
+a refresh, which can potentially change the entire buffer layout.  In practice
 this means attempt first to keep point on the same file/tag, and if that does
 not work keep it on the same line."
   (declare (debug (form body)))
@@ -318,7 +322,7 @@ not work keep it on the same line."
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer.
-Only includes treemacs filetree buffers, not extensions.
+Only includes treemacs file tree buffers, not extensions.
 Sets `treemacs-override-workspace' so calls to `treemacs-current-workspace'
 return the workspace of the active treemacs buffer."
   (declare (debug t))
@@ -333,7 +337,7 @@ return the workspace of the active treemacs buffer."
 
 (defmacro treemacs-run-in-all-derived-buffers (&rest body)
   "Run BODY once locally in every treemacs buffer.
-Inluceds *all* treemacs-mode-derived buffers, including extensions."
+Includes *all* treemacs-mode-derived buffers, including extensions."
   (declare (debug t))
   `(dolist (buffer (buffer-list))
      (when (buffer-local-value 'treemacs--in-this-buffer buffer)

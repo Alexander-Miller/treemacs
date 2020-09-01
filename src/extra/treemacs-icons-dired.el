@@ -94,8 +94,8 @@ Will remove the killed subdir from `treemacs-icons-dired--covered-subdirs'."
   (setq-local treemacs-icons-dired-displayed nil))
 
 (defun treemacs-icons-dired--update-icon-selection ()
-  "Highlight current icon, unhighlight `treemacs--last-highlight'.
-This will make sure the icons' background colors will align with hl-line mode."
+  "Highlight current icon, un-highlight `treemacs--last-highlight'.
+This will make sure the icons' background colours will align with hl-line mode."
   (when (and hl-line-mode (eq major-mode 'dired-mode))
     (condition-case e
         (progn

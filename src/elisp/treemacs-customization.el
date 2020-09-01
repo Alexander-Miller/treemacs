@@ -182,7 +182,7 @@ of how this config works and how to modify it."
 
 (defcustom treemacs-default-visit-action
   'treemacs-visit-node-no-split
-  "Defines the behavior of `treemacs-visit-node-default'."
+  "Defines the behaviour of `treemacs-visit-node-default'."
   :type 'treemacs-default-action
   :group 'treemacs)
 
@@ -221,24 +221,24 @@ To keep the alist clean changes should not be made directly, but with
 Files will still always be shown after directories.
 
 Valid values are:
- * alphabetic-asc,
- * alphabetic-desc,
- * alphabetic-case-insensitive-asc,
- * alphabetic-case-insensitive-desc,
- * size-asc,
- * size-desc,
- * mod-time-asc,
- * mod-time-desc
+ * `alphabetic-asc',
+ * `alphabetic-desc',
+ * `alphabetic-case-insensitive-asc',
+ * `alphabetic-case-insensitive-desc',
+ * `size-asc',
+ * `size-desc',
+ * `mod-time-asc',
+ * `mod-time-desc'
  * a custom function
 
 In the latter case it must be a function that can be passed to `sort' to sort
 absolute filepaths.  For an example see `treemacs--sort-alphabetic-asc'
 
 Note about performance:
-Treemacs does its best to optimize its performance critical path, it does so
+Treemacs does its best to optimise its performance critical path, it does so
 by doing as little work as possible and producing as little garbage as possible.
 Deciding on the order in which its nodes are inserted is a part of this path.
-As such certain tradeoffs need to be accounted far.
+As such certain trade-offs need to be accounted far.
 
 In plaintext: some sort settings are much slower than others.  Alphabetic
 sorting \(the default) is fastest and causes no additional overhead (even when
@@ -271,13 +271,13 @@ treemacs views containing hundreds or even thousands of nodes."
 Ignored files will *never* be shown in the treemacs buffer (unlike dotfiles)
 whose presence is controlled by `treemacs-show-hidden-files').
 
-Each predicate is a function that takes 2 arguments: a files's name and its
+Each predicate is a function that takes 2 arguments: a file's name and its
 absolute path and returns t if the file should be ignored and nil otherwise.  A
 file which returns t for *any* function in this list counts as ignored.
 
 By default this list contains `treemacs--std-ignore-file-predicate' which
-filters out '.', '..', Emacs' lock files as well as flycheck's temp files, and
-therefore should not be directly overwritten, but added to and removed from
+filters out '.', '..', Emacs' lock files as well temp files created by flycheck,
+and therefore should not be directly overwritten, but added to and removed from
 instead.
 Additionally `treemacs--mac-ignore-file-predicate' is also included on
 Mac-derived operating systems (when `system-type' is `darwin')."
@@ -291,7 +291,7 @@ functions in this list will be called on files just before they would be
 rendered, when the files' git status information is now available.  This for
 example allows to make files ignored by git invisible.
 The functions in this list are therefore expected to have a different signature:
-They must take two arguments - a file's absolute path and a hashtable that maps
+They must take two arguments - a file's absolute path and a hash table that maps
 files to their git status.  The files' paths are the table's keys, its values are
 characters (and not strings) indicating the file's git condition.  The chars map
 map as follows: (the pattern is derived from 'git status --porcelain')
@@ -323,12 +323,12 @@ See also `treemacs-filewatch-mode'."
   :group 'treemacs)
 
 (defcustom treemacs-goto-tag-strategy 'refetch-index
-  "Inidicates how to move to a tag when its buffer is dead.
+  "Indicates how to move to a tag when its buffer is dead.
 The tags in the treemacs view store their position as markers (or overlays if
 semantic mode is on) pointing to a buffer.  If that buffer is killed, or has
 never really been open, as treemacs kills buffer after fetching their tags if
 they did no exist before, the stored positions become stale, and treemacs needs
-to use a different method to move to that tag.  This variale sets that method.
+to use a different method to move to that tag.  This variable sets that method.
 
 Its possible values are:
 
@@ -349,7 +349,7 @@ directory.
 The value determines how many directories can be collapsed at once, both as a
 performance cap and to prevent too long directory names in the treemacs view.
 
-To minimize this option's impact on display performace the search for
+To minimise this option's impact on display performance the search for
 directories to collapse is done asynchronously in a python script and will thus
 only work when python installed.  The script should work both on python 2 and 3."
   :type 'integer
@@ -483,7 +483,7 @@ Note that this does *not* take `scroll-margin' into account."
        2)))
   "The value for `imenu-generic-expression' treemacs uses in elisp buffers.
 More discriminating than the default as it distinguishes between functions,
-inline functions, macros, faces, variables, customizations and types."
+inline functions, macros, faces, variables, customisations and types."
   :type 'alist
   :group 'treemacs)
 
@@ -639,7 +639,7 @@ not apply to the simple `treemacs-git-mode.'"
 
 (defcustom treemacs-python-executable (treemacs--find-python3)
   "The python executable used by treemacs.
-An asynchronous python process is used in two optional feaures:
+An asynchronous python process is used in two optional features:
 `treemacs-collapse-dirs' and the extended variant of `treemacs-git-mode'.
 
 There is generally only one reason to change this value: an extended
@@ -653,8 +653,8 @@ the python3 binary."
   "Text to be appended to treemacs' git command.
 With `treemacs-git-mode' the command `git status --porcelain --ignored .' is
 run to fetch a directory's git information.  The content of this variable will
-be appended to this git command.  This might be useful in cases when git's
-output is so large that it leads to palpable delays, while setting
+be appended to this git command.  This might be useful in cases when the output
+produced by git is so large that it leads to palpable delays, while setting
 `treemacs-max-git-entries' leads to loss of information.  In such a scenario an
 additional filter statement (for example `| grep -v \"/vendor_dir/\"') can be
 used to reduce the size of the output to a manageable volume for treemacs."
@@ -679,7 +679,7 @@ In practice means that treemacs will become invisible to commands like
 On the one hand this will alleviate issues of unequally sized window splits when
 treemacs is visible (since Emacs does not quite understand that treemacs has
 fixed window size).  On the other hand it may lead to issues with other packages
-like shell-pop, as making treemacs a side-window makes it unsplittable."
+like shell-pop, as making treemacs a side-window renders it un-splittable."
   :type 'boolean
   :group 'treemacs-window)
 
@@ -687,7 +687,7 @@ like shell-pop, as making treemacs a side-window makes it unsplittable."
   "When non-nil treemacs will have the `no-delete-other-windows' parameter.
 This parameter prevents the treemacs window from closing when calling
 `delete-other-windows' or when a command like `magit-status' would launch a new
-fullscreen buffer.
+full-screen buffer.
 Note that treemacs has its own delete-windows command with
 `treemacs-delete-other-windows' that behaves the same as `delete-other-windows',
 but won't close treemacs itself.
@@ -735,7 +735,7 @@ deleted."
 
 (defcustom treemacs-rename-project-functions nil
   "Hooks to run whenever a project is renamed.
-Will be called with the renamed project and the old name as its argumens."
+Will be called with the renamed project and the old name as its arguments."
   :type 'hook
   :group 'treemacs-hooks)
 
@@ -754,7 +754,7 @@ been deleted."
 
 (defcustom treemacs-rename-workspace-functions nil
   "Hooks to run whenever a workspace is renamed.
-Will be called with the renamed workspace and the old name as its argumens."
+Will be called with the renamed workspace and the old name as its arguments."
   :type 'hook
   :group 'treemacs-hooks)
 
@@ -858,7 +858,7 @@ current scope (frame or perspective) it was found for."
   "Decides how treemacs determines a file's extension.
 There are 2 options:
  - An extension should be everything past the *last* period of the file name.
-   In this case this shoud be set to `treemacs-last-period-regex-value'
+   In this case this should be set to `treemacs-last-period-regex-value'
  - An extension should be everything past the *first* period of the file name.
    In this case this should be set to `treemacs-first-period-regex-value'"
   :group 'treemacs

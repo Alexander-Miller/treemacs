@@ -35,7 +35,7 @@
   (require 'inline)
   (require 'treemacs-macros))
 
-(defconst treemacs--dirs-to-collpase.py
+(defconst treemacs--dirs-to-collapse.py
   (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
       (f-join treemacs-dir "treemacs-dirs-to-collapse.py")
     (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py")))
@@ -58,9 +58,9 @@ If it does reach that size it will be cut back to 30 entries.")
   "Stores the results of previous git status calls for directories.
 Its effective type is HashMap<FilePath, HashMap<FilePath, Char>>.
 
-These cached results are used as a standin during immediate rendering when
-`treemacs-git-mode' is set to be deferred, so as to minimize the effect of large
-face changes, epsecially when a full project is refreshed.
+These cached results are used as a stand-in during immediate rendering when
+`treemacs-git-mode' is set to be deferred, so as to minimise the effect of large
+face changes, especially when a full project is refreshed.
 
 Since this table is a global value that can effectively grow indefinitely its
 value is limited by `treemacs--git-cache-max-size'.")
@@ -262,7 +262,7 @@ BUFFER: Buffer"
   "Update the FILE node's git state, wrapped in `treemacs-save-position'.
 Internally calls `treemacs-do-update-single-file-git-state'.
 
-FILE: Filepath"
+FILE: FilePath"
   (treemacs-save-position
    (treemacs-do-update-single-file-git-state file)))
 
@@ -280,7 +280,7 @@ cache entry.
 
 When OVERRIDE-STATUS is non-nil the FILE's cached git status will not be used.
 
-FILE: Filepath
+FILE: FilePath
 EXCLUDE-PARENTS: Boolean
 OVERRIDE-STATUS: Boolean"
   (let* ((local-buffer (current-buffer))
@@ -336,13 +336,13 @@ OVERRIDE-STATUS: Boolean"
                (treemacs-log-err "\"%s\"" (treemacs--remove-trailing-newline err-str))))))))))
 
 (defun treemacs--collapsed-dirs-process (path project)
-  "Start a new process to determine dirs to collpase under PATH.
+  "Start a new process to determine directories to collapse under PATH.
 Only starts the process if PROJECT is locally accessible (i.e. exists, and
 is not remote.)
 Output format is an elisp list of string lists that's read directly.
 Every string list consists of the following elements:
  1) the extra text that must be appended in the view
- 2) The original full and uncollapsed path
+ 2) The original full and non-collapsed path
  3) a series of intermediate steps which are the result of appending the
     collapsed path elements onto the original, ending in
  4) the full path to the
@@ -359,13 +359,13 @@ Every string list consists of the following elements:
     (-let [default-directory path]
       (pfuture-new treemacs-python-executable
                    "-O"
-                   treemacs--dirs-to-collpase.py
+                   treemacs--dirs-to-collapse.py
                    path
                    (number-to-string treemacs-collapse-dirs)
                    (if treemacs-show-hidden-files "t" "x")))))
 
 (defun treemacs--parse-collapsed-dirs (future)
-  "Parse the output of collpsed dirs FUTURE.
+  "Parse the output of collapsed dirs FUTURE.
 Splits the output on newlines, splits every line on // and swallows the first
 newline."
   (when future

@@ -45,9 +45,9 @@
 (defun treemacs-magit--schedule-update ()
   "Schedule an update to potentially run after 3 seconds of idle time.
 In order for the update to fully run several conditions must be met:
- * A timer for an update for the given dir must not already exist
+ * A timer for an update for the given directory must not already exist
    (see `treemacs-magit--timers')
- * The dir must be part of a treemacs workspace, and
+ * The directory must be part of a treemacs workspace, and
  * The project must not be set for refresh already."
   (when treemacs-git-mode
     (let ((magit-root (treemacs--canonical-path (magit-toplevel))))

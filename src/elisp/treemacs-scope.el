@@ -65,7 +65,7 @@ The car is the name seen in interactive selection.  The cdr is the eieio class
 name.")
 
 (defvar treemacs--current-scope-type 'treemacs-frame-scope
-  "The general type of objects/items treemacs is curretly scoped to.")
+  "The general type of objects/items treemacs is currently scoped to.")
 
 (defvar treemacs--scope-storage nil
   "Alist of all active scopes mapped to their buffers & workspaces.
@@ -114,30 +114,38 @@ Can be used with `setf'."
 (defclass treemacs-scope () () :abstract t)
 
 (cl-defmethod treemacs-scope->current-scope ((_ (subclass treemacs-scope)))
+  "Get the current scope."
   (error "Default `current-scope' implementation was called"))
 
 (cl-defmethod treemacs-scope->current-scope-name ((_ (subclass treemacs-scope)) scope)
+  "Get the name of the given SCOPE."
   (ignore scope)
   nil)
 
 (cl-defmethod treemacs-scope->setup ((_ (subclass treemacs-scope)))
+  "Setup for a scope type."
   nil)
 
 (cl-defmethod treemacs-scope->cleanup ((_ (subclass treemacs-scope)))
+  "Tear-down for a scope type."
   nil)
 
 (defclass treemacs-frame-scope (treemacs-scope) () :abstract t)
 
 (cl-defmethod treemacs-scope->current-scope ((_ (subclass treemacs-frame-scope)))
+  "Get the current scope."
   (selected-frame))
 
 (cl-defmethod treemacs-scope->current-scope-name ((_ (subclass treemacs-frame-scope)) frame)
+  "Prints the given FRAME."
   (prin1-to-string frame))
 
 (cl-defmethod treemacs-scope->setup ((_ (subclass treemacs-frame-scope)))
+  "Frame-scope setup."
   (add-hook 'delete-frame-functions #'treemacs--on-scope-kill))
 
 (cl-defmethod treemacs-scope->cleanup ((_ (subclass treemacs-frame-scope)))
+  "Frame-scope tear-down."
   (remove-hook 'delete-frame-functions #'treemacs--on-scope-kill))
 
 (defun treemacs-set-scope-type (new-scope-type)

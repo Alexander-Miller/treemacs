@@ -60,7 +60,7 @@
   "List of all valid values for treemacs buttons' :state property.")
 
 (defun treemacs-next-line (&optional count)
-  "Goto next line.
+  "Go to next line.
 A COUNT argument, moves COUNT lines down."
   (interactive "p")
   ;; Move to EOL - if point is in the middle of a button, forward-button
@@ -75,7 +75,7 @@ A COUNT argument, moves COUNT lines down."
   (treemacs--evade-image))
 
 (defun treemacs-previous-line (&optional count)
-  "Goto previous line.
+  "Go to previous line.
 A COUNT argument, moves COUNT lines up."
   (interactive "p")
   ;; Move to the start of line - if point is in the middle of a button,
@@ -401,7 +401,7 @@ they will instead be wiped irreversibly."
 (defun treemacs-create-file ()
   "Create a new file.
 Enter first the directory to create the new file in, then the new file's name.
-The preselection for what directory to create in is based on the \"nearest\"
+The pre-selection for what directory to create in is based on the \"nearest\"
 path to point - the containing directory for tags and files or the directory
 itself, using $HOME when there is no path at or near point to grab."
   (interactive)
@@ -461,9 +461,9 @@ likewise be updated."
 (defun treemacs-create-dir ()
   "Create a new directory.
 Enter first the directory to create the new dir in, then the new dir's name.
-The preselection for what directory to create in is based on the \"nearest\"
+The pre-selection for what directory to create in is based on the \"nearest\"
 path to point - the containing directory for tags and files or the directory
-itself, using $HOME when there is no path at or near pooint to grab."
+itself, using $HOME when there is no path at or near point to grab."
   (interactive)
   (treemacs--create-file/dir nil))
 
@@ -600,7 +600,7 @@ entire treemacs view.
 Temporary sorting will only stick around until the next refresh, either manual
 or automatic via `treemacs-filewatch-mode'.
 
-Instead of calling this with a prefix arg you can also direcrly call
+Instead of calling this with a prefix arg you can also directly call
 `treemacs-temp-resort-current-dir' and `treemacs-temp-resort-root'."
   (interactive "P")
   (pcase arg
@@ -645,7 +645,7 @@ For slower scrolling see `treemacs-next-line-other-window'"
        (end-of-buffer (goto-char (point-max)))))))
 
 (defun treemacs-previous-page-other-window (&optional count)
-  "Scroll baclward COUNT pages in `next-window'.
+  "Scroll backward COUNT pages in `next-window'.
 For slower scrolling see `treemacs-previous-line-other-window'"
   (interactive "p")
   (treemacs-without-following
@@ -711,7 +711,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
 (defun treemacs-add-project-to-workspace (path &optional name)
   "Add a project at given PATH to the current workspace.
 The PATH's directory name will be used as a NAME for a project.  The NAME can
-\(or must) be entered manully with either a prefix arg or if a project with the
+\(or must) be entered manually with either a prefix arg or if a project with the
 auto-selected name already exists."
   (interactive "DProject root: ")
   (let* ((default-name (treemacs--filename path))
@@ -1189,7 +1189,7 @@ absolute path of the node (if it is present)."
   "Select the scope for treemacs buffers.
 The default (and only) option is scoping by frame, which means that every Emacs
 frame (and only an Emacs frame) will have its own unique treemacs buffer.
-Additional scope types can be enbaled by installing the appropriate package.
+Additional scope types can be enabled by installing the appropriate package.
 
 The following packages offer additional scope types:
  * treemacs-persp

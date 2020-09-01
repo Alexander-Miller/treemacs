@@ -219,7 +219,7 @@ context and decides whether to find the window to display in (if the tag is
 visited instead of the node being expanded).
 
 On the one hand it can be called based on `treemacs-RET-actions-config' (or
-TAB).  The functions in these configs  are expected to find the windows they need
+TAB).  The functions in these configs are expected to find the windows they need
 to display in themselves, so FIND-WINDOW must be t. On the other hand this
 function is also called from the top level vist-node functions like
 `treemacs-visit-node-vertical-split' which delegates to the
@@ -369,7 +369,7 @@ of the tag. They might also be nil if the pointed-to buffer does not exist."
   "Call the imenu index of the tag at TAG-PATH and go to its position.
 ORG? should be t when this function is called for an org buffer and index since
 org requires a slightly different position extraction because the position of a
-headline with subelements is saved in an 'org-imenu-marker' text property."
+headline with sub-elements is saved in an 'org-imenu-marker' text property."
   (let* ((file (car tag-path))
          (path (-butlast (cdr tag-path)))
          (tag (-last-item tag-path)))

@@ -228,9 +228,9 @@ DEPTH indicates how deep in the filetree the current button is."
 ;; TODO document open-action return strings
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action immediate-insert)
   "Building block macro to open a BUTTON.
-Gives the button a NEW-STATE, and, optionally, a NEW-ICON. Performs OPEN-ACTION
-and, optionally, POST-OPEN-ACTION. If IMMEDIATE-INSERT is non-nil it will concat
-and apply `insert' on the items returned from OPEN-ACTION. If it is nil either
+Gives the button a NEW-STATE, and, optionally, a NEW-ICON.  Performs OPEN-ACTION
+and, optionally, POST-OPEN-ACTION.  If IMMEDIATE-INSERT is non-nil it will concat
+and apply `insert' on the items returned from OPEN-ACTION.  If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
   `(prog1
      (save-excursion
@@ -253,9 +253,9 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
          (when (equal parent (treemacs-button-get child :parent))
            (forward-line 1))))))
 
-(cl-defmacro treemacs--create-buttons (&key nodes depth extra-vars node-action node-name)
-  "Building block macro for creating buttons from a list of items.
-Will not making any insertions, but instead return a list of strings returned by
+(cl-defmacro treemacs--create-buttons (&key nodes node-action  depth extra-vars node-name)
+  "Building block macro for creating buttons from a list of NODES.
+Will not making any insertions, but instead return a list of strings created by
 NODE-ACTION, so that the list can be further manipulated and efficiently
 inserted in one go.
 NODES is the list to create buttons from.
@@ -284,7 +284,7 @@ correct cache entries.
 
 DIRS: List of Collapse Paths.  Each Collapse Path is a list of
  1) the extra text that must be appended in the view,
- 2) The original full and uncollapsed path,
+ 2) The original full and un-collapsed path,
  3) a series of intermediate steps which are the result of appending the
     collapsed path elements onto the original, ending in
  4) the full path to the
@@ -333,7 +333,7 @@ DIRS: List of Collapse Paths.  Each Collapse Path is a list of
                    '(face treemacs-directory-collapsed-face)))))))))))
 
 (defmacro treemacs--inplace-map-when-unrolled (items interval &rest mapper)
-  "Unrolled in-place mappig operation.
+  "Unrolled in-place mapping operation.
 Maps ITEMS at given index INTERVAL using MAPPER function."
   (declare (indent 2))
   (let ((l (make-symbol "list"))
@@ -453,8 +453,9 @@ set to PARENT."
            (treemacs--reentry ,root ,git-future))
          (point-at-eol))))))
 
-(cl-defmacro treemacs--button-close (&key button new-state new-icon post-close-action)
-  "Close node given by BUTTON, use NEW-ICON and set state of BUTTON to NEW-STATE."
+(cl-defmacro treemacs--button-close (&key button new-icon new-state post-close-action)
+  "Close node given by BUTTON, use NEW-ICON and BUTTON's state to NEW-STATE.
+Run POST-CLOSE-ACTION after everything else is done."
   `(save-excursion
      (treemacs-with-writable-buffer
       ,@(when new-icon
@@ -525,7 +526,7 @@ Remove all open entries below BTN when RECURSIVE is non-nil."
   "Open the node given by BTN.
 
 BTN: Button
-GIT-FUTURE: Pfuture|Hashtable
+GIT-FUTURE: Pfuture|HashMap
 RECURSIVE: Bool"
   (-let [path (treemacs-button-get btn :path)]
     (if (not (f-readable? path))
@@ -737,7 +738,7 @@ Specifically this will return the node *after* which to make the new insert.
 
 Mostly this means the position before the first node for whose path returns
 SORT-FUNCTION returns non-nil, but files and directories must be handled
-propery,and edge cases for inserting at the end of the project and buffer must
+properly,and edge cases for inserting at the end of the project and buffer must
 be taken into account.
 
 PATH: File Path

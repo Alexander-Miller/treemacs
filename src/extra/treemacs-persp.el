@@ -41,19 +41,25 @@
 (add-to-list 'treemacs-scope-types (cons 'Perspectives 'treemacs-persp-scope))
 
 (cl-defmethod treemacs-scope->current-scope ((_ (subclass treemacs-persp-scope)))
+  "Get the current perspective as scope.
+Returns the symbol `none' if no perspective is active."
   (or (get-current-persp) 'none))
 
 (cl-defmethod treemacs-scope->current-scope-name ((_ (subclass treemacs-persp-scope)) persp)
+  "Return the name of the given perspective PERSP.
+Will return \"No Perspective\" if no perspective is active."
   (if (eq 'none persp)
       "No Perspective"
     (format "Perspective %s" (persp-name persp))))
 
 (cl-defmethod treemacs-scope->setup ((_ (subclass treemacs-persp-scope)))
+  "Persp-scope setup."
   (add-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
   (add-hook 'persp-before-kill-functions #'treemacs--on-scope-kill)
   (treemacs-persp--ensure-workspace-exists))
 
 (cl-defmethod treemacs-scope->cleanup ((_ (subclass treemacs-persp-scope)))
+  "Persp-scope tear-down."
   (remove-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
   (remove-hook 'persp-before-kill-functions #'treemacs--on-scope-kill))
 
