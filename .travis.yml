@@ -12,6 +12,7 @@ env:
     # - EMACS_VERSION=26.1
     # - EMACS_VERSION=26.2
     - EMACS_VERSION=26.3
+    - EMACS_VERSION=27.1
 # matrix:
 #   allow_failures:
 #     - env: EMACS_VERSION=26
