@@ -12,7 +12,7 @@ COMPILE_COMMAND  = -f batch-byte-compile
 CHECKDOC_COMMAND = -l "test/checkdock.el"
 LINT_DIR         = /tmp/treemacs
 LINT_FLAG        = --eval "(setq byte-compile-dest-file-function (lambda (f) (concat \"$(LINT_DIR)\" (file-name-nondirectory f) \"c\")))"
-TEST_COMMAND     = buttercup -L $(SRC_DIR) -L $(EXTRA_DIR) $(NO_LOAD_WARNINGS)
+TEST_COMMAND     = buttercup -L $(SRC_DIR) -L $(EXTRA_DIR) -L . $(NO_LOAD_WARNINGS)
 
 ELS  = $(SRC_DIR)/treemacs.el
 ELS += $(SRC_DIR)/treemacs-async.el
