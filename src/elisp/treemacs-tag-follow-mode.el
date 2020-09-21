@@ -228,12 +228,13 @@ PROJECT: Project Struct"
                ;; close the button that was opened on the previous follow
                (when (and treemacs--previously-followed-tag-position
                           (not (eq (car treemacs--previously-followed-tag-position) btn)))
-                 (-let [(prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position]
+                  (-let* (((prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position)
+                          (path-at-point (-some-> prev-followed-pos (treemacs-button-get :path))))
                    (save-excursion
-                     (goto-char prev-followed-pos)
-                     (when  (and (treemacs-is-path (-some-> (treemacs-current-button) (treemacs-button-get :path))
-                                                   :same-as prev-followed-path)
+                     (when  (and (stringp path-at-point)
+                                 (treemacs-is-path path-at-point :same-as prev-followed-path)
                                  (eq 'file-node-open (treemacs-button-get prev-followed-pos :state)))
+                       (goto-char prev-followed-pos)
                        (treemacs--collapse-file-node prev-followed-pos)))))
                ;; when that doesnt work move manually to the correct file
                (-let [btn-path (treemacs-button-get btn :path)]
