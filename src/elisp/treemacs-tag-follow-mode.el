@@ -228,8 +228,8 @@ PROJECT: Project Struct"
                ;; close the button that was opened on the previous follow
                (when (and treemacs--previously-followed-tag-position
                           (not (eq (car treemacs--previously-followed-tag-position) btn)))
-                  (-let* (((prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position)
-                          (path-at-point (-some-> prev-followed-pos (treemacs-button-get :path))))
+                 (-let* (((prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position)
+                         (path-at-point (-some-> (treemacs-current-button) (treemacs-button-get :path))))
                    (save-excursion
                      (when  (and (stringp path-at-point)
                                  (treemacs-is-path path-at-point :same-as prev-followed-path)
