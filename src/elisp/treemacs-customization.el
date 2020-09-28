@@ -31,18 +31,20 @@
   "Determine the location of python 3."
   (--if-let (executable-find "python3") it
     (when (eq system-type 'windows-nt)
-      (->> "where python"
-           (shell-command-to-string)
-           (s-trim)
-           (s-lines)
-           (--first
-            (when (file-exists-p it)
-              (->> (concat (shell-quote-argument it) " --version")
-                   (shell-command-to-string)
-                   (s-trim)
-                   (s-replace "Python " "")
-                   (s-left 1)
-                   (version<= "3"))))))))
+      (condition-case _
+          (->> "where python"
+               (shell-command-to-string)
+               (s-trim)
+               (s-lines)
+               (--first
+                (when (file-exists-p it)
+                  (->> (concat (shell-quote-argument it) " --version")
+                       (shell-command-to-string)
+                       (s-trim)
+                       (s-replace "Python " "")
+                       (s-left 1)
+                       (version<= "3")))))
+        (error nil)))))
 
 (cl-macrolet
     ((define-action-widget (name include-default include-tab include-ret)
