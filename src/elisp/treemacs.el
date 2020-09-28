@@ -52,9 +52,6 @@
 (require 'treemacs-header-line)
 (require 'treemacs-extensions)
 
-(eval-when-compile
-  (require 'treemacs-macros))
-
 (defconst treemacs-version
   (eval-when-compile
     (format "v2.8 (installed %s) @ Emacs %s"
