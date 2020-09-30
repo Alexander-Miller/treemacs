@@ -67,12 +67,12 @@
       (let* ((menu
               (easy-menu-create-menu
                nil
-               `(["Edit Workspaces"       treemacs-edit-workspaces]
-                 ["Create Workspace"      treemacs-create-workspace]
-                 ["Remove Worspace"       treemacs-remove-workspace]
-                 ["Rename Workspace"      treemacs-rename-workspace]
-                 ["Switch Worspaces"      treemacs-switch-workspace]
-                 ["Set Fallback Worspace" treemacs-set-fallback-workspace])))
+               `(["Edit Workspaces"        treemacs-edit-workspaces]
+                 ["Create Workspace"       treemacs-create-workspace]
+                 ["Remove Workspace"       treemacs-remove-workspace]
+                 ["Rename Workspace"       treemacs-rename-workspace]
+                 ["Switch Workspace"       treemacs-switch-workspace]
+                 ["Set Fallback Workspace" treemacs-set-fallback-workspace])))
              (choice (x-popup-menu event menu)))
         (when choice (call-interactively (lookup-key menu (apply 'vector choice))))) )
      'face 'treemacs-header-button-face)
