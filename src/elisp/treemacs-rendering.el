@@ -818,15 +818,13 @@ the necessary dom entries and adjust PARENT-DOM-NODE."
          (insert-after (treemacs--determine-insert-position created-path parent-btn sort-function)))
     (goto-char insert-after)
     (end-of-line)
-    ;; (insert "X")
     (insert "\n" (treemacs--create-string-for-single-insert
                   created-path parent-btn (1+ (button-get parent-btn :depth))))
     (-let [new-dom-node (treemacs-dom-node->create! :key created-path :parent parent-dom-node)]
       (treemacs-dom-node->insert-into-dom! new-dom-node)
       (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
     (when treemacs-git-mode
-      (treemacs-do-update-single-file-git-state created-path :exclude-parents :override-status))
-    ))
+      (treemacs-do-update-single-file-git-state created-path :exclude-parents :override-status))))
 
 (defun treemacs--insert-node-in-flattened-directory (created-path parent-btn parent-dom-node flatten-info)
   "Insert new CREATED-PATH below flattened directory at PARENT-BTN.
