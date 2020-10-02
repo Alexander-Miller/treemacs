@@ -54,7 +54,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
     (treemacs--evade-image)))
 
 (defun treemacs-doubleclick-action (event)
-  "Run the appropriate doube-click action for the current node.
+  "Run the appropriate double-click action for the current node.
 In the default configuration this means to do the same as `treemacs-RET-action'.
 
 This function's exact configuration is stored in
@@ -244,7 +244,7 @@ and ignore any prefix argument."
                 ("Workspaces"
                  ["Edit Workspaces"        treemacs-edit-workspaces]
                  ["Create Workspace"       treemacs-create-workspace]
-                 ["Remove Worskpace"       treemacs-remove-workspace]
+                 ["Remove Workspace"       treemacs-remove-workspace]
                  ["Rename Workspace"       treemacs-rename-workspace]
                  ["Switch Workspace"       treemacs-switch-workspace]
                  ["Set Fallback Workspace" treemacs-set-fallback-workspace])
