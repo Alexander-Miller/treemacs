@@ -1366,6 +1366,32 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
     (expect (treemacs--find-repeated-file-name "/d/file")
             :to-equal "/d/file (Copy 5)")))
 
+(describe "treemacs--tokenize-path"
+
+  (it "Throws when path is nil"
+    (expect (treemacs--tokenize-path nil "/a")
+            :to-throw))
+
+  (it "Throws when exclude-prefix is longer than path"
+    (expect (treemacs--tokenize-path "/a" "/a/b")
+            :to-throw))
+
+  (it "Returns nothing when path and exclude-prefix are equally long"
+    (expect (treemacs--tokenize-path "/a/b" "/a/b")
+            :to-be nil))
+
+  (it "Tokenizes everything when exclude-prefix is nil"
+    (expect (treemacs--tokenize-path "/a/b/c/d" nil)
+            :to-equal '("a" "b" "c" "d")))
+
+  (it "Tokenizes everything when exclude-prefix is empty"
+    (expect (treemacs--tokenize-path "/a/b/c/d" "")
+            :to-equal '("a" "b" "c" "d")))
+
+  (it "Tokenizes everything past the exclude-prefix"
+    (expect (treemacs--tokenize-path "/a/b/c/d" "/a/b")
+            :to-equal '("c" "d"))))
+
 (provide 'test-treemacs)
 
 ;;; treemacs-test.el ends here

@@ -272,6 +272,17 @@ button type on every call."
   (inline-quote
    (buffer-substring-no-properties (treemacs-button-start ,btn) (treemacs-button-end ,btn))))
 
+(define-inline treemacs--tokenize-path (path exclude-prefix)
+  "Get the PATH's single elements, excluding EXCLUDE-PREFIX.
+For example the input /A/B/C/D/E + /A/B will return [C D E].
+
+PATH: File Path
+EXCLUDE-PREFIX: File Path"
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (path exclude-prefix)
+    (inline-quote
+     (cdr (f-split (substring ,path (length ,exclude-prefix)))))))
+
 (defun treemacs--replace-recentf-entry (old-file new-file)
   "Replace OLD-FILE with NEW-FILE in the recent file list."
   ;; code taken from spacemacs - is-bound check due to being introduced after emacs24?

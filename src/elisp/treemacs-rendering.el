@@ -792,7 +792,7 @@ SORT-FUNCTION: Button -> Boolean."
        parent-btn))))
 
 (defun treemacs-do-insert-single-node (path parent-path)
-  "Insert single file node at given PATH and PARENT-PATH.
+  "Insert single file node at given PATH and below PARENT-PATH.
 
 PATH: File Path
 PARENT-PATH: File Path"
@@ -800,51 +800,123 @@ PARENT-PATH: File Path"
     ;; file events can be chaotic to the point that something is "created"
     ;; that is already present
     (unless (treemacs-find-in-dom path)
-      (let* ((parent-btn (treemacs-dom-node->position parent-dom-node))
-             (parent-collapse-info (treemacs-button-get parent-btn :collapsed)))
-        (if (and (file-directory-p path)
-                 parent-collapse-info)
-            (treemacs--insert-new-flattened-directory path parent-btn parent-dom-node parent-collapse-info)
-          (when (treemacs-is-node-expanded? parent-btn)
-            (treemacs-with-writable-buffer
-             (let* ((sort-function (treemacs--get-sort-fuction))
-                    (insert-after (treemacs--determine-insert-position path parent-btn sort-function)))
-               (goto-char insert-after)
-               (end-of-line)
-               (insert "\n" (treemacs--create-string-for-single-insert
-                             path parent-btn (1+ (button-get parent-btn :depth))))
-               (-let [new-dom-node (treemacs-dom-node->create! :key path :parent parent-dom-node)]
-                 (treemacs-dom-node->insert-into-dom! new-dom-node)
-                 (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
-               (when treemacs-git-mode
-                 (treemacs-do-update-single-file-git-state path :exclude-parents :override-status))))))))))
+       (let* ((parent-btn (treemacs-dom-node->position parent-dom-node))
+              (parent-flatten-info (treemacs-button-get parent-btn :collapsed)))
+         (treemacs-with-writable-buffer
+          (if parent-flatten-info
+              (treemacs--insert-node-in-flattened-directory
+               path parent-btn parent-dom-node parent-flatten-info)
+            (treemacs--insert-single-node
+             path parent-btn parent-dom-node)))))))
 
-(defun treemacs--insert-new-flattened-directory (path parent-btn parent-dom-node parent-collapse-info)
-  "Insert PATH as new flattened directory under PARENT-BTN.
-Create a new dom node as child of PARENT-DOM-NODE and start watching PATH.
-Will do nothing if PARENT-COLLAPSE-INFO indicates that maximum collapse depth is
-already reached.
+(defun treemacs--insert-single-node (created-path parent-btn parent-dom-node)
+  "Insert new CREATED-PATH below non-flattened directory at PARENT-BTN.
+Will find the correct insert location, insert the necessary strings, and make
+the necessary dom entries and adjust PARENT-DOM-NODE."
+  (let* ((sort-function (treemacs--get-sort-fuction))
+         (insert-after (treemacs--determine-insert-position created-path parent-btn sort-function)))
+    (goto-char insert-after)
+    (end-of-line)
+    ;; (insert "X")
+    (insert "\n" (treemacs--create-string-for-single-insert
+                  created-path parent-btn (1+ (button-get parent-btn :depth))))
+    (-let [new-dom-node (treemacs-dom-node->create! :key created-path :parent parent-dom-node)]
+      (treemacs-dom-node->insert-into-dom! new-dom-node)
+      (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
+    (when treemacs-git-mode
+      (treemacs-do-update-single-file-git-state created-path :exclude-parents :override-status))
+    ))
+
+(defun treemacs--insert-node-in-flattened-directory (created-path parent-btn parent-dom-node flatten-info)
+  "Insert new CREATED-PATH below flattened directory at PARENT-BTN.
+
+Will take care of every part necessary for adding a new node under a flattened
+directory - adjusting the label, the PARENT-DOM-NODE's data, the FLATTEN-INFO
+and path text properties, the filewatch entries.  It will also differentiate
+between creating new files and new directories and re-open the node accordingly.
 
 PATH: File Path
 PARENT-BTN: Button
 PARENT-DOM-NODE: Dom Node Struct
-PARENT-COLLPASE-INFO: [Int Path...]"
-  (unless (>= (car parent-collapse-info) treemacs-collapse-dirs)
-    (treemacs-with-writable-buffer
-     (-let [current-path (treemacs-button-get parent-btn :path)]
-       (-if-let (collapse-info (treemacs-button-get parent-btn :collapsed))
-           (progn
-             (cl-incf (car collapse-info))
-             (setf (cdr collapse-info) (nconc (cdr collapse-info) (list path))))
-         (treemacs-button-put parent-btn :collapsed (list 2 current-path path)))
-       (treemacs-button-put parent-btn :path path)
-       (setf (treemacs-dom-node->collapse-keys parent-dom-node)
-             (cons path (treemacs-dom-node->collapse-keys parent-dom-node)))
-       (ht-set! treemacs-dom path parent-dom-node)
-       (treemacs--start-watching path :collapse)
-       (-let [props (text-properties-at parent-btn)]
-         (goto-char (treemacs-button-end parent-btn))
-         (insert (apply #'propertize (substring path (length current-path)) props)))))))
+FLATTEN-INFO [Int File Path...]"
+
+  (treemacs-block
+   (let ((is-file? (file-regular-p created-path))
+         (insert-at-end? (treemacs-is-path created-path :in (-last-item flatten-info)))
+         (is-expanded? (treemacs-is-node-expanded? parent-btn)))
+
+     ;; Simple addition of a file
+     (treemacs-return-if (and is-file? insert-at-end? is-expanded?)
+       (treemacs--insert-single-node created-path parent-btn parent-dom-node))
+
+     ;; Simple file addition at the end, but the node is collapsed so we do nothing
+     (treemacs-return-if (and is-file? insert-at-end? (not is-expanded?))
+       t)
+
+     (let* ((properties (text-properties-at parent-btn))
+            (current-base-path (treemacs-button-get parent-btn :key))
+            ;; In case we either add a new file or a directory somewhere in the middle of the flattened paths
+            ;; we move the `created-path' up a step because that means we do not simple add another directory to
+            ;; the flattened path. Instead we remove everything *up to* the directory the new item was created in.
+            ;; Pretending the `created-path' has moved up like is an easy way to make sure the new button label
+            ;; and properties are determined correctly.
+            (created-path (if (or is-file? (not insert-at-end?))
+                              (treemacs--parent-dir created-path)
+                            created-path))
+            (new-path-tokens (treemacs--tokenize-path created-path current-base-path))
+            (new-button-label (substring created-path (1+ (length (treemacs--parent-dir current-base-path)))))
+            ;; TODO(2020/10/02): Check again when exactly this count is actually used
+            ;; maybe it can be removed by now
+            (new-flatten-info-count 0)
+            (new-flatten-info (list current-base-path))
+            (new-flatten-info-item current-base-path))
+
+       ;; Do nothing if we add a new directory and we have already reached maximum length
+       (unless (and insert-at-end?
+                    (>= (car flatten-info) treemacs-collapse-dirs)
+                    (not is-file?))
+
+         ;; Create the path items of the new `:collapsed' property
+         (dolist (token new-path-tokens)
+           (cl-incf new-flatten-info-count)
+           (setf new-flatten-info-item (f-join new-flatten-info-item token))
+           (push new-flatten-info-item new-flatten-info))
+         (setf new-flatten-info (nreverse new-flatten-info))
+
+         ;; Take care of filewatch and dom entries for all paths added and removed
+         (let* ((old-flatten-paths (-difference (cdr flatten-info) new-flatten-info))
+                (new-flatten-paths (-difference new-flatten-info (cdr flatten-info))))
+           (dolist  (old-flatten-path old-flatten-paths)
+             (treemacs--stop-watching old-flatten-path)
+             (ht-set! treemacs-dom old-flatten-path nil))
+           (dolist (new-flatten-path new-flatten-paths)
+             (treemacs--start-watching new-flatten-path :flatten)
+             (ht-set! treemacs-dom new-flatten-path parent-dom-node))
+           (setf (treemacs-dom-node->collapse-keys parent-dom-node) (copy-sequence (cdr new-flatten-info))))
+
+         ;; Update text properties with new state
+         (setf new-flatten-info (when (> new-flatten-info-count 0)
+                                  (cons new-flatten-info-count new-flatten-info)))
+         (plist-put properties :collapsed new-flatten-info)
+         (plist-put properties :path created-path)
+
+         ;; Insert new label
+         (goto-char parent-btn)
+         (delete-region (point) (point-at-eol))
+         (insert (apply #'propertize new-button-label properties))
+
+         ;; Fixing marker probably necessary since it's also in the dom
+         (goto-char (- (point) (length new-button-label)))
+         (set-marker parent-btn (point))
+
+         (if (and insert-at-end? is-file?)
+
+
+             ;; TODO(2020/10/01): this reopening is used multiple tims like this
+             ;; it should be abstracted properly
+             (funcall (alist-get (treemacs-button-get parent-btn :state) treemacs-TAB-actions-config))
+           (funcall (alist-get (treemacs-button-get parent-btn :state) treemacs-TAB-actions-config))
+           (setf (treemacs-dom-node->refresh-flag parent-dom-node) nil)))))))
 
 (define-inline treemacs--create-string-for-single-insert (path parent depth)
   "Create the necessary strings to insert a new file node.
