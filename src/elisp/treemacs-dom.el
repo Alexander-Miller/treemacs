@@ -91,6 +91,11 @@ SELF: Dom Node Struct"
     (inline-quote
      (progn
        (ht-remove! treemacs-dom (treemacs-dom-node->key ,self))
+       (let ((parent (treemacs-dom-node->parent ,self)))
+         (setf (treemacs-dom-node->children parent)
+               (delete ,self (treemacs-dom-node->children parent)))
+         (setf (treemacs-dom-node->reentry-nodes parent)
+               (delete ,self (treemacs-dom-node->reentry-nodes parent))) )
        (dolist (key (treemacs-dom-node->collapse-keys ,self))
          (ht-remove! treemacs-dom key))))))
 
