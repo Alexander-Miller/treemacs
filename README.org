@@ -816,7 +816,7 @@ Aside from this there are the following known incompatibilities:
    part of ~special-mode-hook~, since this is the mode ~treemacs-mode~ is derived from.
 
 * FAQ
- * How do I hide files I don't want to see?
+- How do I hide files I don't want to see?
 
    You need to define a predicate function and add it to ~treemacs-ignored-file-predicates~. This function accepts two
    arguments, a file's name and its absolute path, and must return non-nil when treemacs should hide that file.
@@ -833,9 +833,9 @@ Aside from this there are the following known incompatibilities:
        (add-to-list 'treemacs-ignored-file-predicates #'treemacs-ignore-example))
    #+END_SRC
 
- * How do I keep treemacs from showing files that are ignored by git?
+- How do I keep treemacs from showing files that are ignored by git?
 
-   Short answer:
+  Short answer:
 
    #+BEGIN_SRC emacs-lisp
      (treemacs-git-mode 'extended)
@@ -843,30 +843,31 @@ Aside from this there are the following known incompatibilities:
        (add-to-list 'treemacs-pre-file-insert-predicates #'treemacs-is-file-git-ignored?))
    #+END_SRC
 
-   (~simple~ git-mode would also work, but only for files. ~deferred~ mode with its delay would always use the last run's git
-   information, so it might look like it's reacting incorrectly, especially on the first run)
+  (~simple~ git-mode would also work, but only for files. ~deferred~ mode with its delay would always use the last run's git
+  information, so it might look like it's reacting incorrectly, especially on the first run)
 
-   A slightly longer explanation about how you can hook into the render process can be found in the documentation string
-   of ~treemacs-pre-file-insert-predicates~.
+  A slightly longer explanation about how you can hook into the render process can be found in the documentation string
+  of ~treemacs-pre-file-insert-predicates~.
 
- * Why am I seeing no file icons and only +/- for directories?
+- Why am I seeing no file icons and only +/- for directories?
 
    Treemacs will permanently fall back on its simple TUI icons if it detects that the emacs instance it is run in cannot
    create images. You can test this by evaluating ~(create-image "" 'png)~. If this code returns an error like "Invalid
    image type ´png´" your emacs does not support images.
 
- * How do I get treemacs to stop telling me when it's been refreshed, especially with filewatch-mode?
+- How do I get treemacs to stop telling me when it's been refreshed, especially with filewatch-mode?
 
    See ~treemacs-silent-refresh~ and ~treemacs-silent-filewatch~.
 
- * ENOSPC / No space left on device
+- ENOSPC / No space left on device / no file descriptor left
 
-   You may run into this error when you use filewatch-mode. The solution is to increase the number of allowed user
-   watches, as described in [[https://stackoverflow.com/questions/16748737/grunt-watch-error-waiting-fatal-error-watch-enospc][this link]]. You'll also want to see what's responsible for setting all those file watches in
-   the first place, since treemacs only watches the directories it is displaying and so won't produce more than a couple
-   dozen watches at best.
+  You may run into this error when you use filewatch-mode. The solution is to increase the number of allowed user
+  watches, as described [[https://stackoverflow.com/questions/16748737/grunt-watch-error-waiting-fatal-error-watch-enospc][here for Linux]] and [[https://wilsonmar.github.io/maximum-limits/][here for Mac]].
 
- * Why is treemacs warning me about not being able to find some background colors and falling back to something else?
+  You will also want to see what's responsible for setting all those file watches in the first place, since treemacs
+  only watches the expanded directories it is displaying and so won't produce more than a couple dozen watches at best.
+
+- Why is treemacs warning me about not being able to find some background colors and falling back to something else?
 
    Treemacs needs those colors to make sure that background colors of its icons correctly align with hl-line-mode. Png
    images' backgrounds are not highlighted by hl-line-mode by default, treemacs is manually correcting this every time
@@ -886,7 +887,7 @@ Aside from this there are the following known incompatibilities:
    first being loaded the variable must be defined *before* treemacs is initialized. This is best achieved by adding the
    line ~(defvar treemacs-no-load-time-warnings t)~ to treemacs' use-package ~:init~ block.
 
- * Can I expand *everything* under a node?
+- Can I expand *everything* under a node?
 
    Yes, you just need to expand it with a [[https://www.emacswiki.org/emacs/PrefixArgument][prefix argument]]. Closing nodes with a prefix argument works as well. In this
    case treemacs will forget about the nodes opened below the one that was closed and not reopen them automatically.
