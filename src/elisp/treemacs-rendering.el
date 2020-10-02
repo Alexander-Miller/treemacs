@@ -774,6 +774,7 @@ SORT-FUNCTION: Button -> Boolean."
                                 (treemacs-find-file-node (treemacs-dom-node->key it)))))
          ;; after parent
          parent-btn)
+
       ;; insert file ...
       (or
        ;; at first file that fits sort order
@@ -784,10 +785,10 @@ SORT-FUNCTION: Button -> Boolean."
        (--when-let (-last-item files)
          (or (treemacs-dom-node->position it)
              (treemacs-find-file-node (treemacs-dom-node->key it))) )
-       ;; before first dir
-       (--when-let (car dirs)
-         (previous-button (or (treemacs-dom-node->position it)
-                              (treemacs-find-file-node (treemacs-dom-node->key it)))))
+       ;; after last dir
+       (--when-let (-last-item dirs)
+         (or (treemacs-dom-node->position it)
+             (treemacs-find-file-node (treemacs-dom-node->key it))))
        ;; after parent
        parent-btn))))
 
