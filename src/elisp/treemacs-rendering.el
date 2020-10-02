@@ -832,9 +832,9 @@ the necessary dom entries and adjust PARENT-DOM-NODE."
   "Insert new CREATED-PATH below flattened directory at PARENT-BTN.
 
 Will take care of every part necessary for adding a new node under a flattened
-directory - adjusting the label, the PARENT-DOM-NODE's data, the FLATTEN-INFO
-and path text properties, the filewatch entries.  It will also differentiate
-between creating new files and new directories and re-open the node accordingly.
+directory - adjusting the label, the state PARENT-DOM-NODE, the FLATTEN-INFO and
+path text properties, the filewatch entries.  It will also differentiate between
+creating new files and new directories and re-open the node accordingly.
 
 PATH: File Path
 PARENT-BTN: Button
