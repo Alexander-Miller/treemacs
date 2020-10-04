@@ -1207,11 +1207,13 @@ from `treemacs-copy-file' or `treemacs-move-file'."
          wrong-type-msg)
        (let* ((source (treemacs-button-get node :path))
               (source-name (treemacs--filename source))
-              (destination (treemacs--unslash (read-file-name prompt nil default-directory :must-match)))
+              (destination (treemacs--unslash (read-file-name prompt nil default-directory)))
               (target-is-dir? (file-directory-p destination))
               (target-name (if target-is-dir? (treemacs--filename source) (treemacs--filename destination)))
               (destination-dir (if target-is-dir? destination (treemacs--parent-dir destination)))
               (target (treemacs--find-repeated-file-name (f-join destination-dir target-name))))
+         (unless (file-exists-p destination-dir)
+           (make-directory destination-dir :parents))
          (when (eq action :move)
            ;; do the deletion *before* moving the file, otherwise it will no longer exist and treemacs will
            ;; not recognize it as a file path
