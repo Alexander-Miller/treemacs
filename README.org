@@ -503,7 +503,6 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-recenter-distance             | 0.1                                              | Minimum distance from window top/bottom (0.1 = 10%) before treemacs calls ~recenter~ in tag/file-follow-mode.                                                                                                                        |
 | treemacs-pulse-on-success              | t                                                | When non-nil treemacs will pulse the current line as a success indicator, e.g. when creating a file.                                                                                                                                 |
 | treemacs-pulse-on-failure              | t                                                | When non-nil treemacs will pulse the current line as a failure indicator, e.g. when failing to find a file's tags.                                                                                                                   |
-| treemacs-elisp-imenu-expression        | [too large to list]                              | The imenu expression treemacs uses in elisp buffers.                                                                                                                                                                                 |
 | treemacs-persist-file                  | ~/.emacs.d/.cache/treemacs-persist               | Path to the file treemacs uses to persist its state.                                                                                                                                                                                 |
 | treemacs-last-error-persist-file       | ~/.emacs.d/.cache/treemacs-persist-at-last-error | Path to the file treemacs uses to persist its state.                                                                                                                                                                                 |
 | treemacs-space-between-root-nodes      | t                                                | When non-nil treemacs will separate root nodes with an empty line.                                                                                                                                                                   |
@@ -891,6 +890,58 @@ Aside from this there are the following known incompatibilities:
 
    Yes, you just need to expand it with a [[https://www.emacswiki.org/emacs/PrefixArgument][prefix argument]]. Closing nodes with a prefix argument works as well. In this
    case treemacs will forget about the nodes opened below the one that was closed and not reopen them automatically.
+
+- Is it possible to tweak the imenu tree nodes, such that more details are shown?
+
+   Previously treemacs supported the `treemacs-elisp-imenu-expression` customization option,
+   which improves the imenu view for elisp files. This option has been removed in order to avoid inference
+   with user settings.
+
+   In order to improve the imenu looks, you might want to configure the variable `imenu-generic-expression`.
+   For example the following configuration can be put inside an `emacs-lisp-mode-hook`.
+
+    #+BEGIN_SRC emacs-lisp
+    (setq imenu-generic-expression
+      (let ((name (rx (1+ whitespace) (? "'") (group-n 2 symbol-start (1+ (or (syntax word) (syntax symbol))) symbol-end)))
+            (prefix (rx bol (0+ (syntax whitespace)) "(")))
+        `(("Functions"
+           ,(concat prefix (rx (? "cl-") (or "defgeneric" "defmethod" "defun" "defadvice")) name)
+           2)
+          ("Dependencies"
+           ,(concat prefix "require" name)
+           2)
+          ("Inline Functions"
+           ,(concat prefix (rx (? "cl-") (or "defsubst" "define-inline")) name)
+           2)
+          ("Customizations"
+           ,(concat prefix "defcustom" name)
+           2)
+          ;; struct whose name maybe be wrapped in parens
+          ("Types" ,(rx (group-n 1 (? "cl-") "defstruct" (1+ whitespace) (? "(" (0+ whitespace)))
+                        (group-n 2 symbol-start (1+ (or (syntax word) (syntax symbol))) symbol-end))
+           2)
+          ("Types"
+           ,(concat
+             prefix
+             (rx (group-n
+                  1 (or (seq (? "cl-") "defstruct" (? " ("))
+                        "defclass"
+                        "deftype"
+                        "defgroup"
+                        "define-widget"
+                        "deferror")))
+             name)
+           2)
+          ("Variables"
+           ,(concat prefix (rx (or "defvar" "defvar-local" "defconst" "defconst-mode-local")) name)
+           2)
+          ("Macros"
+           ,(concat prefix (rx (? "cl-") (or "define-compiler-macro" "defmacro")) name)
+           2)
+          ("Faces"
+           ,(concat prefix (rx "defface") name)
+           2))))
+    #+END_SRC
 
 * Contributing
 Contributions are very much welcome, but should fit the general scope and style of treemacs. The following is a list of

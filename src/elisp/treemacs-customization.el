@@ -443,52 +443,6 @@ Note that this does *not* take `scroll-margin' into account."
   :type 'float
   :group 'treemacs)
 
-(defcustom treemacs-elisp-imenu-expression
-  (let ((name (rx (1+ whitespace) (? "'") (group-n 2 symbol-start (1+ (or (syntax word) (syntax symbol))) symbol-end)))
-        (prefix (rx bol (0+ (syntax whitespace)) "(")))
-    `(("Functions"
-       ,(concat prefix (rx (? "cl-") (or "defgeneric" "defmethod" "defun" "defadvice")) name)
-       2)
-      ("Dependencies"
-       ,(concat prefix "require" name)
-       2)
-      ("Inline Functions"
-       ,(concat prefix (rx (? "cl-") (or "defsubst" "define-inline")) name)
-       2)
-      ("Customizations"
-       ,(concat prefix "defcustom" name)
-       2)
-      ;; struct whose name maybe be wrapped in parens
-      ("Types" ,(rx (group-n 1 (? "cl-") "defstruct" (1+ whitespace) (? "(" (0+ whitespace)))
-		    (group-n 2 symbol-start (1+ (or (syntax word) (syntax symbol))) symbol-end))
-       2)
-      ("Types"
-       ,(concat
-	 prefix
-	 (rx (group-n
-	      1 (or (seq (? "cl-") "defstruct" (? " ("))
-		    "defclass"
-		    "deftype"
-		    "defgroup"
-		    "define-widget"
-		    "deferror")))
-	 name)
-       2)
-      ("Variables"
-       ,(concat prefix (rx (or "defvar" "defvar-local" "defconst" "defconst-mode-local")) name)
-       2)
-      ("Macros"
-       ,(concat prefix (rx (? "cl-") (or "define-compiler-macro" "defmacro")) name)
-       2)
-      ("Faces"
-       ,(concat prefix (rx "defface") name)
-       2)))
-  "The value for `imenu-generic-expression' treemacs uses in elisp buffers.
-More discriminating than the default as it distinguishes between functions,
-inline functions, macros, faces, variables, customisations and types."
-  :type 'alist
-  :group 'treemacs)
-
 (defcustom treemacs-persist-file
   (f-join user-emacs-directory ".cache" "treemacs-persist")
   "Path to the file treemacs uses to persist its state."

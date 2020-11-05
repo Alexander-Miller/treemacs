@@ -98,8 +98,6 @@ should be placed under."
     (condition-case e
         (when (buffer-live-p buff)
           (with-current-buffer buff
-            (when (eq major-mode 'emacs-lisp-mode)
-              (setq-local imenu-generic-expression treemacs-elisp-imenu-expression))
             (setq result (and (or imenu-generic-expression imenu-create-index-function) (imenu--make-index-alist t))
                   mode major-mode))
           (unless existing-buffer (kill-buffer buff))
