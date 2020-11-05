@@ -262,7 +262,7 @@ and ignore any prefix argument."
                            (if treemacs-fringe-indicator-mode "Enabled" "Disabled"))
                   treemacs-fringe-indicator-mode])
                 ("Help"
-                 ["Show Helpful Hydra"     treemacs-helpful-hydra]
+                 ["Show Help"              treemacs-help]
                  ["Show Active Extensions" treemacs-show-extensions]
                  ["Show Changelog"         treemacs-show-changelog]))))
             (choice (x-popup-menu event menu)))

@@ -11,7 +11,7 @@
  (depends-on "ace-window")
  (depends-on "all-the-icons")
  (depends-on "pfuture")
- (depends-on "hydra")
+ (depends-on "lv")
  (depends-on "evil")
  (depends-on "projectile")
  (depends-on "magit")

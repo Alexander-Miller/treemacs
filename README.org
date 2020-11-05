@@ -82,7 +82,7 @@ overview looks as follows:
  * Ease of use :: Treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
    defaults. Installation aside there are two obligatory pieces of setup: 1) Choosing convenient keybindings to run
    treemacs and 2) If you use evil: requiring ~treemacs-evil~ to integrate treemacs with evil and enable j/k navigation.
-   More on both below. You can also summon a helpful hydra with ~?~ that will remind you of treemacs' many keybindings
+   More on both below. You can also show the help with ~?~ that will remind you of treemacs' many keybindings
    and features.
  * Bookmark integration :: Running ~bookmark-set~ on a Treemacs item will store a bookmark to Treemacs buffer for that item.
 
@@ -108,8 +108,8 @@ Resizable icons:
 
 * Quick Start
 If you don't care about reading the full readme here's a list of some bare bones basics to get you started:
- * First of all: press ~?~ to summon the helpful hydra:
-   [[file:screenshots/hydra.png]]
+ * First of all: press ~?~ to show the help:
+   [[file:screenshots/help.png]]
  * If you use evil don't forget to also install ~treemacs-evil~
  * If you use projectile you can install ~treemacs-projectile~ to allow quickly add your projectile projects to
    treemacs.
@@ -540,8 +540,9 @@ Treemacs defines and uses the following faces:
 | treemacs-root-remote-unreadable-face   | treemacs-root-unreadable-face                    | Face used for unreadable remote (Tramp) project roots.                       |
 | treemacs-root-remote-disconnected-face | warning, treemacs-root-face                      | Face used for disconnected remote (Tramp) project roots.                     |
 | treemacs-tags-face                     | font-lock-builtin-face                           | Face used for tags.                                                          |
-| treemacs-help-title-face               | font-lock-constant-face                          | Face used for the title of the helpful hydra.                                |
-| treemacs-help-column-face              | font-lock-keyword-face                           | Face used for the column headers of the helpful hydra.                       |
+| treemacs-help-title-face               | font-lock-constant-face                          | Face used for the title of the help.                                         |
+| treemacs-help-column-face              | font-lock-keyword-face                           | Face used for the column headers of the help.                                |
+| treemacs-help-key-face                 | font-lock-function-name-face                     | Face used for the keys of the help.                                           |
 | treemacs-git-*-face                    | various font lock faces                          | Faces used by treemacs for various git states.                               |
 | treemacs-term-node-face                | font-lock-string-face                            | Face for directory node symbols used by treemacs when it runs in a terminal. |
 | treemacs-on-success-pulse-face         | :fg #111111 :bg #669966                          | Pulse face used when pulsing on a successful action.                         |
@@ -764,7 +765,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 
 | Key      | Action                                      | Description                                                                                            |
 |----------+---------------------------------------------+--------------------------------------------------------------------------------------------------------|
-| ?        | treemacs-helpful-hydra                      | Summon the helpful hydra to show you the treemacs keymap.                                              |
+| ?        | treemacs-help                               | Summon the help to show you the treemacs keymap.                                              |
 | j/n      | treemacs-next-line                          | Go to the next line.                                                                                   |
 | k/p      | treemacs-previous-line                      | Go to the previous line.                                                                               |
 | M-J/N    | treemacs-next-line-other-window             | Go to the next line in ~next-window~.                                                                  |
@@ -931,7 +932,7 @@ If you want to delve into the treemacs' code base, check out [[https://github.co
  * ace-window
  * pfuture
  * ht
- * hydra
+ * lv
  * (optionally) evil
  * (optionally) projectile
  * (optionally) winum

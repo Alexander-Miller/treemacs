@@ -49,8 +49,6 @@
   treemacs-add-bookmark
   treemacs--make-bookmark-record)
 
-(declare-function treemacs--helpful-hydra/body "treemacs-mode")
-
 (defvar bookmark-make-record-function)
 
 (defvar-local treemacs--eldoc-msg nil
@@ -78,9 +76,8 @@ Will be set by `treemacs--post-command'.")
 
 (cl-defun treemacs--find-keybind (func &optional (pad 8))
   "Find the keybind for FUNC in treemacs.
-Return of cons of the key formatted for inclusion in the hydra string, including
-a minimum PAD width for alignment, and the key itself for the hydra heads.
-Prefer evil keybinds, otherwise pick the first result."
+Return of cons of the key formatted for inclusion in the help string, including
+a minimum PAD width for alignment. Prefer evil keybinds, otherwise pick the first result."
   (-if-let (keys (where-is-internal func))
     (let ((key
            (key-description
@@ -101,18 +98,17 @@ Prefer evil keybinds, otherwise pick the first result."
                ("⌘"       . "#-")
                ("⇧"        . "S-"))
              key))
-      (cons (s-pad-right pad " " (format "_%s_:" key)) key))
-    (cons (s-pad-right pad " " (format "_%s_:" " ")) " ")))
+      (s-pad-right pad " " (concat (propertize key 'face 'treemacs-help-key-face) ":")))
+    (s-pad-right pad " " " :")))
 
-(defun treemacs-helpful-hydra ()
-  "Summon the helpful hydra to show you the treemacs keymap.
-If the hydra, for whatever reason, is unable the find the key a command is bound
-to it will instead show a blank."
+(defun treemacs-help ()
+  "Show the treemacs help.
+If the key a command is bound to is not found, it will instead show a blank."
   (interactive)
   (-if-let (b (treemacs-get-local-buffer))
       (with-current-buffer b
         (let*
-            ((title              (format (propertize "Treemacs %s Helpful Hydra" 'face 'treemacs-help-title-face) (treemacs-version)))
+            ((title              (format (propertize "Treemacs %s Help" 'face 'treemacs-help-title-face) (treemacs-version)))
              (column-nav         (propertize "Navigation" 'face 'treemacs-help-column-face))
              (column-nodes       (propertize "Opening Nodes" 'face 'treemacs-help-column-face))
              (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))
@@ -120,6 +116,7 @@ to it will instead show a blank."
              (column-projects    (propertize "Projects" 'face 'treemacs-help-column-face))
              (column-ws          (propertize "Workspaces" 'face 'treemacs-help-column-face))
              (column-misc        (propertize "Misc." 'face 'treemacs-help-column-face))
+             (key-help           (treemacs--find-keybind #'treemacs-help))
              (key-root-up        (treemacs--find-keybind #'treemacs-root-up))
              (key-root-down      (treemacs--find-keybind #'treemacs-root-down))
              (key-next-line      (treemacs--find-keybind #'treemacs-next-line))
@@ -167,91 +164,44 @@ to it will instead show a blank."
              (key-rename-ws      (treemacs--find-keybind #'treemacs-rename-workspace 12))
              (key-switch-ws      (treemacs--find-keybind #'treemacs-switch-workspace 12))
              (key-fallback-ws    (treemacs--find-keybind #'treemacs-set-fallback-workspace 12))
-             (hydra-str
+             (help-str
               (format
-               "
-%s
-%s              │ %s              │ %s    │ %s                │ %s                  │ %s                  │ %s
+               "%s
+%s                │ %s                │ %s      │ %s                  │ %s                    │ %s                    │ %s
 ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 %s next Line        │ %s dwim TAB            │ %s create file │ %s follow mode      │ %s add project    │ %s Edit Workspaces  │ %s refresh
 %s prev line        │ %s dwim RET            │ %s create dir  │ %s filewatch mode   │ %s remove project │ %s Create Workspace │ %s (re)set width
 %s next neighbour   │ %s open no split       │ %s rename      │ %s git mode         │ %s rename project │ %s Remove Workspace │ %s copy path
-%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                           │ %s Rename Workspace │ %s copy root
-%s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                           │ %s Switch Workspace │ %s re-sort
-%s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                           │ %s Set Fallback     │ %s bookmark
-%s up next window   │ %s open ace horizontal │                    │                         │                           │                             │
-%s root up          │ %s open ace vertical   │                    │                         │                           │                             │
-%s root down        │ %s open mru window     │                    │                         │                           │                             │
-                        │ %s open externally     │                    │                         │                           │                             │
-                        │ %s close parent        │                    │                         │                           │                             │
+%s prev neighbour   │ %s open horizontal     │ %s delete      │ %s show dotfiles    │                             │ %s Rename Workspace │ %s copy root
+%s goto parent      │ %s open vertical       │ %s copy        │ %s resizability     │                             │ %s Switch Workspace │ %s re-sort
+%s down next window │ %s open ace            │ %s move        │ %s fringe indicator │                             │ %s Set Fallback     │ %s bookmark
+%s up next window   │ %s open ace horizontal │                      │                           │                             │                               │
+%s root up          │ %s open ace vertical   │                      │                           │                             │                               │
+%s root down        │ %s open mru window     │                      │                           │                             │                               │
+                          │ %s open externally     │                      │                           │                             │                               │
+%s hide help        │ %s close parent        │                      │                           │                             │                               │
 "
                title
                column-nav               column-nodes          column-files           column-toggles          column-projects          column-ws             column-misc
-               (car key-next-line)      (car key-tab)         (car key-create-file)  (car key-follow-mode)   (car key-add-project)    (car key-edit-ws)     (car key-refresh)
-               (car key-prev-line)      (car key-ret)         (car key-create-dir)   (car key-fwatch-mode)   (car key-remove-project) (car key-create-ws)   (car key-set-width)
-               (car key-next-neighbour) (car key-open)        (car key-rename)       (car key-git-mode)      (car key-rename-project) (car key-remove-ws)   (car key-copy-path)
-               (car key-prev-neighbour) (car key-open-horiz)  (car key-delete)       (car key-show-dotfiles)                          (car key-rename-ws)   (car key-copy-root)
-               (car key-goto-parent)    (car key-open-vert)   (car key-copy-file)    (car key-toggle-width)                           (car key-switch-ws)   (car key-resort)
-               (car key-down-next-w)    (car key-open-ace)    (car key-move-file)    (car key-fringe-mode)                            (car key-fallback-ws) (car key-bookmark)
-               (car key-up-next-w)      (car key-open-ace-h)
-               (car key-root-up)        (car key-open-ace-v)
-               (car key-root-down)      (car key-open-mru)
-                                        (car key-open-ext)
-                                        (car key-close-above)
+               key-next-line            key-tab               key-create-file        key-follow-mode         key-add-project          key-edit-ws           key-refresh
+               key-prev-line            key-ret               key-create-dir         key-fwatch-mode         key-remove-project       key-create-ws         key-set-width
+               key-next-neighbour       key-open              key-rename             key-git-mode            key-rename-project       key-remove-ws         key-copy-path
+               key-prev-neighbour       key-open-horiz        key-delete             key-show-dotfiles                                key-rename-ws         key-copy-root
+               key-goto-parent          key-open-vert         key-copy-file          key-toggle-width                                 key-switch-ws         key-resort
+               key-down-next-w          key-open-ace          key-move-file          key-fringe-mode                                  key-fallback-ws       key-bookmark
+               key-up-next-w            key-open-ace-h
+               key-root-up              key-open-ace-v
+               key-root-down            key-open-mru
+                                        key-open-ext
+               key-help                 key-close-above
                )))
-          (eval
-           `(defhydra treemacs--helpful-hydra (:exit nil :hint nil :columns 5)
-              ,hydra-str
-              (,(cdr key-next-line)      #'treemacs-next-line)
-              (,(cdr key-prev-line)      #'treemacs-previous-line)
-              (,(cdr key-root-up)        #'treemacs-root-up)
-              (,(cdr key-root-down)      #'treemacs-root-down)
-              (,(cdr key-down-next-w)    #'treemacs-next-line-other-window)
-              (,(cdr key-up-next-w)      #'treemacs-previous-line-other-window)
-              (,(cdr key-next-neighbour) #'treemacs-next-neighbour)
-              (,(cdr key-prev-neighbour) #'treemacs-previous-neighbour)
-              (,(cdr key-goto-parent)    #'treemacs-goto-parent-node)
-              (,(cdr key-ret)            #'treemacs-RET-action)
-              (,(cdr key-tab)            #'treemacs-TAB-action)
-              (,(cdr key-open)           #'treemacs-visit-node-no-split)
-              (,(cdr key-open-horiz)     #'treemacs-visit-node-horizontal-split)
-              (,(cdr key-open-vert)      #'treemacs-visit-node-vertical-split)
-              (,(cdr key-open-ace)       #'treemacs-visit-node-ace)
-              (,(cdr key-open-ace-h)     #'treemacs-visit-node-ace-horizontal-split)
-              (,(cdr key-open-ace-v)     #'treemacs-visit-node-ace-vertical-split)
-              (,(cdr key-open-mru)       #'treemacs-visit-node-in-most-recently-used-window)
-              (,(cdr key-open-ext)       #'treemacs-visit-node-in-external-application)
-              (,(cdr key-create-file)    #'treemacs-create-file)
-              (,(cdr key-create-dir)     #'treemacs-create-dir)
-              (,(cdr key-rename)         #'treemacs-rename)
-              (,(cdr key-delete)         #'treemacs-delete)
-              (,(cdr key-follow-mode)    #'treemacs-follow-mode)
-              (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
-              (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
-              (,(cdr key-fringe-mode)    #'treemacs-fringe-indicator-mode)
-              (,(cdr key-refresh)        #'treemacs-refresh)
-              (,(cdr key-set-width)      #'treemacs-set-width)
-              (,(cdr key-copy-path)      #'treemacs-copy-path-at-point)
-              (,(cdr key-copy-root)      #'treemacs-copy-project-root)
-              (,(cdr key-copy-file)      #'treemacs-copy-file)
-              (,(cdr key-move-file)      #'treemacs-move-file)
-              (,(cdr key-git-mode)       #'treemacs-git-mode)
-              (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
-              (,(cdr key-resort)         #'treemacs-resort)
-              (,(cdr key-bookmark)       #'treemacs-add-bookmark)
-              (,(cdr key-add-project)    #'treemacs-add-project-to-workspace)
-              (,(cdr key-remove-project) #'treemacs-remove-project-from-workspace)
-              (,(cdr key-rename-project) #'treemacs-rename-project)
-              (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
-              (,(cdr key-edit-ws)        #'treemacs-edit-workspaces)
-              (,(cdr key-create-ws)      #'treemacs-create-workspace)
-              (,(cdr key-remove-ws)      #'treemacs-remove-workspace)
-              (,(cdr key-rename-ws)      #'treemacs-rename-workspace)
-              (,(cdr key-switch-ws)      #'treemacs-switch-workspace)
-              (,(cdr key-fallback-ws)    #'treemacs-set-fallback-workspace)
-              ("?" nil "Exit"))))
-        (treemacs--helpful-hydra/body))
-    (treemacs-log-failure "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
+          (require 'lv)
+          (if (window-live-p lv-wnd)
+              (lv-delete-window)
+            (set-transient-map treemacs-mode-map t (lambda () (lv-delete-window)))
+            (lv-message help-str)))
+        )
+    (treemacs-log-failure "The help cannot be opened without an existing treemacs buffer.")))
 
 ;; no warning - we cannot require treemacs.el where all the autoloaded functions
 ;; are defined or we get a recursive require, so it's either this or an equally
@@ -308,7 +258,7 @@ to it will instead show a blank."
     "Keymap for copy commands in `treemacs-mode'.")
   (defvar treemacs-mode-map
     (let ((map (make-sparse-keymap)))
-      (define-key map (kbd "?")         #'treemacs-helpful-hydra)
+      (define-key map (kbd "?")         #'treemacs-help)
       (define-key map [down-mouse-1]    #'treemacs-leftclick-action)
       (define-key map [drag-mouse-1]    #'treemacs-dragleftclick-action)
       (define-key map [double-mouse-1]  #'treemacs-doubleclick-action)

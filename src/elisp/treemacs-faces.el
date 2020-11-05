@@ -114,12 +114,17 @@ variant), so it will only be used if git-mode is disabled or set to simple."
   `((t :inherit ,(if (facep 'spacemacs-transient-state-title-face)
                      'spacemacs-transient-state-title-face
                    'font-lock-constant-face)))
-  "Face for the title of the helpful hydra."
+  "Face for the title of the help."
   :group 'treemacs-faces)
 
 (defface treemacs-help-column-face
   '((t :inherit font-lock-keyword-face :underline t))
-  "Face for column headers of the helpful hydra."
+  "Face for column headers of the help."
+  :group 'treemacs-faces)
+
+(defface treemacs-help-key-face
+  '((t :inherit font-lock-function-name-face))
+  "Face for key headers of the help."
   :group 'treemacs-faces)
 
 (defface treemacs-on-failure-pulse-face
