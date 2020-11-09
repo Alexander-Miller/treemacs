@@ -485,7 +485,9 @@ Note that this does *not* take `scroll-margin' into account."
        2)))
   "The value for `imenu-generic-expression' treemacs uses in elisp buffers.
 More discriminating than the default as it distinguishes between functions,
-inline functions, macros, faces, variables, customisations and types."
+inline functions, macros, faces, variables, customisations and types.
+
+Can be set to nil to use the default value."
   :type 'alist
   :group 'treemacs)
 

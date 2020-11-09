@@ -98,14 +98,17 @@ should be placed under."
     (condition-case e
         (when (buffer-live-p buff)
           (with-current-buffer buff
-            (when (eq major-mode 'emacs-lisp-mode)
-              (setq-local imenu-generic-expression treemacs-elisp-imenu-expression))
-            (setq result (and (or imenu-generic-expression imenu-create-index-function) (imenu--make-index-alist t))
-                  mode major-mode))
+            (-let [imenu-generic-expression (if (eq major-mode 'emacs-lisp-mode)
+                                                (or treemacs-elisp-imenu-expression
+                                                    imenu-generic-expression)
+                                              imenu-generic-expression)]
+              (setf result (and (or imenu-generic-expression imenu-create-index-function)
+                                (imenu--make-index-alist t))
+                    mode major-mode)))
           (unless existing-buffer (kill-buffer buff))
           (when result
-            (when (string= "*Rescan*" (car (car result)))
-              (setq result (cdr result)))
+            (when (string= "*Rescan*" (caar result))
+              (setf result (cdr result)))
             (unless (equal result '(nil))
               (treemacs--post-process-index result mode))))
       (imenu-unavailable (ignore e))
