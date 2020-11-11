@@ -1392,6 +1392,94 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
     (expect (treemacs--tokenize-path "/a/b/c/d" "/a/b")
             :to-equal '("c" "d"))))
 
+(describe "Workspaces"
+  (describe "treemacs-find-workspace"
+    (describe "By Name"
+      (it "Finds the right workspace"
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (ws3 (treemacs-workspace->create! :name "C"))
+               (treemacs--workspaces (list ws1 ws2 ws3)))
+          (expect (treemacs-find-workspace-by-name "B") :to-equal ws2)))
+
+      (it "Returns nil when no workspaceis found"
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (ws3 (treemacs-workspace->create! :name "C"))
+               (treemacs--workspaces (list ws1 ws2 ws3)))
+          (expect (treemacs-find-workspace-by-name "X") :to-be nil))))
+
+    (describe "By Path"
+      (it "Finds the right workspace"
+        (let* ((ws1 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "A"))))
+               (ws2 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "B"))))
+               (ws3 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "C"))))
+               (treemacs--workspaces (list ws1 ws2 ws3)))
+          (expect (treemacs-find-workspace-by-path "B") :to-equal ws2)))
+
+      (it "Returns nil when no workspaceis found"
+        (let* ((ws1 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "A"))))
+               (ws2 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "B"))))
+               (ws3 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "C"))))
+               (treemacs--workspaces (list ws1 ws2 ws3)))
+          (expect (treemacs-find-workspace-by-path "X") :to-be nil))))
+
+    (describe "By Predicate"
+      (it "Finds the right workspace"
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B" :projects (list (treemacs-project->create! :path "B"))))
+               (ws3 (treemacs-workspace->create! :name "B"))
+               (treemacs--workspaces (list ws1 ws2 ws3)))
+          (expect (treemacs-find-workspace-where (lambda (ws) (treemacs-workspace->projects ws)))
+                  :to-equal ws2)))
+
+      (it "Returns nil when no workspaceis found"
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (ws3 (treemacs-workspace->create! :name "C"))
+               (treemacs--workspaces (list ws1 ws2 ws3)))
+          (expect (treemacs-find-workspace-where (lambda (ws) (treemacs-workspace->projects ws)))
+                  :to-be  nil)))))
+
+  (describe "treemacs-create-workspace"
+    (describe "Failures"
+     (it "Fails when name is empty"
+       (expect (treemacs-do-create-workspace "")
+               :to-equal
+               '(invalid-name "")))
+     (it "Fails when name is blank"
+       (expect (treemacs-do-create-workspace " ")
+               :to-equal
+               '(invalid-name " ")))
+     (it "Fails when name contains newlines"
+       (expect (treemacs-do-create-workspace "a\nb")
+               :to-equal
+               '(invalid-name "a\nb")))
+     (it "Fails when name is a duplicate"
+       (let* ((ws (treemacs-workspace->create! :name "A"))
+              (treemacs--workspaces (list ws)))
+         (expect (treemacs-do-create-workspace "A")
+                 :to-equal
+                 `(duplicate-name ,ws)))))
+
+    (describe "Successes"
+      :var* ((treemacs--workspaces nil))
+
+      (before-each
+        (setf treemacs--workspaces nil)
+        (spy-on #'treemacs--persist nil))
+
+      (it "Adds the workspace"
+        (treemacs-do-create-workspace "Valid Name")
+        (expect (treemacs-find-workspace-by-name "Valid Name") :to-be-truthy))
+      (it "Persists the workspace"
+        (treemacs-do-create-workspace "Valid Name")
+        (expect #'treemacs--persist :to-have-been-called))
+      (it "Returns the created workspace"
+        (expect (car (treemacs-do-create-workspace "Valid Name"))
+                :to-equal
+                'success)))))
+
 (provide 'test-treemacs)
 
 ;;; treemacs-test.el ends here

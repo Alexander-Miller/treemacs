@@ -779,6 +779,26 @@ alive."
                     (funcall no-delete-test buffer))
           (kill-buffer buffer))))))
 
+(defun treemacs-find-workspace-by-name (name)
+  "Find a workspace with the given NAME.
+The check is case-sensitive.  nil is returned when no workspace is found."
+  (declare (side-effect-free t))
+  (--first (string= name (treemacs-workspace->name it))
+           treemacs--workspaces))
+
+(defun treemacs-find-workspace-by-path (path)
+  "Find a workspace with a project containing the given PATH.
+nil is returned when no workspace is found."
+  (declare (side-effect-free t))
+  (--first (treemacs-is-path path :in-workspace it)
+           treemacs--workspaces))
+
+(defun treemacs-find-workspace-where (predicate)
+  "Find a workspace matching the given PREDICATE.
+Predicate should be a function that takes a `treemacs-workspace' as its single
+argument.  nil is returned when no workspace is found."
+  (--first (funcall predicate it) treemacs--workspaces))
+
 (provide 'treemacs-workspaces)
 
 ;;; treemacs-workspaces.el ends here
