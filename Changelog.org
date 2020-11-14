@@ -9,6 +9,8 @@
 - Added ~treemacs-user-header-line-format~
 - Added ~treemacs-display-current-project-exclusively~
 - Added ~treemacs-icon-catalogue~
+- Replaced ~treemacs-select-hook~ with ~treemacs-select-functions~ because it is
+  now called with treemacs' previous visibility
 - New icons
 - Bug Fixes
 ** v2.8

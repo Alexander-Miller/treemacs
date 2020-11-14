@@ -307,7 +307,7 @@ EXCLUDE-PREFIX: File Path"
      (when (or treemacs-follow-after-init
                (with-no-warnings treemacs-follow-mode))
        (with-current-buffer buffer (treemacs--follow)))
-     (run-hooks 'treemacs-select-hook))))
+     (run-hook-with-args 'treemacs-select-functions 'exists))))
 
 (define-inline treemacs--button-symbol-switch (new-sym)
   "Replace icon in current line with NEW-SYM."
@@ -505,8 +505,9 @@ Add a project for ROOT and NAME if they are non-nil."
   (treemacs--maybe-load-workspaces)
   (let ((origin-buffer (current-buffer))
         (current-workspace (treemacs-current-workspace))
-        (run-hook? nil))
-    (pcase (treemacs-current-visibility)
+        (run-hook? nil)
+        (visibility (treemacs-current-visibility)))
+    (pcase visibility
       ('visible (treemacs--select-visible-window))
       ('exists (treemacs--select-not-visible-window))
       ('none
@@ -531,7 +532,7 @@ Add a project for ROOT and NAME if they are non-nil."
     ;; The hook should run at the end of the setup, but also only
     ;; if a new buffer was created, as the other cases are already covered
     ;; in their respective setup functions.
-    (when run-hook? (run-hooks 'treemacs-select-hook))))
+    (when run-hook? (run-hook-with-args 'treemacs-select-functions visibility))))
 
 (defun treemacs--push-button (btn &optional recursive)
   "Execute the appropriate action given the state of the pushed BTN.

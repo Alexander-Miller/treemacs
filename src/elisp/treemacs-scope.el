@@ -223,7 +223,7 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
             (treemacs-scope-shelf->buffer)
             (get-buffer-window)
             (select-window))
-  (run-hooks 'treemacs-select-hook))
+  (run-hook-with-args 'treemacs-select-functions 'visible))
 
 (defun treemacs-get-local-buffer ()
   "Return the treemacs buffer local to the current scope-type.
