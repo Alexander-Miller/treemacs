@@ -1393,7 +1393,9 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
             :to-equal '("c" "d"))))
 
 (describe "Workspaces"
+
   (describe "treemacs-find-workspace"
+
     (describe "By Name"
       (it "Finds the right workspace"
         (let* ((ws1 (treemacs-workspace->create! :name "A"))
@@ -1410,6 +1412,7 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
           (expect (treemacs-find-workspace-by-name "X") :to-be nil))))
 
     (describe "By Path"
+
       (it "Finds the right workspace"
         (let* ((ws1 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "A"))))
                (ws2 (treemacs-workspace->create! :projects (list (treemacs-project->create! :path "B"))))
@@ -1425,6 +1428,7 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
           (expect (treemacs-find-workspace-by-path "X") :to-be nil))))
 
     (describe "By Predicate"
+
       (it "Finds the right workspace"
         (let* ((ws1 (treemacs-workspace->create! :name "A"))
                (ws2 (treemacs-workspace->create! :name "B" :projects (list (treemacs-project->create! :path "B"))))
@@ -1442,25 +1446,30 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
                   :to-be  nil)))))
 
   (describe "treemacs-create-workspace"
+
     (describe "Failures"
-     (it "Fails when name is empty"
-       (expect (treemacs-do-create-workspace "")
-               :to-equal
-               '(invalid-name "")))
-     (it "Fails when name is blank"
-       (expect (treemacs-do-create-workspace " ")
-               :to-equal
-               '(invalid-name " ")))
-     (it "Fails when name contains newlines"
-       (expect (treemacs-do-create-workspace "a\nb")
-               :to-equal
-               '(invalid-name "a\nb")))
-     (it "Fails when name is a duplicate"
-       (let* ((ws (treemacs-workspace->create! :name "A"))
-              (treemacs--workspaces (list ws)))
-         (expect (treemacs-do-create-workspace "A")
-                 :to-equal
-                 `(duplicate-name ,ws)))))
+
+      (it "Fails when name is empty"
+        (expect (treemacs-do-create-workspace "")
+                :to-equal
+                '(invalid-name "")))
+
+      (it "Fails when name is blank"
+        (expect (treemacs-do-create-workspace " ")
+                :to-equal
+                '(invalid-name " ")))
+
+      (it "Fails when name contains newlines"
+        (expect (treemacs-do-create-workspace "a\nb")
+                :to-equal
+                '(invalid-name "a\nb")))
+
+      (it "Fails when name is a duplicate"
+        (let* ((ws (treemacs-workspace->create! :name "A"))
+               (treemacs--workspaces (list ws)))
+          (expect (treemacs-do-create-workspace "A")
+                  :to-equal
+                  `(duplicate-name ,ws)))))
 
     (describe "Successes"
       :var* ((treemacs--workspaces nil))
@@ -1478,7 +1487,57 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
       (it "Returns the created workspace"
         (expect (car (treemacs-do-create-workspace "Valid Name"))
                 :to-equal
-                'success)))))
+                'success))))
+
+  (describe "treemacs-do-remove-workspace"
+
+    (describe "Failures"
+
+      (it "Cannot delete the last workspace"
+        (let* ((ws (treemacs-workspace->create!))
+               (treemacs--workspaces (list ws)))
+          (expect (treemacs-do-remove-workspace)
+                  :to-equal
+                  'only-one-workspace)))
+
+      (it "Can be canceled by the user"
+        (spy-on #'yes-or-no-p :and-return-value nil)
+
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (treemacs--workspaces (list ws1 ws2)))
+          (expect (treemacs-do-remove-workspace "A" :ask-to-confirm)
+                  :to-equal
+                  'user-cancel)))
+
+      (it "Only deleted workspaces that exist"
+        (spy-on #'yes-or-no-p :and-return-value nil)
+
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (treemacs--workspaces (list ws1 ws2)))
+          (expect (treemacs-do-remove-workspace "X")
+                  :to-equal
+                  '(workspace-not-found "X")))))
+
+    (describe "Successes"
+
+      (it "Deletes workspace that is given"
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (treemacs--workspaces (list ws1 ws2)))
+          (expect (treemacs-do-remove-workspace "B")
+                  :to-equal
+                  `(success ,ws2 ,(list ws1)))))
+
+      (it "Deletes workspace that selected interactively"
+        (spy-on #'completing-read :and-return-value "B")
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (treemacs--workspaces (list ws1 ws2)))
+          (expect (treemacs-do-remove-workspace)
+                  :to-equal
+                  `(success ,ws2 ,(list ws1))))))))
 
 (provide 'test-treemacs)
 

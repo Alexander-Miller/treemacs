@@ -789,9 +789,12 @@ With a prefix ARG select project to remove by name."
 (defun treemacs-remove-workspace ()
   "Delete a workspace."
   (interactive)
-  (pcase (treemacs-do-remove-workspace :ask-to-confirm)
+  (pcase (treemacs-do-remove-workspace nil :ask-to-confirm)
     ('only-one-workspace
      (treemacs-pulse-on-failure "You cannot delete the last workspace."))
+    (`(workspace-not-found ,name)
+     (treemacs-pulse-on-failure "Workspace with name '%s' does not exist"
+       (propertize name 'face 'font-lock-type-face)))
     ('user-cancel
      (ignore))
     (`(success ,deleted ,_)
