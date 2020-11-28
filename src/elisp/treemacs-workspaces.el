@@ -148,6 +148,7 @@ PATH: String"
                         treemacs--workspaces)
                (car treemacs--workspaces))))))
 
+;; TODO(2020/11/25): NAME
 (define-inline treemacs--find-project-for-buffer (&optional buffer-file)
   "In the current workspace find the project current buffer's file falls under.
 Optionally supply the BUFFER-FILE in case it is not available by calling
