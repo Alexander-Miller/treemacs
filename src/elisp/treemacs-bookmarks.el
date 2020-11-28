@@ -80,7 +80,13 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
       ;; error must be handled in bookmark.el.
       (user-error "Treemacs--bookmark-handler invoked for a non-Treemacs bookmark"))
     (treemacs-select-window)
-    (treemacs-goto-node path)
+    ;; XXX temporary workaround for incorrect move to a saved tag node
+    ;; must be fixed after tags were rewritten in new extension api
+    (if (and (listp path)
+             (stringp (car path))
+             (file-regular-p (car path)))
+        (treemacs-goto-node (car path))
+      (treemacs-goto-node path))
     ;; If the user has bookmarked a directory, they probably want to operate on
     ;; its contents. Expand it, and select the first child.
     (treemacs-with-current-button
