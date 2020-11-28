@@ -88,6 +88,8 @@ overview looks as follows:
 
 ** Fancy Gifs!
 
+(The font used in the gifs is Fantasque Sans Mono)
+
 Various ways to open files:
 [[file:screenshots/open-files.gif]]
 
