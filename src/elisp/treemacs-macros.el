@@ -105,6 +105,7 @@ Log ERROR-MSG if no button is selected, otherwise run BODY."
 
 (cl-defmacro treemacs-do-for-button-state
     (&key no-error
+          fallback
           on-root-node-open
           on-root-node-closed
           on-file-node-open
@@ -117,13 +118,20 @@ Log ERROR-MSG if no button is selected, otherwise run BODY."
           on-nil)
   "Building block macro to execute a form based on the current node state.
 Will bind to current button to 'btn' for the execution of the action forms.
+
 When NO-ERROR is non-nil no error will be thrown if no match for the button
-state is achieved.
+state is achieved.  A general FALLBACK can also be used instead of NO-ERROR.  In
+that case the unknown state will be bound as `state' in the FALLBACK form.
+
 Otherwise either one of ON-ROOT-NODE-OPEN, ON-ROOT-NODE-CLOSED,
 ON-FILE-NODE-OPEN, ON-FILE-NODE-CLOSED, ON-DIR-NODE-OPEN, ON-DIR-NODE-CLOSED,
 ON-TAG-NODE-OPEN, ON-TAG-NODE-CLOSED, ON-TAG-NODE-LEAF or ON-NIL will be
 executed."
   (declare (debug (&rest [sexp form])))
+
+  (treemacs-static-assert (or (null no-error) (null fallback))
+    "no-error and fallback arguments are mutually exclusive.")
+
   `(-if-let (btn (treemacs-current-button))
        (pcase (treemacs-button-get btn :state)
          ,@(when on-root-node-open
@@ -153,7 +161,11 @@ executed."
          ,@(when on-tag-node-leaf
              `((`tag-node
                 ,on-tag-node-leaf)))
-         ,@(unless no-error
+         ,@(when fallback
+             `((state
+                (ignore state)
+                ,fallback)))
+         ,@(unless (or fallback no-error)
              `((state (error "[Treemacs] Unexpected button state %s" state)))))
      ,on-nil))
 
