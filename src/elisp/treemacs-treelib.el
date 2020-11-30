@@ -288,11 +288,12 @@ determines the behaviours (LABEL, FACE etc.) used to create the children of the
 node type being defined here.
 
 RET-ACTION is the function that is called when RET is pressed on a node of this
-type.  The function is called with a single argument - the prefix arg - and must
-be able to handle both a closed and open state.
+be able to handle both a closed and open state.  If no explicit RET-ACTION type.
+The function is called with a single argument - the prefix arg - and must
+argument is given RET will do the same as TAB.
 
 NO-TAB indicates that pressing TAB on this node type should do nothing.  It will
-be set `treemacs-define-leaf-node-type' is used.
+be set by `treemacs-define-leaf-node'.
 
 VARIADIC is only relevant for entry-point nodes and indicates that the extension
 will produces multiple nodes when first rendered.
@@ -336,6 +337,8 @@ extension, it will be used as a type-check when enabling an extension with e.g.
 
        (treemacs-define-TAB-action ',closed-state ,(if no-tab? '#'ignore '#'treemacs-expand-extension-node))
        (treemacs-define-TAB-action ',open-state   ,(if no-tab? '#'ignore '#'treemacs-collapse-extension-node))
+       (treemacs-define-RET-action ',closed-state ,(or ret-action (if no-tab? '#'ignore '#'treemacs-expand-extension-node)))
+       (treemacs-define-RET-action ',open-state   ,(or ret-action (if no-tab? '#'ignore '#'treemacs-collapse-extension-node)))
 
        (add-to-list 'treemacs--extension-registry (cons ',closed-state ,struct-name))
        (add-to-list 'treemacs--extension-registry (cons ',open-state   ,struct-name))
@@ -344,11 +347,6 @@ extension, it will be used as a type-check when enabling an extension with e.g.
        (add-to-list 'treemacs--open-node-states   ',open-state)
        (add-to-list 'treemacs-valid-button-states ',closed-state)
        (add-to-list 'treemacs-valid-button-states ',open-state)
-
-       ,@(when ret-action
-          `((treemacs-define-RET-action ',open-state   ,ret-action)
-            (treemacs-define-RET-action ',closed-state ,ret-action)))
-
 
        ',struct-name)))
 
@@ -439,6 +437,7 @@ For a detailed description of all arguments see
           face
           child-type
           more-properties
+          ret-action
           async?)
 
   "Define a node type with NAME that serves as an entry-point for an extension.
@@ -448,7 +447,7 @@ the `treemacs-enable-*-extension' family of functions.
 The KEY, LABEL, OPEN-ICON CLOSED-ICON, CHILDREN, FACE and CHILD-TYPE arguments
 are mandatory.
 
-MORE-PROPERTIES and ASYNC are optional.
+MORE-PROPERTIES, RET-ACTION and ASYNC are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -473,6 +472,7 @@ For a detailed description of all arguments see
      :child-type ,child-type
      :more-properties ,more-properties
      :async? ,async?
+     :ret-action ,ret-action
      :entry-point? t))
 
 (cl-defmacro treemacs-define-variadic-entry-node-type
