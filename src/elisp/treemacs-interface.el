@@ -122,7 +122,8 @@ them instead."
    :on-tag-node-open    (treemacs--collapse-tag-node btn arg)
    :on-tag-node-closed  (treemacs--expand-tag-node btn arg)
    :on-tag-node-leaf    (progn (other-window 1) (treemacs--goto-tag btn))
-   :on-nil              (treemacs-pulse-on-failure "There is nothing to do here.")))
+   :on-nil              (treemacs-pulse-on-failure "There is nothing to do here.")
+   :fallback            (treemacs-TAB-action)))
 
 (defun treemacs-toggle-node-prefer-tag-visit (&optional arg)
   "Same as `treemacs-toggle-node' but will visit a tag node in some conditions.
