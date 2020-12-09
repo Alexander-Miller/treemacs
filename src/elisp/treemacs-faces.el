@@ -147,6 +147,11 @@ Applies to buttons like
  - `treemacs-header-workspace-button'"
   :group 'treemacs-faces)
 
+(defface treemacs-async-loading-face
+  '((t :inherit 'font-lock-comment-face :height 0.8))
+  "Face used for the \"Loading…\" string used by asynchronous extensions."
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here

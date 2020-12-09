@@ -33,6 +33,11 @@
 
 (defconst treemacs-treelib-version "1.0")
 
+(defconst treemacs--treelib-async-load-string
+  (propertize " Loading …"
+              'face 'treemacs-async-loading-face
+              'treemacs-async-string t))
+
 (defvar treemacs--extension-registry nil
   "Alist storage of extension instances.
 The car is a symbol of an extension node's state, the cdr the instance of the
@@ -724,41 +729,15 @@ ARG: Prefix Arg"
                                       (treemacs-button-get btn :state)))
      "This function cannot expand a node of type '%s'."
      (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))
-   (let* ((depth           (1+ (treemacs-button-get btn :depth)))
-          (btn-path        (treemacs-button-get btn :path))
-          (parent-path     (if (listp btn-path) btn-path (list btn-path)))
-          (parent-dom-node (treemacs-find-in-dom btn-path))
-          (child-ext       (treemacs-extension->get ext :child-type))
-          (child-state     (treemacs-extension->get child-ext :closed-state)))
-     (prog1 1
-       (save-excursion
-         (let ((prefix (concat "\n" (treemacs--get-indentation depth))))
-           (treemacs-with-writable-buffer
-            (treemacs-button-put btn :state (treemacs-extension->get ext :open-state))
-            (beginning-of-line)
-            (treemacs--button-symbol-switch (treemacs-extension->get ext :open-icon btn))
-            (goto-char (treemacs-button-end btn))
-            (insert
-             (apply
-              #'concat
-              (treemacs--create-node-strings
-               :parent btn
-               :parent-path parent-path
-               :parent-dom-node parent-dom-node
-               :more-properties nil
-               :icon ""
-               :state child-state
-               :key 'ASYNC-CALL
-               :depth depth
-               :face 'font-lock-comment-face
-               :label "Loading ...")))
-            (treemacs-on-expand (treemacs-button-get btn :path) btn)
-            (treemacs--reentry (treemacs-button-get btn :path))))))
-     (funcall
-      (treemacs-extension->children ext)
-      btn
-      (treemacs-button-get btn :item)
-      (lambda (items) (treemacs--complete-async-expand-callback items btn ext))))))
+   (save-excursion
+     (treemacs-with-writable-buffer
+      (goto-char (point-at-eol))
+      (insert treemacs--treelib-async-load-string)))
+   (funcall
+    (treemacs-extension->children ext)
+    btn
+    (treemacs-button-get btn :item)
+    (lambda (items) (treemacs--complete-async-expand-callback items btn ext)))))
 
 (defun treemacs--complete-async-expand-callback (items btn ext)
   "Properly expand an async node after its children were computed.
@@ -766,9 +745,15 @@ ARG: Prefix Arg"
 ITEMS are the node's children.
 BTN is the button leading to the node.
 EXT is the node's extension instance."
-  (goto-char btn)
-  (treemacs--do-collapse-extension-node btn ext)
-  (treemacs--do-expand-extension-node btn ext nil items))
+  (treemacs-with-button-buffer btn
+    (save-excursion
+      (goto-char btn)
+      (treemacs-with-writable-buffer
+       (delete-region
+        (next-single-char-property-change (point) 'treemacs-async-string)
+        (point-at-eol)))
+      (treemacs--do-expand-extension-node btn ext nil items))
+    (hl-line-highlight)))
 
 (defun treemacs--do-expand-extension-node (btn ext &optional _arg items)
   "Expand an extension node BTN for the given extension EXT.
