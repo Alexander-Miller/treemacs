@@ -73,35 +73,37 @@ saved.")
 The tags are sorted into the order in which they appear, reguardless of section
 or nesting depth."
   (inline-quote
-   (let* ((imenu-auto-rescan t)
-          (org? (eq major-mode 'org-mode))
-          (index (-> (buffer-file-name) (treemacs--get-imenu-index)))
-          (flat-index (if org?
-                          (treemacs--flatten-org-mode-imenu-index index)
-                        (treemacs--flatten-imenu-index index)))
-          (first (caar flat-index))
-          ;; in org mode buffers the first item may not be a cons since its position
-          ;; is still stored as a text property
-          (semantic? (and (consp first) (overlayp (cdr first))))
-          (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
-                            #'treemacs--compare-markdown-tag-paths
-                          #'treemacs--compare-tag-paths)))
-     (cond
-      (semantic?
-       ;; go ahead and just transform semantic overlays into markers so we dont
-       ;; have trouble with comparisons when searching a position
-       (dolist (tag-path flat-index)
-         (let ((leaf (car tag-path))
-               (marker (make-marker)))
-           (setcdr leaf (move-marker marker (overlay-start (cdr leaf)))))))
-      ;; same goes for an org index, since headlines with children store their
-      ;; positions as text properties
-      (org?
-       (dolist (tag-path flat-index)
-         (let ((leaf (car tag-path)))
-           (when (stringp leaf)
-             (setcar tag-path (cons leaf (get-text-property 0 'org-imenu-marker leaf))))))))
-     (sort flat-index compare-func))))
+   (if (eq major-mode 'pdf-view-mode)
+       'unsupported
+     (let* ((imenu-auto-rescan t)
+            (org? (eq major-mode 'org-mode))
+            (index (-> (buffer-file-name) (treemacs--get-imenu-index)))
+            (flat-index (if org?
+                            (treemacs--flatten-org-mode-imenu-index index)
+                          (treemacs--flatten-imenu-index index)))
+            (first (caar flat-index))
+            ;; in org mode buffers the first item may not be a cons since its position
+            ;; is still stored as a text property
+            (semantic? (and (consp first) (overlayp (cdr first))))
+            (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
+                              #'treemacs--compare-markdown-tag-paths
+                            #'treemacs--compare-tag-paths)))
+       (cond
+        (semantic?
+         ;; go ahead and just transform semantic overlays into markers so we dont
+         ;; have trouble with comparisons when searching a position
+         (dolist (tag-path flat-index)
+           (let ((leaf (car tag-path))
+                 (marker (make-marker)))
+             (setcdr leaf (move-marker marker (overlay-start (cdr leaf)))))))
+        ;; same goes for an org index, since headlines with children store their
+        ;; positions as text properties
+        (org?
+         (dolist (tag-path flat-index)
+           (let ((leaf (car tag-path)))
+             (when (stringp leaf)
+               (setcar tag-path (cons leaf (get-text-property 0 'org-imenu-marker leaf))))))))
+       (sort flat-index compare-func)))))
 
 (defun treemacs--flatten-imenu-index (index &optional path)
   "Flatten a nested imenu INDEX to a flat list of tag paths.
@@ -220,22 +222,10 @@ PROJECT: Project Struct"
        (with-selected-window treemacs-window
          (setq btn (treemacs-current-button))
          (if btn
-             (progn
-               ;; first move to the nearest file when we're on a tag
-               (when (memq (treemacs-button-get btn :state) '(tag-node-open tag-node-closed tag-node))
+             ;; first move to the nearest file when we're on a tag
+             (if (memq (treemacs-button-get btn :state) '(tag-node-open tag-node-closed tag-node))
                  (while (not (memq (treemacs-button-get btn :state) file-states))
-                   (setq btn (treemacs-button-get btn :parent))))
-               ;; close the button that was opened on the previous follow
-               (when (and treemacs--previously-followed-tag-position
-                          (not (eq (car treemacs--previously-followed-tag-position) btn)))
-                 (-let* (((prev-followed-pos . prev-followed-path) treemacs--previously-followed-tag-position)
-                         (path-at-point (-some-> (treemacs-current-button) (treemacs-button-get :path))))
-                   (save-excursion
-                     (when  (and (stringp path-at-point)
-                                 (treemacs-is-path path-at-point :same-as prev-followed-path)
-                                 (eq 'file-node-open (treemacs-button-get prev-followed-pos :state)))
-                       (goto-char prev-followed-pos)
-                       (treemacs--collapse-file-node prev-followed-pos)))))
+                   (setq btn (treemacs-button-get btn :parent)))
                ;; when that doesnt work move manually to the correct file
                (-let [btn-path (treemacs-button-get btn :path)]
                  (unless (and (stringp btn-path) (treemacs-is-path buffer-file :same-as btn-path))
@@ -244,10 +234,11 @@ PROJECT: Project Struct"
            ;; also move manually when there is no button at point
            (treemacs-goto-file-node buffer-file project)
            (setq btn (treemacs-current-button)))
+         ;; close the button that was opened on the previous follow
          (goto-char (treemacs-button-start btn))
-         (setq treemacs--previously-followed-tag-position (cons btn (treemacs-button-get btn :path)))
          ;; imenu already rescanned when fetching the tag path
-         (let ((imenu-auto-rescan nil))
+         (let ((imenu-auto-rescan nil)
+               (new-file-btn))
            ;; make a copy since this tag-path will be saved as cache, and the two modifications made here
            ;; make it impossible to find the current position in `treemacs--find-index-pos'
            (let* ((tag-path (copy-sequence tag-path))
@@ -261,8 +252,17 @@ PROJECT: Project Struct"
              ;; path has a dom entry with a valid position, but this is not the case when moving to tags
              ;; in a previously never-expanded file node, so we first find the file to make sure its
              ;; position is known
-             (treemacs-find-file-node buffer-file)
-             (treemacs-goto-node tag-path)))
+             (setf new-file-btn (treemacs-find-file-node buffer-file))
+             (treemacs-goto-node tag-path)
+             (when (and treemacs--previously-followed-tag-position
+                        (not (equal (car treemacs--previously-followed-tag-position) new-file-btn)))
+               (-let [(prev-followed-pos . _) treemacs--previously-followed-tag-position]
+                 (save-excursion
+                   (when  (eq 'file-node-open (treemacs-button-get prev-followed-pos :state))
+                     (goto-char prev-followed-pos)
+                     (treemacs--collapse-file-node prev-followed-pos)))))
+             (setf treemacs--previously-followed-tag-position
+                   (cons new-file-btn (treemacs-button-get new-file-btn :path)))))
          (hl-line-highlight)
          (treemacs--evade-image)
          (when treemacs-recenter-after-tag-follow
@@ -279,9 +279,10 @@ PROJECT: Project Struct"
       (condition-case e
           (-when-let (index (or treemacs--imenu-cache
                                 (treemacs--flatten&sort-imenu-index)))
-            (unless (buffer-modified-p)
-              (setq-local treemacs--imenu-cache (copy-sequence index)))
-            (treemacs--do-follow-tag index treemacs-window buffer-file project))
+            (unless (eq index 'unsupported)
+              (unless (buffer-modified-p)
+                (setq-local treemacs--imenu-cache (copy-sequence index)))
+              (treemacs--do-follow-tag index treemacs-window buffer-file project)))
         (imenu-unavailable (ignore e))
         (error (treemacs-log-err "Encountered error while following tag at point: %s" e))))))
 

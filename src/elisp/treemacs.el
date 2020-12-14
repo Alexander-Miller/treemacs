@@ -126,6 +126,8 @@ visiting a file or Emacs cannot find any tags for the current file."
        "Current buffer is not visiting a file.")
      (treemacs-error-return-if (null index)
        "Current buffer has no tags.")
+     (treemacs-error-return-if (eq index 'unsupported)
+       "Treemacs does not support following tags in this major mode.")
      (treemacs-error-return-if (null project)
        "%s does not fall under any project in the workspace."
        (propertize buffer-file 'face 'font-lock-string-face))
