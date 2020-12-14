@@ -44,7 +44,11 @@
 (treemacs-import-functions-from "treemacs"
   treemacs-select-window)
 
+(treemacs-import-functions-from "org-comat"
+  org-imenu-get-tree)
+
 ;; TODO(2019/10/17): rebuild this module using the extension api
+;; TODO(2020/12/14): Improve special-casing of org-mode & especially pdf-tools
 
 (defun treemacs--partition-imenu-index (index default-name)
   "Put top level leaf nodes in INDEX under DEFAULT-NAME."
@@ -90,7 +94,9 @@ should be placed under."
   (let ((buff)
         (result)
         (mode)
-        (existing-buffer (get-file-buffer file)))
+        (existing-buffer (get-file-buffer file))
+        (org-imenu-depth (max 10 (and (boundp 'org-imenu-depth) org-imenu-depth))))
+    (ignore org-imenu-depth)
     (if existing-buffer
         (setq buff existing-buffer)
       (cl-letf (((symbol-function 'run-mode-hooks) (symbol-function 'ignore)))
@@ -98,10 +104,15 @@ should be placed under."
     (condition-case e
         (when (buffer-live-p buff)
           (with-current-buffer buff
-            (-let [imenu-generic-expression (if (eq major-mode 'emacs-lisp-mode)
-                                                (or treemacs-elisp-imenu-expression
-                                                    imenu-generic-expression)
-                                              imenu-generic-expression)]
+            (let ((imenu-generic-expression
+                   (if (eq major-mode 'emacs-lisp-mode)
+                       (or treemacs-elisp-imenu-expression
+                           imenu-generic-expression)
+                     imenu-generic-expression))
+                  (imenu-create-index-function
+                   (if (eq major-mode 'org-mode)
+                       #'org-imenu-get-tree
+                     imenu-create-index-function)))
               (setf result (and (or imenu-generic-expression imenu-create-index-function)
                                 (imenu--make-index-alist t))
                     mode major-mode)))
@@ -341,32 +352,35 @@ Remove all open tag entries under BTN when RECURSIVE."
      :post-close-action
      (treemacs-on-collapse (treemacs-button-get btn :path)))))
 
-(define-inline treemacs--extract-position (item)
-  "Extract a tag's buffer and position stored in ITEM.
+(defun treemacs--extract-position (item file)
+  "Extract a tag's position stored in ITEM and FILE.
 The position can be stored in the following ways:
 
 * ITEM is a marker pointing to a tag provided by imenu.
 * ITEM is an overlay pointing to a tag provided by imenu with semantic mode.
 * ITEM is a raw number pointing to a buffer position.
 * ITEM is a cons: special case for imenu elements of an `org-mode' buffer.
-  ITEM is an imenu subtree and the position is stored as a marker in the first
+  ITEM is an imenu sub-tree and the position is stored as a marker in the first
   element's 'org-imenu-marker text property.
-
-Either way the return value is a const consisting of the buffer and the position
-of the tag. They might also be nil if the pointed-to buffer does not exist."
+* ITEM is a cons: special case for imenu elements of an `pdfview-mode' buffer.
+  In this case no position is stored directly, navigation to the tag must happen
+  via callback"
   (declare (side-effect-free t))
-  (inline-letevals (item)
-    (inline-quote
-     (pcase (type-of ,item)
-       ('marker
-        (cons (marker-buffer ,item) (marker-position ,item)))
-       ('overlay
-        (cons (overlay-buffer ,item) (overlay-start ,item)))
-       ('integer
-        (cons nil ,item))
-       ('cons
-        (-when-let (org-marker (get-text-property 0 'org-imenu-marker (car ,item)))
-          (cons (marker-buffer org-marker) (marker-position org-marker))))))))
+  (pcase (type-of item)
+    ('marker
+     (cons (marker-buffer item) (marker-position item)))
+    ('overlay
+     (cons (overlay-buffer item) (overlay-start item)))
+    ('integer
+     (cons nil item))
+    ('cons
+     (cond
+      ((eq 'pdf-outline-imenu-activate-link (cadr item))
+       (with-no-warnings
+         (cons (find-buffer-visiting file) (lambda () (apply #'pdf-outline-imenu-activate-link item)))))
+      ((get-text-property 0 'org-imenu-marker (car item))
+       (-let [org-marker (get-text-property 0 'org-imenu-marker (car item))]
+         (cons (marker-buffer org-marker) (marker-position org-marker))))))))
 
 (defun treemacs--call-imenu-and-goto-tag (tag-path &optional org?)
   "Call the imenu index of the tag at TAG-PATH and go to its position.
@@ -386,11 +400,14 @@ headline with sub-elements is saved in an 'org-imenu-marker' text property."
                                 (-let [item (--first
                                              (equal (car it) tag)
                                              index)]
-                                  (if org? item (cdr item))))]
+                                  (if org? item (cdr item)))
+                                (car tag-path))]
               ;; some imenu implementations, like markdown, will only provide
               ;; a raw buffer position (an int) to move to
               (switch-to-buffer (or buf (get-file-buffer file)))
-              (goto-char pos)
+              (if (functionp pos)
+                  (funcall pos)
+                (goto-char pos))
               ;; a little bit of convenience - reveal those nested headlines
               (when (and (eq major-mode 'org-mode)
                          (fboundp 'org-reveal))
@@ -405,31 +422,39 @@ headline with sub-elements is saved in an 'org-imenu-marker' text property."
   ;; The only code currently calling this is run through `treemacs--execute-button-action' which always
   ;; switches windows before running it, so we need to be really careful here when querying any button
   ;; properties.
-  (-let [(tag-buf . tag-pos)
-         (treemacs-with-button-buffer btn
-           (-> btn (treemacs-button-get :marker) (treemacs--extract-position)))]
-    (if tag-buf
-        (progn
-          (switch-to-buffer tag-buf nil t)
-          (goto-char tag-pos)
-          ;; a little bit of convenience - reveal those nested headlines
-          (when (and (eq major-mode 'org-mode)
-                     (fboundp 'org-reveal))
-            (org-reveal)))
-      (pcase treemacs-goto-tag-strategy
-        ('refetch-index
-         (treemacs--call-imenu-and-goto-tag
-          (with-current-buffer (marker-buffer btn)
-            (treemacs-button-get btn :path))))
-        ('call-xref
-         (xref-find-definitions
-          (treemacs-with-button-buffer btn
-            (treemacs--get-label-of btn))))
-        ('issue-warning
-         (treemacs-pulse-on-failure
-          "Tag '%s' is located in a buffer that does not exist."
-          (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
-        (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy))))))
+  (let* ((tag-buffer) (tag-pos))
+    (treemacs-with-button-buffer btn
+      (-let [info (treemacs--extract-position
+                   (treemacs-button-get btn :marker)
+                   (car (treemacs-button-get btn :path)))]
+        (setf tag-buffer (car info)
+              tag-pos (cdr info))))
+    (if (not (buffer-live-p tag-buffer))
+        (pcase treemacs-goto-tag-strategy
+          ('refetch-index
+           (treemacs--call-imenu-and-goto-tag
+            (treemacs-safe-button-get btn :path)))
+          ('call-xref
+           (xref-find-definitions
+            (treemacs-with-button-buffer btn
+              (treemacs--get-label-of btn))))
+          ('issue-warning
+           (treemacs-pulse-on-failure
+               "Tag '%s' is located in a buffer that does not exist."
+             (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
+          (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))
+      (progn
+        (switch-to-buffer tag-buffer nil t)
+        ;; special case for pdf mode buffers - their imenu tags do not store a marker
+        ;; movement must happen via a special callback
+        (cond
+         ((numberp tag-pos)
+          (goto-char tag-pos))
+         ((functionp tag-pos)
+          (funcall tag-pos)))
+        ;; a little bit of convenience - reveal those nested headlines
+        (when (and (eq major-mode 'org-mode) (fboundp 'org-reveal))
+          (org-reveal))))))
 
 (provide 'treemacs-tags)
 
