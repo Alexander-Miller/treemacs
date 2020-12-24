@@ -20,9 +20,25 @@
 
 ;;; Code:
 
+(require 'treemacs-customization)
+
+(defvar treemacs--saved-eldoc-display nil
+  "Stores the value of `treemacs-eldoc-display'.
+The value is set to nil and stashed here with every log statement to prevent the
+logged message being almost immediately overridden by the eldoc output.
+
+The value is also stashed as a single-item-list which serves as a check make
+sure it isn't stashed twice (thus stashing the already disabled nil value).")
+
 (defvar treemacs--no-messages nil
   "When set to t `treemacs-log' will produce no output.
 Not used directly, but as part of `treemacs-without-messages'.")
+
+(defun treemacs--restore-eldoc-after-log ()
+  "Restore the stashed value of `treemacs-eldoc-display'."
+  (remove-hook 'pre-command-hook #'treemacs--restore-eldoc-after-log)
+  (setf treemacs-eldoc-display (car treemacs--saved-eldoc-display)
+        treemacs--saved-eldoc-display nil))
 
 (defmacro treemacs-without-messages (&rest body)
   "Temporarily turn off messages to execute BODY."
@@ -32,8 +48,13 @@ Not used directly, but as part of `treemacs-without-messages'.")
 
 (defmacro treemacs--do-log (prefix msg &rest args)
   "Print a log statement with the given PREFIX and MSG and format ARGS."
-  `(unless treemacs--no-messages
-     (message "%s %s" ,prefix (format ,msg ,@args))))
+  `(progn
+     (unless (listp treemacs--saved-eldoc-display)
+       (setf treemacs--saved-eldoc-display (list treemacs-eldoc-display)))
+     (setf treemacs-eldoc-display nil)
+     (unless treemacs--no-messages
+       (message "%s %s" ,prefix (format ,msg ,@args)))
+     (add-hook 'post-command-hook #'treemacs--restore-eldoc-after-log)))
 
 (defmacro treemacs-log (msg &rest args)
   "Write an info/success log statement given format string MSG and ARGS."
