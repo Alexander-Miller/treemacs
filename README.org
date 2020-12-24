@@ -82,8 +82,8 @@ overview looks as follows:
  * Ease of use :: Treemacs offers many configuration options, but comes with a set of (what hopefully should be) sane
    defaults. Installation aside there are two obligatory pieces of setup: 1) Choosing convenient keybindings to run
    treemacs and 2) If you use evil: requiring ~treemacs-evil~ to integrate treemacs with evil and enable j/k navigation.
-   More on both below. You can also summon a helpful hydra with ~?~ that will remind you of treemacs' many keybindings
-   and features.
+   More on both below. You can also summon helpful hydras with ~?~ and ~M-?~ that will remind you of treemacs' many
+   keybindings and features.
  * Bookmark integration :: Running ~bookmark-set~ on a Treemacs item will store a bookmark to Treemacs buffer for that item.
 
 ** Fancy Gifs!
@@ -766,7 +766,8 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 
 | Key      | Action                                      | Description                                                                                            |
 |----------+---------------------------------------------+--------------------------------------------------------------------------------------------------------|
-| ?        | treemacs-helpful-hydra                      | Summon the helpful hydra to show you the treemacs keymap.                                              |
+| ?        | treemacs-common-helpful-hydra               | Summon a helpful hydra to show you treemacs' most commonly used keybinds.                              |
+| M-?      | treemacs-advanced-helpful-hydra             | Summon a helpful hydra to show you treemacs' rarely used, advanced keybinds.                           |
 | j/n      | treemacs-next-line                          | Go to the next line.                                                                                   |
 | k/p      | treemacs-previous-line                      | Go to the previous line.                                                                               |
 | M-J/N    | treemacs-next-line-other-window             | Go to the next line in ~next-window~.                                                                  |

@@ -28,6 +28,10 @@
 (require 'evil)
 (require 'treemacs)
 
+(treemacs-import-functions-from "treemacs-hydras"
+  treemacs-common-helpful-hydra
+  treemacs-advanced-helpful-hydra)
+
 (declare-function treemacs-add-bookmark "treemacs-bookmarks.el")
 
 (evil-define-state treemacs
@@ -79,7 +83,8 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
 (define-key evil-treemacs-state-map (kbd "tg")  #'treemacs-git-mode)
 (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-set-width)
 (define-key evil-treemacs-state-map (kbd "b")   #'treemacs-add-bookmark)
-(define-key evil-treemacs-state-map (kbd "?")   #'treemacs-helpful-hydra)
+(define-key evil-treemacs-state-map (kbd "?")   #'treemacs-common-helpful-hydra)
+(define-key evil-treemacs-state-map (kbd "M-?") #'treemacs-advanced-helpful-hydra)
 (define-key evil-treemacs-state-map (kbd "RET") #'treemacs-RET-action)
 (define-key evil-treemacs-state-map (kbd "TAB") #'treemacs-TAB-action)
 (define-key evil-treemacs-state-map (kbd "H")   #'treemacs-collapse-parent-node)
