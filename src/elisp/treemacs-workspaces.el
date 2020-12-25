@@ -64,7 +64,8 @@
                (:constructor treemacs-project->create!))
   name
   path
-  path-status)
+  path-status
+  is-disabled?)
 
 (cl-defstruct (treemacs-workspace
                (:conc-name treemacs-workspace->)

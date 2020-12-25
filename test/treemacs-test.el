@@ -926,6 +926,10 @@
     (it "Succeeds with non-connectable remotes"
       (let* ((treemacs--org-edit-buffer-name (buffer-name))
              (lines '("* W1" "** P1" " - path :: /ftp:anonymous@ftp.invalid:/test-path")))
+        (expect (treemacs--validate-persist-lines lines) :to-be 'success)))
+
+    (it "Succeeds with disabled projects"
+      (-let [lines '("* W1" "** COMMENT P1" " - path :: a" "** P2" " - path :: b" "** COMMENT P3" " - path :: c")]
         (expect (treemacs--validate-persist-lines lines) :to-be 'success))))
 
   (describe "Errors"
@@ -969,10 +973,15 @@
                      "** P1"
                      " - path :: /A/B/C"
                      "** P2"
-                     "- path :: /A/B/C/D")]
+                     " - path :: /A/B/C/D")]
         (expect (treemacs--validate-persist-lines lines)
                 :to-equal
-                '(error "- path :: /A/B/C/D" "Path '/A/B/C/D' appears in the workspace more than once."))))))
+                '(error " - path :: /A/B/C/D" "Path '/A/B/C/D' appears in the workspace more than once."))))
+
+    (it "Fails when all projects are disabled"
+      (-let [lines '("* W1" "** COMMENT P1" " - path :: a" "** COMMENT P2" " - path :: b" "** COMMENT P3" " - path :: c")]
+        (expect (treemacs--validate-persist-lines lines)
+                :to-equal '(error " - path :: c" "Workspace must contain at least 1 project that is not disabled."))))))
 
 (describe "treemacs--read-persist-lines"
 
@@ -987,6 +996,54 @@
              (concat "#Foo: Bar\n" "\n" "* Workspace\n" "\t\n" "** Project\n" "#Comment\n" " - path :: /x\n"))
             :to-equal
             '("* Workspace" "** Project" " - path :: /x"))))
+
+(describe "treemacs--read-workspaces"
+
+  (before-each
+    (spy-on #'treemacs--get-path-status :and-return-value 'local-readable))
+
+  (it "Reads workspaces correctly"
+    (let* ((list '("* WS 1" "** P1" " - path :: /a" "** P2" " - path :: /b"
+                   "* WS 2" "** P3" " - path :: /c" "** P4" " - path :: /d"))
+           (iter (treemacs-iter->create! :list list))
+           (result (treemacs--read-workspaces iter)))
+
+      (expect (length result) :to-be 2)
+
+      (let* ((ws1 (car result))
+             (ws2 (cadr result))
+             (ws1-projects (treemacs-workspace->projects ws1))
+             (ws2-projects (treemacs-workspace->projects ws2)))
+
+        (expect (treemacs-workspace->name ws1) :to-equal "WS 1")
+        (expect (treemacs-workspace->name ws2) :to-equal "WS 2")
+        (expect (length ws1-projects) :to-be 2)
+        (expect (length ws2-projects) :to-be 2)
+
+        (let ((pr1 (car  ws1-projects))
+              (pr2 (cadr ws1-projects))
+              (pr3 (car  ws2-projects))
+              (pr4 (cadr ws2-projects)))
+
+          (expect (treemacs-project->name pr1) :to-equal "P1")
+          (expect (treemacs-project->name pr2) :to-equal "P2")
+          (expect (treemacs-project->name pr3) :to-equal "P3")
+          (expect (treemacs-project->name pr4) :to-equal "P4")
+          (expect (treemacs-project->path pr1) :to-equal "/a")
+          (expect (treemacs-project->path pr2) :to-equal "/b")
+          (expect (treemacs-project->path pr3) :to-equal "/c")
+          (expect (treemacs-project->path pr4) :to-equal "/d")))))
+
+  (it "Reads disabled projects"
+    (let* ((list '("* WS 1" "** COMMENT P1" " - path :: /a"))
+           (iter (treemacs-iter->create! :list list))
+           (result (treemacs--read-workspaces iter)))
+
+      (expect (length result) :to-be 1)
+
+      (-let [project (-> result (car) (treemacs-workspace->projects) (car))]
+        (expect (treemacs-project->name project) :to-equal "P1")
+        (expect (treemacs-project->is-disabled? project) :to-be t)))))
 
 (describe "treemacs--git-status-process"
 

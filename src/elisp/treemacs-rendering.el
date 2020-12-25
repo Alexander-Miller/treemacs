@@ -604,7 +604,8 @@ PROJECT: Project Struct"
   (treemacs-with-writable-buffer
    (unless treemacs--projects-end
      (setq treemacs--projects-end (make-marker)))
-   (let* ((current-workspace (treemacs-current-workspace))
+   (let* ((projects (-reject #'treemacs-project->is-disabled? projects))
+          (current-workspace (treemacs-current-workspace))
           (has-previous (treemacs--apply-root-top-extensions current-workspace)))
 
      (--each projects

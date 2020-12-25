@@ -115,9 +115,13 @@ ITER: Treemacs-Iter Struct"
   (let (projects)
     (while (s-matches? treemacs--persist-project-name-regex (treemacs-iter->peek iter))
       (let ((kv-lines nil)
-            (project (treemacs-project->create!)))
-        (setf (treemacs-project->name project)
-              (substring (treemacs-iter->next! iter) 3))
+            (project (treemacs-project->create!))
+            (project-name (substring (treemacs-iter->next! iter) 3))
+            (comment-prefix "COMMENT "))
+        (when (s-starts-with? comment-prefix project-name)
+          (setf project-name (substring project-name (length comment-prefix))
+                (treemacs-project->is-disabled? project) t))
+        (setf (treemacs-project->name project) project-name)
         (while (s-matches? treemacs--persist-kv-regex (treemacs-iter->peek iter))
           (push (treemacs-iter->next! iter) kv-lines))
         (if (null kv-lines)
@@ -182,7 +186,10 @@ ITER: Treemacs-Iter Struct"
                                   (treemacs-workspaces)))
               (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
               (dolist (pr (treemacs-workspace->projects ws))
-                (push (format "** %s\n" (treemacs-project->name pr)) txt)
+                (push (format "** %s%s\n"
+                              (if (treemacs-project->is-disabled? pr) "COMMENT " "")
+                              (treemacs-project->name pr))
+                      txt)
                 (push (format " - path :: %s\n" (abbreviate-file-name (treemacs-project->path pr))) txt)))
             (delete-region (point-min) (point-max))
             (insert (apply #'concat (nreverse txt)))
@@ -201,14 +208,22 @@ Will read all lines, except those that start with # or contain only whitespace."
                           (s-starts-with? "#" it)))))
 
 (cl-defun treemacs--validate-persist-lines
-    (lines &optional (context :start) (prev nil) (paths nil))
+    (lines &optional (context :start) (prev nil) (paths nil) (proj-count 0))
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.
 Lines must start with a workspace name, followed by a project name, followed by
 the project's path property, followed by either the next project or the next
-workspace.  The previously looked at line type is given by CONTEXT.  The
-previously looked at line is given by PREV.  PATHS contains all the project
-paths previously seen in the current workspace.  These are used to make sure
-that no file path appears in the workspaces more than once.
+workspace.
+
+The previously looked at line type is given by CONTEXT.
+
+The previously looked at line is given by PREV.
+
+PATHS contains all the project paths previously seen in the current workspace.
+These are used to make sure that no file path appears in the workspaces more
+than once.
+
+PROJ-COUNT counts the number of non-disabled projects in a workspace to make
+sure that there is at least of project that will be displayed.
 
 A successful validation returns just the symbol 'success, in case of an error a
 list of 3 items is returned: the symbol 'error, the exact line where the error
@@ -218,12 +233,17 @@ the currently looked at line, but the one above, which is why the previously
 looked at line PREV is given as well.
 
 LINES: List of Strings
-CONTEXT: Keyword"
+CONTEXT: Keyword
+PREV: String
+PATHS: List<String>
+PROJ-COUNT: Int"
   (treemacs-block
    (cl-labels ((as-warning (txt) (propertize txt 'face 'warning)))
      (treemacs-unless-let (line (car lines))
          (pcase context
            (:property
+            (treemacs-return-if (= 0 proj-count)
+              `(error ,prev ,(as-warning "Workspace must contain at least 1 project that is not disabled.")))
             (treemacs-return
              'success))
            (:start
@@ -236,18 +256,20 @@ CONTEXT: Keyword"
          (:start
           (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
             `(error ,line ,(as-warning "First item must be a workspace name")))
-          (treemacs--validate-persist-lines (cdr lines) :workspace line nil))
+          (treemacs--validate-persist-lines (cdr lines) :workspace line nil 0))
          (:workspace
           (treemacs-return-if (not (s-matches? treemacs--persist-project-name-regex line))
             `(error ,line ,(as-warning "Workspace name must be followed by project name")))
-          (treemacs--validate-persist-lines (cdr lines) :project line nil))
+          (-let [proj-is-disabled? (s-starts-with? "** COMMENT" line)]
+            (unless proj-is-disabled? (cl-incf proj-count))
+            (treemacs--validate-persist-lines (cdr lines) :project line nil proj-count)))
          (:project
           (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
             `(error ,prev ,(as-warning "Project name must be followed by path declaration")))
           (-let [path (cadr (s-split " :: " line))]
             ;; Path not existing is only a hard error when org-editing, when loading on boot
             ;; its significance is determined by the customization setting
-            ;; treemacs-missing-project-action. Remote files are skipped to avoid opening
+            ;; `treemacs-missing-project-action'. Remote files are skipped to avoid opening
             ;; Tramp connections.
             (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
                                      (not (file-remote-p path))
@@ -257,15 +279,19 @@ CONTEXT: Keyword"
                                     (--any (treemacs-is-path it :in path) paths))
               `(error ,line ,(format (as-warning "Path '%s' appears in the workspace more than once.")
                                      (propertize path 'face 'font-lock-string-face))))
-            (treemacs--validate-persist-lines (cdr lines) :property line (cons path paths))))
+            (treemacs--validate-persist-lines (cdr lines) :property line (cons path paths) proj-count)))
          (:property
           (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
                 (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
             (cond
              (line-is-workspace-name
-              (treemacs--validate-persist-lines (cdr lines) :workspace line nil))
+              (treemacs-return-if (= 0 proj-count)
+                `(error ,prev ,(as-warning "Workspace must contain at least 1 project that is not disabled.")))
+              (treemacs--validate-persist-lines (cdr lines) :workspace line nil 0))
              (line-is-project-name
-              (treemacs--validate-persist-lines (cdr lines) :project line paths))
+              (-let [proj-is-disabled? (s-starts-with? "** COMMENT" line)]
+                (unless proj-is-disabled? (cl-incf proj-count))
+                (treemacs--validate-persist-lines (cdr lines) :project line paths proj-count)))
              (t
               (treemacs-return-if (-none? #'identity (list line-is-workspace-name line-is-project-name))
                 `(error ,prev ,(as-warning "Path property must be followed by the next workspace or project"))))))))))))
