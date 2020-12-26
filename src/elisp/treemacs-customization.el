@@ -337,7 +337,7 @@ Its possible values are:
  * refetch-index
    Call up the file's imenu index again and use its information to jump.
  * call-xref
-   Call `xref-find-definitions' to find the tag.  Only available since Emacs 25.
+   Call `xref-find-definitions' to find the tag.
  * issue-warning
    Just issue a warning that the tag's position pointer is invalid."
   :type 'integer

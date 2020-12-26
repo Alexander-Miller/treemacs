@@ -933,7 +933,7 @@ into their own module in ~treemacs-icons.el~).
 If you want to delve into the treemacs' code base, check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
 
 * Dependencies
- * emacs >= 25.2
+ * emacs >= 26.1
  * f.el
  * s.el
  * dash
