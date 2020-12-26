@@ -123,12 +123,12 @@ variant), so it will only be used if git-mode is disabled or set to simple."
   :group 'treemacs-faces)
 
 (defface treemacs-on-failure-pulse-face
-  '((t :foreground "#111111" :background "#ab3737"))
+  '((t :foreground "#111111" :background "#ab3737" :extend t))
   "Pulse face used when an error occurs or an action fails."
   :group 'treemacs-faces)
 
 (defface treemacs-on-success-pulse-face
-  '((t :foreground "#111111" :background "#669966"))
+  '((t :foreground "#111111" :background "#669966" :extend t))
   "Pulse face used to signal a successful action."
   :group 'treemacs-faces)
 
