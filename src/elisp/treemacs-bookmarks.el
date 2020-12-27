@@ -192,13 +192,13 @@ treemacs node is pointing to a valid buffer position."
    "There is nothing to bookmark here."
    (pcase (treemacs-button-get current-btn :state)
      ((or 'file-node-open 'file-node-closed 'dir-node-open 'dir-node-closed)
-      (-let [name (read-string "Bookmark name: ")]
+      (-let [name (treemacs--read-string "Bookmark name: ")]
         (bookmark-store name `((filename . ,(treemacs-button-get current-btn :path))) nil)))
      ('tag-node
       (-let [(tag-buffer . tag-pos) (treemacs--extract-position (treemacs-button-get current-btn :marker))]
         (if (buffer-live-p tag-buffer)
             (bookmark-store
-             (read-string "Bookmark name: ")
+             (treemacs--read-string "Bookmark name: ")
              `((filename . ,(buffer-file-name tag-buffer))
                (position . ,tag-pos))
              nil)

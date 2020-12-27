@@ -412,6 +412,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-project-follow-cleanup        nil
             treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
             treemacs-position                      'left
+            treemacs-read-string-input             'from-child-frame
             treemacs-recenter-distance             0.1
             treemacs-recenter-after-file-follow    nil
             treemacs-recenter-after-tag-follow     nil
@@ -534,7 +535,8 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-user-mode-line-format         | nil                                              | When non-nil treemacs will use it as a mode line format (otherwise format provided by ~spaceline~, ~moody-mode-line~ and ~doom-modeline~ will be used or, finally, "Treemacs" text will be displayed)                                |
 | treemacs-user-header-line-format       | nil                                              | When non-nil treemacs will use it as a header line format                                                                                                                                                                            |
 | treemacs-move-forward-on-expand        | nil                                              | When non-nil treemacs will move to the first child of an expanded node.                                                                                                                                                              |
-| treemacs-workspace-switch-cleanup      | nil                                              | Indicates which, if any, buffers should be deleted on a workspace switch. Valid values are ~nil~, ~files~, ~all~.                                                                                                                                                                                             |
+| treemacs-workspace-switch-cleanup      | nil                                              | Indicates which, if any, buffers should be deleted on a workspace switch. Valid values are ~nil~, ~files~, ~all~.                                                                                                                    |
+| treemacs-read-string-input             | 'from-child-frame                                | Indicates whether simple string input like project names should be read from a child frame or the minibuffer.                                                                                                                        |
 
 ** Faces
 Treemacs defines and uses the following faces:

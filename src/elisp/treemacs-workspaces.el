@@ -305,7 +305,7 @@ Return values may be as follows:
   - the symbol `success'
   - the created workspace"
   (treemacs-block
-   (-let [name (or name (read-string "Workspace name: "))]
+   (-let [name (or name (treemacs--read-string "Workspace name: "))]
      (treemacs-return-if (treemacs--is-name-invalid? name)
        `(invalid-name ,name))
      (-when-let (ws (--first (string= name (treemacs-workspace->name it))
@@ -627,7 +627,7 @@ Return values may be as follows:
                         (sort (lambda (n _) (string= (car n) old-name)))))
           (str-to-rename (completing-read "Rename: " name-map))
           (ws-to-rename (cdr (assoc str-to-rename name-map)))
-          (new-name (read-string "New name: ")))
+          (new-name (treemacs--read-string "New name: ")))
      (treemacs-return-if (treemacs--is-name-invalid? new-name)
        `(invalid-name ,new-name))
      (setf (treemacs-workspace->name ws-to-rename) new-name)

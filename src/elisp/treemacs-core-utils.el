@@ -27,6 +27,7 @@
 (require 'f)
 (require 'ace-window)
 (require 'pfuture)
+(require 'cfrs)
 (require 'treemacs-customization)
 (require 'treemacs-logging)
 
@@ -1245,6 +1246,18 @@ exists it returns /file/name (Copy 2).ext etc."
       (cl-incf n)
       (setf new-path (f-join dir (concat filename-no-ext (format template n) ext))))
     new-path))
+
+(defun treemacs--read-string (prompt &optional initial-input)
+  "Read a string with an interface based on `treemacs-read-string-input'.
+PROMPT and INITIAL-INPUT will be passed on to the read function.
+
+PROMPT: String
+INITIAL-INPUT: String"
+  (declare (side-effect-free t))
+  (pcase treemacs-read-string-input
+    ('from-child-frame (cfrs-read prompt initial-input))
+    ('from-minibuffer  (read-string prompt initial-input))
+    (other (user-error "Unknown read-string-input value: `%s'" other))))
 
 (provide 'treemacs-core-utils)
 

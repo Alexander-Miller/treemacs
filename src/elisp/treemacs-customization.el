@@ -118,6 +118,21 @@ indentation will be a space INTEGER pixels wide."
                        (const :tag "" px)))
   :group 'treemacs)
 
+(defcustom treemacs-read-string-input 'from-child-frame
+  "The function treemacs uses to read user input.
+Only applies to plaintext input, like when renaming a project, file or
+workspace.
+
+There are 2 options:
+ - `from-child-frame': will use the `cfrs' package to read input from a small
+   child frame popup.  Only available in GUI frames, otherwise the default
+   minibuffer input is used.
+ - `from-minibuffer': will read input from the minibuffer, same as baseline
+   Emacs."
+  :type '(choice (const :tag "With Child Frame Popup" 'from-child-frame)
+                 (const :tag "From the Minibuffer (Emacs Default)" 'from-minibuffer))
+  :group 'treemacs)
+
 (defcustom treemacs-move-forward-on-expand nil
   "When non-nil treemacs will move to the first child of an expanded node."
   :type 'boolean

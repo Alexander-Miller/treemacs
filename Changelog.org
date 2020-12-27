@@ -9,6 +9,7 @@
 - Added ~treemacs-user-header-line-format~
 - Added ~treemacs-display-current-project-exclusively~
 - Added ~treemacs-icon-catalogue~
+- Added ~treemacs-read-string-input~
 - Split the helpful hydra in 2, so it can fit on smaller screens
 - Replaced ~treemacs-select-hook~ with ~treemacs-select-functions~ because it is
   now called with treemacs' previous visibility

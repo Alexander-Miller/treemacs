@@ -12,6 +12,7 @@
  (depends-on "all-the-icons")
  (depends-on "pfuture")
  (depends-on "hydra")
+ (depends-on "cfrs")
  (depends-on "evil")
  (depends-on "projectile")
  (depends-on "magit")

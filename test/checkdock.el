@@ -57,6 +57,7 @@
             "macos"
             "makefile"
             "metadata"
+            "minibuffer"
             "modeline"
             "org"
             "org's"
