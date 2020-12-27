@@ -52,6 +52,7 @@
             "iter"
             "keybind"
             "keybinds"
+            "keybindings"
             "leftclick"
             "linux"
             "macos"

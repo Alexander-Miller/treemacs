@@ -125,7 +125,7 @@ workspace.
 
 There are 2 options:
  - `from-child-frame': will use the `cfrs' package to read input from a small
-   child frame popup.  Only available in GUI frames, otherwise the default
+   child frame pop-up.  Only available in GUI frames, otherwise the default
    minibuffer input is used.
  - `from-minibuffer': will read input from the minibuffer, same as baseline
    Emacs."
