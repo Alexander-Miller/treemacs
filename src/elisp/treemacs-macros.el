@@ -320,6 +320,15 @@ not work keep it on the same line."
             (set-window-point (selected-window) buffer-point))))
       ,@final-form)))
 
+(defmacro treemacs-with-workspace (workspace &rest body)
+  "Use WORKSPACE as the current workspace when running BODY.
+Specifically this means that calls to `treemacs-current-workspace' will return
+WORKSPACE and if no workspace has been set for the current scope yet it will not
+be set either."
+  (declare (indent 1) (debug (form body)))
+  `(let ((treemacs-override-workspace ,workspace))
+     ,@body))
+
 (defmacro treemacs-run-in-every-buffer (&rest body)
   "Run BODY once locally in every treemacs buffer.
 Only includes treemacs file tree buffers, not extensions.
@@ -330,8 +339,7 @@ return the workspace of the active treemacs buffer."
      (let ((buffer (treemacs-scope-shelf->buffer shelf))
            (workspace (treemacs-scope-shelf->workspace shelf)))
        (when (buffer-live-p buffer)
-         (-let [treemacs-override-workspace workspace]
-           (ignore treemacs-override-workspace)
+         (treemacs-with-workspace workspace
            (with-current-buffer buffer
              ,@body))))))
 
