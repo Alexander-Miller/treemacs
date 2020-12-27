@@ -136,7 +136,7 @@ Will be set by `treemacs--post-command'.")
   (defvar treemacs-mode-map
     (let ((map (make-sparse-keymap)))
       (define-key map (kbd "?")         #'treemacs-common-helpful-hydra)
-      (define-key map (kbd "M-?")       #'treemacs-advanced-helpful-hydra)
+      (define-key map (kbd "C-?")       #'treemacs-advanced-helpful-hydra)
       (define-key map [down-mouse-1]    #'treemacs-leftclick-action)
       (define-key map [drag-mouse-1]    #'treemacs-dragleftclick-action)
       (define-key map [double-mouse-1]  #'treemacs-doubleclick-action)

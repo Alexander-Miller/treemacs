@@ -153,9 +153,9 @@ find the key a command is bound to it will show a blank instead."
                                         (car key-open-ext)
                                         (car key-close-above))))
           (eval
-           `(defhydra treemacs--common-helpful-hydra (:exit nil :hint nil :columns 5)
+           `(defhydra treemacs--common-helpful-hydra (:exit nil :hint nil :columns 4)
               ,hydra-str
-              (,(cdr key-adv-hydra)      #'treemacs-advanced-helpful-hydra)
+              (,(cdr key-adv-hydra)      #'treemacs-advanced-helpful-hydra :exit t)
               (,(cdr key-next-line)      #'treemacs-next-line)
               (,(cdr key-prev-line)      #'treemacs-previous-line)
               (,(cdr key-root-up)        #'treemacs-root-up)
@@ -256,9 +256,9 @@ find the key a command is bound to it will show a blank instead."
                (car key-copy-file)    (car key-switch-ws)   (car key-resort)
                (car key-move-file)    (car key-fallback-ws) (car key-bookmark))))
           (eval
-           `(defhydra treemacs--advanced-helpful-hydra (:exit nil :hint nil :columns 5)
+           `(defhydra treemacs--advanced-helpful-hydra (:exit nil :hint nil :columns 3)
               ,hydra-str
-              (,(cdr key-common-hydra)   #'treemacs-common-helpful-hydra)
+              (,(cdr key-common-hydra)   #'treemacs-common-helpful-hydra :exit t)
               (,(cdr key-create-file)    #'treemacs-create-file)
               (,(cdr key-create-dir)     #'treemacs-create-dir)
               (,(cdr key-rename)         #'treemacs-rename)

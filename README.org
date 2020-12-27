@@ -776,7 +776,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | Key      | Action                                      | Description                                                                                            |
 |----------+---------------------------------------------+--------------------------------------------------------------------------------------------------------|
 | ?        | treemacs-common-helpful-hydra               | Summon a helpful hydra to show you treemacs' most commonly used keybinds.                              |
-| M-?      | treemacs-advanced-helpful-hydra             | Summon a helpful hydra to show you treemacs' rarely used, advanced keybinds.                           |
+| C-?      | treemacs-advanced-helpful-hydra             | Summon a helpful hydra to show you treemacs' rarely used, advanced keybinds.                           |
 | j/n      | treemacs-next-line                          | Go to the next line.                                                                                   |
 | k/p      | treemacs-previous-line                      | Go to the previous line.                                                                               |
 | M-J/N    | treemacs-next-line-other-window             | Go to the next line in ~next-window~.                                                                  |

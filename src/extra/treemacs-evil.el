@@ -84,7 +84,7 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
 (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-set-width)
 (define-key evil-treemacs-state-map (kbd "b")   #'treemacs-add-bookmark)
 (define-key evil-treemacs-state-map (kbd "?")   #'treemacs-common-helpful-hydra)
-(define-key evil-treemacs-state-map (kbd "M-?") #'treemacs-advanced-helpful-hydra)
+(define-key evil-treemacs-state-map (kbd "C-?") #'treemacs-advanced-helpful-hydra)
 (define-key evil-treemacs-state-map (kbd "RET") #'treemacs-RET-action)
 (define-key evil-treemacs-state-map (kbd "TAB") #'treemacs-TAB-action)
 (define-key evil-treemacs-state-map (kbd "H")   #'treemacs-collapse-parent-node)
