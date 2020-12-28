@@ -34,6 +34,25 @@
   (require 'cl-lib)
   (require 'treemacs-macros))
 
+(treemacs-import-functions-from "treemacs-interface"
+  treemacs-add-project-to-workspace)
+
+(defvar treemacs--mouse-project-list-functions
+  '(("Add Project.el project" . treemacs--builtin-project-mouse-selection-menu)))
+
+(defun treemacs--builtin-project-mouse-selection-menu ()
+  "Build a mouse selection menu for project.el projects."
+  (if (eq project--list 'unset)
+      (list (vector "Project.el list is empty" #'ignore))
+    (-let [projects
+           (->> project--list
+                (--map (treemacs-canonical-path (car it)))
+                (--reject (treemacs-is-path it :in-workspace))
+                (-sort #'string<))]
+      (if (null projects)
+          (list (vector "All Project.el projects are alread in the workspace" #'ignore))
+        (--map (vector it (lambda () (interactive) (treemacs-add-project-to-workspace it))) projects)))))
+
 (defun treemacs-leftclick-action (event)
   "Move focus to the clicked line.
 Must be bound to a mouse click, or EVENT will not be supplied."
@@ -237,10 +256,11 @@ and ignore any prefix argument."
 
                 ["--" #'ignore t]
                 ("Projects"
-                 ["Add Project"            treemacs-add-project]
-                 ["Add Projectile Project" treemacs-projectile                    :visible (featurep 'treemacs-projectile)]
-                 ["Remove Project"         treemacs-remove-project-from-workspace :visible ,(check project)]
-                 ["Rename Project"         treemacs-rename-project                :visible ,(check project)])
+                 ["Add Project" treemacs-add-project]
+                 ,@(--map `(,(car it) ,@(funcall (cdr it)))
+                          treemacs--mouse-project-list-functions)
+                 ["Remove Project" treemacs-remove-project-from-workspace :visible ,(check project)]
+                 ["Rename Project" treemacs-rename-project                :visible ,(check project)])
                 ("Workspaces"
                  ["Edit Workspaces"        treemacs-edit-workspaces]
                  ["Create Workspace"       treemacs-create-workspace]

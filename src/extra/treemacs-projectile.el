@@ -88,6 +88,23 @@ the current dir."
       (projectile-find-file-hook-function))
     (when kill? (kill-buffer file-buffer))))
 
+(defun treemacs--projectile-project-mouse-selection-menu ()
+  "Build a mouse selection menu for projectile projects."
+  (if (null projectile-known-projects)
+      (list (vector "Projectile list is empty" #'ignore))
+    (-let [projects
+           (->> projectile-known-projects
+                (-map #'treemacs-canonical-path)
+                (--reject (treemacs-is-path it :in-workspace))
+                (-sort #'string<))]
+      (if (null projects)
+          (list (vector "All Projectile projects are alread in the workspace" #'ignore))
+        (--map (vector it (lambda () (interactive) (treemacs-add-project-to-workspace it))) projects)))))
+
+(add-to-list
+ 'treemacs--mouse-project-list-functions
+ '("Add Projectile project" . treemacs--projectile-project-mouse-selection-menu)
+ :append)
 (add-to-list 'treemacs--find-user-project-functions #'treemacs--projectile-current-user-project-function)
 (add-hook 'treemacs-create-file-functions #'treemacs-projectile--add-file-to-projectile-cache)
 
