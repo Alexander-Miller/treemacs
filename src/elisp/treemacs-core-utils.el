@@ -441,7 +441,7 @@ Simply collapses and re-expands the button (if it has not been closed)."
          (goto-char (treemacs-button-start btn))
          (treemacs--push-button btn))))))
 
-(define-inline treemacs--canonical-path (path)
+(define-inline treemacs-canonical-path (path)
   "The canonical version of PATH for being handled by treemacs.
 In practice this means expand PATH and remove its final slash."
   (declare (pure t) (side-effect-free t))
@@ -449,6 +449,8 @@ In practice this means expand PATH and remove its final slash."
     (inline-quote
      (let (file-name-handler-alist)
        (-> ,path (expand-file-name) (treemacs--unslash))))))
+;; TODO(2020/12/28): alias is for backwards compatibility, remove it eventually
+(defalias 'treemacs--canonical-path #'treemacs-canonical-path)
 
 (define-inline treemacs-is-file-git-ignored? (file git-info)
   "Determined if FILE is ignored by git by means of GIT-INFO."
@@ -519,13 +521,13 @@ Add a project for ROOT and NAME if they are non-nil."
        (treemacs--render-projects (treemacs-workspace->projects current-workspace))
        (when (treemacs-workspace->is-empty?)
          (let* ((path (-> (treemacs--read-first-project-path)
-                          (treemacs--canonical-path)))
+                          (treemacs-canonical-path)))
                 (name (treemacs--filename path)))
            (treemacs-do-add-project-to-workspace path name)
            (treemacs-log "Created first project.")))
        (goto-char 2)
        (setf run-hook? t)))
-    (when root (treemacs-do-add-project-to-workspace (treemacs--canonical-path root) name))
+    (when root (treemacs-do-add-project-to-workspace (treemacs-canonical-path root) name))
     (with-no-warnings (setq treemacs--ready-to-follow t))
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
@@ -599,7 +601,7 @@ IS-FILE?: Bool"
                                           (treemacs-button-get :parent)
                                           (treemacs-button-get :path)))
            (treemacs-do-update-node created-under)))
-       (treemacs-goto-file-node (treemacs--canonical-path path-to-create) project)
+       (treemacs-goto-file-node (treemacs-canonical-path path-to-create) project)
        (recenter))
      (treemacs-pulse-on-success
          "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))

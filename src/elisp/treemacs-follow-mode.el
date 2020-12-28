@@ -59,7 +59,7 @@ not visible."
             (current-buffer  (current-buffer))
             (current-file    (or (buffer-file-name current-buffer)
                                  (when (eq major-mode 'dired-mode)
-                                   (treemacs--canonical-path (dired-current-directory))))))
+                                   (treemacs-canonical-path (dired-current-directory))))))
        (when (and treemacs-window
                   current-file
                   (not (s-starts-with? treemacs--buffer-name-prefix (buffer-name current-buffer)))

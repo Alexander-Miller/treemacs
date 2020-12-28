@@ -94,7 +94,7 @@ For the most part only useful when `treemacs-follow-mode' is not active."
       (setq manually-entered t
             path (->> (--if-let (treemacs-current-button) (treemacs--nearest-path it))
                       (read-file-name "File to find: ")
-                      (treemacs--canonical-path))))
+                      (treemacs-canonical-path))))
     (treemacs-unless-let (project (treemacs--find-project-for-path path))
         (treemacs-pulse-on-failure (format "%s does not fall under any project in the workspace."
                                     (propertize path 'face 'font-lock-string-face)))
@@ -193,7 +193,7 @@ only project, all other projects *will be removed* from the current workspace."
    (treemacs-unless-let (root (treemacs--find-current-user-project))
        (treemacs-error-return-if (null root)
          "Not in a project.")
-     (let* ((path (treemacs--canonical-path root))
+     (let* ((path (treemacs-canonical-path root))
             (name (treemacs--filename path))
             (ws (treemacs-current-workspace)))
        (treemacs-return-if (and (= 1 (length (treemacs-workspace->projects ws)))
@@ -231,7 +231,7 @@ An error message is displayed if the current buffer is not part of any project."
    (treemacs-unless-let (root (treemacs--find-current-user-project))
        (treemacs-error-return-if (null root)
          "Not in a project.")
-     (let* ((path (treemacs--canonical-path root))
+     (let* ((path (treemacs-canonical-path root))
             (name (treemacs--filename path)))
        (unless (treemacs-current-workspace)
          (treemacs--find-workspace))

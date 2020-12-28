@@ -132,7 +132,7 @@ ITER: Treemacs-Iter Struct"
             (-let [(key val) (s-split " :: " kv-line)]
               (pcase (s-trim key)
                 ("- path"
-                 (setf (treemacs-project->path project) (treemacs--canonical-path val)))
+                 (setf (treemacs-project->path project) (treemacs-canonical-path val)))
                 (_
                  (treemacs-log-failure "Encountered unknown project key-value in line [%s]" kv-line)))))
           (let ((action 'retry))

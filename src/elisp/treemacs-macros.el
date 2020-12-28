@@ -327,6 +327,7 @@ WORKSPACE and if no workspace has been set for the current scope yet it will not
 be set either."
   (declare (indent 1) (debug (form body)))
   `(let ((treemacs-override-workspace ,workspace))
+     (ignore treemacs-override-workspace)
      ,@body))
 
 (defmacro treemacs-run-in-every-buffer (&rest body)
@@ -440,7 +441,7 @@ workspace.  OP can be one of the following:
    default to calling `treemacs-current-workspace'.
 
 LEFT and RIGHT are expected to be in treemacs canonical file path format (see
-also `treemacs--canonical-path').
+also `treemacs-canonical-path').
 
 Even if LEFT or RIGHT should be a form and not a variable it is guaranteed that
 they will be evaluated only once."

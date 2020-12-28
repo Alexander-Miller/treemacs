@@ -50,7 +50,7 @@ In order for the update to fully run several conditions must be met:
  * The directory must be part of a treemacs workspace, and
  * The project must not be set for refresh already."
   (when treemacs-git-mode
-    (let ((magit-root (treemacs--canonical-path (magit-toplevel))))
+    (let ((magit-root (treemacs-canonical-path (magit-toplevel))))
       (unless (member magit-root treemacs-magit--timers)
         (push magit-root treemacs-magit--timers)
         (run-with-idle-timer

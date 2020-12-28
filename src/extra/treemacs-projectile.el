@@ -40,7 +40,7 @@ the project's root directory."
   (if (and (bound-and-true-p projectile-known-projects)
            (listp projectile-known-projects)
            projectile-known-projects)
-      (let* ((projects (--reject (treemacs-is-path (treemacs--canonical-path it) :in-workspace (treemacs-current-workspace))
+      (let* ((projects (--reject (treemacs-is-path (treemacs-canonical-path it) :in-workspace (treemacs-current-workspace))
                                  (-map #'treemacs--unslash projectile-known-projects)))
              (path (completing-read "Project: " projects))
              (name (unless arg (treemacs--filename path))))
@@ -75,7 +75,7 @@ the current dir."
 (defun treemacs--projectile-current-user-project-function ()
   "Get the current projectile project root."
   (declare (side-effect-free t))
-  (-some-> (projectile-project-root) (file-truename) (treemacs--canonical-path)))
+  (-some-> (projectile-project-root) (file-truename) (treemacs-canonical-path)))
 
 (defun treemacs-projectile--add-file-to-projectile-cache (path)
   "Add created file PATH to projectile's cache."

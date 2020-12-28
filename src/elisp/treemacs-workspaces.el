@@ -102,7 +102,7 @@ To be called whenever a project or workspace changes."
 (defun treemacs--default-current-user-project-function ()
   "Find the current project.el project."
   (declare (side-effect-free t))
-  (-some-> (project-current) (cdr) (file-truename) (treemacs--canonical-path)))
+  (-some-> (project-current) (cdr) (file-truename) (treemacs-canonical-path)))
 
 (define-inline treemacs-workspaces ()
   "Return the list of all workspaces in treemacs."
@@ -465,7 +465,7 @@ NAME: String"
    (let ((path-status (treemacs--get-path-status path)))
      (treemacs-error-return-if (not (file-readable-p path))
        `(invalid-path "Path is not readable does not exist."))
-     (setq path (-> path (file-truename) (treemacs--canonical-path)))
+     (setq path (-> path (file-truename) (treemacs-canonical-path)))
      (-when-let (project (treemacs--find-project-for-path path))
        (treemacs-return `(duplicate-project ,project)))
      (treemacs-return-if (treemacs--is-name-invalid? name)
@@ -536,7 +536,7 @@ Return values may be as follows:
    ;; when used from outside treemacs it is much easier to supply a path string than to
    ;; look up the project instance
    (when (stringp project)
-     (setf project (treemacs-is-path (treemacs--canonical-path project) :in-workspace)))
+     (setf project (treemacs-is-path (treemacs-canonical-path project) :in-workspace)))
    (treemacs-error-return-if (null project)
      `(invalid-project "Given path is not in the workspace"))
    (treemacs-run-in-every-buffer
