@@ -235,8 +235,11 @@ will reset ~blink-cursor-mode~'s timer if it is enabled. This will result in the
 short time and giving the appearance of the tag follow action lasting much longer than it really does.
 
 ** Fringe-indicator-mode
-~treemacs-fringe-indicator-mode~ is a global minor mode that displays a little icon in the fringe that moves with the cursor.
-It can make the selected line more visible if ~hl-line-mode~ doesn't stand out with your theme.
+~treemacs-fringe-indicator-mode~ is a global minor mode that displays a little icon in the fringe that moves with the
+cursor.  It can make the selected line more visible if ~hl-line-mode~ doesn't stand out with your theme.
+
+The indicator can either be permanently visible, or be only shown when the treemacs window is selected by calling it
+either with the ~always~ or ~only-when-focused~ argument.
 ** Git-mode
 ~treemacs-git-mode~ is a global minor mode which enables treemacs to check for files' and directories' git status
 information and highlight them accordingly (see also the ~treemacs-git-...~ faces). The mode is available in 3 variants:
@@ -437,7 +440,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
 
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t)
-      (treemacs-fringe-indicator-mode t)
+      (treemacs-fringe-indicator-mode 'always)
       (pcase (cons (not (null (executable-find "git")))
                    (not (null treemacs-python-executable)))
         (`(t . t)

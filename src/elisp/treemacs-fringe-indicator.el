@@ -31,6 +31,12 @@
 
 (defvar-local treemacs--fringe-indicator-overlay nil)
 
+(defconst treemacs--fringe-overlay-before-string
+  (propertize
+   " " 'display
+   `(left-fringe ,treemacs--fringe-indicator-bitmap treemacs-fringe-indicator-face))
+  "The `before-string' property value used by the fringe indicator overlay.")
+
 (define-inline treemacs--move-fringe-indicator-to-point ()
   "Move the fringe indicator to the position of point."
   (inline-quote
@@ -41,13 +47,10 @@
 (defun treemacs--enable-fringe-indicator ()
   "Enabled the fringe indicator in the current buffer."
   (unless treemacs--fringe-indicator-overlay
-    (setq-local treemacs--fringe-indicator-overlay
-                (-let [ov (make-overlay 1 1 (current-buffer))]
-                  (overlay-put ov 'before-string
-                               (propertize " " 'display `(left-fringe
-                                                          ,treemacs--fringe-indicator-bitmap
-                                                          treemacs-fringe-indicator-face)))
-                  ov))
+    (setq-local
+     treemacs--fringe-indicator-overlay
+     (-doto (make-overlay 1 1 (current-buffer))
+       (overlay-put 'before-string treemacs--fringe-overlay-before-string)))
     (treemacs--move-fringe-indicator-to-point)))
 
 (defun treemacs--disable-fringe-indicator ()
@@ -56,24 +59,70 @@
     (delete-overlay treemacs--fringe-indicator-overlay)
     (setf treemacs--fringe-indicator-overlay nil)))
 
-(defun treemacs--setup-fringe-indicator-mode ()
-  "Setup `treemacs-fringe-indicator-mode'."
-  (treemacs-run-in-all-derived-buffers (treemacs--enable-fringe-indicator)))
+(defun treemacs--show-fringe-indicator-only-when-focused (window)
+  "Hook to ensure the fringe indicator not shown when treemacs is not selected.
+WINDOW is the treemacs window that has just been focused or unfocused."
+  (if (eq treemacs--in-this-buffer t)
+      (when treemacs--fringe-indicator-overlay
+        (overlay-put
+         treemacs--fringe-indicator-overlay 'before-string
+         treemacs--fringe-overlay-before-string))
+    (with-selected-window window
+      (when treemacs--fringe-indicator-overlay
+        (overlay-put
+         treemacs--fringe-indicator-overlay
+         'before-string nil)))))
 
 (defun treemacs--tear-down-fringe-indicator-mode ()
   "Tear down `treemacs-fringe-indicator-mode'."
-  (treemacs-run-in-all-derived-buffers (treemacs--disable-fringe-indicator)))
+  (treemacs-run-in-all-derived-buffers
+   (treemacs--disable-fringe-indicator)
+   (remove-hook 'window-selection-change-functions
+                #'treemacs--show-fringe-indicator-only-when-focused
+                :local)))
 
 (define-minor-mode treemacs-fringe-indicator-mode
   "Toggle `treemacs-fringe-indicator-mode'.
-When enabled, a visual indicator in the fringe will be displayed to highlight the selected line even more.
-Useful if hl-line-mode doesn't stand out enough with your color theme"
+When enabled, a visual indicator in the fringe will be displayed to highlight
+the selected line in addition to hl-line-mode.  Useful if hl-line-mode doesn't
+stand out enough with your color theme.
+
+Can be called with one of two arguments:
+
+ - `always' will always show the fringe indicator.
+ - `only-when-focused' will only show the fringe indicator when the treemacs
+   window is focused (only possible with Emacs 27+).
+
+For backward compatibility just enabling this mode without an explicit argument
+has the same effect as using `always'."
   :init-value nil
   :global t
   :lighter nil
+  :group 'treemacs
   (if treemacs-fringe-indicator-mode
-      (treemacs--setup-fringe-indicator-mode)
+      (progn
+        (setf arg (or arg t))
+        (if (memq arg '(always only-when-focused t))
+            (treemacs--setup-fringe-indicator-mode arg)
+          (call-interactively #'treemacs--setup-fringe-indicator-mode)))
     (treemacs--tear-down-fringe-indicator-mode)))
+
+(defun treemacs--setup-fringe-indicator-mode (arg)
+  "Setup `treemacs-fringe-indicator-mode'.
+When ARG is `only-when-focused' a hook will be set up to only display the
+fringe indicator when the treemacs window is selected."
+  (interactive (list (->> (completing-read "Fringe Indicator" '("Always" "Only When Focused"))
+                          (downcase)
+                          (s-split " ")
+                          (s-join "-")
+                          (intern))))
+  (setf treemacs-fringe-indicator-mode arg)
+  (treemacs-run-in-all-derived-buffers
+   (treemacs--enable-fringe-indicator)
+   (when (memq arg '(t only-when-focused))
+     (add-hook 'window-selection-change-functions
+               #'treemacs--show-fringe-indicator-only-when-focused
+               nil :local))))
 
 (treemacs-only-during-init (treemacs-fringe-indicator-mode))
 
