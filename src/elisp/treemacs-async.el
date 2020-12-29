@@ -155,10 +155,7 @@ really left to do is pick up the cons list and put it in a hash table.
 GIT-FUTURE: Pfuture"
   (or (when git-future
         (let* ((git-output (pfuture-await-to-finish git-future))
-               ;; Check fboundp in case an old version of pfuture is used.
-               ;; TODO: Remove the check when pfuture 1.7 has been widely adopted.
-               (git-stderr (when (fboundp 'pfuture-stderr)
-                             (pfuture-stderr git-future))))
+               (git-stderr (pfuture-stderr git-future)))
           ;; Check stderr separately from parsing, often git status displays
           ;; warnings which do not affect the final result.
           (unless (s-blank? git-stderr)
@@ -400,8 +397,9 @@ All versions run asynchronously and are optimized for not doing more work than
 is necessary, so their performance cost should, for the most part, be the
 constant time needed to fork a subprocess."
   :init-value nil
-  :global t
-  :lighter nil
+  :global     t
+  :lighter    nil
+  :group      'treemacs
   (if treemacs-git-mode
       (if (memq arg '(simple extended deferred))
           (treemacs--setup-git-mode arg)
