@@ -498,7 +498,9 @@ NAME: String"
            (treemacs--insert-root-separator)))
          (treemacs--add-root-element project)
          (treemacs-dom-node->insert-into-dom!
-          (treemacs-dom-node->create! :key path :position (treemacs-project->position project)))))
+          (treemacs-dom-node->create! :key path :position (treemacs-project->position project)))
+         (when treemacs-expand-added-projects
+           (treemacs--expand-root-node (treemacs-project->position project)))))
        (treemacs--persist)
        (run-hook-with-args 'treemacs-create-project-functions project)
        `(success ,project)))))

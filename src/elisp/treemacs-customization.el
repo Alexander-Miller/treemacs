@@ -393,6 +393,11 @@ The change will apply the next time a treemacs buffer is created."
   :type 'boolean
   :group 'treemacs)
 
+(defcustom treemacs-expand-added-projects t
+  "When non-nil newly added projects will be expanded."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs-recenter-after-project-jump 'always
   "Decides when to recenter view after moving between projects.
 Specifically applies to calling `treemacs-next-project' and
