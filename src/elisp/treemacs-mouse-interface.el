@@ -137,6 +137,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
                               (find-file path))
           :no-match-action (ignore))))))
 
+;;;###autoload
 (defun treemacs-define-doubleclick-action (state action)
   "Define the behaviour of `treemacs-doubleclick-action'.
 Determines that a button with a given STATE should lead to the execution of
