@@ -101,12 +101,14 @@ the current dir."
           (list (vector "All Projectile projects are alread in the workspace" #'ignore))
         (--map (vector it (lambda () (interactive) (treemacs-add-project-to-workspace it))) projects)))))
 
-(add-to-list
- 'treemacs--mouse-project-list-functions
- '("Add Projectile project" . treemacs--projectile-project-mouse-selection-menu)
- :append)
 (add-to-list 'treemacs--find-user-project-functions #'treemacs--projectile-current-user-project-function)
 (add-hook 'treemacs-create-file-functions #'treemacs-projectile--add-file-to-projectile-cache)
+
+(with-eval-after-load 'treemacs-mouse-interface
+  (add-to-list
+   (with-no-warnings 'treemacs--mouse-project-list-functions)
+   '("Add Projectile project" . treemacs--projectile-project-mouse-selection-menu)
+   :append))
 
 (provide 'treemacs-projectile)
 

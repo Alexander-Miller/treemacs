@@ -17,6 +17,7 @@
 
 ;;; Commentary:
 ;;; Functions relating to using the mouse in treemacs.
+;;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 
@@ -53,6 +54,7 @@
           (list (vector "All Project.el projects are alread in the workspace" #'ignore))
         (--map (vector it (lambda () (interactive) (treemacs-add-project-to-workspace it))) projects)))))
 
+;;;###autoload
 (defun treemacs-leftclick-action (event)
   "Move focus to the clicked line.
 Must be bound to a mouse click, or EVENT will not be supplied."
@@ -72,6 +74,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
        :no-error            t))
     (treemacs--evade-image)))
 
+;;;###autoload
 (defun treemacs-doubleclick-action (event)
   "Run the appropriate double-click action for the current node.
 In the default configuration this means to do the same as `treemacs-RET-action'.
@@ -93,6 +96,7 @@ Must be bound to a mouse click, or EVENT will not be supplied."
         (treemacs-pulse-on-failure "No double click action defined for node of type %s."
           (propertize (format "%s" state) 'face 'font-lock-type-face))))))
 
+;;;###autoload
 (defun treemacs-single-click-expand-action (event)
   "A modified single-leftclick action that expands the clicked nodes.
 Can be bound to <mouse1> if you prefer to expand nodes with a single click
@@ -119,6 +123,7 @@ Clicking on icons will expand a file's tags, just like
         (funcall (cdr (assoc state treemacs-doubleclick-actions-config)))))
     (treemacs--evade-image)))
 
+;;;###autoload
 (defun treemacs-dragleftclick-action (event)
   "Drag a file/dir node to be opened in a window.
 Must be bound to a mouse click, or EVENT will not be supplied."
@@ -215,6 +220,7 @@ and ignore any prefix argument."
                           (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
           (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))))))
 
+;;;###autoload
 (defun treemacs-rightclick-menu (event)
   "Show a contextual right click menu based on click EVENT."
   (interactive "e")

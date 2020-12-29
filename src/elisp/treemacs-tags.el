@@ -20,6 +20,7 @@
 ;;; Need to be very careful here - many of the functions in this module need to be run inside the treemacs buffer, while
 ;;; the `treemacs--execute-button-action' macro that runs them will switch windows before doing so.  Heavy use of
 ;;; `treemacs-safe-button-get' or `treemacs-with-button-buffer' is necessary.
+;;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 
@@ -175,6 +176,7 @@ DEPTH: Int"
                   :depth ,depth
                   :index (cdr ,node))))))
 
+;;;###autoload
 (defun treemacs--expand-file-node (btn &optional recursive)
   "Open tag items for file BTN.
 Recursively open all tags below BTN when RECURSIVE is non-nil."
@@ -216,6 +218,7 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
                  (treemacs--expand-tag-node it t))))))
       (treemacs-pulse-on-failure "No tags found for %s" (propertize path 'face 'font-lock-string-face)))))
 
+;;;###autoload
 (defun treemacs--collapse-file-node (btn &optional recursive)
   "Close node given by BTN.
 Remove all open tag entries under BTN when RECURSIVE."
@@ -224,6 +227,7 @@ Remove all open tag entries under BTN when RECURSIVE."
    :new-state 'file-node-closed
    :post-close-action (treemacs-on-collapse (treemacs-button-get btn :path) recursive)))
 
+;;;###autoload
 (defun treemacs--visit-or-expand/collapse-tag-node (btn arg find-window)
   "Visit tag section BTN if possible, expand or collapse it otherwise.
 Pass prefix ARG on to either visit or toggle action.
@@ -288,6 +292,7 @@ the display window."
            ('tag-node-open   (treemacs--collapse-tag-node btn arg))
            ('tag-node-closed (treemacs--expand-tag-node btn arg)))))))
 
+;;;###autoload
 (defun treemacs--expand-tag-node (btn &optional recursive)
   "Open tags node items for BTN.
 Open all tag section under BTN when call is RECURSIVE."
@@ -340,6 +345,7 @@ button from cache.  Easiest way is to just do it manually here."
   (goto-char (treemacs-button-start btn))
   (treemacs--collapse-tag-node btn))
 
+;;;###autoload
 (defun treemacs--collapse-tag-node (btn &optional recursive)
   "Close tags node at BTN.
 Remove all open tag entries under BTN when RECURSIVE."
@@ -417,6 +423,7 @@ headline with sub-elements is saved in an 'org-imenu-marker' text property."
          (propertize tag 'face 'treemacs-tags-face)
          e)))))
 
+;;;###autoload
 (defun treemacs--goto-tag (btn)
   "Go to the tag at BTN."
   ;; The only code currently calling this is run through `treemacs--execute-button-action' which always

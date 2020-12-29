@@ -25,14 +25,11 @@
 (require 'f)
 (require 's)
 (require 'dash)
-(require 'cfrs)
 (require 'treemacs-core-utils)
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-rendering)
 (require 'treemacs-scope)
 (require 'treemacs-follow-mode)
-(require 'treemacs-tag-follow-mode)
-(require 'treemacs-mouse-interface)
 (require 'treemacs-customization)
 (require 'treemacs-workspaces)
 (require 'treemacs-persistence)
@@ -44,9 +41,21 @@
   (require 'treemacs-macros))
 
 (autoload 'ansi-color-apply-on-region "ansi-color")
+(autoload 'aw-select "ace-window")
+
+(treemacs-import-functions-from "cfrs"
+  cfrs-read)
 
 (treemacs-import-functions-from "treemacs"
   treemacs-select-window)
+
+(treemacs-import-functions-from "treemacs-tags"
+  treemacs--expand-file-node
+  treemacs--collapse-file-node
+  treemacs--expand-tag-node
+  treemacs--collapse-tag-node
+  treemacs--goto-tag
+  treemacs--visit-or-expand/collapse-tag-node)
 
 (defvar treemacs-valid-button-states
   '(root-node-open

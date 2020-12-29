@@ -17,6 +17,7 @@
 
 ;;; Commentary:
 ;;; Integrates treemacs with bookmark.el.
+;;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 

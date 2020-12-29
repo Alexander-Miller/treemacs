@@ -25,9 +25,7 @@
 (require 's)
 (require 'ht)
 (require 'f)
-(require 'ace-window)
 (require 'pfuture)
-(require 'cfrs)
 (require 'treemacs-customization)
 (require 'treemacs-logging)
 
@@ -35,6 +33,9 @@
   (require 'inline)
   (require 'cl-lib)
   (require 'treemacs-macros))
+
+(treemacs-import-functions-from "cfrs"
+  cfrs-read)
 
 (treemacs-import-functions-from "treemacs-tags"
   treemacs--expand-file-node

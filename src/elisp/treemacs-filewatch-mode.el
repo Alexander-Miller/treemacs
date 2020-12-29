@@ -30,7 +30,7 @@
 (require 'treemacs-core-utils)
 (require 'treemacs-async)
 (require 'treemacs-dom)
-(require 'treemacs-tags)
+(require 'treemacs-rendering)
 (eval-when-compile
   (require 'treemacs-macros)
   (require 'inline))
@@ -283,6 +283,7 @@ turn off all existing file watch processes and outstanding refresh actions."
   :init-value nil
   :global     t
   :lighter    nil
+  :group      'treemacs
   (unless treemacs-filewatch-mode
     (treemacs--tear-down-filewatch-mode)))
 

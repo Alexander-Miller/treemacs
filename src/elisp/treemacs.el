@@ -41,10 +41,7 @@
 (require 'treemacs-filewatch-mode)
 (require 'treemacs-mode)
 (require 'treemacs-interface)
-(require 'treemacs-mouse-interface)
 (require 'treemacs-persistence)
-(require 'treemacs-tags)
-(require 'treemacs-tag-follow-mode)
 (require 'treemacs-async)
 (require 'treemacs-compatibility)
 (require 'treemacs-workspaces)
@@ -57,6 +54,10 @@
     (format "v2.8 (installed %s) @ Emacs %s"
             (format-time-string "%Y.%m.%d" (current-time))
             emacs-version)))
+
+(treemacs-import-functions-from "treemacs-tag-follow-mode"
+  treemacs--flatten&sort-imenu-index
+  treemacs--do-follow-tag)
 
 ;;;###autoload
 (defun treemacs-version ()
