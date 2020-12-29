@@ -580,9 +580,10 @@ nothing but calls to ~treemacs-create-icon~:
     :icon-directory (f-join treemacs-dir "icons/default")
     :config
     (progn
-      (treemacs-create-icon :file "root.png"   :fallback ""            :extensions (root))
-      (treemacs-create-icon :file "emacs.png"  :fallback "🗏 "          :extensions ("el" "elc"))
-      (treemacs-create-icon :file "readme.png" :fallback "🗏 "          :extensions ("readme.md"))
+      (treemacs-create-icon :file "root-open.png"   :fallback ""       :extensions (root-open))
+      (treemacs-create-icon :file "root-closed.png" :fallback ""       :extensions (root-closed))
+      (treemacs-create-icon :file "emacs.png"       :fallback "🗏 "     :extensions ("el" "elc"))
+      (treemacs-create-icon :file "readme.png"      :fallback "🗏 "     :extensions ("readme.md"))
       (treemacs-create-icon :icon (all-the-icons-icon-for-file "yaml") :extensions ("yml" "yaml"))))
 #+END_SRC
 
@@ -600,7 +601,8 @@ Instead of a string extension a symbol can also be used. In this case treemacs w
 named ~treemacs-icon-$symbol~. Treemacs uses several such icon variables and any new theme should define their own
 versions (it it's not extending the default theme). The following icons are used:
 
- - root
+ - root-open
+ - root-closed
  - dir-closed
  - dir-open
  - fallback
@@ -627,7 +629,7 @@ to access their values directly. When you need to programmatically access some o
 ~treemacs-get-icon-value~:
 
 #+BEGIN_SRC emacs-lisp
-  (treemacs-get-icon-value 'root nil "Default")
+  (treemacs-get-icon-value 'root-closed nil "Default")
   (treemacs-get-icon-value "org" t)
 #+END_SRC
 
