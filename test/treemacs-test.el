@@ -26,6 +26,9 @@
 (require 'treemacs-macros)
 (require 'treemacs-bookmarks)
 (require 'treemacs-core-utils)
+(require 'treemacs-tags)
+(require 'treemacs-tag-follow-mode)
+(require 'treemacs-mouse-interface)
 (require 'org)
 (require 'buttercup)
 
