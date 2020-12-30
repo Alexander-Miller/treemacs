@@ -47,7 +47,7 @@
   (progn
     ;; directory and other icons
     (treemacs-create-icon :icon (format "%s%s" (all-the-icons-octicon "repo" :height 1.2 :v-adjust -0.1 :face 'treemacs-all-the-icons-root-face) treemacs-all-the-icons-tab)
-                          :extensions (root)
+                          :extensions (root-closed root-open)
                           :fallback "")
     (treemacs-create-icon :icon (format "%s%s%s%s"
                                         (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face 'treemacs-all-the-icons-file-face)
