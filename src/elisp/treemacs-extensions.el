@@ -25,6 +25,7 @@
 (require 'treemacs-rendering)
 (require 'treemacs-core-utils)
 (require 'treemacs-fringe-indicator)
+(require 'treemacs-mouse-interface)
 
 (eval-when-compile
   (require 'treemacs-macros)
