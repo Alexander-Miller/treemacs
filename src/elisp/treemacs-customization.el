@@ -924,6 +924,15 @@ unaffected."
                  (const :tag "None" nil))
   :group 'treemacs)
 
+(defcustom treemacs-imenu-scope 'everything
+  "Determines which items treemacs' imenu function will collect.
+There are 2 options:
+ - `everything' will collect entries from every project in the workspace.
+ - `current-project' will only gather the index for the project at point."
+  :type '(choice (const :tag "Everything" everything)
+                 (const :tag "Current Project Only" current-project))
+  :group 'treemacs)
+
 (provide 'treemacs-customization)
 
 ;;; treemacs-customization.el ends here

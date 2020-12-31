@@ -541,6 +541,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-workspace-switch-cleanup      | nil                                              | Indicates which, if any, buffers should be deleted on a workspace switch. Valid values are ~nil~, ~files~, ~all~.                                                                                                                    |
 | treemacs-read-string-input             | 'from-child-frame                                | Indicates whether simple string input like project names should be read from a child frame or the minibuffer.                                                                                                                        |
 | treemacs-expand-added-projects         | t                                                | Indicates whether newly added projects should be expanded.                                                                                                                                                                           |
+| treemacs-imenu-scope                   | 'everything                                      | Determines which items treemacs' imenu function will collect.                                                                                                                                                                        |
 
 ** Faces
 Treemacs defines and uses the following faces:

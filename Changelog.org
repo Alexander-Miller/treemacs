@@ -13,6 +13,8 @@
 - Split the helpful hydra in 2, so it can fit on smaller screens
 - Replaced ~treemacs-select-hook~ with ~treemacs-select-functions~ because it is
   now called with treemacs' previous visibility
+- Added imenu support
+   + Added ~treemacs-imenu-scope~
 - Added ~treemacs-expand-added-projects~
 - Added option to only show the fringe indicator when the treemacs window is
   selected

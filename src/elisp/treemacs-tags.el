@@ -463,6 +463,48 @@ headline with sub-elements is saved in an 'org-imenu-marker' text property."
         (when (and (eq major-mode 'org-mode) (fboundp 'org-reveal))
           (org-reveal))))))
 
+;;;###autoload
+(defun treemacs--create-imenu-index-function ()
+  "The `imenu-create-index-function' for treemacs buffers."
+  (declare (side-effect-free t))
+  (let (index)
+    (pcase treemacs-imenu-scope
+      ('everything
+       (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
+         (let ((project-name (treemacs-project->name project))
+               (root-dom-node (treemacs-find-in-dom (treemacs-project->path project))))
+           (-when-let (index-items (treemacs--get-imenu-index-items root-dom-node))
+             (push (cons project-name index-items) index)))))
+      ('current-project
+       (treemacs-unless-let (project (treemacs-project-at-point))
+           (treemacs-pulse-on-failure "Cannot create imenu index because there is no project at point")
+         (let ((project-name (treemacs-project->name project))
+               (root-dom-node (treemacs-find-in-dom (treemacs-project->path project))))
+           (-when-let (index-items (treemacs--get-imenu-index-items root-dom-node))
+             (push (cons project-name index-items) index)))))
+      (other (error "Invalid imenu scope value `%s'" other)))
+    (nreverse index)))
+
+(defun treemacs--get-imenu-index-items (project-dom-node)
+  "Collects the imenu index items for the given PROJECT-DOM-NODE."
+  (declare (side-effect-free t))
+  (let (result)
+    (treemacs-walk-dom project-dom-node
+      (lambda (node)
+        (push (list (file-relative-name (treemacs-dom-node->key node) (treemacs-dom-node->key project-dom-node))
+                    (or (treemacs-dom-node->position node) -1)
+                    #'treemacs--imenu-goto-node-wrapper
+                    (treemacs-dom-node->key node))
+              result)))
+    (nreverse result)))
+
+(define-inline treemacs--imenu-goto-node-wrapper (_name _pos key)
+  "Thin wrapeer around `treemacs-goto-node'.
+Used by imenu to move to the node with the given KEY."
+  (inline-letevals (key)
+    (inline-quote
+     (treemacs-goto-node ,key))))
+
 (provide 'treemacs-tags)
 
 ;;; treemacs-tags.el ends here

@@ -243,9 +243,9 @@ levels the one currently visiting.
 NODE: Dom Node Struct
 FN: (Dom Node) -> Any"
   (declare (indent 1))
+  (funcall fn node)
   (dolist (it (treemacs-dom-node->children node))
-    (treemacs-walk-dom it fn))
-  (funcall fn node))
+    (treemacs-walk-dom it fn)))
 
 (defun treemacs-walk-dom-exclusive (node fn)
   "Same as `treemacs-walk-dom', but start NODE will not be passed to FN.
@@ -267,9 +267,9 @@ levels the one currently visiting.
 NODE: Dom Node Struct
 FN: (Dom Node) -> Any"
   (declare (indent 1))
+  (funcall fn node)
   (dolist (it (treemacs-dom-node->reentry-nodes node))
-    (treemacs-walk-reentry-dom it fn))
-  (funcall fn node))
+    (treemacs-walk-reentry-dom it fn)))
 
 (defun treemacs-walk-reentry-dom-exclusive (node fn)
   "Same as `treemacs-walk-reentry-dom', but start NODE will not be passed to FN.

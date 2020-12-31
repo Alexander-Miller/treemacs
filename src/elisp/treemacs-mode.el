@@ -55,6 +55,9 @@
   treemacs-common-helpful-hydra
   treemacs-advanced-helpful-hydra)
 
+(treemacs-import-functions-from "treemacs-tags"
+  treemacs--create-imenu-index-functione)
+
 (defvar bookmark-make-record-function)
 
 (defvar-local treemacs--eldoc-msg nil
@@ -262,6 +265,7 @@ Will simply return `treemacs--eldoc-msg'."
   (setq-local tab-width 1)
   (setq-local eldoc-documentation-function #'treemacs--eldoc-function)
   (setq-local eldoc-message-commands treemacs--eldoc-obarray)
+  (setq-local imenu-create-index-function #'treemacs--create-imenu-index-function)
   ;; integrate with bookmark.el
   (setq-local bookmark-make-record-function #'treemacs--make-bookmark-record)
   (electric-indent-local-mode -1)
