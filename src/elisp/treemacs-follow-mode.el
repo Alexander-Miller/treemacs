@@ -106,6 +106,7 @@ This functionality can also be manually invoked with `treemacs-find-file'."
   :init-value nil
   :global     t
   :lighter    nil
+  :group      'treemacs
   (if treemacs-follow-mode
       (treemacs--setup-follow-mode)
     (treemacs--tear-down-follow-mode)))

@@ -128,9 +128,10 @@ This will make sure the icons' background colours will align with hl-line mode."
 ;;;###autoload
 (define-minor-mode treemacs-icons-dired-mode
   "Display treemacs icons for each file in a dired buffer."
-  :require 'treemacs-icons-dired
+  :require    'treemacs-icons-dired
   :init-value nil
   :global     t
+  :group      'treemacs
   (if treemacs-icons-dired-mode
       (progn
         (treemacs--setup-icon-background-colors)
