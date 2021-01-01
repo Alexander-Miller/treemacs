@@ -15,6 +15,7 @@
   now called with treemacs' previous visibility
 - Added imenu support
    + Added ~treemacs-imenu-scope~
+- Added ~treemacs-copy-relative-path-at-point~
 - Added ~treemacs-expand-added-projects~
 - Added option to only show the fringe indicator when the treemacs window is
   selected

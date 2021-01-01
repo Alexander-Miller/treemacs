@@ -772,11 +772,12 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 
 *** Copy Keybinds (Prefix ~y~)
 
-| Key | Action                      | Description                                                       |
-|-----+-----------------------------+-------------------------------------------------------------------|
-| yy  | treemacs-copy-path-at-point | Copy the absolute path of the node at point.                      |
-| yr  | treemacs-copy-project-root  | Copy the absolute path of the project root for the node at point. |
-| yf  | treemacs-copy-file          | Copy the file at point.                                           |
+| Key | Action                               | Description                                                       |
+|-----+--------------------------------------+-------------------------------------------------------------------|
+| ya  | treemacs-copy-absolute-path-at-point | Copy the absolute path of the node at point.                      |
+| yr  | treemacs-copy-relative-path-at-point | Copy the path of the node at point relative to the project root.  |
+| yp  | treemacs-copy-project-path-at-point  | Copy the absolute path of the project root for the node at point. |
+| yf  | treemacs-copy-file                   | Copy the file at point.                                           |
 
 *** General Keybinds
 
@@ -806,8 +807,9 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | q        | treemacs-quit                               | Hide the treemacs window.                                                                              |
 | Q        | treemacs-kill-buffer                        | Delete the treemacs buffer.                                                                            |
 | P        | treemacs-peek                               | Peek at the file (or tag) at point without fully opening it.                                           |
-| yy       | treemacs-copy-path-at-point                 | Copy the absolute path of the node at point.                                                           |
-| yr       | treemacs-copy-project-root                  | Copy the absolute path of the project root for the node at point.                                      |
+| ya       | treemacs-copy-absolute-path-at-point        | Copy the absolute path of the node at point.                                                           |
+| yr       | treemacs-copy-relative-path-at-point        | Copy the path of the node at point relative to the project root.                                       |
+| yp       | treemacs-copy-project-path-at-point         | Copy the absolute path of the project root for the node at point.                                      |
 | yf       | treemacs-copy-file                          | Copy the file at point.                                                                                |
 | m        | treemacs-move-file                          | Move the file at point.                                                                                |
 | s        | treemacs-resort                             | Set a new value for ~treemacs-sorting~.                                                                |

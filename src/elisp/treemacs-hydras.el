@@ -221,8 +221,9 @@ find the key a command is bound to it will show a blank instead."
              (key-move-file      (treemacs--find-keybind #'treemacs-move-file))
              (key-refresh        (treemacs--find-keybind #'treemacs-refresh))
              (key-set-width      (treemacs--find-keybind #'treemacs-set-width))
-             (key-copy-path      (treemacs--find-keybind #'treemacs-copy-path-at-point))
-             (key-copy-root      (treemacs--find-keybind #'treemacs-copy-project-root))
+             (key-copy-path-abs  (treemacs--find-keybind #'treemacs-copy-absolute-path-at-point))
+             (key-copy-path-rel  (treemacs--find-keybind #'treemacs-copy-relative-path-at-point))
+             (key-copy-root      (treemacs--find-keybind #'treemacs-copy-project-path-at-point))
              (key-resort         (treemacs--find-keybind #'treemacs-resort))
              (key-bookmark       (treemacs--find-keybind #'treemacs-add-bookmark))
              (key-edit-ws        (treemacs--find-keybind #'treemacs-edit-workspaces 12))
@@ -241,20 +242,23 @@ find the key a command is bound to it will show a blank instead."
 ――――――――――――――――――――┼―――――――――――――――――――――――――――――┼―――――――――――――――――――――
  %s create file ^^^^│ %s Edit Workspaces  ^^^^^^^^│ %s refresh
  %s create dir  ^^^^│ %s Create Workspace ^^^^^^^^│ %s (re)set width
- %s rename      ^^^^│ %s Remove Workspace ^^^^^^^^│ %s copy path
- %s delete      ^^^^│ %s Rename Workspace ^^^^^^^^│ %s copy root
- %s copy        ^^^^│ %s Switch Workspace ^^^^^^^^│ %s re-sort
- %s move        ^^^^│ %s Set Fallback     ^^^^^^^^│ %s bookmark
+ %s rename      ^^^^│ %s Remove Workspace ^^^^^^^^│ %s copy path absolute
+ %s delete      ^^^^│ %s Rename Workspace ^^^^^^^^│ %s copy path relative
+ %s copy        ^^^^│ %s Switch Workspace ^^^^^^^^│ %s copy root path
+ %s move        ^^^^│ %s Set Fallback     ^^^^^^^^│ %s re-sort
+                    │                             │ %s bookmark
+
 "
                title
                common-hint (car (s-split":" (car key-common-hydra)))
                column-files           column-ws             column-misc
                (car key-create-file)  (car key-edit-ws)     (car key-refresh)
                (car key-create-dir)   (car key-create-ws)   (car key-set-width)
-               (car key-rename)       (car key-remove-ws)   (car key-copy-path)
-               (car key-delete)       (car key-rename-ws)   (car key-copy-root)
-               (car key-copy-file)    (car key-switch-ws)   (car key-resort)
-               (car key-move-file)    (car key-fallback-ws) (car key-bookmark))))
+               (car key-rename)       (car key-remove-ws)   (car key-copy-path-abs)
+               (car key-delete)       (car key-rename-ws)   (car key-copy-path-rel)
+               (car key-copy-file)    (car key-switch-ws)   (car key-copy-root)
+               (car key-move-file)    (car key-fallback-ws) (car key-resort)
+                                                            (car key-bookmark))))
           (eval
            `(defhydra treemacs--advanced-helpful-hydra (:exit nil :hint nil :columns 3)
               ,hydra-str
@@ -267,8 +271,9 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-move-file)      #'treemacs-move-file)
               (,(cdr key-refresh)        #'treemacs-refresh)
               (,(cdr key-set-width)      #'treemacs-set-width)
-              (,(cdr key-copy-path)      #'treemacs-copy-path-at-point)
-              (,(cdr key-copy-root)      #'treemacs-copy-project-root)
+              (,(cdr key-copy-path-rel)  #'treemacs-copy-absolute-path-at-point)
+              (,(cdr key-copy-path-abs)  #'treemacs-copy-relative-path-at-point)
+              (,(cdr key-copy-root)      #'treemacs-copy-project-path-at-point)
               (,(cdr key-resort)         #'treemacs-resort)
               (,(cdr key-bookmark)       #'treemacs-add-bookmark)
               (,(cdr key-edit-ws)        #'treemacs-edit-workspaces)

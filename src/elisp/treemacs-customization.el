@@ -429,7 +429,7 @@ Possible values are:
 
 (defcustom treemacs-pulse-on-success t
   "When non-nil treemacs will pulse the current line as a success indicator.
-This applies to actions like `treemacs-copy-path-at-point'."
+This applies to actions like `treemacs-copy-relative-path-at-point'."
   :type 'boolean
   :group 'treemacs)
 

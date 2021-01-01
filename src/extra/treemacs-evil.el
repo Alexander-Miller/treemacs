@@ -90,8 +90,9 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
 (define-key evil-treemacs-state-map (kbd "H")   #'treemacs-collapse-parent-node)
 (define-key evil-treemacs-state-map (kbd "!")   #'treemacs-run-shell-command-for-current-node)
 
-(evil-define-key 'treemacs treemacs-mode-map (kbd "yr")     #'treemacs-copy-project-root)
-(evil-define-key 'treemacs treemacs-mode-map (kbd "yy")     #'treemacs-copy-path-at-point)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "yp")     #'treemacs-copy-project-path-at-point)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "ya")     #'treemacs-copy-absolute-path-at-point)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "yr")     #'treemacs-copy-relative-path-at-point)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yf")     #'treemacs-copy-file)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "gr")     #'treemacs-refresh)
 (evil-define-key 'treemacs treemacs-mode-map [down-mouse-1] #'treemacs-leftclick-action)
