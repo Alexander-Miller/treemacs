@@ -288,6 +288,9 @@ Will simply return `treemacs--eldoc-msg'."
   ;; the window config was changed to show treemacs
   (unless (member #'treemacs--on-window-config-change (default-value 'window-configuration-change-hook))
     (treemacs--on-window-config-change))
+  ;; set the parameter immediately so it can take effect when `treemacs' is called programatically
+  ;; alongside other window layout chaning commands that might delete it again
+  (set-window-parameter (selected-window) 'no-delete-other-windows treemacs-no-delete-other-windows)
 
   (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
   (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
