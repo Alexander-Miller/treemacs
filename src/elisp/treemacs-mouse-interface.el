@@ -296,8 +296,16 @@ and ignore any prefix argument."
                  ["Show Helpful Hydra"     treemacs-helpful-hydra]
                  ["Show Active Extensions" treemacs-show-extensions]
                  ["Show Changelog"         treemacs-show-changelog]))))
-            (choice (x-popup-menu event menu)))
-       (when choice (call-interactively (lookup-key menu (apply 'vector choice))))
+            (choice (x-popup-menu event menu))
+            (cmd (lookup-key menu (apply 'vector choice))))
+       ;; In the terminal clicking on a nested menu item does not expand it, but actually
+       ;; selects it as the chosen use option.  So as a workaround we need to manually go
+       ;; thtough the menus until we land on an executable command.
+       (while (not (commandp cmd))
+         (setf menu choice
+               choice (x-popup-menu event cmd)
+               cmd (lookup-key cmd (apply 'vector choice))))
+       (when cmd (call-interactively cmd))
        (hl-line-highlight)))))
 
 (provide 'treemacs-mouse-interface)
