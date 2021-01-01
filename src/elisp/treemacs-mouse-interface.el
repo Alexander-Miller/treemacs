@@ -258,8 +258,12 @@ and ignore any prefix argument."
                 ["--" #'ignore                         :visible ,(check node)]
                 ["Rename"           treemacs-rename    :visible ,(check node)]
                 ["Delete"           treemacs-delete    :visible ,(check node)]
-                ["Copy"             treemacs-copy-file :visible ,(check node)]
                 ["Move"             treemacs-move-file :visible ,(check node)]
+                ("Copy"
+                 ["Copy File"          treemacs-copy-file                   :visible ,(check node)]
+                 ["Copy Absolute Path" treemacs-copy-absolute-path-at-point :visible ,(check node)]
+                 ["Copy Relative Path" treemacs-copy-relative-path-at-point :visible ,(check node)]
+                 ["Copy Project Path"  treemacs-copy-project-path-at-point  :visible ,(check node)])
 
                 ["--" #'ignore t]
                 ("Projects"
