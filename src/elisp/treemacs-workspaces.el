@@ -586,12 +586,17 @@ Return values may be as follows:
    (treemacs--persist)
    'success))
 
-(defun treemacs-do-switch-workspace ()
-  "Switch to a new workspace.
+(defun treemacs-do-switch-workspace (&optional workspace)
+  "Switch to a new WORKSPACE.
+Workspace may either be a workspace name, a workspace object, or be left out.
+In the latter case the workspace to switch to will be selected interactively.
 Return values may be as follows:
 
 * If there are no workspaces to switch to:
   - the symbol `only-one-workspace'
+* If the given workspace could not be found (if WORKSPACE was a name string)
+  - the symbol `workspace-not-found'
+  - the given workspace name
 * If everything went well:
   - the symbol `success'
   - the selected workspace"
@@ -599,17 +604,26 @@ Return values may be as follows:
   (treemacs-block
    (treemacs-return-if (= 1 (length treemacs--workspaces))
      'only-one-workspace)
-   (let* ((workspaces (->> treemacs--workspaces
-                           (--reject (eq it (treemacs-current-workspace)))
-                           (--map (cons (treemacs-workspace->name it) it))))
-          (name (completing-read "Switch to: " workspaces nil t))
-          (selected (cdr (--first (string= (car it) name) workspaces))))
-     (setf (treemacs-current-workspace) selected)
+   (let (new-workspace)
+     (cond
+      ((treemacs-workspace-p workspace)
+       (setf new-workspace workspace))
+      ((stringp workspace)
+       (setf new-workspace (treemacs-find-workspace-by-name workspace))
+       (treemacs-return-if (null new-workspace)
+         `(workspace-not-found ,workspace)))
+      ((null workspace)
+       (let* ((workspaces (->> treemacs--workspaces
+                               (--reject (eq it (treemacs-current-workspace)))
+                               (--map (cons (treemacs-workspace->name it) it))))
+              (name (completing-read "Switch to: " workspaces nil :require-match)))
+         (setf new-workspace (cdr (--first (string= (car it) name) workspaces))))))
+     (setf (treemacs-current-workspace) new-workspace)
      (treemacs--invalidate-buffer-project-cache)
      (treemacs--rerender-after-workspace-change)
      (run-hooks 'treemacs-switch-workspace-hook)
      (treemacs-return
-      `(success ,selected)))))
+      `(success ,new-workspace)))))
 
 (defun treemacs-do-rename-workspace ()
   "Rename a workspace.

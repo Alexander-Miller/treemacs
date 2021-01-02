@@ -1597,7 +1597,44 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
                (treemacs--workspaces (list ws1 ws2)))
           (expect (treemacs-do-remove-workspace)
                   :to-equal
-                  `(success ,ws2 ,(list ws1))))))))
+                  `(success ,ws2 ,(list ws1)))))))
+
+  (describe "treemacs-do-switch-to-workspace"
+
+    (before-each
+      (spy-on #'treemacs--restore :and-return-value nil)
+      (spy-on #'treemacs--invalidate-buffer-project-cache :and-return-value nil)
+      (spy-on #'treemacs--rerender-after-workspace-change :and-return-value nil))
+
+    (describe "Failures"
+
+      (it "Fails when there is only 1 workspace"
+        (-let [treemacs--workspaces (list (treemacs-workspace->create! :name "A"))]
+          (expect (treemacs-do-switch-workspace)
+                  :to-equal 'only-one-workspace)))
+
+      (it "Fails when workspace cannot be found"
+        (-let [treemacs--workspaces
+               (list (treemacs-workspace->create! :name "A")
+                     (treemacs-workspace->create! :name "B"))]
+          (expect (treemacs-do-switch-workspace "X")
+                  :to-equal '(workspace-not-found "X")))))
+
+    (describe "Successes"
+
+      (it "Succeeds when workspace is given by name"
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (treemacs--workspaces (list ws1 ws2)))
+          (expect (treemacs-do-switch-workspace "B")
+                  :to-equal `(success ,ws2))))
+
+      (it "Succeeds when workspace is given directly"
+        (let* ((ws1 (treemacs-workspace->create! :name "A"))
+               (ws2 (treemacs-workspace->create! :name "B"))
+               (treemacs--workspaces (list ws1 ws2)))
+          (expect (treemacs-do-switch-workspace ws2)
+                  :to-equal `(success ,ws2)))))))
 
 (provide 'test-treemacs)
 
