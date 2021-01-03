@@ -473,7 +473,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
     :after treemacs magit
     :ensure t)
 
-  (use-package treemacs-persp ;;treemacs-persective if you use perspective.el vs. persp-mode
+  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
     :after treemacs persp-mode ;;or perspective vs. persp-mode
     :ensure t
     :config (treemacs-set-scope-type 'Perspectives))
