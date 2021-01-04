@@ -542,6 +542,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-read-string-input             | 'from-child-frame                                | Indicates whether simple string input like project names should be read from a child frame or the minibuffer.                                                                                                                        |
 | treemacs-expand-added-projects         | t                                                | Indicates whether newly added projects should be expanded.                                                                                                                                                                           |
 | treemacs-imenu-scope                   | 'everything                                      | Determines which items treemacs' imenu function will collect.                                                                                                                                                                        |
+| treemacs-window-background-color       | nil                                              | Background color for the treemacs window.                                                                                                                                                                                          |
 
 ** Faces
 Treemacs defines and uses the following faces:

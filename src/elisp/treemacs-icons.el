@@ -106,13 +106,24 @@ does not exist."
                     `(treemacs-theme->gui-icons theme))))
      (ht-get icons ,ext)))
 
+(define-inline treemacs--get-local-face-background (face)
+  "Get the `:background' of the given face.
+Unlike `face-attribute' this will take the `faces-remapping-alist' into
+account."
+  (declare (side-effect-free t))
+  (inline-letevals (face)
+    (inline-quote
+     (--if-let (car (alist-get ,face face-remapping-alist))
+         (plist-get it :background)
+       (face-attribute ,face :background nil t)))))
+
 (defun treemacs--setup-icon-background-colors (&rest _)
   "Align icon backgrounds with current Emacs theme.
 Fetch the current Emacs theme's background & hl-line colours and inject them
 into the gui icons of every theme in `treemacs--themes'.
 Also called as advice after `load-theme', hence the ignored argument."
-  (let* ((default-background (face-attribute 'default :background nil t))
-         (hl-line-background (face-attribute hl-line-face :background nil t))
+  (let* ((default-background (treemacs--get-local-face-background 'default))
+         (hl-line-background (treemacs--get-local-face-background 'hl-line))
          (test-icon          (treemacs-get-icon-value 'dir-open))
          (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected test-icon) :background))
          (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected test-icon) :background)))

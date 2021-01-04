@@ -292,6 +292,11 @@ Will simply return `treemacs--eldoc-msg'."
   ;; alongside other window layout chaning commands that might delete it again
   (set-window-parameter (selected-window) 'no-delete-other-windows treemacs-no-delete-other-windows)
 
+  (when treemacs-window-background-color
+    (face-remap-add-relative 'default :background (car treemacs-window-background-color))
+    (face-remap-add-relative 'fringe  :background (car treemacs-window-background-color))
+    (face-remap-add-relative 'hl-line :background (cdr treemacs-window-background-color)))
+
   (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
   (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
   (add-hook 'post-command-hook #'treemacs--post-command nil t)

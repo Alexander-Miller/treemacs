@@ -693,6 +693,14 @@ In practice means that treemacs will become invisible to commands like
   :type 'boolean
   :group 'treemacs-window)
 
+(defcustom treemacs-window-background-color nil
+  "Custom background colours for the treemacs window.
+Value must be a cons cell consisting of two colours: first the background of the
+treemacs window proper, then a second colour for treemacs' `hl-line' overlay
+marking the selected line."
+  :type '(cons color color)
+  :group 'treemacs-window)
+
 (defcustom treemacs-width 35
   "Width of the treemacs window."
   :type 'integer
