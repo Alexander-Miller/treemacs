@@ -1020,6 +1020,11 @@ parents' git status can be updated."
                  (treemacs-update-single-file-git-state path)))
               ('created
                (treemacs-do-insert-single-node path (treemacs-dom-node->key node)))
+              ('force-refresh
+               (setf recurse nil)
+               (if (null (treemacs-dom-node->parent node))
+                   (treemacs-project->refresh! project)
+                 (treemacs--refresh-dir (treemacs-dom-node->key node) project)))
               (_
                ;; Renaming is handled as a combination of delete+create, so
                ;; this case should never be taken
