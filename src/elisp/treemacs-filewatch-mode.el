@@ -62,6 +62,14 @@ buffers watching that path, its cdr is the watch descriptor.")
   "Timer that will run a refresh after `treemacs-file-event-delay' ms.
 Stored here to allow it to be cancelled by a manual refresh.")
 
+(define-inline treemacs--start-filewatch-timer ()
+  "Start the filewatch timer if it is not already running."
+  (inline-quote
+   (unless treemacs--refresh-timer
+     (setf treemacs--refresh-timer
+           (run-with-timer (/ treemacs-file-event-delay 1000) nil
+                           #'treemacs--process-file-events)))))
+
 (define-inline treemacs--cancel-refresh-timer ()
   "Cancel a the running refresh timer if it is active."
   (inline-quote
@@ -170,10 +178,8 @@ Also start the refresh timer if it's not started already."
               ('changed
                (when (eq ,type 'deleted)
                  (setf (cdr current-flag) 'deleted))))))
-        (unless treemacs--refresh-timer
-          (setf treemacs--refresh-timer
-                (run-with-timer (/ treemacs-file-event-delay 1000) nil
-                                #'treemacs--process-file-events))))))))
+        (treemacs--start-filewatch-timer))))))
+
 
 (defun treemacs--filewatch-callback (event)
   "Add EVENT to the list of file change events.
