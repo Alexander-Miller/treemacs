@@ -462,7 +462,8 @@ NAME: String"
   (treemacs-block
    (treemacs-error-return-if (null path)
      `(invalid-path "Path is nil."))
-   (let ((path-status (treemacs--get-path-status path)))
+   (let ((path-status (treemacs--get-path-status path))
+         (added-in-workspace (treemacs-current-workspace)))
      (treemacs-error-return-if (not (file-readable-p path))
        `(invalid-path "Path is not readable does not exist."))
      (setq path (-> path (file-truename) (treemacs-canonical-path)))
@@ -480,27 +481,28 @@ NAME: String"
        (treemacs--add-project-to-current-workspace project)
        (treemacs--invalidate-buffer-project-cache)
        (treemacs-run-in-every-buffer
-        (treemacs-with-writable-buffer
-         (goto-char (treemacs--projects-end))
-         (cond
-          ;; Inserting the first and only button - no need to add spacing
-          ((not (treemacs-current-button)))
-          ;; Inserting before a button. This happens when only bottom extensions exist.
-          ((bolp)
-           (save-excursion (treemacs--insert-root-separator))
-           ;; Unlock the marker - when the marker is at the beginning of the buffer,
-           ;; expanding/collapsing extension nodes would move the marker and it was thus locked.
-           (set-marker-insertion-type (treemacs--projects-end) t))
-          ;; Inserting after a button (the standard case)
-          ;; We should already be at EOL, but play it safe.
-          (t
-           (end-of-line)
-           (treemacs--insert-root-separator)))
-         (treemacs--add-root-element project)
-         (treemacs-dom-node->insert-into-dom!
-          (treemacs-dom-node->create! :key path :position (treemacs-project->position project)))
-         (when treemacs-expand-added-projects
-           (treemacs--expand-root-node (treemacs-project->position project)))))
+        (when (eq added-in-workspace workspace)
+          (treemacs-with-writable-buffer
+           (goto-char (treemacs--projects-end))
+           (cond
+            ;; Inserting the first and only button - no need to add spacing
+            ((not (treemacs-current-button)))
+            ;; Inserting before a button. This happens when only bottom extensions exist.
+            ((bolp)
+             (save-excursion (treemacs--insert-root-separator))
+             ;; Unlock the marker - when the marker is at the beginning of the buffer,
+             ;; expanding/collapsing extension nodes would move the marker and it was thus locked.
+             (set-marker-insertion-type (treemacs--projects-end) t))
+            ;; Inserting after a button (the standard case)
+            ;; We should already be at EOL, but play it safe.
+            (t
+             (end-of-line)
+             (treemacs--insert-root-separator)))
+           (treemacs--add-root-element project)
+           (treemacs-dom-node->insert-into-dom!
+            (treemacs-dom-node->create! :key path :position (treemacs-project->position project)))
+           (when treemacs-expand-added-projects
+             (treemacs--expand-root-node (treemacs-project->position project))))))
        (treemacs--persist)
        (run-hook-with-args 'treemacs-create-project-functions project)
        `(success ,project)))))
