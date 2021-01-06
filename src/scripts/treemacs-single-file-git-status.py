@@ -16,6 +16,9 @@ IS_TRACKED_CMD = "git ls-files --error-unmatch "
 IS_CHANGED_CMD = "git diff-index --quiet HEAD "
 
 def main():
+    if '"' in FILE or '\\' in FILE:
+        sys.exit(2)
+
     new_state = determine_file_git_state()
 
     # nothing to do

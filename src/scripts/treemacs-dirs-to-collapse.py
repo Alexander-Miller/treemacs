@@ -72,7 +72,7 @@ def main():
                     break
             else:
                 break
-        if depth > 0:
+        if depth > 0 and not ('"' in collapsed or '\\' in collapsed):
             final_dir      = steps[-1]
             display_suffix = final_dir[len(current_dir):]
             out.write("(" + '"' + display_suffix + '" ' + '"' + current_dir + '" ' + '"' + '" "'.join(steps) + '")')
