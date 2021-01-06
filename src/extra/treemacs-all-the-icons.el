@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020 Alexander Miller
 
 ;; Author: Eric Dallo <ercdll1337@gmail.com>
-;; Package-Requires: ((emacs "25") (all-the-icons "4.0.1") (treemacs "0.0"))
+;; Package-Requires: ((emacs "26.1") (all-the-icons "4.0.1") (treemacs "0.0"))
 ;; Version: 0
 ;; Homepage: https://github.com/Alexander-Miller/treemacs
 
