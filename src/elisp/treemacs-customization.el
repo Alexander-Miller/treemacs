@@ -870,7 +870,7 @@ The hooks will be run *after* the treemacs buffer was destroyed."
   :type 'hook
   :group 'treemacs-hooks)
 
-(define-obsolete-variable-alias 'treemacs-select-hook 'treemacs-select-functions)
+(define-obsolete-variable-alias 'treemacs-select-hook 'treemacs-select-functions "2.9")
 
 (defcustom treemacs-select-functions nil
   "Hooks to run when the treemacs window is selected.
