@@ -1,6 +1,6 @@
 ;;; treemacs-perspective.el --- Perspective integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2020 Alexander Miller
+;; Copyright (C) 2021 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;;   Jason Dufair <jase@dufair.org>
