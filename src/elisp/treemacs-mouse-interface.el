@@ -301,11 +301,13 @@ and ignore any prefix argument."
        ;; In the terminal clicking on a nested menu item does not expand it, but actually
        ;; selects it as the chosen use option.  So as a workaround we need to manually go
        ;; thtough the menus until we land on an executable command.
-       (while (not (commandp cmd))
+       (while (and (not (commandp cmd))
+                   (not (eq cmd menu)))
          (setf menu choice
                choice (x-popup-menu event cmd)
                cmd (lookup-key cmd (apply 'vector choice))))
-       (when cmd (call-interactively cmd))
+       (when (and cmd (commandp cmd))
+         (call-interactively cmd))
        (hl-line-highlight)))))
 
 (provide 'treemacs-mouse-interface)
