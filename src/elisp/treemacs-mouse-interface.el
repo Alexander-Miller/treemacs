@@ -43,16 +43,21 @@
 
 (defun treemacs--builtin-project-mouse-selection-menu ()
   "Build a mouse selection menu for project.el projects."
-  (if (eq project--list 'unset)
-      (list (vector "Project.el list is empty" #'ignore))
-    (-let [projects
-           (->> project--list
-                (--map (treemacs-canonical-path (car it)))
-                (--reject (treemacs-is-path it :in-workspace))
-                (-sort #'string<))]
-      (if (null projects)
-          (list (vector "All Project.el projects are alread in the workspace" #'ignore))
-        (--map (vector it (lambda () (interactive) (treemacs-add-project-to-workspace it))) projects)))))
+  (pcase (if (not (fboundp 'project-known-project-roots))
+             'unavailable
+           (->> (project-known-project-roots)
+                (-map #'treemacs-canonical-path)
+                (-sort #'string<)))
+    (`unavailable
+     (list (vector "Project.el api is not available" #'ignore)))
+    (`nil
+     (list (vector "Project.el list is empty" #'ignore)))
+    (projects
+     (pcase (--reject (treemacs-is-path it :in-workspace) projects)
+       (`nil
+        (list (vector "All Project.el projects are alread in the workspace" #'ignore)))
+       (candidates
+        (--map (vector it (lambda () (interactive) (treemacs-add-project-to-workspace it))) candidates))))))
 
 ;;;###autoload
 (defun treemacs-leftclick-action (event)
