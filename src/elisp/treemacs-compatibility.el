@@ -52,6 +52,16 @@
   (when (boundp 'indent-guide-inhibit-modes)
     (push 'treemacs-mode indent-guide-inhibit-modes)))
 
+(with-eval-after-load 'ediff
+  (add-hook
+   'ediff-before-setup-hook
+   (defun treemacs--dont-diff-in-treemacs-window ()
+     "Select `next-window' before ediff's window setup.
+Treemacs is by default a side-window, meaning it'll throw an error if ediff trys
+to split it."
+     (when treemacs--in-this-buffer
+       (select-window (next-window))))))
+
 (with-eval-after-load 'persp-mode
   (defun treemacs--remove-treemacs-window-in-new-frames (persp-activated-for)
     (when (eq persp-activated-for 'frame)
