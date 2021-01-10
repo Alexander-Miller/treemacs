@@ -759,6 +759,37 @@ Will be called with the created file's or dir's path as the sole argument."
   :type 'hook
   :group 'treemacs-hooks)
 
+(defcustom treemacs-delete-file-functions nil
+  "Hooks to run whenever a file or directory is deleted.
+Applies only when using `treemacs-delete'.  Will be called with the created
+file's or dir's path as the sole argument."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-rename-file-functions nil
+  "Hooks to run whenever a file or directory is renamed.
+
+Applies only when using `treemacs-rename'.  Will be called with 2 arguments: the
+file's old name, and the file's new name, both as absolute paths."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-move-file-functions nil
+  "Hooks to run whenever a file or directory is moved.
+
+Applies only when using `treemacs-move-file'.  Will be called with 2 arguments:
+the file's old location, and the file's new location, both as absolute paths."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-copy-file-functions nil
+  "Hooks to run whenever a file or directory is copied.
+
+Applies only when using `treemacs-copy-file'.  Will be called with 2 arguments:
+the original file's location, and the copy's location, both as absolute paths."
+  :type 'hook
+  :group 'treemacs-hooks)
+
 (defcustom treemacs-delete-project-functions nil
   "Hooks to run whenever a project is deleted.
 Will be called with the deleted project as the sole argument *after* it has been

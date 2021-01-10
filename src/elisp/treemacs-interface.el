@@ -404,6 +404,7 @@ they will instead be wiped irreversibly."
         (treemacs-without-messages
          (treemacs-run-in-every-buffer
           (treemacs-delete-single-node path)))
+        (run-hook-with-args 'treemacs-delete-file-functions path)
         (treemacs-log "Deleted %s."
           (propertize path 'face 'font-lock-string-face))))
      (treemacs--evade-image))))
@@ -464,6 +465,9 @@ likewise be updated."
           (treemacs--do-refresh (current-buffer) project)))
        (treemacs--reload-buffers-after-rename old-path new-path)
        (treemacs-goto-file-node new-path project)
+       (run-hook-with-args
+        'treemacs-rename-file-functions
+        old-path new-path)
        (treemacs-pulse-on-success "Renamed %s to %s."
          (propertize (treemacs--filename old-path) 'face font-lock-string-face)
          (propertize new-name 'face font-lock-string-face))))))

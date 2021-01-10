@@ -1230,6 +1230,11 @@ from `treemacs-copy-file' or `treemacs-move-file'."
            (when (treemacs-is-path-visible? parent)
              (treemacs-do-update-node parent)))
          (treemacs-goto-file-node target)
+         (run-hook-with-args
+          (pcase action
+            (:copy 'treemacs-copy-file-functions)
+            (:move 'treemacs-move-file-functions))
+          source target)
          (treemacs-pulse-on-success finish-msg
            (propertize source-name 'face 'font-lock-string-face)
            (propertize destination 'face 'font-lock-string-face)))))))
