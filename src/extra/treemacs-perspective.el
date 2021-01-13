@@ -117,7 +117,7 @@ does not return anything the projects of the fallback workspace will be copied."
                   :path (treemacs-project->path project)
                   :path-status (treemacs-project->path-status project))
                  project-list))))
-     (setf (treemacs-workspace->projects ws) project-list)
+     (setf (treemacs-workspace->projects ws) (nreverse project-list))
      (treemacs-return ws))))
 
 (provide 'treemacs-perspective)
