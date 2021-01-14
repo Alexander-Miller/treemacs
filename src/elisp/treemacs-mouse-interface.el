@@ -179,8 +179,8 @@ and ignore any prefix argument."
           (let ((index (treemacs--get-imenu-index file)))
             (dolist (path-item path)
               (setq index (cdr (assoc path-item index))))
-            (-let [(buf . pos) (treemacs--extract-position
-                                (cdr (--first (equal (car it) tag) index)))]
+            (-let [(buf . pos)
+                   (treemacs--extract-position (cdr (--first (equal (car it) tag) index)) path)]
               ;; some imenu implementations, like markdown, will only provide
               ;; a raw buffer position (an int) to move to
 	      (list (or buf (get-file-buffer file)) pos))))
@@ -205,7 +205,9 @@ and ignore any prefix argument."
              (marker-position (save-excursion (xref-location-marker (xref-item-location item))))))
     (-let [(tag-buf . tag-pos)
            (treemacs-with-button-buffer btn
-             (-> btn (treemacs-button-get :marker) (treemacs--extract-position)))]
+             (let ((marker (treemacs-button-get :marker btn))
+                   (path (treemacs-button-get :path btn)))
+               (treemacs--extract-position marker path)))]
       (if tag-buf
           (list tag-buf tag-pos)
         (pcase treemacs-goto-tag-strategy

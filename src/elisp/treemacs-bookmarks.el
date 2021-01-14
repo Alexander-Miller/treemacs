@@ -196,7 +196,8 @@ treemacs node is pointing to a valid buffer position."
       (-let [name (treemacs--read-string "Bookmark name: ")]
         (bookmark-store name `((filename . ,(treemacs-button-get current-btn :path))) nil)))
      ('tag-node
-      (-let [(tag-buffer . tag-pos) (treemacs--extract-position (treemacs-button-get current-btn :marker))]
+      (-let [(tag-buffer . tag-pos)
+             (treemacs--extract-position (treemacs-button-get current-btn :marker) nil)]
         (if (buffer-live-p tag-buffer)
             (bookmark-store
              (treemacs--read-string "Bookmark name: ")

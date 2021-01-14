@@ -370,7 +370,10 @@ The position can be stored in the following ways:
   element's 'org-imenu-marker text property.
 * ITEM is a cons: special case for imenu elements of an `pdfview-mode' buffer.
   In this case no position is stored directly, navigation to the tag must happen
-  via callback"
+  via callback
+
+FILE is the path the tag is in, so far it is only relevant for `pdfview-mode'
+tags."
   (declare (side-effect-free t))
   (pcase (type-of item)
     ('marker
