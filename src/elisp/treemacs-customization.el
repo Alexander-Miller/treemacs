@@ -707,7 +707,7 @@ used to reduce the size of the output to a manageable volume for treemacs."
 (defcustom treemacs-is-never-other-window nil
   "When non-nil treemacs will use the `no-other-window' parameter.
 
-In practice means that treemacs will become invisible to commands like
+In practice it means that treemacs will become invisible to commands like
 `other-window' or `evil-window-left'."
   :type 'boolean
   :group 'treemacs-window)
