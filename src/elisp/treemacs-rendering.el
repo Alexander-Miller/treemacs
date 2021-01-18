@@ -804,17 +804,18 @@ SORT-FUNCTION: Button -> Boolean."
 PATH: File Path
 PARENT-PATH: File Path"
   (-when-let (parent-dom-node (treemacs-find-in-dom parent-path))
-    ;; file events can be chaotic to the point that something is "created"
-    ;; that is already present
-    (unless (treemacs-find-in-dom path)
-       (let* ((parent-btn (treemacs-dom-node->position parent-dom-node))
-              (parent-flatten-info (treemacs-button-get parent-btn :collapsed)))
-         (treemacs-with-writable-buffer
-          (if parent-flatten-info
-              (treemacs--insert-node-in-flattened-directory
-               path parent-btn parent-dom-node parent-flatten-info)
-            (treemacs--insert-single-node
-             path parent-btn parent-dom-node)))))))
+    (if (treemacs-find-in-dom path)
+        ;; "creating" a file that is already present may happen due to an interaction in magit
+        ;; in that case we need to checkthe file's git status
+        (treemacs-update-single-file-git-state path)
+      (let* ((parent-btn (treemacs-dom-node->position parent-dom-node))
+             (parent-flatten-info (treemacs-button-get parent-btn :collapsed)))
+        (treemacs-with-writable-buffer
+         (if parent-flatten-info
+             (treemacs--insert-node-in-flattened-directory
+              path parent-btn parent-dom-node parent-flatten-info)
+           (treemacs--insert-single-node
+            path parent-btn parent-dom-node)))))))
 
 (defun treemacs--insert-single-node (created-path parent-btn parent-dom-node)
   "Insert new CREATED-PATH below non-flattened directory at PARENT-BTN.
