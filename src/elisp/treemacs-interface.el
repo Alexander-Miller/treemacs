@@ -1001,8 +1001,7 @@ Only works with a single project in the workspace."
           (treemacs-do-remove-project-from-workspace (treemacs-project-at-point) :ignore-last-project-restriction)
           (treemacs--reset-dom) ;; remove also the previous root's dom entry
           (treemacs-do-add-project-to-workspace new-root (file-name-nondirectory new-root))
-          (treemacs-goto-file-node new-root)
-          (treemacs-toggle-node)))
+          (treemacs-goto-file-node new-root)))
        (_
         (treemacs-pulse-on-failure "Button at point is not a directory."))))))
 
