@@ -1018,8 +1018,8 @@ Only works with a single project in the workspace."
            '(("* Directory Extensions" . directory)
              ("* Project Extensions" . project)
              ("* Root Extetensions"  . root)) )
-        (let ((top-name (symbol-value (intern (s-lex-format "treemacs--${name}-top-extensions"))))
-              (bottom-name (symbol-value (intern (s-lex-format "treemacs--${name}-bottom-extensions")))))
+        (let ((top-name (symbol-value (intern (format "treemacs--%s-top-extensions" name))))
+              (bottom-name (symbol-value (intern (format "treemacs--%s-bottom-extensions" name)))))
           (push headline txt)
           (pcase-dolist
               (`(,pos-txt . ,pos-val)
