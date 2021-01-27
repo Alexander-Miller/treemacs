@@ -903,15 +903,15 @@ workspaces."
   "Close the project at point.
 With a prefix ARG also forget about all the nodes opened in the project."
   (interactive "P")
-  (treemacs-unless-let (btn (treemacs-current-button))
+  (treemacs-unless-let (project (treemacs-project-at-point))
       (treemacs-pulse-on-failure "There is nothing to close here.")
-    (while (not (treemacs-button-get btn :project))
-      (setq btn (treemacs-button-get btn :parent)))
-    (when (eq 'root-node-open (treemacs-button-get btn :state))
-      (treemacs--forget-last-highlight)
-      (goto-char btn)
-      (treemacs--collapse-root-node btn arg)
-      (treemacs--maybe-recenter 'on-distance))))
+    (-let [btn (treemacs-project->position project)]
+      (when (treemacs-is-node-expanded? btn)
+        (treemacs--forget-last-highlight)
+        (goto-char btn)
+        (treemacs--collapse-root-node btn arg)
+        (treemacs--maybe-recenter 'on-distance)))
+    (treemacs-pulse-on-success "Collapsed current project")))
 
 (defun treemacs-collapse-all-projects (&optional arg)
   "Collapses all projects.
@@ -924,23 +924,23 @@ With a prefix ARG also forget about all the nodes opened in the projects."
         (when (eq 'root-node-open (treemacs-button-get pos :state))
           (goto-char pos)
           (treemacs--collapse-root-node pos arg)))))
-  (treemacs--maybe-recenter 'on-distance))
+  (treemacs--maybe-recenter 'on-distance)
+  (treemacs-pulse-on-success "Collapsed all projects"))
 
 (defun treemacs-collapse-other-projects (&optional arg)
   "Collapses all projects except the project at point.
 With a prefix ARG also forget about all the nodes opened in the projects."
   (interactive "P")
   (save-excursion
-    (-let [curr-project (-some-> (treemacs-current-button)
-                                 (treemacs--nearest-path)
-                                 (treemacs--find-project-for-path))]
+    (-let [curr-project (treemacs-project-at-point)]
       (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
         (unless (eq project curr-project)
           (-when-let (pos (treemacs-project->position project))
             (when (eq 'root-node-open (treemacs-button-get pos :state))
               (goto-char pos)
               (treemacs--collapse-root-node pos arg)))))))
-  (treemacs--maybe-recenter 'on-distance))
+  (treemacs--maybe-recenter 'on-distance)
+  (treemacs-pulse-on-success "Collapsed all other projects"))
 
 (defun treemacs-peek ()
   "Peek at the content of the node at point.
