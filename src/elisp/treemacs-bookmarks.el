@@ -23,7 +23,6 @@
 
 (require 'bookmark)
 (require 'dash)
-(require 'f)
 (require 'treemacs-follow-mode)
 (require 'treemacs-interface)
 (require 'treemacs-scope)
@@ -52,14 +51,14 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
           (cl-loop
            for b in bookmark-alist
            for name = (car b)
-           for location = (bookmark-location b)
-           when (or (f-file? location) (f-directory? location))
+           for location = (treemacs-canonical-path (bookmark-location b))
+           when (or (file-regular-p location) (file-directory-p location))
            collect (propertize name 'location location))]
      (treemacs-error-return-if (null bookmarks)
        "Didn't find any bookmarks pointing to files.")
      (let* ((bookmark (completing-read "Bookmark: " bookmarks))
-            (location (f-long (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
-            (dir (if (f-directory? location) location (f-dirname location)))
+            (location (treemacs-canonical-path (get-text-property 0 'location (--first (string= it bookmark) bookmarks))))
+            (dir (if (file-directory-p location) location (treemacs--parent-dir location)))
             (project (treemacs--find-project-for-path dir)))
        (treemacs-error-return-if (null project)
          "Bookmark at %s does not fall under any project in the workspace."

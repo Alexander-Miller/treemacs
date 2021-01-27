@@ -20,7 +20,6 @@
 
 ;;; Code:
 
-(require 'f)
 (require 's)
 (require 'dash)
 (require 'treemacs-workspaces)
@@ -40,7 +39,7 @@
   "The name of the buffer used to edit treemacs' workspace.")
 
 (defconst treemacs--last-error-persist-file
-  (f-join user-emacs-directory ".cache" "treemacs-persist-at-last-error")
+  (treemacs-join-path user-emacs-directory ".cache" "treemacs-persist-at-last-error")
   "File that stores the treemacs state as it was during the last load error.")
 
 (make-obsolete-variable 'treemacs--last-error-persist-file 'treemacs-last-error-persist-file "v2.7")
@@ -201,7 +200,9 @@ ITER: Treemacs-Iter Struct"
   "Read the relevant lines from given TXT or `treemacs-persist-file'.
 Will read all lines, except those that start with # or contain only whitespace."
   (-some->> (or txt (when (file-exists-p treemacs-persist-file)
-                      (f-read treemacs-persist-file)))
+                      (with-temp-buffer
+                        (insert-file-contents-literally treemacs-persist-file)
+                        (buffer-string))))
             (s-trim)
             (s-lines)
             (--reject (or (s-blank-str? it)
@@ -345,7 +346,7 @@ PROJ-COUNT: Int"
                      (apply #'concat (--map (concat it "\n") lines)))]
     (unless (file-exists-p treemacs-last-error-persist-file)
       (make-directory (file-name-directory treemacs-last-error-persist-file) :with-parents))
-    (f-write txt 'utf-8 treemacs-last-error-persist-file)))
+    (write-region txt nil treemacs-last-error-persist-file nil :silent)))
 
 (add-hook 'kill-emacs-hook #'treemacs--persist)
 

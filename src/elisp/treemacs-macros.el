@@ -23,7 +23,6 @@
 ;;; Code:
 
 (require 'dash)
-(require 'f)
 (require 's)
 (require 'pcase)
 

@@ -37,18 +37,18 @@
 
 (defconst treemacs--dirs-to-collapse.py
   (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
-      (f-join treemacs-dir "treemacs-dirs-to-collapse.py")
-    (f-join treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py")))
+      (treemacs-join-path treemacs-dir "treemacs-dirs-to-collapse.py")
+    (treemacs-join-path treemacs-dir "src/scripts/treemacs-dirs-to-collapse.py")))
 
 (defconst treemacs--git-status.py
   (if (member "treemacs-git-status.py" (directory-files treemacs-dir))
-      (f-join treemacs-dir "treemacs-git-status.py")
-    (f-join treemacs-dir "src/scripts/treemacs-git-status.py")))
+      (treemacs-join-path treemacs-dir "treemacs-git-status.py")
+    (treemacs-join-path treemacs-dir "src/scripts/treemacs-git-status.py")))
 
 (defconst treemacs--single-file-git-status.py
   (if (member "treemacs-single-file-git-status.py" (directory-files treemacs-dir))
-      (f-join treemacs-dir "treemacs-single-file-git-status.py")
-    (f-join treemacs-dir "src/scripts/treemacs-single-file-git-status.py")))
+      (treemacs-join-path treemacs-dir "treemacs-single-file-git-status.py")
+    (treemacs-join-path treemacs-dir "src/scripts/treemacs-single-file-git-status.py")))
 
 (defvar treemacs--git-cache-max-size 60
   "Maximum size for `treemacs--git-cache'.
@@ -180,7 +180,7 @@ GIT-FUTURE: Pfuture"
 
 (defun treemacs--git-status-process-simple (path)
   "Start a simple git status process for files under PATH."
-  (let* ((default-directory (f-canonical path))
+  (let* ((default-directory (file-truename path))
          (process-environment (cons "GIT_OPTIONAL_LOCKS=0" process-environment))
          (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-z" ".")))
     (process-put future 'default-directory default-directory)
@@ -215,7 +215,7 @@ GIT-FUTURE: Pfuture"
                       (if (eq ?R (aref status 0))
                           (setq i (1+ i))
                         (ht-set! git-info-hash
-                                 (f-join git-root (s-trim-left path))
+                                 (treemacs-join-path git-root (s-trim-left path))
                                  (substring (s-trim-left status) 0 1)))))
                   (setq i (1+ i)))))))))
     git-info-hash))

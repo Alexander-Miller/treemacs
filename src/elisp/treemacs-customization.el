@@ -20,9 +20,9 @@
 
 ;;; Code:
 
+(require 's)
 (require 'widget)
 (require 'dash)
-(require 'f)
 
 (eval-when-compile
   (require 'cl-lib))
@@ -512,13 +512,13 @@ Can be set to nil to use the default value."
   :group 'treemacs)
 
 (defcustom treemacs-persist-file
-  (f-join user-emacs-directory ".cache" "treemacs-persist")
+  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
   "Path to the file treemacs uses to persist its state."
   :group 'treemacs
   :type 'string)
 
 (defcustom treemacs-last-error-persist-file
-  (f-join user-emacs-directory ".cache" "treemacs-persist-at-last-error")
+  (expand-file-name ".cache/treemacs-persist-at-last-error" user-emacs-directory)
   "File that stores the treemacs state as it was during the last load error."
   :group 'treemacs
   :type 'string)

@@ -31,7 +31,6 @@
 ;;; Code:
 
 (require 'imenu)
-(require 'f)
 (require 'hl-line)
 (require 'treemacs-customization)
 (require 'treemacs-core-utils)

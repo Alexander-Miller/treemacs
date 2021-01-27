@@ -22,7 +22,6 @@
 
 (require 'eldoc)
 (require 's)
-(require 'f)
 (require 'treemacs-interface)
 (require 'treemacs-customization)
 (require 'treemacs-faces)

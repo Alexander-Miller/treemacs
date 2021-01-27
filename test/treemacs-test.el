@@ -1054,14 +1054,14 @@
     (dolist (status '(local-unreadable remote-readable remote-unreadable remote-disconnected extension))
       (spy-on 'treemacs--git-status-process-function)
       (-> treemacs-dir
-          (f-join "test")
+          (treemacs-join-path "test")
           (treemacs--git-status-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status status)))
       (expect 'treemacs--git-status-process-function
               :not :to-have-been-called)))
 
   (it "Calls treemacs--git-status-process-function with local readable path"
     (spy-on 'treemacs--git-status-process-function)
-    (let ((path (f-join treemacs-dir "test")))
+    (let ((path (treemacs-join-path treemacs-dir "test")))
       (treemacs--git-status-process path (treemacs-project->create! :name "P" :path treemacs-dir :path-status 'local-readable))
       (expect 'treemacs--git-status-process-function
               :to-have-been-called-with path))))
@@ -1072,7 +1072,7 @@
     (-let [treemacs-collapse-dirs 3]
       (dolist (status '(local-unreadable remote-readable remote-unreadable remote-disconnected extension))
         (expect (-> treemacs-dir
-                    (f-join "test")
+                    (treemacs-join-path "test")
                     (treemacs--collapsed-dirs-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status status)))
                 :to-equal
                 nil)))))
@@ -1082,7 +1082,7 @@
   (it "Finds dirs to flatten in test directory"
     (-let [treemacs-collapse-dirs 3]
       (expect (-> treemacs-dir
-                  (f-join "test")
+                  (treemacs-join-path "test")
                   (treemacs--collapsed-dirs-process
                    (treemacs-project->create!
                     :name "P"
@@ -1091,14 +1091,14 @@
                   (treemacs--parse-collapsed-dirs))
               :to-equal
               `(("/testdir2/testdir3"
-                 ,(f-join treemacs-dir "test/testdir1")
-                 ,(f-join treemacs-dir "test/testdir1/testdir2")
-                 ,(f-join treemacs-dir "test/testdir1/testdir2/testdir3"))))))
+                 ,(treemacs-join-path treemacs-dir "test/testdir1")
+                 ,(treemacs-join-path treemacs-dir "test/testdir1/testdir2")
+                 ,(treemacs-join-path treemacs-dir "test/testdir1/testdir2/testdir3"))))))
 
   (it "Returns nil when there is nothing to flatten"
     (-let [treemacs-collapse-dirs 3]
       (expect (-> treemacs-dir
-                  (f-join "test/testdir1/testdir2")
+                  (treemacs-join-path "test/testdir1/testdir2")
                   (treemacs--collapsed-dirs-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status 'local-readable))
                   (treemacs--parse-collapsed-dirs))
               :to-be nil))))

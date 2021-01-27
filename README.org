@@ -579,7 +579,7 @@ nothing but calls to ~treemacs-create-icon~:
 
 #+BEGIN_SRC emacs-lisp
   (treemacs-create-theme "Default"
-    :icon-directory (f-join treemacs-dir "icons/default")
+    :icon-directory (treemacs-join-path treemacs-dir "icons/default")
     :config
     (progn
       (treemacs-create-icon :file "root-open.png"   :fallback ""       :extensions (root-open))

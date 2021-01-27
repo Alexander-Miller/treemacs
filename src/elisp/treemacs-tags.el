@@ -27,7 +27,6 @@
 (require 'xref)
 (require 'imenu)
 (require 'dash)
-(require 'f)
 (require 'treemacs-core-utils)
 (require 'treemacs-rendering)
 (require 'treemacs-customization)
@@ -244,7 +243,7 @@ function is also called from the top level vist-node functions like
 `treemacs--execute-button-action' macro which includes the determination of
 the display window."
   (let* ((path (treemacs--nearest-path btn))
-         (extension (f-ext path)))
+         (extension (file-name-extension path)))
     (pcase extension
       ("py"
        (let* ((first-child (car (treemacs-button-get btn :index)))

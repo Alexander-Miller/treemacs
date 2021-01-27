@@ -20,7 +20,6 @@
 
 ;;; Code:
 
-(require 'f)
 (require 'dash)
 (require 'ht)
 (require 'treemacs-core-utils)

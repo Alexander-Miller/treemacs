@@ -22,7 +22,6 @@
 
 (require 'hl-line)
 (require 'button)
-(require 'f)
 (require 's)
 (require 'dash)
 (require 'treemacs-core-utils)
@@ -382,17 +381,17 @@ they will instead be wiped irreversibly."
              (path (treemacs-button-get btn :path))
              (file-name (propertize (treemacs--filename path) 'face 'font-lock-string-face)))
         (cond
-         ((f-symlink? path)
+         ((file-symlink-p path)
           (if (yes-or-no-p (format "Remove link '%s -> %s' ? "
                                      file-name
                                      (propertize (file-symlink-p path) 'face 'font-lock-face)))
               (delete-file path delete-by-moving-to-trash)
             (treemacs-return (treemacs-log "Cancelled."))))
-         ((f-file? path)
+         ((file-regular-p path)
           (if (yes-or-no-p (format "Delete '%s' ? " file-name))
               (delete-file path delete-by-moving-to-trash)
             (treemacs-return (treemacs-log "Cancelled."))))
-         ((f-directory? path)
+         ((file-directory-p path)
           (if (yes-or-no-p (format "Recursively delete '%s' ? " file-name))
               (delete-directory path t delete-by-moving-to-trash)
             (treemacs-return (treemacs-log "Cancelled."))))
@@ -452,8 +451,8 @@ likewise be updated."
        (treemacs-error-return-if (not (file-exists-p old-path))
          "The file to be renamed does not exist.")
        (setq new-name (treemacs--read-string "New name: " (file-name-nondirectory old-path))
-             dir      (f-dirname old-path)
-             new-path (f-join dir new-name))
+             dir      (treemacs--parent-dir old-path)
+             new-path (treemacs-join-path dir new-name))
        (treemacs-error-return-if (file-exists-p new-path)
          "A file named %s already exists."
          (propertize new-name 'face font-lock-string-face))
@@ -520,8 +519,10 @@ With a prefix ARG simply reset the width of the treemacs window."
        "There is nothing to copy here")
      (treemacs-error-return-if (not (stringp path))
        "Path at point is not a file.")
-     (-let [copied (-> path (f-full) (kill-new))]
-       (treemacs-pulse-on-success "Copied absolute path: %s" (propertize copied 'face 'font-lock-string-face))))))
+     (when (file-directory-p path)
+       (setf path (treemacs--add-trailing-slash path)))
+     (kill-new path)
+     (treemacs-pulse-on-success "Copied absolute path: %s" (propertize path 'face 'font-lock-string-face)))))
 
 (defun treemacs-copy-relative-path-at-point ()
   "Copy the path of the node at point relative to the project root."
@@ -533,7 +534,9 @@ With a prefix ARG simply reset the width of the treemacs window."
        "There is nothing to copy here")
      (treemacs-error-return-if (not (stringp path))
        "Path at point is not a file.")
-     (-let [copied (-> path (f-full) (file-relative-name (treemacs-project->path project)) (kill-new))]
+     (when (file-directory-p path)
+       (setf path (treemacs--add-trailing-slash path)))
+     (-let [copied (-> path (file-relative-name (treemacs-project->path project)) (kill-new))]
        (treemacs-pulse-on-success "Copied relative path: %s" (propertize copied 'face 'font-lock-string-face))))))
 
 (defun treemacs-copy-project-path-at-point ()
@@ -606,7 +609,7 @@ without the need to call `treemacs-resort' with a prefix arg."
           ((or 'file-node-open 'file-node-closed 'tag-node-open 'tag-node-closed 'tag-node)
            (let* ((parent (treemacs-button-get btn :parent)))
              (while (and parent
-                         (not (-some-> parent (treemacs-button-get :path) (f-directory?))))
+                         (not (-some-> parent (treemacs-button-get :path) (file-directory-p))))
                (setq parent (treemacs-button-get parent :parent)))
              (if parent
                  (let ((line (line-number-at-pos))
@@ -972,9 +975,9 @@ Only works with a single project in the workspace."
      (let* ((project (-> btn (treemacs--nearest-path) (treemacs--find-project-for-path)))
             (old-root (treemacs-project->path project))
             (new-root (treemacs--parent old-root))
-            (new-name (if (f-root? new-root)
-                          "/"
-                        (file-name-nondirectory new-root)))
+            (new-name (pcase new-root
+                        ("/" new-root)
+                        (_  (file-name-nondirectory new-root))))
             (treemacs--no-messages t)
             (treemacs-pulse-on-success nil))
        (unless (treemacs-is-path old-root :same-as new-root)
@@ -1105,7 +1108,11 @@ Only works with a single project in the workspace."
         (treemacs--org-edit-display-validation-msg err-msg err-line))
        ('success
         (treemacs--invalidate-buffer-project-cache)
-        (f-write (apply #'concat (--map (concat it "\n") lines)) 'utf-8 treemacs-persist-file)
+        (write-region
+         (apply #'concat (--map (concat it "\n") lines))
+         nil
+         treemacs-persist-file
+         nil :silent)
         (kill-buffer)
         (treemacs--restore)
         (-if-let (ws (treemacs--select-workspace-by-name

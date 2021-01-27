@@ -24,7 +24,6 @@
 (require 'dash)
 (require 's)
 (require 'ht)
-(require 'f)
 (require 'pfuture)
 (require 'treemacs-customization)
 (require 'treemacs-logging)
@@ -134,6 +133,27 @@ Used in `treemacs-is-node-collapsed?'")
   "States marking a node as open.
 Used in `treemacs-is-node-expanded?'")
 
+(define-inline treemacs--unslash (path)
+  "Remove the final slash in PATH."
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (path)
+    (inline-quote
+     (if (and (> (length ,path) 1)
+              (eq ?/ (aref ,path (1- (length ,path)))))
+         (substring ,path 0 -1)
+       ,path))))
+
+(define-inline treemacs--parent-dir (path)
+  "Return the parent of PATH is it's a file, or PATH if it is a directory.
+
+PATH: File Path"
+  (declare (side-effect-free t) (pure t))
+  (inline-letevals (path)
+    (inline-quote
+     (-> ,path
+         (file-name-directory)
+         (treemacs--unslash)))))
+
 (defconst treemacs--buffer-name-prefix " *Treemacs-")
 
 (defconst treemacs-dir
@@ -143,7 +163,7 @@ Used in `treemacs-is-node-expanded?'")
                    default-directory)
                  (expand-file-name))]
     (if (s-ends-with? "src/elisp/" dir)
-        (-> dir (f-parent) (f-parent))
+        (-> dir (treemacs--unslash) (treemacs--parent-dir) (treemacs--parent-dir))
       dir))
   "The directory treemacs.el is stored in.")
 
@@ -156,17 +176,6 @@ Used to show an error message if someone mistakenly activates `treemacs-mode'.")
 
 (defvar treemacs--pre-peek-state nil
   "List of window, buffer to restore and buffer to kill treemacs used for peeking.")
-
-(define-inline treemacs--parent-dir (path)
-  "Return the parent of PATH is it's a file, or PATH if it is a directory.
-
-PATH: File Path"
-  (declare (side-effect-free t) (pure t))
-  (inline-letevals (path)
-    (inline-quote
-     (-> ,path
-         (file-name-directory)
-         (treemacs--unslash)))))
 
 (define-inline treemacs--remove-trailing-newline (str)
   "Remove final newline in STR."
@@ -258,16 +267,6 @@ button type on every call."
   (inline-quote
    (memq (treemacs-button-get ,btn :state) treemacs--closed-node-states)))
 
-(define-inline treemacs--unslash (path)
-  "Remove the final slash in PATH."
-  (declare (pure t) (side-effect-free t))
-  (inline-letevals (path)
-    (inline-quote
-     (if (and (> (length ,path) 1)
-              (eq ?/ (aref ,path (1- (length ,path)))))
-         (substring ,path 0 -1)
-       ,path))))
-
 (define-inline treemacs--get-label-of (btn)
   "Return the text label of BTN."
   (declare (side-effect-free t))
@@ -283,7 +282,7 @@ EXCLUDE-PREFIX: File Path"
   (declare (pure t) (side-effect-free t))
   (inline-letevals (path exclude-prefix)
     (inline-quote
-     (cdr (f-split (substring ,path (length ,exclude-prefix)))))))
+     (treemacs-split-path (substring ,path (length ,exclude-prefix))))))
 
 (defun treemacs--replace-recentf-entry (old-file new-file)
   "Replace OLD-FILE with NEW-FILE in the recent file list."
@@ -472,7 +471,7 @@ In practice this means expand PATH and remove its final slash."
       (let* ((win-buff  (window-buffer window))
              (buff-file (buffer-file-name win-buff)))
         (when buff-file
-          (setq buff-file (f-long buff-file))
+          (setq buff-file (expand-file-name buff-file))
           (when (treemacs-is-path buff-file :in old-path)
             (treemacs-without-following
              (with-selected-window window
@@ -483,7 +482,7 @@ In practice this means expand PATH and remove its final slash."
   ;; then the rest
   (--each (buffer-list)
     (-when-let (buff-file (buffer-file-name it))
-      (setq buff-file (f-long buff-file))
+      (setq buff-file (expand-file-name buff-file))
       (when (treemacs-is-path buff-file :in old-path)
         (let ((new-file (s-replace old-path new-path buff-file)))
           (kill-buffer it)
@@ -570,22 +569,22 @@ IS-FILE?: Bool"
   (interactive)
   (let* ((curr-path (--if-let (treemacs-current-button)
                         (treemacs--nearest-path it)
-                      (f-expand "~")))
+                      (expand-file-name "~")))
          (path-to-create (read-file-name
                           (if is-file? "Create File: " "Create Directory: ")
                           (treemacs--add-trailing-slash
-                           (if (f-dir? curr-path)
+                           (if (file-directory-p curr-path)
                                curr-path
-                             (f-dirname curr-path))))))
+                             (treemacs--parent-dir curr-path))))))
     (treemacs-block
      (treemacs-error-return-if (file-exists-p path-to-create)
        "%s already exists." (propertize path-to-create 'face 'font-lock-string-face))
      (treemacs--without-filewatch
       (if is-file?
-          (-let [dir (f-dirname path-to-create)]
-            (unless (f-exists? dir)
+          (-let [dir (treemacs--parent-dir path-to-create)]
+            (unless (file-exists-p dir)
               (make-directory dir t))
-            (f-touch path-to-create))
+            (write-region "" nil path-to-create nil 0))
         (make-directory path-to-create t))
       (run-hook-with-args 'treemacs-create-file-functions path-to-create))
      (-when-let (project (treemacs--find-project-for-path path-to-create))
@@ -653,7 +652,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
            ;; consecutively try to move to /x/src, /x/src/confg and finally /x/src/config/foo.el
            (while ,dir-parts
              (setq dir-part (pop ,dir-parts)
-                   root (f-join root dir-part)
+                   root (treemacs-join-path root dir-part)
                    ,btn
                    (let (current-btn)
                      (cl-block search
@@ -863,7 +862,7 @@ PROJECT: Project Struct"
          ;; the path we're moving to minus the project root
          (path-minus-root (->> project (treemacs-project->path) (length) (substring path)))
          ;; the parts of the path that we can try to go to until we arrive at the project root
-         (dir-parts (nreverse (s-split (f-path-separator) path-minus-root :omit-nulls)))
+         (dir-parts (nreverse (s-split "/" path-minus-root :omit-nulls)))
          ;; the path we try to quickly move to because it's already open and thus in the dom
          (goto-path path)
          ;; manual as in to be expanded manually after we moved to the next closest node we can find
@@ -1197,13 +1196,16 @@ from `treemacs-copy-file' or `treemacs-move-file'."
        (setf no-node-msg     "There is nothing to copy here."
              wrong-type-msg  "Only files and directories can be copied."
              prompt          "Copy to: "
-             action-function #'f-copy
+             action-function (lambda (from to)
+                               (if (file-directory-p from)
+                                   (copy-directory from to)
+                                 (copy-file from to)))
              finish-msg      "Copied %s to %s"))
       (:move
        (setf no-node-msg     "There is nothing to move here."
              wrong-type-msg  "Only files and directories can be moved."
              prompt          "Move to: "
-             action-function #'f-move
+             action-function #'rename-file
              finish-msg      "Moved %s to %s")))
     (treemacs-block
      (treemacs-unless-let (node (treemacs-node-at-point))
@@ -1216,7 +1218,7 @@ from `treemacs-copy-file' or `treemacs-move-file'."
               (target-is-dir? (file-directory-p destination))
               (target-name (if target-is-dir? (treemacs--filename source) (treemacs--filename destination)))
               (destination-dir (if target-is-dir? destination (treemacs--parent-dir destination)))
-              (target (treemacs--find-repeated-file-name (f-join destination-dir target-name))))
+              (target (treemacs--find-repeated-file-name (treemacs-join-path destination-dir target-name))))
          (unless (file-exists-p destination-dir)
            (make-directory destination-dir :parents))
          (when (eq action :move)
@@ -1252,7 +1254,7 @@ exists it returns /file/name (Copy 2).ext etc."
          (new-path path))
     (while (file-exists-p new-path)
       (cl-incf n)
-      (setf new-path (f-join dir (concat filename-no-ext (format template n) ext))))
+      (setf new-path (treemacs-join-path dir (concat filename-no-ext (format template n) ext))))
     new-path))
 
 (defun treemacs--read-string (prompt &optional initial-input)
@@ -1266,6 +1268,17 @@ INITIAL-INPUT: String"
     ('from-child-frame (cfrs-read prompt initial-input))
     ('from-minibuffer  (read-string prompt initial-input))
     (other (user-error "Unknown read-string-input value: `%s'" other))))
+
+(defun treemacs-join-path (&rest items)
+  "Join the given ITEMS to a single file PATH."
+  (declare (side-effect-free t))
+  (--reduce-from (expand-file-name it acc) "/" items))
+
+(define-inline treemacs-split-path (path)
+  "Split the given PATH into single items."
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (path)
+    (inline-quote (split-string ,path "/" :omit-nulls))))
 
 (provide 'treemacs-core-utils)
 
