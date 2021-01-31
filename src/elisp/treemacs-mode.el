@@ -344,7 +344,8 @@ Will run original MODE-ACTIVATION and its ARGS only when
       (propertize "treemacs-select-window" 'face 'font-lock-function-name-face)
       (propertize "treemacs-add-and-display-current-project" 'face 'font-lock-function-name-face)
       (propertize
-       "     \\
+       "\
+    \\
      \\
    ____
    /  \\
