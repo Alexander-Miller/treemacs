@@ -68,8 +68,8 @@ overview looks as follows:
    The git process is run asynchronously, minimizing its performance impact.
  * [[https://github.com/deb0ch/emacs-winum][Winum]] & [[https://github.com/abo-abo/ace-window][ace-window]] compatibility :: The presence of treemacs will not interfere with winum's and ace-window's
    usual layouts.
- * [[https://github.com/bbatsov/projectile][Projectile]] integration :: the ~treemacs-projectile~ package lets you quickly add your projectile projects to the
-   treemacs workspace.
+ * [[https://github.com/bbatsov/projectile][Projectile/project.el]] integration :: the ~treemacs-projectile~ package lets you quickly add your projectile projects
+   to the treemacs workspace. ~project.el~ compatibility is built-in.
  * Simple mouse interface :: Left clicks will work the same as you're used to from with graphical applications
  * Session persistence :: Treemacs automatically saves and restores your workspaces.
  * Dashing good looks :: Treemacs uses (optionally resizable) png images in HD 22x22 resolution for its icons (quantity
@@ -141,8 +141,8 @@ the current root's parent. Another restriction is that the same part of the file
 part of the workspace. For example it is not possible to have both /Documents and /Documents/ProjectX as projects in the
 same workspace, since internally treemacs heavily relies on every node having a unique natural key in its absolute path.
 Nonetheless the pros certainly outweigh the cons, as a multiroot setup allows to work on multiple projects with any
-combination concern/buffer separating frameworks, be it persp/perspective, eyebrowse, or projectile. It also opens the
-potential for concurrent display not only of the file system, but e.g. the currently open buffers.
+combination concern/buffer separating frameworks, be it persp/perspective, eyebrowse, or project.el/projectile. It also
+opens the potential for concurrent display not only of the file system, but e.g. the currently open buffers.
 
 *** Workspace Selection
 When a workspace is first needed, treemacs will select a workspace in the following manner:
