@@ -498,11 +498,15 @@ headline with sub-elements is saved in an 'org-imenu-marker' text property."
   (let (result)
     (treemacs-walk-dom project-dom-node
       (lambda (node)
-        (push (list (file-relative-name (treemacs-dom-node->key node) (treemacs-dom-node->key project-dom-node))
-                    (or (treemacs-dom-node->position node) -1)
-                    #'treemacs--imenu-goto-node-wrapper
-                    (treemacs-dom-node->key node))
-              result)))
+        (-let [node-btn (or (treemacs-dom-node->position node)
+                            (treemacs-find-node (treemacs-dom-node->key node)))]
+          (push (list (if (treemacs-button-get node-btn :custom)
+                          (treemacs--get-label-of node-btn)
+                        (file-relative-name (treemacs-dom-node->key node) (treemacs-dom-node->key project-dom-node)))
+                      (or node-btn -1)
+                      #'treemacs--imenu-goto-node-wrapper
+                      (treemacs-dom-node->key node))
+                result))))
     (nreverse result)))
 
 (define-inline treemacs--imenu-goto-node-wrapper (_name _pos key)
