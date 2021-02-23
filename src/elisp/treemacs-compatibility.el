@@ -36,6 +36,11 @@
  (push '(treemacs-id . :never) frameset-filter-alist)
  (push '(treemacs-workspace . :never) frameset-filter-alist))
 
+(with-eval-after-load 'recentf
+  (with-no-warnings
+    (add-to-list 'recentf-exclude treemacs-persist-file)
+    (add-to-list 'recentf-exclude treemacs-last-error-persist-file)))
+
 (with-eval-after-load 'winum
   (when (boundp 'winum-ignored-buffers-regexp)
     (add-to-list 'winum-ignored-buffers-regexp (regexp-quote (format "%sScoped-Buffer-" treemacs--buffer-name-prefix)))))
