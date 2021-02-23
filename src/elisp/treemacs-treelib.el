@@ -676,7 +676,6 @@ PARENT: Button"
     (when parent-dom-node
       (treemacs-dom-node->add-child! parent-dom-node new-dom-node))
     (insert "\n")
-    (setf (treemacs-dom-node->position new-dom-node) (point-marker))
     (insert
      (treemacs--get-indentation depth)
      (treemacs-extension->get ext :closed-icon)
