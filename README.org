@@ -946,7 +946,6 @@ If you want to delve into the treemacs' code base, check out [[https://github.co
 
 * Dependencies
  * emacs >= 26.1
- * f.el
  * s.el
  * dash
  * cl-lib
