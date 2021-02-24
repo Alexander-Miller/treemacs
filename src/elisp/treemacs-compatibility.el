@@ -36,6 +36,11 @@
  (push '(treemacs-id . :never) frameset-filter-alist)
  (push '(treemacs-workspace . :never) frameset-filter-alist))
 
+(with-eval-after-load 'tramp
+  (setf treemacs--file-name-handler-alist
+        (with-no-warnings
+          (cons tramp-file-name-regexp #'tramp-file-name-handler))))
+
 (with-eval-after-load 'recentf
   (with-no-warnings
     (add-to-list 'recentf-exclude treemacs-persist-file)

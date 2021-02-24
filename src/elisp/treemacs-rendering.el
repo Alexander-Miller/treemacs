@@ -67,6 +67,9 @@ If there are no projects, points to the position at the end of any top-level
 extensions positioned to `TOP'. This can always be used as the insertion point
 for new projects.")
 
+(defvar treemacs--file-name-handler-alist nil
+  "Value of `file-name-handler-alist' when treemacs loads a directory's content.")
+
 (define-inline treemacs--projects-end ()
   "Importable getter for `treemacs--projects-end'."
   (declare (side-effect-free t))
@@ -172,7 +175,7 @@ the height of treemacs' icons must be taken into account."
     (inline-quote
      ;; `directory-files' is much faster in a temp buffer for whatever reason
      (with-temp-buffer
-       (let* ((file-name-handler-alist '(("\\`/[^/|:]+:" . tramp-autoload-file-name-handler)))
+       (let* ((file-name-handler-alist treemacs--file-name-handler-alist)
               (sort-func (treemacs--get-sort-fuction))
               (entries (-> ,dir (directory-files :absolute-names nil :no-sort) (treemacs--filter-files-to-be-shown)))
               (dirs-files (-separate #'file-directory-p entries)))
