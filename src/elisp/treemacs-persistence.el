@@ -201,7 +201,7 @@ ITER: Treemacs-Iter Struct"
 Will read all lines, except those that start with # or contain only whitespace."
   (-some->> (or txt (when (file-exists-p treemacs-persist-file)
                       (with-temp-buffer
-                        (insert-file-contents-literally treemacs-persist-file)
+                        (insert-file-contents treemacs-persist-file)
                         (buffer-string))))
             (s-trim)
             (s-lines)
