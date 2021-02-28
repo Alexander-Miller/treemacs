@@ -67,14 +67,14 @@ Not used directly, but as part of `treemacs-without-messages'.")
   "Write a warning/failure log statement given format string MSG and ARGS."
   (declare (indent 1))
   `(treemacs--do-log
-    (propertize "[Treemacs Failure]" 'face '((:inherit warning :weight bold)))
+    (propertize "[Treemacs]" 'face '((:inherit warning :weight bold)))
     ,msg ,@args))
 
 (defmacro treemacs-log-err (msg &rest args)
   "Write an error log statement given format string MSG and ARGS."
   (declare (indent 1))
   `(treemacs--do-log
-    (propertize "[Treemacs Error]" 'face '((:inherit warning :weight bold)))
+    (propertize "[Treemacs]" 'face '((:inherit error :weight bold)))
     ,msg ,@args))
 
 (provide 'treemacs-logging)
