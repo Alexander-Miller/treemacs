@@ -490,14 +490,17 @@ itself, using $HOME when there is no path at or near point to grab."
                 (if treemacs-show-hidden-files "displayed." "hidden.")))
 
 (defun treemacs-toggle-fixed-width ()
-  "Toggle whether the treemacs buffer should have a fixed width.
+  "Toggle whether the local treemacs buffer should have a fixed width.
 See also `treemacs-width.'"
   (interactive)
-  (setq treemacs--width-is-locked (not treemacs--width-is-locked)
-        window-size-fixed (when treemacs--width-is-locked 'width))
-  (treemacs-log "Window width has been %s."
-                (propertize (if treemacs--width-is-locked "locked" "unlocked")
-                            'face 'font-lock-string-face)))
+  (-if-let (buffer (treemacs-get-local-buffer))
+      (with-current-buffer buffer
+        (setq treemacs--width-is-locked (not treemacs--width-is-locked)
+              window-size-fixed (when treemacs--width-is-locked 'width))
+        (treemacs-log "Window width has been %s."
+          (propertize (if treemacs--width-is-locked "locked" "unlocked")
+                      'face 'font-lock-string-face)))
+    (treemacs-log-failure "There is no treemacs buffer in the current scope.")))
 
 (defun treemacs-set-width (&optional arg)
   "Select a new value for `treemacs-width'.
