@@ -649,6 +649,12 @@ for its name or declaring icon directories:
 *Important*: There is a restriction that all icons must must be exactly 2 characters long. That's including the space
 that will separate an icon from the filename.
 
+If you want to create an icon based on an image you can use ~treemacs-define-custom-image-icon~ instead:
+
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-custom-image-icon "/path/to/icon.png" "htm" "html")
+#+END_SRC
+
 **** Icons according to ~auto-mode-alist~
 For some file extensions, like ".cc" or ".hh", it is not immediately obvious which major mode will open these files, and
 thus which icon they should be assigned. Treemacs offers the option that automate this decision based on

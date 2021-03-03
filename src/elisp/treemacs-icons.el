@@ -532,6 +532,20 @@ down-cased state."
              (concat icon " "))))
 
 ;;;###autoload
+(defun treemacs-define-custom-image-icon (file &rest file-extensions)
+  "Same as `treemacs-define-custom-icon' but for image icons instead of strings.
+FILE is the path to an icon image (and not the actual icon string).
+FILE-EXTENSIONS are all the (not case-sensitive) file extensions the icon
+should be used for."
+  (unless file
+    (user-error "Custom icon cannot be nil"))
+  (-let [icon (car (treemacs--create-icon-strings file " "))]
+    (dolist (ext file-extensions)
+      (ht-set! (treemacs-theme->gui-icons treemacs--current-theme)
+               (downcase ext)
+               icon))))
+
+;;;###autoload
 (defun treemacs-map-icons-with-auto-mode-alist (extensions mode-icon-alist)
   "Remaps icons for EXTENSIONS according to `auto-mode-alist'.
 EXTENSIONS should be a list of file extensions such that they match the regex
