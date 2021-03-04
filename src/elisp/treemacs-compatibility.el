@@ -39,7 +39,8 @@
 (with-eval-after-load 'tramp
   (setf treemacs--file-name-handler-alist
         (with-no-warnings
-          (cons tramp-file-name-regexp #'tramp-file-name-handler))))
+          (list
+           (cons tramp-file-name-regexp #'tramp-file-name-handler)))))
 
 (with-eval-after-load 'recentf
   (with-no-warnings
