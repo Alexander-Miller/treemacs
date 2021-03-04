@@ -254,6 +254,7 @@ and ignore any prefix argument."
                 ["Open"   treemacs-visit-node-no-split :visible ,(check node)]
                 ("Open With" :visible ,(not (null node))
                  ["Open Directly"                    treemacs-visit-node-no-split]
+                 ["Open In External Application"     treemacs-visit-node-in-external-application]
                  ["Open With Vertical Split"         treemacs-visit-node-vertical-split]
                  ["Open With Horizontal Split"       treemacs-visit-node-horizontal-split]
                  ["Open With Ace"                    treemacs-visit-node-ace]
