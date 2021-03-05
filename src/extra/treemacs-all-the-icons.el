@@ -163,7 +163,7 @@
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "fsharp" :v-adjust 0 :face 'all-the-icons-lblue) treemacs-all-the-icons-tab) :extensions ("fsharp"))
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "godot" :v-adjust 0 :face 'all-the-icons-dblue) treemacs-all-the-icons-tab) :extensions ("gdscript"))
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-material "gif" :v-adjust 0 :face 'all-the-icons-lblue) treemacs-all-the-icons-tab) :extensions ("gif"))
-    (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "git" :height 0.85 :v-adjust 0 :face 'all-the-icons-red) treemacs-all-the-icons-tab) :extensions ("git" "gitmodules" "gitconfig" "gitignore"))
+    (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "git" :height 0.85 :v-adjust 0 :face 'all-the-icons-red) treemacs-all-the-icons-tab) :extensions ("git" "gitmodules" "gitconfig" "gitignore" "gitattributes"))
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "go" :v-adjust 0 :face 'all-the-icons-lblue) treemacs-all-the-icons-tab) :extensions ("go"))
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "gradle" :v-adjust 0 :face 'all-the-icons-dblue) treemacs-all-the-icons-tab) :extensions ("gradle"))
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "graphql" :v-adjust 0 :face 'all-the-icons-pink) treemacs-all-the-icons-tab) :extensions ("graphql"))
