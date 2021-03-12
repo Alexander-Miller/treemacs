@@ -92,8 +92,8 @@ major mode. This is where it gets interesting. Aside from the two icons for the 
 a query function and a render action. The former will be called by treemacs to this node is expanded and must provide
 a list of child nodes to display.
 
-In the context of the invocation of the query function the node being expanded is bound under the name ~btn~, named so
-because under all its layers of abstraction treemacs' nodes (specifically the text and not the icons) are buttons as per
+In the context of the invocation of the query function the node being expanded is bound under the name ~node~. Under all 
+its layers of abstraction treemacs' nodes (specifically the text and not the icons) are buttons as per
 the builtin ~button.el~ library. Its functions (or rather their faster treemacs variants) can all be invoked on treemacs
 nodes, including ~treemacs-button-get~, which we use here to retrieve the list of buffers that we will have stored in
 the node's ~:buffers~ property.
@@ -114,7 +114,7 @@ later use it in ~showcase-visit-buffer~.
   (treemacs-define-expandable-node buffer-group
     :icon-open (treemacs-as-icon "- " 'face 'font-lock-string-face)
     :icon-closed (treemacs-as-icon "+ " 'face 'font-lock-string-face)
-    :query-function (treemacs-button-get btn :buffers)
+    :query-function (treemacs-button-get node :buffers)
     :render-action
     (treemacs-render-node
      :icon treemacs-buffer-leaf-icon
