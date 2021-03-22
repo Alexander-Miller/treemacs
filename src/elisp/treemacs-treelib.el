@@ -308,6 +308,10 @@ is non-nil the function passed to children will be called with the 3rd argument
 `callback'.  It should be invoked via `funcall' with the items that were
 produced asynchronously.
 
+If the asynchronous execution fails the `callback' should be called with a list
+in the form \(`:async-error' error-message\).  Treemacs will take care of
+cleanup and logging the error.
+
 ENTRY-POINT indicates that the node type defined here is an entry-point for an
 extension, it will be used as a type-check when enabling an extension with e.g.
 `treemacs-enable-top-level-extension'."
@@ -751,7 +755,9 @@ EXT is the node's extension instance."
        (delete-region
         (next-single-char-property-change (point) 'treemacs-async-string)
         (point-at-eol)))
-      (treemacs--do-expand-extension-node btn ext nil items))
+      (if (eq :async-error (car items))
+          (treemacs-log-err "Something went wrong in an asynchronous context: %s" (cadr items))
+        (treemacs--do-expand-extension-node btn ext nil items)))
     (hl-line-highlight)))
 
 (defun treemacs--do-expand-extension-node (btn ext &optional _arg items)
