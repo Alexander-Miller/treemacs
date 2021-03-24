@@ -123,11 +123,12 @@ POSITION is either `top' or `bottom', indicating whether the extension should be
 rendered as the first or last element.
 
 See also `treemacs-disable-${name}-extension'.")
-             (treemacs-static-assert (treemacs-extension-p extension)
-               "Given argument is not a `treemacs-extension' instance: %s" extension)
-             (treemacs-static-assert (treemacs-extension->entry-point? extension)
-               "The given extension '%s' is not an entry point" (treemacs-extension->name extension))
-             (-let [cell (cons extension predicate)]
+             (let* ((ext-instance (symbol-value (intern (format "treemacs-%s-extension-instance" extension))))
+                    (cell (cons ext-instance predicate)))
+               (treemacs-static-assert (treemacs-extension-p ext-instance)
+                 "Given argument is not a valid `treemacs-extension': %s" extension)
+               (treemacs-static-assert (treemacs-extension->entry-point? ext-instance)
+                 "The given extension '%s' is not an entry point" extension)
                (pcase position
                  ('top    (add-to-list ',top-extension-point cell nil #'treemacs--compare-extensions-by-name))
                  ('bottom (add-to-list ',bottom-extension-point cell nil #'treemacs--compare-extensions-by-name))
@@ -143,19 +144,20 @@ See also `treemacs-disable-${name}-extension'.")
              ,(s-lex-format
                "Remove a `${name}' EXTENSION at the given POSITION.
 See also `treemacs-enable-${name}-extension'.")
-             (treemacs-static-assert (treemacs-extension-p extension)
-               "Given argument is not a `treemacs-extension' instance: %s" extension)
-             (pcase position
-               ('top
-                (setf ,top-extension-point
-                      (--remove-first (treemacs--compare-extensions-by-name it extension)
-                                      ,top-extension-point)))
-               ('bottom
-                (setf ,bottom-extension-point
-                      (--remove-first (treemacs--compare-extensions-by-name it extension)
-                                      ,bottom-extension-point)))
-               (other
-                (error "Invalid extension position value `%s'" other)))
+             (-let [ext-instance (symbol-value (intern (format "treemacs-%s-extension-instance" extension)))]
+               (treemacs-static-assert (treemacs-extension-p ext-instance)
+                 "Given argument is not a valid `treemacs-extension': %s" extension)
+               (pcase position
+                 ('top
+                  (setf ,top-extension-point
+                        (--remove-first (treemacs--compare-extensions-by-name it ext-instance)
+                                        ,top-extension-point)))
+                 ('bottom
+                  (setf ,bottom-extension-point
+                        (--remove-first (treemacs--compare-extensions-by-name it ext-instance)
+                                        ,bottom-extension-point)))
+                 (other
+                  (error "Invalid extension position value `%s'" other))))
              t))))
      (build-extension-application
       (name)
