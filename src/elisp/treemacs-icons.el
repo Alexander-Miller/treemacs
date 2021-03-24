@@ -228,7 +228,7 @@ Necessary since root icons are not rectangular."
 - FILE is a file path relative to the icon directory of the current theme.
 - ICON is a string of an already created icon.  Mutually exclusive with FILE.
 - FALLBACK is the fallback string for situations where png images are
-  unavailable.
+  unavailable.  Can be set to `same-as-icon' to use the same value as ICON.
 - ICONS-DIR can optionally be used to overwrite the path used to find icons.
   Normally the current theme's icon-path is used, but it may be convenient to
   use another when calling `treemacs-modify-theme'.
@@ -241,10 +241,13 @@ Necessary since root icons are not rectangular."
   accessible."
   (treemacs-static-assert (or (null icon) (null file))
     "FILE and ICON arguments are mutually exclusive")
-  `(let* ((icons-dir ,(if icons-dir icons-dir `(treemacs-theme->path treemacs--current-theme)))
+  `(let* ((fallback  ,(if (equal fallback (quote 'same-as-icon))
+                          icon
+                        fallback))
+          (icons-dir ,(if icons-dir icons-dir `(treemacs-theme->path treemacs--current-theme)))
           (icon-path ,(if file `(treemacs-join-path icons-dir ,file) nil))
-          (icon-pair ,(if file `(treemacs--create-icon-strings icon-path ,fallback)
-                        `(cons ,(treemacs--splice-icon icon) ,fallback)))
+          (icon-pair ,(if file `(treemacs--create-icon-strings icon-path fallback)
+                        `(cons ,(treemacs--splice-icon icon) fallback)))
           (gui-icons (treemacs-theme->gui-icons treemacs--current-theme))
           (tui-icons (treemacs-theme->tui-icons treemacs--current-theme))
           (gui-icon  (car icon-pair))
