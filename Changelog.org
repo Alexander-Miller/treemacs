@@ -19,6 +19,7 @@
 - Added ~treemacs-expand-added-projects~
 - Added ~treemacs-window-background-color~
 - Added ~treemacs-define-custom-image-icon~
+- Added ~treemacs-narrow-to-current-file~
 - Added option to only show the fringe indicator when the treemacs window is
   selected
 - New icons

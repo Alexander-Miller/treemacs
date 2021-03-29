@@ -46,6 +46,7 @@
   cfrs-read)
 
 (treemacs-import-functions-from "treemacs"
+  treemacs-find-file
   treemacs-select-window)
 
 (treemacs-import-functions-from "treemacs-tags"
@@ -1231,6 +1232,20 @@ absolute path of the node (if it is present)."
         (treemacs-log-failure "Shell command failed with exit code %s and output:" (process-exit-status process))
         (message "%s" (pfuture-callback-output))
         (kill-buffer buffer)))))
+
+(defun treemacs-narrow-to-current-file ()
+  "Close everything except the view on the current file.
+This command is best understood as a combination of
+`treemacs-collapse-all-projects' followed by `treemacs-find-file'."
+  (interactive)
+  (treemacs-unless-let (buffer (treemacs-get-local-buffer))
+      (treemacs-log-failure "There is no treemacs buffer")
+    (let* ((treemacs-pulse-on-success nil)
+           (treemacs-pulse-on-failure nil)
+           (treemacs--no-messages t))
+      (with-current-buffer buffer
+        (treemacs-collapse-all-projects :forget-all))
+      (treemacs-find-file))))
 
 (defun treemacs-select-scope-type ()
   "Select the scope for treemacs buffers.
