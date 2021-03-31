@@ -1101,6 +1101,8 @@ Only works with a single project in the workspace."
   "Finish editing your workspaces and apply the change."
   (interactive)
   (treemacs-block
+   (treemacs-error-return-if (not (equal (buffer-name) treemacs--org-edit-buffer-name))
+     "This is not a valid treemacs workspace edit buffer")
    (treemacs--org-edit-remove-validation-msg)
    (widen)
    (whitespace-cleanup)
@@ -1117,14 +1119,17 @@ Only works with a single project in the workspace."
          nil
          treemacs-persist-file
          nil :silent)
-        (kill-buffer)
         (treemacs--restore)
         (-if-let (ws (treemacs--select-workspace-by-name
                       (treemacs-workspace->name (treemacs-current-workspace))))
             (setf (treemacs-current-workspace) ws)
           (treemacs--find-workspace))
         (treemacs--consolidate-projects)
-        (-some-> (get-buffer treemacs--org-edit-buffer-name) (kill-buffer))
+        (if (and (treemacs-get-local-window)
+                 (= 2 (length (window-list))))
+            (kill-buffer)
+          (quit-window)
+          (kill-buffer-and-window))
         (run-hooks 'treemacs-workspace-edit-hook)
         (treemacs-log "Edit completed successfully."))))))
 
