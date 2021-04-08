@@ -68,42 +68,42 @@ saved.")
   "Forget the previously followed button when treemacs is killed or rebuilt."
   (inline-quote (setq treemacs--previously-followed-tag-position nil)))
 
-(define-inline treemacs--flatten&sort-imenu-index ()
+;;;###autoload
+(defun treemacs--flatten&sort-imenu-index ()
   "Flatten current file's imenu index and sort it by tag position.
 The tags are sorted into the order in which they appear, reguardless of section
 or nesting depth."
-  (inline-quote
-   (if (eq major-mode 'pdf-view-mode)
-       'unsupported
-     (let* ((imenu-auto-rescan t)
-            (org? (eq major-mode 'org-mode))
-            (index (-> (buffer-file-name) (treemacs--get-imenu-index)))
-            (flat-index (if org?
-                            (treemacs--flatten-org-mode-imenu-index index)
-                          (treemacs--flatten-imenu-index index)))
-            (first (caar flat-index))
-            ;; in org mode buffers the first item may not be a cons since its position
-            ;; is still stored as a text property
-            (semantic? (and (consp first) (overlayp (cdr first))))
-            (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
-                              #'treemacs--compare-markdown-tag-paths
-                            #'treemacs--compare-tag-paths)))
-       (cond
-        (semantic?
-         ;; go ahead and just transform semantic overlays into markers so we dont
-         ;; have trouble with comparisons when searching a position
-         (dolist (tag-path flat-index)
-           (let ((leaf (car tag-path))
-                 (marker (make-marker)))
-             (setcdr leaf (move-marker marker (overlay-start (cdr leaf)))))))
-        ;; same goes for an org index, since headlines with children store their
-        ;; positions as text properties
-        (org?
-         (dolist (tag-path flat-index)
-           (let ((leaf (car tag-path)))
-             (when (stringp leaf)
-               (setcar tag-path (cons leaf (get-text-property 0 'org-imenu-marker leaf))))))))
-       (sort flat-index compare-func)))))
+  (if (eq major-mode 'pdf-view-mode)
+      'unsupported
+    (let* ((imenu-auto-rescan t)
+           (org? (eq major-mode 'org-mode))
+           (index (-> (buffer-file-name) (treemacs--get-imenu-index)))
+           (flat-index (if org?
+                           (treemacs--flatten-org-mode-imenu-index index)
+                         (treemacs--flatten-imenu-index index)))
+           (first (caar flat-index))
+           ;; in org mode buffers the first item may not be a cons since its position
+           ;; is still stored as a text property
+           (semantic? (and (consp first) (overlayp (cdr first))))
+           (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
+                             #'treemacs--compare-markdown-tag-paths
+                           #'treemacs--compare-tag-paths)))
+      (cond
+       (semantic?
+        ;; go ahead and just transform semantic overlays into markers so we dont
+        ;; have trouble with comparisons when searching a position
+        (dolist (tag-path flat-index)
+          (let ((leaf (car tag-path))
+                (marker (make-marker)))
+            (setcdr leaf (move-marker marker (overlay-start (cdr leaf)))))))
+       ;; same goes for an org index, since headlines with children store their
+       ;; positions as text properties
+       (org?
+        (dolist (tag-path flat-index)
+          (let ((leaf (car tag-path)))
+            (when (stringp leaf)
+              (setcar tag-path (cons leaf (get-text-property 0 'org-imenu-marker leaf))))))))
+      (sort flat-index compare-func))))
 
 (defun treemacs--flatten-imenu-index (index &optional path)
   "Flatten a nested imenu INDEX to a flat list of tag paths.
