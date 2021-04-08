@@ -166,8 +166,10 @@ This function's exact configuration is stored in `treemacs-TAB-actions-config'."
       (treemacs-pulse-on-failure "No TAB action defined for node of type %s."
         (propertize (format "%s" state) 'face 'font-lock-type-face)))))
 
-(defun treemacs-goto-parent-node ()
-  "Select parent of selected node, if possible."
+(defun treemacs-goto-parent-node (&optional _arg)
+  "Select parent of selected node, if possible.
+
+ARG is optional and only available so this function can be used as an action."
   (interactive)
   (--if-let (-some-> (treemacs-current-button) (treemacs-button-get :parent))
       (goto-char it)
@@ -326,6 +328,32 @@ The list of possible states can be found in `treemacs-valid-button-states'.
 ACTION should be one of the `treemacs-visit-node-*' commands."
   (setf treemacs-TAB-actions-config (assq-delete-all state treemacs-TAB-actions-config))
   (push (cons state action) treemacs-TAB-actions-config))
+
+(defun treemacs-COLLAPSE-action (&optional arg)
+  "Run the appropriate COLLAPSE action for the current button.
+
+In the default configuration this usually means to close the content of the
+currently selected node.  A potential prefix ARG is passed on to the executed
+action, if possible.
+
+This function's exact configuration is stored in `treemacs-COLLAPSE-actions-config'."
+  (interactive "P")
+  (-when-let (state (treemacs--prop-at-point :state))
+    (--if-let (cdr (assq state treemacs-COLLAPSE-actions-config))
+      (progn
+        (funcall it arg)
+        (treemacs--evade-image))
+      (treemacs-pulse-on-failure "No COLLAPSE action defined for node of type %s."
+        (propertize (format "%s" state) 'face 'font-lock-type-face)))))
+
+(defun treemacs-define-COLLAPSE-action (state action)
+  "Define the behaviour of `treemacs-COLLAPSE-action'.
+Determines that a button with a given STATE should lead to the execution of
+ACTION.
+The list of possible states can be found in `treemacs-valid-button-states'.
+ACTION should be one of the `treemacs-visit-node-*' commands."
+  (setf treemacs-COLLAPSE-actions-config (assq-delete-all state treemacs-COLLAPSE-actions-config))
+  (push (cons state action) treemacs-COLLAPSE-actions-config))
 
 (defun treemacs-visit-node-in-external-application ()
   "Open current file according to its mime type in an external application.

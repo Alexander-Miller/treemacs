@@ -228,6 +228,23 @@ To keep the alist clean changes should not be made directly, but with
   :type '(alist :key-type symbol :value-type treemacs-ret-action)
   :group 'treemacs)
 
+(defcustom treemacs-COLLAPSE-actions-config
+  '((root-node-open   . treemacs-toggle-node)
+    (root-node-closed . treemacs-goto-parent-node)
+    (dir-node-open    . treemacs-toggle-node)
+    (dir-node-closed  . treemacs-goto-parent-node)
+    (file-node-open   . treemacs-toggle-node)
+    (file-node-closed . treemacs-goto-parent-node)
+    (tag-node-open    . treemacs-toggle-node)
+    (tag-node-closed  . treemacs-goto-parent-node)
+    (tag-node         . treemacs-goto-parent-node))
+  "Defines the behaviour of `treemacs-COLLAPSE-action'.
+
+See the doc string of `treemacs-RET-actions-config' for a detailed description
+of how this config works and how to modify it."
+  :type '(alist :key-type symbol :value-type treemacs-collapse-action)
+  :group 'treemacs)
+
 (defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
   "Files matching this regular expression count as dotfiles."
   :type 'regexp
