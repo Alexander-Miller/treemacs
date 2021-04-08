@@ -97,8 +97,8 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
 (evil-define-key 'treemacs treemacs-mode-map (kbd "gr")     #'treemacs-refresh)
 (evil-define-key 'treemacs treemacs-mode-map [down-mouse-1] #'treemacs-leftclick-action)
 (evil-define-key 'treemacs treemacs-mode-map [drag-mouse-1] #'treemacs-dragleftclick-action)
-(evil-define-key 'treemacs treemacs-mode-map (kbd "h")      #'treemacs-root-up)
-(evil-define-key 'treemacs treemacs-mode-map (kbd "l")      #'treemacs-root-down)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "h")      #'treemacs-COLLAPSE-action)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "l")      #'treemacs-RET-action)
 
 (provide 'treemacs-evil)
 
