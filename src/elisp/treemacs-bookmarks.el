@@ -47,6 +47,7 @@ fashion to `treemacs-find-file'.
 With a prefix argument ARG treemacs will also open the bookmarked location."
   (interactive "P")
   (treemacs-block
+   (bookmark-maybe-load-default-file)
    (-let [bookmarks
           (cl-loop
            for b in bookmark-alist
