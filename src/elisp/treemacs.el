@@ -68,16 +68,18 @@
   treemacs-version)
 
 ;;;###autoload
-(defun treemacs ()
-  "Initialise or toggle treemacs.
-* If the treemacs window is visible hide it.
+(defun treemacs (&optional focus)
+  "Initialise, focus or toggle treemacs.
+* If the treemacs window is visible hide it unless passed in non-nil into `focus'.
 * If a treemacs buffer exists, but is not visible show it.
 * If no treemacs buffer exists for the current frame create and show it.
 * If the workspace is empty additionally ask for the root path of the first
   project to add."
   (interactive)
   (pcase (treemacs-current-visibility)
-    ('visible (delete-window (treemacs-get-local-window)))
+    ('visible (if focus
+                  (treemacs-select-window)
+                (delete-window (treemacs-get-local-window))))
     ('exists  (treemacs-select-window))
     ('none    (treemacs--init))))
 
