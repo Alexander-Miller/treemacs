@@ -822,8 +822,10 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | m        | treemacs-move-file                          | Move the file at point.                                                                                |
 | s        | treemacs-resort                             | Set a new value for ~treemacs-sorting~.                                                                |
 | b        | treemacs-add-bookmark                       | Bookmark the currently selected files's, dir's or tag's location.                                      |
-| h        | treemacs-root-up                            | Move treemacs' root one level upward. Only works with a single project in the workspace.               |
-| l        | treemacs-root-down                          | Move treemacs' root into the directory at point. Only works with a single project in the workspace.    |
+| h/M-h    | treemacs-COLLAPSE-action                    | Run the action defined in ~treemacs-COLLAPSE-actions-config~ for the current node.                     |
+| l/M-l    | treemacs-RET-action                         | Run the action defined in ~treemacs-RET-actions-config~ for the current node.                          |
+| M-H      | treemacs-root-up                            | Move treemacs' root one level upward. Only works with a single project in the workspace.               |
+| M-L      | treemacs-root-down                          | Move treemacs' root into the directory at point. Only works with a single project in the workspace.    |
 | H        | treemacs-collapse-parent-node               | Collapse the parent of the node at point.                                                              |
 | \!       | treemacs-run-shell-command-for-current-node | Run an asynchronous shell command on the current node, replacing "$path" with its path.                |
 | M-!      | treemacs-run-shell-command-in-project-root  | Run an asynchronous shell command in the root of the current project, replacing "$path" with its path. |
