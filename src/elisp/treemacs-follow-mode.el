@@ -99,7 +99,7 @@ not visible."
 (define-minor-mode treemacs-follow-mode
   "Toggle `treemacs-follow-mode'.
 When enabled treemacs will keep track of and focus the currently selected
-buffer's file. This only applies if the file is within the treemacs root
+buffer's file.  This only applies if the file is within the treemacs root
 directory.
 This functionality can also be manually invoked with `treemacs-find-file'."
   :init-value nil

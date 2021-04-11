@@ -88,7 +88,7 @@ DEFAULT: Face"
 If there is no git entry for PATH return DEFAULT.
 
 PATH: Filepath
-GIT-INFO: Hashtable
+GIT-INFO: Hash-Table
 DEFAULT: Face"
   (declare (pure t) (side-effect-free t))
   (inline-letevals (path git-info default)
@@ -373,27 +373,27 @@ newline."
 (define-minor-mode treemacs-git-mode
   "Toggle `treemacs-git-mode'.
 When enabled treemacs will check files' git status and highlight them
-accordingly. This git integration is available in 3 variants: simple, extended
+accordingly.  This git integration is available in 3 variants: simple, extended
 and deferred.
 
 The simple variant will start a git status process whose output is parsed in
-elisp. This version is simpler and slightly faster, but incomplete - it will
+elisp.  This version is simpler and slightly faster, but incomplete - it will
 highlight only files, not directories.
 
 The extended variant requires a non-trivial amount of parsing to be done, which
-is achieved with python (specifically python3). It is slightly slower, but
-complete - both files and directories will be highlighted according to their
-git status.
+is achieved with python (specifically python3).  It is slightly slower, but
+complete - both files and directories will be highlighted according to their git
+status.
 
 The deferred variant is the same is extended, except the tasks of rendering
-nodes and highlighting them are separated. The former happens immediately, the
-latter after `treemacs-deferred-git-apply-delay' seconds of idle time. This may
-be faster (if not in truth then at least in appereance) as the git process is
-given a much greater amount of time to finish. The downside is that the effect
-of nodes changing their colors may be somewhat jarring, though this effect is
+nodes and highlighting them are separated.  The former happens immediately, the
+latter after `treemacs-deferred-git-apply-delay' seconds of idle time.  This may
+be faster (if not in truth then at least in appearance) as the git process is
+given a much greater amount of time to finish.  The downside is that the effect
+of nodes changing their colours may be somewhat jarring, though this issue is
 largely mitigated due to the use of a caching layer.
 
-All versions run asynchronously and are optimized for not doing more work than
+All versions run asynchronously and are optimised for not doing more work than
 is necessary, so their performance cost should, for the most part, be the
 constant time needed to fork a subprocess."
   :init-value nil
@@ -431,7 +431,7 @@ Use either ARG as git integration value of read it interactively."
 
 (define-inline treemacs--get-or-parse-git-result (future)
   "Get the parsed git result of FUTURE.
-Parse and set it if it hasn't been done yet. If FUTURE is nil an empty hash
+Parse and set it if it hasn't been done yet.  If FUTURE is nil an empty hash
 table is returned.
 
 FUTURE: Pfuture process"

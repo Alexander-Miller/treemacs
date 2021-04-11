@@ -148,7 +148,7 @@ Also called as advice after `load-theme', hence the ignored argument."
   "Will return non-nil when Emacs is unable to create images.
 In this scenario (usually caused by running Emacs without a graphical
 environment) treemacs will not create any of its icons and will be forced to
-permanently use its simple string icon fallack."
+permanently use its simple string icon fallback."
   (declare (pure t) (side-effect-free t))
   (inline-quote (not (image-type-available-p 'png))))
 

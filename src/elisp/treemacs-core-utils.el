@@ -199,7 +199,7 @@ If STR already has a slash return it unchanged."
 
 (define-inline treemacs--delete-line ()
   "Delete the current line.
-Unlike `kill-whole-line' this won't pollute the kill ring."
+Unlike the function `kill-whole-line' this won't pollute the kill ring."
   (inline-quote
      (delete-region (point-at-bol) (min (point-max) (1+ (point-at-eol))))))
 
@@ -227,7 +227,7 @@ button type on every call."
       ,prop ,val))))
 
 (define-inline treemacs-button-get (button prop)
-  "Get the property of button BUTTON named PROP
+  "Get the property of button BUTTON named PROP.
 Same as `button-get', but faster since it's inlined and does not query the
 button type on every call."
   (declare (side-effect-free t))
@@ -310,14 +310,14 @@ EXCLUDE-PREFIX: File Path"
        (with-current-buffer buffer (treemacs--follow)))
      (run-hook-with-args 'treemacs-select-functions 'exists))))
 
-(define-inline treemacs--button-symbol-switch (new-sym)
-  "Replace icon in current line with NEW-SYM."
-  (inline-letevals (new-sym)
+(define-inline treemacs--button-symbol-switch (new-symbol)
+  "Replace icon in current line with NEW-SYMBOL."
+  (inline-letevals (new-symbol)
     (inline-quote
      (save-excursion
-       (let ((len (length ,new-sym)))
+       (let ((len (length ,new-symbol)))
          (goto-char (- (treemacs-button-start (next-button (point-at-bol) t)) len))
-         (insert ,new-sym)
+         (insert ,new-symbol)
          (delete-char len))))))
 
 (defun treemacs-project-of-node (node)
@@ -416,7 +416,7 @@ extensions and special names like this."
 
 (define-inline treemacs--on-file-deletion (path &optional no-buffer-delete)
   "Cleanup to run when treemacs file at PATH was deleted.
-Do not try to delete buffers for PATH when NO-BUFFER-DELETE is non-nil. This is
+Do not try to delete buffers for PATH when NO-BUFFER-DELETE is non-nil.  This is
 necessary since interacting with magit can cause file delete events for files
 being edited to trigger."
   (inline-letevals (path no-buffer-delete)

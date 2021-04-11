@@ -501,7 +501,7 @@ headline with sub-elements is saved in an 'org-imenu-marker' text property."
     (nreverse result)))
 
 (define-inline treemacs--imenu-goto-node-wrapper (_name _pos key)
-  "Thin wrapeer around `treemacs-goto-node'.
+  "Thin wrapper around `treemacs-goto-node'.
 Used by imenu to move to the node with the given KEY."
   (inline-letevals (key)
     (inline-quote

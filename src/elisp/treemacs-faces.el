@@ -102,7 +102,7 @@ variant), so it will only be used if git-mode is disabled or set to simple."
 
 (defface treemacs-git-conflict-face
   '((t :inherit error))
-  "Face for conlicting files."
+  "Face for conflicting files."
   :group 'treemacs-faces)
 
 (defface treemacs-tags-face
@@ -139,7 +139,8 @@ variant), so it will only be used if git-mode is disabled or set to simple."
 
 (defface treemacs-header-button-face
   '((t :inherit 'font-lock-keyword-face))
-  "Face used for header buttons like
+  "Face used for header buttons.
+Applies to buttons like
  - `treemacs-header-close-button'
  - `treemacs-header-projects-button'
  - `treemacs-header-workspace-button'"

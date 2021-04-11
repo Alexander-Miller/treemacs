@@ -63,15 +63,15 @@
 (defvar-local treemacs--projects-end nil
   "Marker pointing to position at the end of the last project.
 
-If there are no projects, points to the position at the end of any top-level
-extensions positioned to `TOP'. This can always be used as the insertion point
+If there are no projects, points to the position at the end of any top level
+extensions positioned to `TOP'.  This can always be used as the insertion point
 for new projects.")
 
 (defvar treemacs--file-name-handler-alist nil
   "Value of `file-name-handler-alist' when treemacs loads a directory's content.")
 
 (define-inline treemacs--projects-end ()
-  "Importable getter for `treemacs--projects-end'."
+  "Importable accessor for `treemacs--projects-end'."
   (declare (side-effect-free t))
   (inline-quote treemacs--projects-end))
 
@@ -91,7 +91,7 @@ is a marker pointing to POS."
 
 (define-inline treemacs--lines-in-window ()
   "Determine the number of lines visible in the current (treemacs) window.
-A simple call to something like `window-screen-lines' is insufficient becase
+A simple call to something like `window-screen-lines' is insufficient because
 the height of treemacs' icons must be taken into account."
   (declare (side-effect-free t))
   (inline-quote
@@ -99,31 +99,31 @@ the height of treemacs' icons must be taken into account."
       (max treemacs--icon-size (frame-char-height)))))
 
 (define-inline treemacs--sort-alphabetic-asc (f1 f2)
-  "Sort F1 and F2 alphabetically asc."
+  "Sort F1 and F2 alphabetically ascending."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote (string-lessp ,f1 ,f2))))
 
 (define-inline treemacs--sort-alphabetic-desc (f1 f2)
-  "Sort F1 and F2 alphabetically desc."
+  "Sort F1 and F2 alphabetically descending."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote (string-lessp ,f2 ,f1))))
 
 (define-inline treemacs--sort-alphabetic-case-insensitive-asc (f1 f2)
-  "Sort F1 and F2 case insensitive alphabetically asc."
+  "Sort F1 and F2 case insensitive alphabetically ascending."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote (string-lessp (downcase ,f1) (downcase ,f2)))))
 
 (define-inline treemacs--sort-alphabetic-case-insensitive-desc (f1 f2)
-  "Sort F1 and F2 case insensitive alphabetically desc."
+  "Sort F1 and F2 case insensitive alphabetically descending."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote (string-lessp (downcase ,f2) (downcase ,f1)))))
 
 (define-inline treemacs--sort-size-asc (f1 f2)
-  "Sort F1 and F2 by size asc."
+  "Sort F1 and F2 by size ascending."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote
@@ -131,7 +131,7 @@ the height of treemacs' icons must be taken into account."
         (nth 7 (file-attributes ,f2))))))
 
 (define-inline treemacs--sort-size-desc (f1 f2)
-  "Sort F1 and F2 by size desc."
+  "Sort F1 and F2 by size descending."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote
@@ -139,13 +139,13 @@ the height of treemacs' icons must be taken into account."
          (nth 7 (file-attributes ,f2))))))
 
 (define-inline treemacs--sort-mod-time-asc (f1 f2)
-  "Sort F1 and F2 by modification time asc."
+  "Sort F1 and F2 by modification time ascending."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote (file-newer-than-file-p ,f2 ,f1))))
 
 (define-inline treemacs--sort-mod-time-desc (f1 f2)
-  "Sort F1 and F2 by modification time desc."
+  "Sort F1 and F2 by modification time descending."
   (declare (side-effect-free t))
   (inline-letevals (f1 f2)
     (inline-quote (file-newer-than-file-p ,f1 ,f2))))
@@ -170,7 +170,7 @@ the height of treemacs' icons must be taken into account."
      (other other))))
 
 (define-inline treemacs--get-dir-content (dir)
-  "Get the content of DIR, separated into sublists of first dirs, then files."
+  "Get the content of DIR, separated into sub-lists of first dirs, then files."
   (inline-letevals (dir)
     (inline-quote
      ;; `directory-files' is much faster in a temp buffer for whatever reason
@@ -354,7 +354,7 @@ Maps ITEMS at given index INTERVAL using MAPPER function."
   "Create a new treemacs branch under ROOT.
 The branch is indented at DEPTH and uses the eventual outputs of
 GIT-FUTURE to decide on file buttons' faces and COLLAPSE-PROCESS to determine
-which directories should be displayed as one. The buttons' parent property is
+which directories should be displayed as one.  The buttons' parent property is
 set to PARENT."
   (inline-letevals (root depth git-future collapse-process parent)
     (inline-quote
@@ -631,8 +631,8 @@ PROJECT: Project Struct"
 
 (define-inline treemacs-do-update-node (path &optional force-expand)
   "Update the node identified by its PATH.
-Throws an error when the node cannot be found. Does nothing if the node is
-not expanded, unless FORCE-EXPAND is non-nil, in which case the node will be
+Throws an error when the node cannot be found.  Does nothing if the node is not
+expanded, unless FORCE-EXPAND is non-nil, in which case the node will be
 expanded.
 Same as `treemacs-update-node', but does not take care to either save
 position or assure hl-line highlighting, so it should be used when making

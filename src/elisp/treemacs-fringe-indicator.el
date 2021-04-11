@@ -84,8 +84,8 @@ WINDOW is the treemacs window that has just been focused or unfocused."
 (define-minor-mode treemacs-fringe-indicator-mode
   "Toggle `treemacs-fringe-indicator-mode'.
 When enabled, a visual indicator in the fringe will be displayed to highlight
-the selected line in addition to hl-line-mode.  Useful if hl-line-mode doesn't
-stand out enough with your color theme.
+the selected line in addition to `hl-line-mode'.  Useful if `hl-line-mode'
+doesn't stand out enough with your colour theme.
 
 Can be called with one of two arguments:
 

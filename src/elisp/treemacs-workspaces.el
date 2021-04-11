@@ -152,8 +152,8 @@ PATH: String"
 ;; TODO(2020/11/25): NAME
 (define-inline treemacs--find-project-for-buffer (&optional buffer-file)
   "In the current workspace find the project current buffer's file falls under.
-Optionally supply the BUFFER-FILE in case it is not available by calling
-`buffer-file-name' (like in dired).
+Optionally supply the BUFFER-FILE in case it is not available by calling the
+function `buffer-file-name' (like in dired).
 
 FILE: Filepath"
   (inline-letevals (buffer-file)
@@ -217,7 +217,7 @@ Will return `point-min' if there is no next project."
 
 (define-inline treemacs-project->key (self)
   "Get the hash table key of SELF.
-SELF may be a project struct or a root key of a top-level extension."
+SELF may be a project struct or a root key of a top level extension."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote

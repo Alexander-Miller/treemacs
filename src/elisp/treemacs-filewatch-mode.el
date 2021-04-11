@@ -108,8 +108,8 @@ COLLAPSE: Bool"
   "Stop watching PATH for file events.
 This also means stopping the watch over all dirs below path.
 Must be called inside the treemacs buffer since it will remove `current-buffer'
-from PATH's watch list. Does not apply if this is called in reaction to a file
-being deleted. In this case ALL is t and all buffers watching PATH will be
+from PATH's watch list.  Does not apply if this is called in reaction to a file
+being deleted.  In this case ALL is t and all buffers watching PATH will be
 removed from the filewatch hashes.
 
 PATH: Filepath
@@ -265,13 +265,13 @@ Called when filewatch mode is disabled."
      (treemacs--cancel-refresh-timer))))
 
 (define-minor-mode treemacs-filewatch-mode
-  "Minor mode to let treemacs autorefresh itself on file system changes.
+  "Minor mode to let treemacs auto-refresh itself on file system changes.
 Activating this mode enables treemacs to watch the files it is displaying (and
 only those) for changes and automatically refresh its view when it detects a
 change that it decides is relevant.
 
 A file change event is relevant for treemacs if a new file has been created or
-deleted or a file has been changed and `treemacs-git-mode' is enabled. Events
+deleted or a file has been changed and `treemacs-git-mode' is enabled.  Events
 caused by files that are ignored as per `treemacs-ignored-file-predicates' are
 counted as not relevant.
 
@@ -280,7 +280,7 @@ instead waits `treemacs-file-event-delay' ms to see if any more files have
 changed to avoid having to refresh multiple times over a short period of time.
 
 The watch mechanism only applies to directories opened *after* this mode has
-been activated. This means that to enable file watching in an already existing
+been activated.  This means that to enable file watching in an already existing
 treemacs buffer it needs to be torn down and rebuilt by calling `treemacs' or
 `treemacs-projectile'.
 

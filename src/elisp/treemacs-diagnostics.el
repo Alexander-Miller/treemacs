@@ -42,12 +42,12 @@
 
 (defface treemacs-diagnostic-error-face
   '((t :underline "red"))
-  "TODO"
+  "TODO."
   :group 'treemacs-faces)
 
 (defface treemacs-diagnostic-warning-face
   '((t :underline "yellow"))
-  "TODO"
+  "TODO."
   :group 'treemacs-faces)
 
 (defun treemacs--reset-and-save-diagnosics (path diagnostics)

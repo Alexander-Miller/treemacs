@@ -123,7 +123,7 @@ SELF: Dom Node Struct"
        ret))))
 
 (define-inline treemacs-on-expand (key pos)
-  "Rearrange the dom when node at KEY with POS is expanded.
+  "Re-arrange the dom when node at KEY with POS is expanded.
 
 KEY: Node Path
 POS: Marker"
@@ -142,9 +142,9 @@ POS: Marker"
        (treemacs-dom-node->insert-into-dom! dom-node)))))
 
 (define-inline treemacs-on-collapse (key &optional purge)
-  "Rearragne the dom when node at KEY was collapsed.
+  "Re-arrange the dom when node at KEY was collapsed.
 Will remove NODE's parent/child link and invalidate the position and refresh
-data of NODE and all its children. When PURGE is non-nil will instead remove
+data of NODE and all its children.  When PURGE is non-nil will instead remove
 NODE and its children from the dom.
 
 KEY: Node Path
@@ -166,7 +166,7 @@ Purge: Boolean"
 
 (define-inline treemacs--on-purged-collapse (dom-node)
   "Run when a DOM-NODE is collapsed with a purge (prefix) argument.
-Will remove all of DOM-NODE's children from the dom.
+Will remove all the children of DOM-NODE from the dom.
 
 DOM-NODE: Dom Node Struct"
   (inline-letevals (dom-node)

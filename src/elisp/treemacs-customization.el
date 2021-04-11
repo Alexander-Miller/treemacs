@@ -84,7 +84,7 @@
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
 (defgroup treemacs-git nil
-  "Customizations for treemacs' git integration"
+  "Customisations for treemacs' git integration."
   :group 'treemacs
   :prefix "treemacs-"
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
@@ -96,13 +96,13 @@
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
 (defgroup treemacs-follow nil
-  "Customizations for the behaviour of the treemacs' file and tag following."
+  "Customisations for the behaviour of the treemacs' file and tag following."
   :group 'treemacs
   :prefix "treemacs-"
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
 (defgroup treemacs-window nil
-  "Customizations for the behaviour of the treemacs window."
+  "Customisations for the behaviour of the treemacs window."
   :group 'treemacs
   :prefix "treemacs-"
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
