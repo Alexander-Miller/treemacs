@@ -993,10 +993,10 @@ open before being used for peeking."
    :file-action (treemacs--setup-peek-buffer btn)
    :tag-action (treemacs--setup-peek-buffer btn t)))
 
-(defun treemacs-root-up ()
+(defun treemacs-root-up (&optional _)
   "Move treemacs' root one level upward.
 Only works with a single project in the workspace."
-  (interactive)
+  (interactive "P")
   (treemacs-block
    (unless (= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
      (treemacs-error-return
@@ -1018,10 +1018,10 @@ Only works with a single project in the workspace."
          (treemacs-do-add-project-to-workspace new-root new-name)
          (treemacs-goto-file-node old-root))))))
 
-(defun treemacs-root-down ()
+(defun treemacs-root-down (&optional _)
   "Move treemacs' root into the directory at point.
 Only works with a single project in the workspace."
-  (interactive)
+  (interactive "P")
   (treemacs-block
    (treemacs-error-return-if (/= 1 (length (treemacs-workspace->projects (treemacs-current-workspace))))
      "Free navigation is only possible when there is but a single project in the workspace.")
