@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Code for dealing with asynchronous processes.
+
+;; Code for dealing with asynchronous processes.
 
 ;;; Code:
 

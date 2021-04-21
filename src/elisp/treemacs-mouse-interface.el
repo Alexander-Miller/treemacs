@@ -16,8 +16,10 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Functions relating to using the mouse in treemacs.
-;;; NOTE: This module is lazy-loaded.
+
+;; Functions relating to using the mouse in treemacs.
+
+;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 

@@ -16,13 +16,16 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Module that handles uniquely associating treemacs buffers with a certain scope,
-;;; like the selected frame, or (to be implemented later) the active eyebrowse or
-;;; persp desktop.
-;;; This is implemented using a (somewhat) OOP style with eieio and static functions,
-;;; where each scope type is expected to know how to query the current scope (e.g. the
-;;; selected frame) and how to set up and tear down itself (e.g. deleting a frames
-;;; associated buffer when the frame is deleted)
+
+;; Module that handles uniquely associating treemacs buffers with a
+;; certain scope, like the selected frame, or (to be implemented
+;; later) the active eyebrowse or persp desktop.
+
+;; This is implemented using a (somewhat) OOP style with eieio and
+;; static functions, where each scope type is expected to know how to
+;; query the current scope (e.g. the selected frame) and how to set up
+;; and tear down itself (e.g. deleting a frames associated buffer when
+;; the frame is deleted)
 
 ;;; Code:
 

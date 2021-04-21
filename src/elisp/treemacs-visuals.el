@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Handling of visuals in general and icons in particular.
+
+;; Handling of visuals in general and icons in particular.
 
 ;;; Code:
 

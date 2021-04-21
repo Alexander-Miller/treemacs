@@ -16,11 +16,16 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Tags display functionality.
-;;; Need to be very careful here - many of the functions in this module need to be run inside the treemacs buffer, while
-;;; the `treemacs--execute-button-action' macro that runs them will switch windows before doing so.  Heavy use of
-;;; `treemacs-safe-button-get' or `treemacs-with-button-buffer' is necessary.
-;;; NOTE: This module is lazy-loaded.
+
+;; Tags display functionality.
+
+;; Need to be very careful here - many of the functions in this module
+;; need to be run inside the treemacs buffer, while the
+;; `treemacs--execute-button-action' macro that runs them will switch
+;; windows before doing so.  Heavy use of `treemacs-safe-button-get'
+;; or `treemacs-with-button-buffer' is necessary.
+
+;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 

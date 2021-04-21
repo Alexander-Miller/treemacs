@@ -16,6 +16,7 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
 ;; Minor mode to follow the tag at point in the treemacs view on an idle timer
 ;; Finding the current tag is a fairly involved process:
 ;; * Grab current buffer's imenu output
@@ -26,7 +27,8 @@
 ;; * Find the last tag whose position begins before point
 ;; * Jump to that tag path
 ;; * No jump when there's no buffer file, or no imenu, or buffer file is not seen in treemacs etc.
-;;; NOTE: This module is lazy-loaded.
+
+;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 

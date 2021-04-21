@@ -16,8 +16,10 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Integrates treemacs with bookmark.el.
-;;; NOTE: This module is lazy-loaded.
+
+;; Integrates treemacs with bookmark.el.
+
+;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 

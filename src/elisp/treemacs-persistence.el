@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Persistence of treemacs' workspaces into an org-mode compatible file.
+
+;; Persistence of treemacs' workspaces into an org-mode compatible file.
 
 ;;; Code:
 

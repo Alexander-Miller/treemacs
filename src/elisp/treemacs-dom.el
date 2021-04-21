@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Basically this: https://github.com/Alexander-Miller/treemacs/issues/143
+
+;; Basically this: https://github.com/Alexander-Miller/treemacs/issues/143.
 
 ;;; Code:
 

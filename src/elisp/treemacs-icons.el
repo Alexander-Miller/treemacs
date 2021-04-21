@@ -16,8 +16,10 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Most of everything related to icons is handled here.  Specifically the
-;;; definition, instantiation, customization, resizing and resetting of icons.
+
+;; Most of everything related to icons is handled here.  Specifically
+;; the definition, instantiation, customization, resizing and
+;; resetting of icons.
 
 ;;; Code:
 

@@ -1,4 +1,4 @@
-;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
+;;; treemacs-mode.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021 Alexander Miller
 
@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Major mode definition.
+
+;; Major mode definition.
 
 ;;; Code:
 
