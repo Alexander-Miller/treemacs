@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; General implementation details.
+
+;; General implementation details.
 
 ;;; Code:
 

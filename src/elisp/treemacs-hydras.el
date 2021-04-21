@@ -16,8 +16,10 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Definition for the Helpful Hydras.
-;;; NOTE: This module is lazy-loaded.
+
+;; Definition for the Helpful Hydras.
+
+;; NOTE: This module is lazy-loaded.
 
 ;;; Code:
 

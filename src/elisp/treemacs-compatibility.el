@@ -16,8 +16,9 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Simple bits of code to make treemacs compatible with other packages
-;;; that aren't worth the effort of being turned into their own package.
+
+;; Simple bits of code to make treemacs compatible with other packages
+;; that aren't worth the effort of being turned into their own package.
 
 ;;; Code:
 

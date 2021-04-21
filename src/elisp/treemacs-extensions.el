@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; API required for writing extensions for/with treemacs.
+
+;; API required for writing extensions for/with treemacs.
 
 ;;; Code:
 

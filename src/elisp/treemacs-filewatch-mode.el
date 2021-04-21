@@ -16,10 +16,14 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; File event watch and reaction implementation.
-;;; Open directories are put under watch and file changes event collected even if filewatch-mode
-;;; is disabled.  This allows to remove deleted files from all the caches they are in.  Activating
-;;; filewatch-mode will therefore only enable automatic refresh of treemacs buffers.
+
+;; File event watch and reaction implementation.
+
+;; Open directories are put under watch and file changes event
+;; collected even if filewatch-mode is disabled.  This allows to
+;; remove deleted files from all the caches they are in.  Activating
+;; filewatch-mode will therefore only enable automatic refresh of
+;; treemacs buffers.
 
 ;;; Code:
 

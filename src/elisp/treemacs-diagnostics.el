@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; WIP implementation of diagnostics display.
+
+;; WIP implementation of diagnostics display.
 
 ;;; Code:
 

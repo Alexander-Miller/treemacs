@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Variations of header-line-format treemacs can use.
+
+;; Variations of header-line-format treemacs can use.
 
 ;;; Code:
 

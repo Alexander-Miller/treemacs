@@ -16,8 +16,9 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Everything about creating, (re)moving, (re)naming and otherwise editing
-;;; projects and workspaces.
+
+;; Everything about creating, (re)moving, (re)naming and otherwise
+;; editing projects and workspaces.
 
 ;;; Code:
 

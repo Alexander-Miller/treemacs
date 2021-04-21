@@ -16,9 +16,10 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; General purpose macros, and those used in, but defined outside of
-;;; treemacs-core-utils.el are put here, to prevent using them before their
-;;; definition, hopefully preventing issues like #97.
+
+;; General purpose macros, and those used in, but defined outside of
+;; treemacs-core-utils.el are put here, to prevent using them before
+;; their definition, hopefully preventing issues like #97.
 
 ;;; Code:
 

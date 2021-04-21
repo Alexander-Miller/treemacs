@@ -16,9 +16,10 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Code in this file is considered performance critical.
-;;; The usual restrictions w.r.t quality, readability and maintainability are
-;;; lifted here.
+
+;; Code in this file is considered performance critical.  The usual
+;; restrictions w.r.t quality, readability and maintainability are
+;; lifted here.
 
 ;;; Code:
 
