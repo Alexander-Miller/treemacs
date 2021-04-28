@@ -531,6 +531,15 @@ Based on a timer GUARD variable run function with the given DELAY and BODY."
               ,@body
               (setf ,guard nil))))))
 
+(defmacro treemacs-without-recenter (&rest body)
+  "Run BODY without the usual recentering for expanded nodes.
+Specifically `treemacs--no-recenter' will be set to 't' so that
+`treemacs--maybe-recenter' will have no effect during non-interactive updates
+triggered by e.g. filewatch-mode."
+  (declare (debug t))
+  `(let ((treemacs--no-recenter t))
+     ,@body))
+
 (provide 'treemacs-macros)
 
 ;;; treemacs-macros.el ends here

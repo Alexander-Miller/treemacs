@@ -71,6 +71,10 @@ for new projects.")
 (defvar treemacs--file-name-handler-alist nil
   "Value of `file-name-handler-alist' when treemacs loads a directory's content.")
 
+(defvar treemacs--no-recenter nil
+  "Set for non-interactive updates.
+When non-nil `treemacs--maybe-recenter' will have no effect.")
+
 (define-inline treemacs--projects-end ()
   "Importable accessor for `treemacs--projects-end'."
   (declare (side-effect-free t))
@@ -645,20 +649,21 @@ PATH: Node Path
 FORCE-EXPAND: Boolean"
   (inline-letevals (path force-expand)
     (inline-quote
-     (-if-let (btn (if ,force-expand
-                       (treemacs-goto-node ,path)
-                     (-some-> (treemacs-find-visible-node ,path)
-                              (goto-char))))
-         (if (treemacs-is-node-expanded? btn)
-             (-let [close-func (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)]
-               (funcall close-func)
-               ;; close node again if no new lines were rendered
-               (when (eq 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
-                 (funcall close-func)))
-           (when ,force-expand
-             (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))))
-       (-when-let (dom-node (treemacs-find-in-dom ,path))
-         (setf (treemacs-dom-node->refresh-flag dom-node) t))))))
+     (treemacs-without-recenter
+      (-if-let (btn (if ,force-expand
+                        (treemacs-goto-node ,path)
+                      (-some-> (treemacs-find-visible-node ,path)
+                        (goto-char))))
+          (if (treemacs-is-node-expanded? btn)
+              (-let [close-func (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)]
+                (funcall close-func)
+                ;; close node again if no new lines were rendered
+                (when (eq 1 (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config)))
+                  (funcall close-func)))
+            (when ,force-expand
+              (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))))
+        (-when-let (dom-node (treemacs-find-in-dom ,path))
+          (setf (treemacs-dom-node->refresh-flag dom-node) t)))))))
 
 (defun treemacs-update-node (path &optional force-expand)
   "Update the node identified by its PATH.
@@ -969,7 +974,8 @@ WHEN can take the following values:
  * on-visibility: Special case for projects: recentering depends on whether the
    newly rendered number of NEW-LINES fits the view."
   (declare (indent 1))
-  (when (treemacs-is-treemacs-window? (selected-window))
+  (when (and (null treemacs--no-recenter)
+             (treemacs-is-treemacs-window? (selected-window)))
     (let* ((current-line (float (treemacs--current-screen-line)))
            (all-lines (float (treemacs--lines-in-window))))
       (pcase when
