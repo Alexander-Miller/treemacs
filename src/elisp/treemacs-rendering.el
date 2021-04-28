@@ -237,7 +237,8 @@ and apply `insert' on the items returned from OPEN-ACTION.  If it is nil either
 OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
   `(prog1
      (save-excursion
-       (-let [p (point)]
+       (let ((p (point))
+             lines)
          (treemacs-with-writable-buffer
           (treemacs-button-put ,button :state ,new-state)
           ,@(when new-icon
@@ -248,8 +249,9 @@ OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
                 `((progn
                     (insert (apply #'concat ,open-action))))
               `(,open-action))
-          ,post-open-action)
-         (count-lines p (point))))
+          (setf lines (count-lines p (point)))
+          ,post-open-action
+          lines)))
      (when treemacs-move-forward-on-expand
        (let* ((parent (treemacs-current-button))
               (child (next-button parent)))
