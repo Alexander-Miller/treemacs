@@ -43,6 +43,14 @@
 The car is a symbol of an extension node's state, the cdr the instance of the
 `treemacs-extension' type.")
 
+(defvar treemacs--async-update-count (make-hash-table :size 5 :test 'equal)
+  "Holds the count of nodes an async update needs to process.
+The count is used as finish condition in `treemacs--async-update-part-complete'.")
+
+(defvar treemacs--async-update-cache (make-hash-table :size 20 :test 'equal)
+  "Holds to pre-computed cache for async updates.
+Set by `treemacs--async-update-part-complete'.")
+
 (cl-defstruct (treemacs-extension
                (:conc-name treemacs-extension->)
                (:constructor treemacs-extension->create!))
@@ -704,12 +712,27 @@ If a prefix ARG is provided expand recursively."
   (interactive "P")
   (let* ((btn (treemacs-node-at-point))
          (state (treemacs-button-get btn :state))
-         (ext (alist-get state treemacs--extension-registry)))
+         (path (treemacs-button-get btn :path))
+         (ext (alist-get state treemacs--extension-registry))
+         (eol (point-at-eol))
+         (already-loading
+          (= eol
+             (next-single-property-change
+              (point-at-bol) 'treemacs-async-string nil eol))))
     (when (null ext)
       (error "No extension is registered for state '%s'" state))
-    (if (treemacs-extension->async? ext)
-        (treemacs--do-expand-async-extension-node btn ext arg)
-      (treemacs--do-expand-extension-node btn ext arg))))
+    (unless (not already-loading)
+      ;; this cache is only ever set for updating async nodes
+      (-let [async-cache (ht-get treemacs--async-update-cache path)]
+        (cond
+         (async-cache
+          (ht-remove! treemacs--async-update-cache path)
+          (treemacs--do-expand-extension-node
+           btn ext arg (if (eq async-cache :nothing) nil async-cache)))
+         ((treemacs-extension->async? ext)
+          (treemacs--do-expand-async-extension-node btn ext arg))
+         (t
+          (treemacs--do-expand-extension-node btn ext arg)))))))
 
 (defun treemacs-collapse-extension-node (&optional arg)
   "Collapse a node created with the extension api.
@@ -733,7 +756,8 @@ ARG: Prefix Arg"
    (treemacs-error-return-if (not (eq (treemacs-extension->get ext :closed-state)
                                       (treemacs-button-get btn :state)))
      "This function cannot expand a node of type '%s'."
-     (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))
+     (propertize (format "%s" (treemacs-button-get btn :state))
+                 'face 'font-lock-type-face))
    (save-excursion
      (treemacs-with-writable-buffer
       (goto-char (point-at-eol))
@@ -775,9 +799,14 @@ ITEMS: List<Any>"
   (treemacs-block
    (treemacs-error-return-if (not (eq (treemacs-extension->get ext :closed-state)
                                       (treemacs-button-get btn :state)))
-     "This function cannot expand a node of type '%s'."
-     (propertize (format "%s" (treemacs-button-get btn :state)) 'face 'font-lock-type-face))
-   (let* ((items           (or items (treemacs-extension->get ext :children btn (treemacs-button-get btn :item))))
+     "This function cannot expand a node of type '%s'. Current node type is %s"
+     (propertize (format "%s" (treemacs-button-get btn :state))
+                 'face 'font-lock-type-face)
+     (propertize (format "%s" (treemacs-extension->get ext :closed-state))
+                 'face 'font-lock-type-face))
+   (let* ((items           (or items
+                               (treemacs-extension->get
+                                ext :children btn (treemacs-button-get btn :item))))
           (depth           (1+ (treemacs-button-get btn :depth)))
           (btn-path        (treemacs-button-get btn :path))
           (parent-path     (if (listp btn-path) btn-path (list btn-path)))
@@ -813,8 +842,8 @@ ITEMS: List<Any>"
         :label (funcall label-fn item)))
       :post-open-action
       (progn
-        (treemacs-on-expand (treemacs-button-get btn :path) btn)
-        (treemacs--reentry (treemacs-button-get btn :path)))))))
+        (treemacs-on-expand btn-path btn)
+        (treemacs--reentry btn-path))))))
 
 (defun treemacs--expand-variadic-parent (btn ext)
   "Expand the hidden parent BTN of a variadic extension instance EXT.
@@ -857,6 +886,52 @@ EXT: `treemacs-extension' instance"
      (progn
        (treemacs-on-expand (treemacs-button-get btn :path) btn)
        (treemacs--reentry (treemacs-button-get btn :path))))))
+
+(defun treemacs-update-async-node (path)
+  "Update an asynchronous node at the given PATH.
+The update process will asynchronously pre-compute the children for every node
+currently expanded under PATH.  The results of this computation will be cached
+and then used to update the UI in one go."
+  (-let [items-to-update (treemacs--get-async-update-items path)]
+    (ht-set! treemacs--async-update-count path (length items-to-update))
+    (dolist (item items-to-update)
+      (let* ((item-path (car item))
+             (ext (cdr item))
+             (btn (treemacs-find-node item-path))
+             (item (treemacs-button-get btn :item))
+             (children-fn (treemacs-extension->children ext)))
+        (funcall
+         children-fn btn item
+         (lambda (items)
+           (treemacs--async-update-part-complete
+            path item-path items)))))))
+
+(defun treemacs--get-async-update-items (path)
+  "Get the items needed for an async update at the given PATH.
+Every item in the returned list will consist of the node's key and its
+extensions instance."
+  (-let [items nil]
+    (treemacs-walk-reentry-dom (treemacs-find-in-dom path)
+      (lambda (dom-node)
+        (let* ((key (treemacs-dom-node->key dom-node))
+               (state (treemacs-button-get (treemacs-find-node key) :state))
+               (ext (alist-get state treemacs--extension-registry)))
+          (push (cons key ext) items))))
+    items))
+
+(defun treemacs--async-update-part-complete (top-path updated-path items)
+  "Partial completion for an asynchronous update.
+TOP-PATH is the path of the node the update was called for.
+UPDATED-PATH is the path of one of top node's children (may also be TOP-PATH)
+whose content has just been computed.
+ITEMS are the new items for the UPDATED-PATH that will be cached for the next
+update."
+  (ht-set! treemacs--async-update-cache updated-path (or items :nothing))
+  (-let [count (cl-decf (ht-get treemacs--async-update-count top-path))]
+    (when (= 0 count)
+      (--when-let (treemacs-get-local-buffer)
+        (with-current-buffer it
+          (treemacs-update-node top-path))))))
 
 (defun treemacs--do-collapse-extension-node (btn ext &optional __arg)
   "Collapse an extension button BTN for the given EXT.
