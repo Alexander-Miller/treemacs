@@ -980,7 +980,7 @@ WHEN can take the following values:
              ;; if possible recenter only as much as is needed to bring all new lines
              ;; into view
              (recenter (max 0 (round (- current-line (- new-lines lines-left))))))))
-        ((guard (memq when '(t on-distance))) ;; TODO(2019/02/20): t for backward compatibility, remove eventually
+        ('on-distance
          (let* ((distance-from-top (/ current-line all-lines))
                 (distance-from-bottom (- 1.0 distance-from-top)))
            (when (or (> treemacs-recenter-distance distance-from-top)
