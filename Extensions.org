@@ -152,7 +152,7 @@ extention should be placed:
 
 We can also decide whether our extension goes at the top or the bottom of its location.
 
-The latter two will options may aso accept a ~:predicate~ argument, so it is possible to determine exactly which
+The latter two will options may also accept a ~:predicate~ argument, so it is possible to determine exactly which
 projects and directories an extension will be used for.
 
 For our example we will place the extension at the top of the first project in the workspace:
@@ -163,6 +163,8 @@ For our example we will place the extension at the top of the first project in t
    :position 'top
    :predicate (lambda (project) (eq project (car (treemacs-workspace->projects (treemacs-current-workspace))))))
 #+END_SRC
+
+The argument passed to ~:extension~ must be the same symbol that was used for ~treemacs-define-entry-node-type~.
 
 ** Groups in their own Buffer
 
@@ -196,9 +198,27 @@ Reuse types from above, but create new 'variadic' entry point that can produce m
 
 ** Asynchronous Nodes
 
-New buffer group type that fetches buffers with a fake delay:
+Treemacs also supports nodes that fetch their content from an asynchronous source like a language server.
+For our simple example we will use timers to fake asynchronicity.
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
+  (treemacs-define-entry-node-type showcase-async-buffers
+    :key 'showcase-buffers-async
+    :label "Async Buffers"
+    :open-icon (treemacs-get-icon-value 'list)
+    :closed-icon (treemacs-get-icon-value 'list)
+    :children
+    (let ((items (treemacs-showcase--buffer-major-modes)))
+      (run-with-timer
+       (1+ (random 3)) nil
+       (lambda ()
+         (funcall callback items))))
+    :face 'font-lock-keyword-face
+    :child-type 'showcase-async-buffer-group
+    :async? t)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
   (treemacs-define-expandable-node-type showcase-async-buffer-group
     :closed-icon "+ "
     :open-icon "- "
@@ -215,27 +235,15 @@ New buffer group type that fetches buffers with a fake delay:
     :more-properties `(:major-mode ,item)
     :async? t)
 #+END_SRC
-
 Leaf type can be resused, we just need another entry point:
 
-#+BEGIN_SRC emacs-lisp :tangle no
-  (treemacs-define-entry-node-type showcase-async-buffers
-    :key 'SHOWCASE-ASYNC-BUFFERS
-    :label "Async Buffers"
-    :open-icon (treemacs-get-icon-value 'list)
-    :closed-icon (treemacs-get-icon-value 'list)
-    :children (treemacs-showcase--buffer-major-modes)
-    :face 'font-lock-keyword-face
-    :child-type 'showcase-async-buffer-group)
-#+END_SRC
+Enable it at the bottom of /first/ project in treemacs:
 
-Enable it in the /first/ project in treemacs:
-
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (treemacs-enable-project-extension
-   :extension treemacs-showcase-async-buffers-extension-instance
+   :extension 'showcase-async-buffers
    :predicate (lambda (project) (eq project (car (treemacs-workspace->projects (treemacs-current-workspace)))))
-   :position 'top)
+   :position 'bottom)
 #+END_SRC
 
 ** Monotyped nodes
