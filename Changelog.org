@@ -50,6 +50,7 @@
   selected
 - Implemented one hand navigation with ~h~ collapsing nodes and ~l~ functioning like ~RET~, ~M-H/L~
   is used now for changing root nodes.
+- Reduced ~treemacs-file-event-delay~ to 2000ms
 - New icons
 - Bug Fixes
 ** v2.8
