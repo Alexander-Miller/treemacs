@@ -418,7 +418,7 @@ discoverability.
             treemacs-directory-name-transformer      #'identity
             treemacs-display-in-side-window          t
             treemacs-eldoc-display                   t
-            treemacs-file-event-delay                5000
+            treemacs-file-event-delay                2000
             treemacs-file-extension-regex            treemacs-last-period-regex-value
             treemacs-file-follow-delay               0.2
             treemacs-file-name-transformer           #'identity
@@ -522,7 +522,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-sorting                         | alphabetic-asc                                   | Indicates how treemacs will sort its files and directories. (Files will always be shown after directories.)                                                                                                                          |
 | treemacs-ignored-file-predicates         | (treemacs--std-ignore-file-predicate)            | List of predicates to test for files and directories ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer.                                                                                                   |
 | treemacs-pre-file-insert-predicates      | nil                                              | List of predicates to test for files and directories not to be rendered. Unlike ~treemacs-ignored-file-predicates~ these predicates apply when files' git status information is available.                                           |
-| treemacs-file-event-delay                | 5000                                             | How long (in milliseconds) to collect file events before refreshing. See also ~treemacs-filewatch-mode~.                                                                                                                             |
+| treemacs-file-event-delay                | 2000                                             | How long (in milliseconds) to collect file events before refreshing. See also ~treemacs-filewatch-mode~.                                                                                                                             |
 | treemacs-goto-tag-strategy               | refetch-index                                    | Indicates how to move to a tag when its buffer is dead.                                                                                                                                                                              |
 | treemacs-default-visit-action            | treemacs-visit-node-no-split                     | Default action for opening a node (e.g. file, directory, tag). ~treemacs-visit-file-default~ action in ~treemacs-*-actions-config~ calls this function.                                                                              |
 | treemacs-RET-actions-config              | Prefers visiting nodes over closing/opening      | Alist defining the behaviour of ~treemacs-RET-action~.                                                                                                                                                                               |
