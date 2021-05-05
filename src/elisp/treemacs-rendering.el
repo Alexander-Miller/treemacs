@@ -985,17 +985,9 @@ WHEN can take the following values:
                      (> treemacs-recenter-distance distance-from-bottom))
              (recenter))))))))
 
-(defun treemacs--recursive-refresh ()
-  "Recursively descend the dom, updating only the refresh-marked nodes."
-  (pcase-dolist (`(,_ . ,shelf) treemacs--scope-storage)
-    (-let [workspace (treemacs-scope-shelf->workspace shelf)]
-      (dolist (project (treemacs-workspace->projects workspace))
-        (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
-          (treemacs--recursive-refresh-descent root-node project))))))
-
 ;; TODO(201/10/30): update of parents
 (defun treemacs--recursive-refresh-descent (node project)
-  "The recursive descent implementation of `treemacs--recursive-refresh'.
+  "Recursively refresh by descending the dom starting from NODE.
 If NODE under PROJECT is marked for refresh and in an open state (since it could
 have been collapsed in the meantime) it will simply be collapsed and
 re-expanded.  If NODE is node marked its children will be recursively

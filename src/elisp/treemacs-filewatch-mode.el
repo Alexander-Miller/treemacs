@@ -214,8 +214,10 @@ Extracted only so `treemacs--process-file-events' can decide when to call
    (treemacs-run-in-every-buffer
     (treemacs-save-position
      (-let [treemacs--no-messages (or treemacs-silent-refresh treemacs-silent-filewatch)]
-       (treemacs--recursive-refresh))
-     (hl-line-highlight)))))
+       (dolist (project (treemacs-workspace->projects workspace))
+         (-when-let (root-node (-> project (treemacs-project->path) (treemacs-find-in-dom)))
+           (treemacs--recursive-refresh-descent root-node project)))))
+    (hl-line-highlight))))
 
 (defun treemacs--process-file-events ()
   "Process the file events that have been collected.
