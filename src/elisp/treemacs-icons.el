@@ -274,8 +274,6 @@ Necessary since root icons are not rectangular."
   :config
   (progn
     ;; directory and other icons
-    ;; TODO(2020/12/30): temporary workaround for issues like #752, to be removed in 2 months
-    (treemacs-create-icon :file "vsc/root-closed.png"   :extensions (root)        :fallback "")
     (treemacs-create-icon :file "vsc/root-closed.png"   :extensions (root-closed) :fallback "")
     (treemacs-create-icon :file "vsc/root-open.png"     :extensions (root-open)   :fallback "")
     (treemacs-create-icon :file "vsc/dir-closed.png"    :extensions (dir-closed)  :fallback (propertize "+ " 'face 'treemacs-term-node-face))
