@@ -278,7 +278,7 @@ not work keep it on the same line."
          (treemacs-goto-file-node curr-file))
         ((or 'dir-node-open 'dir-node-closed 'file-node-open 'file-node-closed)
          ;; stay on the same file
-         (if (and (file-exists-p curr-file)
+         (if (and (treemacs-is-path-visible? curr-file)
                   (or treemacs-show-hidden-files
                       (not (s-matches? treemacs-dotfiles-regex (treemacs--filename curr-file)))))
              (treemacs-goto-file-node curr-file)
@@ -286,7 +286,7 @@ not work keep it on the same line."
            ;; try dodging to our immediate neighbours, if they are no longer visible either
            ;; keep going up
            (cl-labels
-               ((can-move-to (it) (and (file-exists-p it)
+               ((can-move-to (it) (and (treemacs-is-path-visible? it)
                                        (or treemacs-show-hidden-files
                                            (not (s-matches? treemacs-dotfiles-regex (treemacs--filename it)))))))
              (cond

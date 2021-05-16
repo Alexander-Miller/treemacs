@@ -119,6 +119,16 @@ indentation will be a space INTEGER pixels wide."
                        (const :tag "" px)))
   :group 'treemacs)
 
+(defcustom treemacs-litter-directories '("/node_modules" "/.venv" "/.cask")
+  "List of directories affected by `treemacs-cleanup-litter'.
+Every item in the list is a regular expression, to be recognized a directory
+must be matched with `string-match-p'.
+
+Regexp-quoting the items in this list is *not* necessary, the quoting will
+happen automatically when needed."
+  :type 'list
+  :group 'treemacs)
+
 (defcustom treemacs-read-string-input 'from-child-frame
   "The function treemacs uses to read user input.
 Only applies to plaintext input, like when renaming a project, file or

@@ -191,6 +191,7 @@ Will be set by `treemacs--post-command'.")
     (define-key map (kbd "H")         'treemacs-collapse-parent-node)
     (define-key map (kbd "!")         'treemacs-run-shell-command-for-current-node)
     (define-key map (kbd "M-!")       'treemacs-run-shell-command-in-project-root)
+    (define-key map (kbd "C")         'treemacs-cleanup-litter)
     map)
   "Keymap for `treemacs-mode'.")
 

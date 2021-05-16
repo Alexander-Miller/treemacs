@@ -421,6 +421,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-recenter-after-tag-follow     nil
             treemacs-recenter-after-project-jump   'always
             treemacs-recenter-after-project-expand 'on-distance
+            treemacs-litter-directories            '("/node_modules" "/.venv" "/.cask")
             treemacs-show-cursor                   nil
             treemacs-show-hidden-files             t
             treemacs-silent-filewatch              nil
@@ -542,7 +543,8 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-read-string-input             | 'from-child-frame                                | Indicates whether simple string input like project names should be read from a child frame or the minibuffer.                                                                                                                        |
 | treemacs-expand-added-projects         | t                                                | Indicates whether newly added projects should be expanded.                                                                                                                                                                           |
 | treemacs-imenu-scope                   | 'everything                                      | Determines which items treemacs' imenu function will collect.                                                                                                                                                                        |
-| treemacs-window-background-color       | nil                                              | Background color for the treemacs window.                                                                                                                                                                                          |
+| treemacs-window-background-color       | nil                                              | Background color for the treemacs window.                                                                                                                                                                                            |
+| treemacs-litter-directories            | ("/node_modules" "/.venv" "/.cask")              | List of directories affected by ~treemacs-cleanup-litter~.                                                                                                                                                                           |
 
 ** Faces
 Treemacs defines and uses the following faces:
@@ -829,6 +831,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | H        | treemacs-collapse-parent-node               | Collapse the parent of the node at point.                                                              |
 | \!       | treemacs-run-shell-command-for-current-node | Run an asynchronous shell command on the current node, replacing "$path" with its path.                |
 | M-!      | treemacs-run-shell-command-in-project-root  | Run an asynchronous shell command in the root of the current project, replacing "$path" with its path. |
+| C        | treemacs-cleanup-litter                     | Close all directories matching any of ~treemacs-litter-directories~.                                   |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting to

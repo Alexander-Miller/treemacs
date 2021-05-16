@@ -1306,6 +1306,23 @@ To programmatically set the scope type see `treemacs-set-scope-type'."
       (treemacs-log "Scope of type %s is now in effect."
         (propertize selection 'face 'font-lock-type-face))))))
 
+(defun treemacs-cleanup-litter ()
+  "Collapse all nodes matching any of `treemacs-litter-directories'."
+  (interactive)
+  (-let [litter-list (-map #'regexp-quote treemacs-litter-directories)]
+    (treemacs-run-in-every-buffer
+     (treemacs-save-position
+      (dolist (project (treemacs-workspace->projects workspace))
+        (treemacs-walk-reentry-dom (-> project treemacs-project->path treemacs-find-in-dom)
+          (lambda (dom-node)
+            (-let [path (treemacs-dom-node->key dom-node)]
+              (when (and (stringp path)
+                         (--any? (string-match-p it path) litter-list))
+                (--when-let (treemacs-find-node path project)
+                  (goto-char it)
+                  (treemacs-toggle-node :purge)))))))))
+    (treemacs-pulse-on-success "Cleanup complete.")))
+
 (defun treemacs-icon-catalogue ()
   "Showcase a catalogue of all treemacs themes and their icons."
   (interactive)
