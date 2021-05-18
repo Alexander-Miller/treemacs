@@ -506,8 +506,7 @@ Run POST-CLOSE-ACTION after everything else is done."
            :immediate-insert nil
            :button btn
            :new-state 'root-node-open
-           ;; TODO(2020/12/30): temporary workaround for issues like #752, to be removed in 2 months
-           :new-icon (or treemacs-icon-root-open treemacs-icon-root)
+           :new-icon treemacs-icon-root-open
            :open-action
            (progn
              ;; TODO(2019/10/14): go back to post open
@@ -528,8 +527,7 @@ Remove all open entries below BTN when RECURSIVE is non-nil."
   (treemacs--button-close
    :button btn
    :new-state 'root-node-closed
-   ;; TODO(2020/12/30): temporary workaround for issues like #752, to be removed in 2 months
-   :new-icon (or treemacs-icon-root-closed treemacs-icon-root)
+   :new-icon treemacs-icon-root-closed
    :post-close-action
    (-let [path (treemacs-button-get btn :path)]
      (treemacs--stop-watching path)
@@ -594,8 +592,7 @@ Remove all open dir and tag entries under BTN when RECURSIVE."
   "Insert a new root node for the given PROJECT node.
 
 PROJECT: Project Struct"
-  ;; TODO(2020/12/30): temporary workaround for issues like #752, to be removed in 2 months
-  (insert (or treemacs-icon-root-closed treemacs-icon-root))
+  (insert treemacs-icon-root-closed)
   (let* ((pos (point-marker))
          (path (treemacs-project->path project))
          (dom-node (treemacs-dom-node->create! :key path :position pos)))
