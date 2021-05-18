@@ -121,7 +121,7 @@ indentation will be a space INTEGER pixels wide."
 
 (defcustom treemacs-litter-directories '("/node_modules" "/.venv" "/.cask")
   "List of directories affected by `treemacs-cleanup-litter'.
-Every item in the list is a regular expression, to be recognized a directory
+Every item in the list is a regular expression, to be recognised a directory
 must be matched with `string-match-p'.
 
 Regexp-quoting the items in this list is *not* necessary, the quoting will
