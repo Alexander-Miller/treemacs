@@ -316,7 +316,8 @@ not work keep it on the same line."
         (-let [buffer-point (point)]
           (with-selected-window curr-window
             ;; recenter starts counting at 0
-            (recenter (1- curr-win-line))
+            (-let [scroll-margin 0]
+              (recenter (1- curr-win-line)))
             (set-window-point (selected-window) buffer-point))))
       ,@final-form)))
 
