@@ -402,6 +402,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-file-follow-delay             0.2
             treemacs-file-name-transformer         #'identity
             treemacs-follow-after-init             t
+            treemacs-expand-after-init             t
             treemacs-git-command-pipe              ""
             treemacs-goto-tag-strategy             'refetch-index
             treemacs-indentation                   2
@@ -490,7 +491,8 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-indentation-string            | " "                                              | The string that is used to create indentation when ~treemacs-indentation~ is not specified as pixels.                                                                                                                                |
 | treemacs-width                         | 35                                               | Width of the treemacs window.                                                                                                                                                                                                        |
 | treemacs-show-hidden-files             | t                                                | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                  |
-| treemacs-follow-after-init             | nil                                              | When t follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                                      |
+| treemacs-follow-after-init             | t                                                | When non-nil follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                               |
+| treemacs-expand-after-init             | t                                                | When non-nil expand the first project after treemacs is first initialsed.                                                                                                                                                           |
 | treemacs-sorting                       | alphabetic-asc                                   | Indicates how treemacs will sort its files and directories. (Files will always be shown after directories.)                                                                                                                          |
 | treemacs-ignored-file-predicates       | (treemacs--std-ignore-file-predicate)            | List of predicates to test for files and directories ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer.                                                                                                   |
 | treemacs-pre-file-insert-predicates    | nil                                              | List of predicates to test for files and directories not to be rendered. Unlike ~treemacs-ignored-file-predicates~ these predicates apply when files' git status information is available.                                           |

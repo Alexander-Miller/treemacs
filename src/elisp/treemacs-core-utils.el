@@ -37,6 +37,9 @@
 (treemacs-import-functions-from "cfrs"
   cfrs-read)
 
+(treemacs-import-functions-from "treemacs-interface"
+  treemacs-toggle-node)
+
 (treemacs-import-functions-from "treemacs-tags"
   treemacs--expand-file-node
   treemacs--collapse-file-node
@@ -530,9 +533,14 @@ Add a project for ROOT and NAME if they are non-nil."
        (setf run-hook? t)))
     (when root (treemacs-do-add-project-to-workspace (treemacs-canonical-path root) name))
     (with-no-warnings (setq treemacs--ready-to-follow t))
-    (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
-      (with-current-buffer origin-buffer
-        (treemacs--follow)))
+    (let* ((origin-file (buffer-file-name origin-buffer))
+           (file-project (treemacs-is-path origin-file :in-workspace)))
+      (cond
+       ((and (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
+             file-project)
+        (treemacs-goto-file-node origin-file file-project))
+       (treemacs-expand-after-init
+        (treemacs-toggle-node))))
     ;; The hook should run at the end of the setup, but also only
     ;; if a new buffer was created, as the other cases are already covered
     ;; in their respective setup functions.

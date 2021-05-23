@@ -21,6 +21,7 @@
 - Added ~treemacs-define-custom-image-icon~
 - Added ~treemacs-narrow-to-current-file~
 - Added ~treemacs-cleanup-litter~
+- Added ~treemacs-expand-after-init~
 - Added option to only show the fringe indicator when the treemacs window is
   selected
 - Implemented one hand navigation with ~h~ collapsing nodes and ~l~ functioning like ~RET~, ~M-H/L~

@@ -421,6 +421,12 @@ The change will apply the next time a treemacs buffer is created."
   :type 'boolean
   :group 'treemacs)
 
+(defcustom treemacs-expand-after-init t
+  "When non-nil expand the first project after treemacs is first initialised.
+Might be superseded by `treemacs-follow-after-init'."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs-expand-added-projects t
   "When non-nil newly added projects will be expanded."
   :type 'boolean
@@ -619,10 +625,8 @@ Note that this does *not* take `scroll-margin' into account."
   :group 'treemacs-follow)
 
 (defcustom treemacs-follow-after-init nil
-  "When t always find and focus the current file when treemacs is built.
-
-A treemacs buffer is built when after calling `treemacs-init' or
-`treemacs-projectle-init'.  This will ignore `treemacs-follow-mode'."
+  "When non-nil find the current file in treemacs after it is first initialised.
+Might supersede `treemacs-expand-after-init'."
   :type 'boolean
   :group 'treemacs-follow)
 
