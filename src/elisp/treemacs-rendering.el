@@ -488,8 +488,12 @@ Run POST-CLOSE-ACTION after everything else is done."
             (delete-region pos-start pos-end))))
       ,post-close-action)))
 
-(defun treemacs--expand-root-node (btn)
-  "Expand the given root BTN."
+(defun treemacs--expand-root-node (btn &optional recursive)
+  "Expand the given root BTN.
+Open every child-directory as well when RECURSIVE is non-nil.
+
+BTN: Button
+RECURSIVE: Bool"
   (let ((project (treemacs-button-get btn :project)))
     (treemacs-with-writable-buffer
      (treemacs-project->refresh-path-status! project))
@@ -519,7 +523,12 @@ Run POST-CLOSE-ACTION after everything else is done."
              ;; Performing FS ops on a disconnected Tramp project
              ;; might have changed the state to connected.
              (treemacs-with-writable-buffer
-              (treemacs-project->refresh-path-status! project)))))))))
+              (treemacs-project->refresh-path-status! project))
+             (when (and recursive (treemacs-project->is-readable? project))
+               (--each (treemacs-collect-child-nodes btn)
+                 (when (eq 'dir-node-closed (treemacs-button-get it :state))
+                   (goto-char (treemacs-button-start it))
+                   (treemacs--expand-dir-node it :git-future git-future :recursive t)))))))))))
 
 (defun treemacs--collapse-root-node (btn &optional recursive)
   "Collapse the given root BTN.
