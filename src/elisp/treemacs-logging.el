@@ -50,12 +50,12 @@ Not used directly, but as part of `treemacs-without-messages'.")
 (defmacro treemacs--do-log (prefix msg &rest args)
   "Print a log statement with the given PREFIX and MSG and format ARGS."
   `(progn
-     (unless (listp treemacs--saved-eldoc-display)
+     (unless (consp treemacs--saved-eldoc-display)
        (setf treemacs--saved-eldoc-display (list treemacs-eldoc-display)))
      (setf treemacs-eldoc-display nil)
      (unless treemacs--no-messages
        (message "%s %s" ,prefix (format ,msg ,@args)))
-     (add-hook 'post-command-hook #'treemacs--restore-eldoc-after-log)))
+     (add-hook 'pre-command-hook #'treemacs--restore-eldoc-after-log)))
 
 (defmacro treemacs-log (msg &rest args)
   "Write an info/success log statement given format string MSG and ARGS."
