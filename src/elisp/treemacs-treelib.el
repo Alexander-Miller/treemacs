@@ -91,6 +91,13 @@ Set by `treemacs--async-update-part-complete'.")
   ;; used as a check when the extension is enabled
   entry-point?)
 
+(define-inline treemacs--ext-symbol-to-instance (symbol)
+  "Derive an extension instance from the given SYMBOL."
+  (declare (side-effect-free t))
+  (inline-letevals (symbol)
+    (inline-quote
+     (symbol-value (intern (format "treemacs-%s-extension-instance" ,symbol))))))
+
 (defun treemacs--compare-extensions-by-name (e1 e2)
   "Compare E1 and E2 by their names."
   (declare (side-effect-free t))
@@ -131,7 +138,7 @@ POSITION is either `top' or `bottom', indicating whether the extension should be
 rendered as the first or last element.
 
 See also `treemacs-disable-${name}-extension'.")
-             (let* ((ext-instance (symbol-value (intern (format "treemacs-%s-extension-instance" extension))))
+             (let* ((ext-instance (treemacs--ext-symbol-to-instance extension))
                     (cell (cons ext-instance predicate)))
                (treemacs-static-assert (treemacs-extension-p ext-instance)
                  "Given argument is not a valid `treemacs-extension': %s" extension)
@@ -152,7 +159,7 @@ See also `treemacs-disable-${name}-extension'.")
              ,(s-lex-format
                "Remove a `${name}' EXTENSION at the given POSITION.
 See also `treemacs-enable-${name}-extension'.")
-             (-let [ext-instance (symbol-value (intern (format "treemacs-%s-extension-instance" extension)))]
+             (-let [ext-instance (treemacs--ext-symbol-to-instance extension)]
                (treemacs-static-assert (treemacs-extension-p ext-instance)
                  "Given argument is not a valid `treemacs-extension': %s" extension)
                (pcase position
@@ -334,8 +341,8 @@ extension, it will be used as a type-check when enabling an extension with e.g.
          (open-state   (intern (s-lex-format "treemacs-${name}-open-state")))
          (closed-state (intern (s-lex-format "treemacs-${name}-closed-state")))
          (children-fn  (if async?
-                           `(lambda (btn item callback) (ignore btn item callback) ,children)
-                         `(lambda (btn item) (ignore btn item) ,children))))
+                           `(lambda (&optional btn item callback) (ignore btn item callback) ,children)
+                         `(lambda (&optional btn item) (ignore btn item) ,children))))
     `(progn
        (defconst ,struct-name
          (treemacs-extension->create!
@@ -551,6 +558,8 @@ Also serves as an entry point to render an extension in an independent buffer
 outside of treemacs proper.
 
 EXT: `treemacs-extension' instance"
+  (when (symbolp ext)
+    (setf ext (treemacs--ext-symbol-to-instance ext)))
   (if (treemacs-extension->variadic? ext)
       (treemacs--variadic-extension-entry-render ext)
     (treemacs--singular-extension-entry-render ext)))
@@ -716,12 +725,12 @@ If a prefix ARG is provided expand recursively."
          (ext (alist-get state treemacs--extension-registry))
          (eol (point-at-eol))
          (already-loading
-          (= eol
+          (/= eol
              (next-single-property-change
               (point-at-bol) 'treemacs-async-string nil eol))))
     (when (null ext)
       (error "No extension is registered for state '%s'" state))
-    (unless (not already-loading)
+    (unless (or (treemacs-button-get btn :leaf) already-loading)
       ;; this cache is only ever set for updating async nodes
       (-let [async-cache (ht-get treemacs--async-update-cache path)]
         (cond
@@ -850,7 +859,7 @@ ITEMS: List<Any>"
 
 BTN: Button
 EXT: `treemacs-extension' instance"
-  (let* ((items           (treemacs-extension->get ext :children btn))
+  (let* ((items           (treemacs-extension->get ext :children))
          (btn-path        (treemacs-button-get btn :path))
          (parent-path     (list btn-path))
          (parent-dom-node (treemacs-find-in-dom btn-path))
@@ -946,8 +955,8 @@ ARG: Prefix Arg"
    :post-close-action
    (treemacs-on-collapse (treemacs-button-get btn :path))))
 
-(defun treemacs-initialize ()
-  "Initialise treemacs in an external buffer for extension use."
+(defun treemacs-initialize (extension)
+  "Initialise an external buffer for use with the given EXTENSION."
   (treemacs--disable-fringe-indicator)
   (treemacs-with-writable-buffer
    (erase-buffer))
@@ -958,7 +967,9 @@ ARG: Prefix Arg"
   (let ((treemacs-fringe-indicator-mode nil)
         (treemacs--in-this-buffer t))
     (treemacs-mode))
-  (setq-local treemacs--in-this-buffer :extension))
+  (setq-local treemacs-space-between-root-nodes nil)
+  (setq-local treemacs--in-this-buffer :extension)
+  (treemacs-render-extension (treemacs--ext-symbol-to-instance extension)))
 
 ;;;; REDEFINITIONS -----------------------------------------------------------------------------------
 
