@@ -232,7 +232,7 @@ A non-nil prefix ARG will also force a workspace switch."
   (goto-char 0))
 
 ;;;###autoload
-(defun treemacs-display-current-project-exclusively ()
+(defun treemacs-add-and-display-current-project-exclusively ()
   "Display the current project, and *only* the current project.
 Like `treemacs-add-and-display-current-project' this will add the current
 project to treemacs based on either projectile, the built-in project.el, or the
@@ -256,6 +256,10 @@ workspace."
        (treemacs--show-single-project path name)
        (treemacs-pulse-on-success "Now showing %s"
          (propertize path 'face 'font-lock-string-face))))))
+(define-obsolete-function-alias
+  'treemacs-display-current-project-exclusively
+  #'treemacs-add-and-display-current-project-exclusively
+  "v2.9")
 
 ;;;###autoload
 (defun treemacs-add-and-display-current-project ()
