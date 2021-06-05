@@ -125,6 +125,43 @@ This will make sure the icons' background colours will align with hl-line mode."
   "Locally remove `treemacs-icons-dired--update-icon-selection'."
   (remove-hook 'post-command-hook #'treemacs-icons-dired--update-icon-selection :local))
 
+(defun treemacs-icons-dired--add-icon-for-new-entry (file &rest _)
+  "Add an icon for a new single FILE added by dired."
+  (let (buffer-read-only)
+    (insert (if (file-directory-p file)
+                treemacs-icon-dir-closed
+              (treemacs-icon-for-file file)))))
+
+(defun treemacs-icons-dired--setup ()
+  "Setup for the minor-mode."
+  (treemacs--setup-icon-background-colors)
+  (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
+  (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
+  (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
+  (advice-add 'ranger-setup :before #'treemacs--select-icon-set)
+  (advice-add 'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
+  (advice-add 'dired-add-entry :after #'treemacs-icons-dired--add-icon-for-new-entry)
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (when (derived-mode-p 'dired-mode)
+        (treemacs--select-icon-set)
+        (treemacs-icons-dired--enable-highlight-correction)
+        (treemacs-icons-dired--display)))))
+
+(defun treemacs-icons-dired--teardown ()
+  "Tear-down for the minor-mode."
+  (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
+  (remove-hook 'dired-mode-hook #'treemacs--select-icon-set)
+  (remove-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
+  (advice-remove 'ranger-setup #'treemacs--select-icon-set)
+  (advice-remove 'ranger-setup #'treemacs-icons-dired--enable-highlight-correction)
+  (advice-remove 'dired-add-entry #'treemacs-icons-dired--add-icon-for-new-entry)
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (when (derived-mode-p 'dired-mode)
+        (treemacs-icons-dired--disable-highlight-correction)
+        (dired-revert)))))
+
 ;;;###autoload
 (define-minor-mode treemacs-icons-dired-mode
   "Display treemacs icons for each file in a dired buffer."
@@ -133,29 +170,8 @@ This will make sure the icons' background colours will align with hl-line mode."
   :global     t
   :group      'treemacs
   (if treemacs-icons-dired-mode
-      (progn
-        (treemacs--setup-icon-background-colors)
-        (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
-        (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
-        (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
-        (advice-add 'ranger-setup :before #'treemacs--select-icon-set)
-        (advice-add 'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
-        (dolist (buffer (buffer-list))
-          (with-current-buffer buffer
-            (when (derived-mode-p 'dired-mode)
-              (treemacs--select-icon-set)
-              (treemacs-icons-dired--enable-highlight-correction)
-              (treemacs-icons-dired--display)))))
-    (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
-    (remove-hook 'dired-mode-hook #'treemacs--select-icon-set)
-    (remove-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
-    (advice-remove 'ranger-setup #'treemacs--select-icon-set)
-    (advice-remove 'ranger-setup #'treemacs-icons-dired--enable-highlight-correction)
-    (dolist (buffer (buffer-list))
-      (with-current-buffer buffer
-        (when (derived-mode-p 'dired-mode)
-          (treemacs-icons-dired--disable-highlight-correction)
-          (dired-revert))))))
+      (treemacs-icons-dired--setup)
+    (treemacs-icons-dired--teardown)))
 
 (advice-add 'dired-revert :before #'treemacs-icons-dired--reset)
 
