@@ -199,7 +199,7 @@ only project, all other projects *will be removed* from the current workspace."
             (ws (treemacs-current-workspace)))
        (treemacs-return-if (and (= 1 (length (treemacs-workspace->projects ws)))
                                 (string= path (-> ws (treemacs-workspace->projects) (car) (treemacs-project->path))))
-         (treemacs-pulse-on-success "Current project is already shown."))
+         (treemacs-select-window))
        (if (treemacs-workspace->is-empty?)
            (progn
              (treemacs-do-add-project-to-workspace path name)
