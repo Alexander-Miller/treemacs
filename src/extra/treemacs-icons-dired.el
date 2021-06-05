@@ -138,6 +138,7 @@ This will make sure the icons' background colours will align with hl-line mode."
   (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
   (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
   (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
+  (advice-add 'dired-revert :before #'treemacs-icons-dired--reset)
   (advice-add 'ranger-setup :before #'treemacs--select-icon-set)
   (advice-add 'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
   (advice-add 'dired-add-entry :after #'treemacs-icons-dired--add-icon-for-new-entry)
@@ -153,6 +154,7 @@ This will make sure the icons' background colours will align with hl-line mode."
   (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
   (remove-hook 'dired-mode-hook #'treemacs--select-icon-set)
   (remove-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
+  (advice-remove 'dired-revert #'treemacs-icons-dired--reset)
   (advice-remove 'ranger-setup #'treemacs--select-icon-set)
   (advice-remove 'ranger-setup #'treemacs-icons-dired--enable-highlight-correction)
   (advice-remove 'dired-add-entry #'treemacs-icons-dired--add-icon-for-new-entry)
@@ -172,8 +174,6 @@ This will make sure the icons' background colours will align with hl-line mode."
   (if treemacs-icons-dired-mode
       (treemacs-icons-dired--setup)
     (treemacs-icons-dired--teardown)))
-
-(advice-add 'dired-revert :before #'treemacs-icons-dired--reset)
 
 (provide 'treemacs-icons-dired)
 
