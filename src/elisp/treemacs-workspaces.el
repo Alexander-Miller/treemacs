@@ -76,7 +76,9 @@
 
 (defvar treemacs--workspaces (list (treemacs-workspace->create! :name "Default")))
 
-(defvar treemacs--find-user-project-functions (list #'treemacs--default-current-user-project-function)
+(defvar treemacs--find-user-project-functions
+  (list #'treemacs--current-builtin-project-function
+        #'treemacs--current-directory-project-function)
   "List of functions to find the user project for the current buffer.")
 
 (defvar-local treemacs--org-err-ov nil
@@ -100,10 +102,15 @@ To be called whenever a project or workspace changes."
   (dolist (buf (buffer-list))
     (setf (buffer-local-value 'treemacs--project-of-buffer buf) nil))))
 
-(defun treemacs--default-current-user-project-function ()
+(defun treemacs--current-builtin-project-function ()
   "Find the current project.el project."
   (declare (side-effect-free t))
   (-some-> (project-current) (cdr) (file-truename) (treemacs-canonical-path)))
+
+(defun treemacs--current-directory-project-function ()
+  "Find the current working directory."
+  (declare (side-effect-free t))
+  (-some-> default-directory (treemacs--canonical-path)))
 
 (define-inline treemacs-workspaces ()
   "Return the list of all workspaces in treemacs."

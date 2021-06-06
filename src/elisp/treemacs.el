@@ -186,7 +186,9 @@ treemacs buffer for this frame."
 (defun treemacs-display-current-project-exclusively ()
   "Display the current project, and *only* the current project.
 Like `treemacs-add-and-display-current-project' this will add the current
-project to treemacs based on either projectile or the built-in project.el.
+project to treemacs based on either projectile, the built-in project.el, or the
+current working directory.
+
 However the 'exclusive' part means that it will make the current project the
 only project, all other projects *will be removed* from the current workspace."
   (interactive)
@@ -197,8 +199,9 @@ only project, all other projects *will be removed* from the current workspace."
      (let* ((path (treemacs-canonical-path root))
             (name (treemacs--filename path))
             (ws (treemacs-current-workspace)))
-       (treemacs-return-if (and (= 1 (length (treemacs-workspace->projects ws)))
-                                (string= path (-> ws (treemacs-workspace->projects) (car) (treemacs-project->path))))
+       (treemacs-return-if
+           (and (= 1 (length (treemacs-workspace->projects ws)))
+                (treemacs-is-path path :in-workspace ws))
          (treemacs-select-window))
        (if (treemacs-workspace->is-empty?)
            (progn
@@ -224,7 +227,8 @@ only project, all other projects *will be removed* from the current workspace."
 (defun treemacs-add-and-display-current-project ()
   "Open treemacs and add the current project root to the workspace.
 The project is determined first by projectile (if treemacs-projectile is
-installed), then by project.el.
+installed), then by project.el, then by the current working directory.
+
 If the project is already registered with treemacs just move point to its root.
 An error message is displayed if the current buffer is not part of any project."
   (interactive)
