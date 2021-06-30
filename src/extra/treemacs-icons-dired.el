@@ -104,16 +104,17 @@ This will make sure the icons' background colours will align with hl-line mode."
     (condition-case e
         (progn
           (treemacs--evade-image)
-          (let* ((last-pos treemacs--last-highlight)
-                 (curr-pos (next-single-char-property-change (point-at-bol) 'img-selected nil (point-at-eol)))
-                 (img-selected (get-text-property curr-pos 'img-selected)))
-            (treemacs-with-writable-buffer
-             (when (and last-pos (< last-pos (point-max)))
-               (let ((img-unselected (get-text-property last-pos 'img-unselected)))
-                 (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
-             (when (and img-selected (< curr-pos (point-max)))
-               (put-text-property curr-pos (1+ curr-pos) 'display img-selected)
-               (setq treemacs--last-highlight (copy-marker curr-pos))))))
+          (unless (region-active-p)
+            (let* ((last-pos treemacs--last-highlight)
+                   (curr-pos (next-single-char-property-change (point-at-bol) 'img-selected nil (point-at-eol)))
+                   (img-selected (get-text-property curr-pos 'img-selected)))
+              (treemacs-with-writable-buffer
+               (when (and last-pos (< last-pos (point-max)))
+                 (let ((img-unselected (get-text-property last-pos 'img-unselected)))
+                   (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
+               (when (and img-selected (< curr-pos (point-max)))
+                 (put-text-property curr-pos (1+ curr-pos) 'display img-selected)
+                 (setq treemacs--last-highlight (copy-marker curr-pos)))))))
       (error
        (treemacs-log "Error on highlight, this shouldn't happen: %s" e)))))
 
