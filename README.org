@@ -63,7 +63,7 @@ overview looks as follows:
    a window or launching an external application.
  * Understanding of frames :: every frame will receive its own treemacs buffer that will live and die with that frame.
  * Finding of files and tags :: Treemacs can follow along and keep in focus the currently selected file or even the tag
-   at point using, either manually or automatically using either ~treemacs-follow-mode~ or ~treemacs-tag-follow-mode~.
+   at point, either manually or automatically using either ~treemacs-follow-mode~ or ~treemacs-tag-follow-mode~.
  * Git Integration :: Treemacs can use different faces for files and directories based on their git status.
    The git process is run asynchronously, minimizing its performance impact.
  * [[https://github.com/deb0ch/emacs-winum][Winum]] & [[https://github.com/abo-abo/ace-window][ace-window]] compatibility :: The presence of treemacs will not interfere with winum's and ace-window's
@@ -152,7 +152,7 @@ that file. If that fails treemacs will resort to using the /fallback workspace/ 
 element in the list of all workspace.
 
 The order of workspaces is the same that you see when calling ~treemacs-edit-workspaces~ (see next chapter). You can
-interactively set the fall backback workspace by calling ~treemacs-set-fallback-workspace~.
+interactively set the fallback workspace by calling ~treemacs-set-fallback-workspace~.
 
 This selection will happen when treemacs is first started (with a command like ~treemacs-select-window~) or when a
 function that requires the current workspace to be known is used (like adding or removing a project).
