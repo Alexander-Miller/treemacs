@@ -208,7 +208,8 @@ Additionally tag sections can be expanded or collapsed by a single click on the 
 If you prefer to expand/collpase nodes with a single mouse click you can also use ~treemacs-single-click-expand-action~:
 
 #+BEGIN_SRC emacs-lisp
-  (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action)
+  (with-eval-after-load 'treemacs
+    (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
 #+END_SRC
 
 A right click popup-menu is also available:
