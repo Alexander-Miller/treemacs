@@ -451,8 +451,10 @@ In practice this means expand PATH and remove its final slash."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (path)
     (inline-quote
-     (let (file-name-handler-alist)
-       (-> ,path (expand-file-name) (treemacs--unslash))))))
+     (if (file-remote-p ,path)
+         (treemacs--unslash ,path)
+       (let (file-name-handler-alist)
+         (-> ,path (expand-file-name) (treemacs--unslash)))))))
 ;; TODO(2020/12/28): alias is for backwards compatibility, remove it eventually
 (defalias 'treemacs--canonical-path #'treemacs-canonical-path)
 
