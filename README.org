@@ -435,6 +435,7 @@ setting. Setting them all yourself is not necessary, they are only listed here t
             treemacs-user-mode-line-format         nil
             treemacs-user-header-line-format       nil
             treemacs-width                         35
+            treemacs-width-is-initially-locked     t
             treemacs-workspace-switch-cleanup      nil)
 
       ;; The default width and height of the icons is 22 pixels. If you are
@@ -492,8 +493,8 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-indentation-string            | " "                                              | The string that is used to create indentation when ~treemacs-indentation~ is not specified as pixels.                                                                                                                                |
 | treemacs-width                         | 35                                               | Width of the treemacs window.                                                                                                                                                                                                        |
 | treemacs-show-hidden-files             | t                                                | Dotfiles will be shown if this is set to t and be hidden otherwise.                                                                                                                                                                  |
-| treemacs-follow-after-init             | t                                                | When non-nil follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                               |
-| treemacs-expand-after-init             | t                                                | When non-nil expand the first project after treemacs is first initialsed.                                                                                                                                                           |
+| treemacs-follow-after-init             | t                                                | When non-nil follow the currently selected file after initializing the treemacs buffer, regardless of ~treemacs-follow-mode~ setting.                                                                                                |
+| treemacs-expand-after-init             | t                                                | When non-nil expand the first project after treemacs is first initialsed.                                                                                                                                                            |
 | treemacs-sorting                       | alphabetic-asc                                   | Indicates how treemacs will sort its files and directories. (Files will always be shown after directories.)                                                                                                                          |
 | treemacs-ignored-file-predicates       | (treemacs--std-ignore-file-predicate)            | List of predicates to test for files and directories ignored by Emacs. Ignored files will *never* be shown in the treemacs buffer.                                                                                                   |
 | treemacs-pre-file-insert-predicates    | nil                                              | List of predicates to test for files and directories not to be rendered. Unlike ~treemacs-ignored-file-predicates~ these predicates apply when files' git status information is available.                                           |
@@ -548,6 +549,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-imenu-scope                   | 'everything                                      | Determines which items treemacs' imenu function will collect.                                                                                                                                                                        |
 | treemacs-window-background-color       | nil                                              | Background color for the treemacs window.                                                                                                                                                                                            |
 | treemacs-litter-directories            | ("/node_modules" "/.venv" "/.cask")              | List of directories affected by ~treemacs-cleanup-litter~.                                                                                                                                                                           |
+| treemacs-width-is-initially-locked     | t                                                | Indicates whether the treemacs windows starts with a locked width or not.                                                                                                                                                            |
 
 ** Faces
 Treemacs defines and uses the following faces:

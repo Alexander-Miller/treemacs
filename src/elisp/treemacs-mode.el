@@ -253,7 +253,7 @@ Will simply return `treemacs--eldoc-msg'."
         truncate-lines           t
         indent-tabs-mode         nil
         desktop-save-buffer      nil
-        window-size-fixed        (when treemacs--width-is-locked 'width)
+        window-size-fixed        (when treemacs-width-is-initially-locked 'width)
         treemacs--in-this-buffer t)
 
   (unless treemacs-show-cursor

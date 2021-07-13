@@ -726,6 +726,13 @@ In practice it means that treemacs will become invisible to commands like
   :type 'boolean
   :group 'treemacs-window)
 
+(defcustom treemacs-width-is-initially-locked t
+  "Indicates whether the width of the treemacs window is initially locked.
+A locked width means that changes it is only possible with the commands
+`treemacs-set-width' or `treemacs-toggle-fixed-width'."
+  :type 'boolean
+  :group 'treemacs-window)
+
 (defcustom treemacs-window-background-color nil
   "Custom background colours for the treemacs window.
 Value must be a cons cell consisting of two colours: first the background of the
