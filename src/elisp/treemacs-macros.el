@@ -373,16 +373,16 @@ Entry variables will bound based on NAMES which is a list of two elements."
       ,table)))
 
 (defmacro treemacs-error-return (error-msg &rest msg-args)
-  "Early return failure from `treemacs-block'.
-Will pass ERROR-MSG and MSG-ARGS to `treemacs-pulse-on-failure'."
+  "Interactive early return failure from `treemacs-block'.
+Will also pass ERROR-MSG and MSG-ARGS to `treemacs-pulse-on-failure'."
   (declare (indent 1) (debug (form body)))
   `(cl-return-from __body__
      (treemacs-pulse-on-failure ,error-msg ,@msg-args)))
 
 (defmacro treemacs-error-return-if (predicate error-msg &rest msg-args)
-  "Early return from `treemacs-block'.
-When PREDICATE returns non-nil value will pass ERROR-MSG and MSG-ARGS to
-`treemacs-pulse-on-failure'."
+  "Interactive early return from `treemacs-block'.
+Checks if PREDICATE returns a non-nil value, and will pass also ERROR-MSG and
+MSG-ARGS to `treemacs-pulse-on-failure'."
   (declare (indent 1) (debug (form sexp body)))
   `(when ,predicate
      (cl-return-from __body__
