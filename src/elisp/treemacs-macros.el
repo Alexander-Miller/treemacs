@@ -393,7 +393,7 @@ MSG-ARGS to `treemacs-pulse-on-failure'."
   (declare (debug t))
   `(cl-return-from __body__ ,ret))
 
-(defmacro treemacs-return-if (predicate ret)
+(defmacro treemacs-return-if (predicate &optional ret)
   "Early return from `treemacs-block'.
 When PREDICATE returns non-nil RET will be returned."
   (declare (indent 1) (debug (form sexp)))
@@ -529,8 +529,9 @@ Based on a timer GUARD variable run function with the given DELAY and BODY."
            (run-with-idle-timer
             ,delay nil
             (lambda ()
-              ,@body
-              (setf ,guard nil))))))
+              (unwind-protect
+                  (progn ,@body)
+                (setf ,guard nil)))))))
 
 (defmacro treemacs-without-recenter (&rest body)
   "Run BODY without the usual recentering for expanded nodes.
