@@ -40,7 +40,7 @@
   "Debounced display of the current project for `treemacs-project-follow-mode'.
 Used as a hook for `window-buffer-change-functions', thus the ignored parameter."
   (treemacs-debounce treemacs--project-follow-timer treemacs--project-follow-delay
-    (when (treemacs-get-local-buffer)
+    (-when-let (window (treemacs-get-local-window))
       (treemacs-block
        (let* ((ws (treemacs-current-workspace))
               (new-project-path (treemacs--find-current-user-project))
@@ -61,7 +61,7 @@ Used as a hook for `window-buffer-change-functions', thus the ignored parameter.
                (treemacs-log-err "Something went wrong when adding project at '%s': %s"
                  (propertize new-project-path 'face 'font-lock-string-face)
                  add-result)))
-           (with-current-buffer (treemacs-get-local-buffer)
+           (with-selected-window window
              (treemacs--consolidate-projects))
            (treemacs--follow)))))))
 
