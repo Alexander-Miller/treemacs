@@ -68,11 +68,13 @@ Used as a hook for `window-buffer-change-functions', thus the ignored parameter.
 (defun treemacs--setup-project-follow-mode ()
   "Setup all the hooks needed for `treemacs-project-follow-mode'."
   (add-hook 'window-buffer-change-functions #'treemacs--follow-project)
+  (add-hook 'window-selection-change-functions #'treemacs--follow-project)
   (treemacs--follow-project nil))
 
 (defun treemacs--tear-down-project-follow-mode ()
   "Remove the hooks added by `treemacs--setup-project-follow-mode'."
-  (remove-hook 'window-buffer-change-functions #'treemacs--follow-project ))
+  (remove-hook 'window-buffer-change-functions #'treemacs--follow-project)
+  (remove-hook 'window-selection-change-functions #'treemacs--follow-project))
 
 ;;;###autoload
 (define-minor-mode treemacs-project-follow-mode
@@ -90,14 +92,21 @@ the project using the following methods, in the order they are listed:
 
 - the current projectile.el project, if `treemacs-projectile' is installed
 - the current project.el project
-- the current `default-directory'"
+- the current `default-directory'
+
+The update will only happen when treemacs is in the foreground, meaning a
+treemacs window must exist in the current scope.
+
+This mode requires at least Emacs version 27 since it relies on
+`window-buffer-change-functions' and `window-selection-change-functions'."
   :init-value nil
   :global     t
   :lighter    nil
   :group      'treemacs
   (if treemacs-project-follow-mode
       (progn
-        (unless (boundp 'window-buffer-change-functions)
+        (unless (and (boundp 'window-buffer-change-functions)
+                     (boundp 'window-selection-change-functions))
           (user-error "%s %s"
                       "Project-Follow-Mode is only available in Emacs"
                       "versions that support `window-buffer-change-functions'"))
