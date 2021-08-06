@@ -96,7 +96,12 @@ the project using the following methods, in the order they are listed:
   :lighter    nil
   :group      'treemacs
   (if treemacs-project-follow-mode
-      (treemacs--setup-project-follow-mode)
+      (progn
+        (unless (boundp 'window-buffer-change-functions)
+          (user-error "%s %s"
+                      "Project-Follow-Mode is only available in Emacs"
+                      "versions that support `window-buffer-change-functions'"))
+        (treemacs--setup-project-follow-mode))
     (treemacs--tear-down-project-follow-mode)))
 
 (provide 'treemacs-project-follow-mode)
