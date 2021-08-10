@@ -180,14 +180,18 @@ You needn't worry about making mistakes either. If there's something wrong when 
 indentation is caused by ~org-indent-mode~)
 
 ** Navigation without Projects and Workspaces
-If a strict workspace and project structure, as described above, is too stringent for your use-case you can, under
-certain circumstances, use treemacs to freely navigate through your your file system, similar to dired: When your
-workspace contains /exactly/ a single project you can use ~M-H~ and ~M-L~ (or ~treemacs-root-up~ and ~treemacs-root-down~)
-to arbitrarily change the single project's root. ~M-H~ will navigate one level upward in the file system, ~M-L~ will move
-into the directory at point.
 
-You can also use ~treemacs-display-current-project-exclusively~ to switch to the current project (deleting any others
-that might be present).
+If a strict workspace and project structure, as described above, is too stringent for your use-case there are multiple
+other ways to use treemacs in a more "free-form" style:
+
+- You can use ~treemacs-display-current-project-exclusively~ to switch to the current project (deleting any others that
+  might be present).
+- You can enable ~treemacs-project-follow-mode~ to make treemacs automatically switch to the project for the current
+  buffer.
+- As long as there is exactly /a single project/ in your workspace you can also use ~M-H~ and ~M-L~ (or
+  ~treemacs-root-up~ and ~treemacs-root-down~) to to arbitrarily change the project's root and freely navigate through
+  your your file system, similar to dired. ~M-H~ will navigate one level upward in the file system, ~M-L~ will move into
+  the directory at point.
 
 ** Frame Locality
 Treemacs buffers have a limited scope they are visible in: the frames they are created in. A treemacs buffer, once
@@ -855,6 +859,10 @@ Aside from this there are the following known incompatibilities:
    part of ~special-mode-hook~, since this is the mode ~treemacs-mode~ is derived from.
 
 * FAQ
+- I don't need multiple projects, can treemacs just always show me the current project I'm in?
+
+  Yes, see the section about [[*Navigation without Projects and Workspaces]].
+
 - How do I hide files I don't want to see?
 
    You need to define a predicate function and add it to ~treemacs-ignored-file-predicates~. This function accepts two
