@@ -182,8 +182,8 @@ indentation is caused by ~org-indent-mode~)
 ** Navigation without Projects and Workspaces
 If a strict workspace and project structure, as described above, is too stringent for your use-case you can, under
 certain circumstances, use treemacs to freely navigate through your your file system, similar to dired: When your
-workspace contains /exactly/ a single project you can use ~h~ and ~l~ (or ~treemacs-root-up~ and ~treemacs-root-down~)
-to arbitrarily change the single project's root. ~h~ will navigate one level upward in the file system, ~l~ will move
+workspace contains /exactly/ a single project you can use ~M-H~ and ~M-L~ (or ~treemacs-root-up~ and ~treemacs-root-down~)
+to arbitrarily change the single project's root. ~M-H~ will navigate one level upward in the file system, ~M-L~ will move
 into the directory at point.
 
 You can also use ~treemacs-display-current-project-exclusively~ to switch to the current project (deleting any others
