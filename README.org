@@ -970,15 +970,19 @@ into their own module in ~treemacs-icons.el~).
 If you want to delve into the treemacs' code base, check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
 
 * Dependencies
- * emacs >= 26.1
- * s.el
- * dash
- * cl-lib
- * ace-window
- * pfuture
- * ht
- * hydra
- * (optionally) evil
- * (optionally) projectile
- * (optionally) winum
- * (optionally) python(3)
+ - emacs >= 26.1
+ - s
+ - dash
+ - cl-lib
+ - ace-window
+ - pfuture
+ - ht
+ - cfrs
+ - hydra
+ - (optionally) evil
+ - (optionally) projectile
+ - (optionally) winum
+ - (optionally) magit
+ - (optionally) perspective/persp
+ - (optionally) all-the-icons
+ - (optionally) python(3)
