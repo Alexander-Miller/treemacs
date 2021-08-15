@@ -266,30 +266,27 @@ employed:
  - `treemacs-define-entry-node-type'
  - `treemacs-define-variadic-entry-node-type'
 
-NAME of this node type is a symbol.  An instance of the `treemacs-extension'
-type with the name `treemacs-${NAME}-extension-instance' will be created for
-this node type.
+NAME of this node type is a symbol.  After an extension is defined the NAME
+symbol can be passed to a function like `treemacs-initialize' or
+`treemacs-enable-top-level-extension' to make start using it.
 
 CHILDREN is a form to query a list of items to be rendered as children when a
 node is expanded.  The node being expanded is available as a variable under the
 name `btn'.  It is a `button' in the sense of the built-in button.el library
 \(really just a marker to a buffer position), so its text-properties can be
 extracted via `(treemacs-button-get node :property)' (see also MORE-PROPERTIES).
-In addition the item (as produced by the form passed here) that was used the
-create the node will also be available under the name `item'.  For entry-level
-nodes at the top of the hierarchy `item' will be nil.
+In addition the item (as produced by the form passed here) that was used to
+create the node will also be available under the name `item'.
 
 KEY, LABEL, FACE, OPEN-ICON, CLOSE-ICON and MORE-PROPERTIES all act on one of
-the items produced by CHILDREN.  The respective item will be bound under the
-name `item' in their scope (unless the node being created is at the top of the
-hierarchy and has no parent with its own CHILDREN - in this case `item' will
-just be nil).
+the items produced by CHILDREN.  The node and the item that produced it will be
+bound under the names `btn' and `item' respectively.
 
 KEY is a form to generate a semi-unique key for a given node for one of the
 items produced by CHILDREN.  Semi-unique means that nodes' keys don't all have
-to be unique, it is only necessary that a node's path - the list of all node
-keys starting from the top level root leading to a specific node - must be
-un-ambiguous.
+to be unique on their own, it is only necessary that a node's path - the list of
+all node keys starting from the top level root leading to a specific node - must
+be un-ambiguous.
 
 LABEL is a form to query a node's text label (the text after the icon) for one
 of the items produced by CHILDREN.  The return value should be a string.
@@ -351,15 +348,15 @@ extension, it will be used as a type-check when enabling an extension with e.g.
           :async?          ,async?
           :children        ,children-fn
           :entry-point?    ,entry-point?
-          :label           (lambda (&optional item) "" (ignore item) ,label)
-          :key             (lambda (&optional item) "" (ignore item) ,key)
-          :open-icon       (lambda (&optional item) "" (ignore item) ,open-icon)
-          :closed-icon     (lambda (&optional item) "" (ignore item) ,closed-icon)
-          :face            (lambda (&optional item) "" (ignore item) ,face)
-          :more-properties (lambda (item)           "" (ignore item) ,more-properties)
-          :child-type      (lambda ()               "" (symbol-value ',child-name))
-          :open-state      (lambda ()               "" ',open-state)
-          :closed-state    (lambda ()               "" ',closed-state)))
+          :label           (lambda (btn item) "" (ignore item) (ignore btn) ,label)
+          :key             (lambda (btn item) "" (ignore item) (ignore btn) ,key)
+          :face            (lambda (btn item) "" (ignore item) (ignore btn) ,face)
+          :open-icon       (lambda (btn item) "" (ignore item) (ignore btn) ,open-icon)
+          :closed-icon     (lambda (btn item) "" (ignore item) (ignore btn) ,closed-icon)
+          :more-properties (lambda (btn item) "" (ignore item) (ignore btn) ,more-properties)
+          :child-type      (lambda ()                   "" (symbol-value ',child-name))
+          :open-state      (lambda ()                   "" ',open-state)
+          :closed-state    (lambda ()                   "" ',closed-state)))
 
        (treemacs-define-TAB-action ',closed-state ,(if no-tab? '#'ignore '#'treemacs-expand-extension-node))
        (treemacs-define-TAB-action ',open-state   ,(if no-tab? '#'ignore '#'treemacs-collapse-extension-node))
@@ -467,8 +464,6 @@ For a detailed description of all arguments see
           async?)
 
   "Define a node type with NAME that serves as an entry-point for an extension.
-The `treemacs-${NAME}-extension-instance' created by this macro can be passed to
-the `treemacs-enable-*-extension' family of functions.
 
 The KEY, LABEL, OPEN-ICON CLOSED-ICON, CHILDREN, FACE and CHILD-TYPE arguments
 are mandatory.
@@ -604,9 +599,9 @@ EXT: `treemacs-extension' instance"
      ;; When the extension is variadic it will be managed by a hidden top-level
      ;; node. Its depth is -1 and it is not visible, but can still be used to update
      ;; the entire extension without explicitly worrying about complex dom changes.
-     (let* ((key (treemacs-extension->get ext :key))
+     (let* ((key (treemacs-extension->get ext :key nil nil))
             (pr (treemacs-project->create!
-                 :name (treemacs-extension->get ext :label)
+                 :name (treemacs-extension->get ext :label nil nil)
                  :path key
                  :path-status 'extension))
             (button-start (point-marker))
@@ -830,7 +825,8 @@ ITEMS: List<Any>"
      (treemacs--button-open
       :button btn
       :new-state (treemacs-extension->get ext :open-state)
-      :new-icon (treemacs-extension->get ext :open-icon btn)
+      :new-icon (treemacs-extension->get
+                 ext :open-icon btn (treemacs-button-get btn :item))
       :immediate-insert t
       :open-action
       (treemacs--create-buttons
@@ -842,13 +838,13 @@ ITEMS: List<Any>"
         :parent btn
         :parent-path parent-path
         :parent-dom-node parent-dom-node
-        :more-properties (nconc `(:item ,item) (funcall properties-fn item))
-        :icon (funcall closed-icon-fn item)
+        :more-properties (nconc `(:item ,item) (funcall properties-fn btn item))
+        :icon (funcall closed-icon-fn btn item)
         :state child-state
-        :key (funcall key-fn item)
+        :key (funcall key-fn btn item)
         :depth depth
-        :face (funcall face-fn item)
-        :label (funcall label-fn item)))
+        :face (funcall face-fn btn item)
+        :label (funcall label-fn btn item)))
       :post-open-action
       (progn
         (treemacs-on-expand btn-path btn)
@@ -884,13 +880,13 @@ EXT: `treemacs-extension' instance"
        :parent btn
        :parent-path parent-path
        :parent-dom-node parent-dom-node
-       :more-properties (funcall properties-fn item)
-       :icon (funcall closed-icon-fn item)
+       :more-properties (nconc `(:item ,item) (funcall properties-fn btn item))
+       :icon (funcall closed-icon-fn btn item)
        :state child-state
-       :key (funcall key-fn item)
+       :key (funcall key-fn btn item)
        :depth depth
-       :face (funcall face-fn item)
-       :label (funcall label-fn item)))
+       :face (funcall face-fn btn item)
+       :label (funcall label-fn btn item)))
      :post-open-action
      (progn
        (treemacs-on-expand (treemacs-button-get btn :path) btn)
@@ -951,7 +947,8 @@ ARG: Prefix Arg"
   (treemacs--button-close
    :button btn
    :new-state (treemacs-extension->get ext :closed-state)
-   :new-icon (treemacs-extension->get ext :closed-icon)
+   :new-icon
+   (treemacs-extension->get ext :closed-icon btn (treemacs-button-get btn :item))
    :post-close-action
    (treemacs-on-collapse (treemacs-button-get btn :path))))
 
