@@ -418,13 +418,14 @@ For a detailed description of all arguments see
           children
           child-type
           more-properties
+          ret-action
           async?)
 
   "Define a general-purpose expandable node-type.
 The NAME, CLOSED-ICON, OPEN-ICON LABEL, KEY, FACE, CHILDREN and CHILD-TYPE
 arguments are mandatory.
 
-MORE-PROPERTIES and ASYNC are optional.
+MORE-PROPERTIES, RET-ACTION and ASYNC are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -448,6 +449,7 @@ For a detailed description of all arguments see
      :children ,children
      :child-type ,child-type
      :more-properties ,more-properties
+     :ret-action ,ret-action
      :async? ,async?))
 
 (cl-defmacro treemacs-define-entry-node-type
