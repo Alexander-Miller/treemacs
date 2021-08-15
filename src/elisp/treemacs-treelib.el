@@ -952,21 +952,27 @@ ARG: Prefix Arg"
    :post-close-action
    (treemacs-on-collapse (treemacs-button-get btn :path))))
 
-(defun treemacs-initialize (extension)
-  "Initialise an external buffer for use with the given EXTENSION."
-  (treemacs--disable-fringe-indicator)
-  (treemacs-with-writable-buffer
-   (erase-buffer))
-  ;; make sure the fringe indicator is enabled later, otherwise treemacs attempts
-  ;; to move it right after the `treemacs-mode' call
-  ;; the indicator cannot be created before either since the major-mode activation
-  ;; wipes out buffer-local variables' values
-  (let ((treemacs-fringe-indicator-mode nil)
-        (treemacs--in-this-buffer t))
-    (treemacs-mode))
-  (setq-local treemacs-space-between-root-nodes nil)
-  (setq-local treemacs--in-this-buffer :extension)
-  (treemacs-render-extension (treemacs--ext-symbol-to-instance extension)))
+(defmacro treemacs-initialize (extension &rest init-hook)
+  "Initialise an external buffer for use with the given EXTENSION.
+INIT-HOOK can be used to set up buffer-local variables after the buffer has
+switched over to `treemacs-mode'."
+  (declare (indent 1))
+  `(progn
+     (treemacs--disable-fringe-indicator)
+     (treemacs-with-writable-buffer
+      (erase-buffer))
+     ;; make sure the fringe indicator is enabled later, otherwise treemacs attempts
+     ;; to move it right after the `treemacs-mode' call
+     ;; the indicator cannot be created before either since the major-mode activation
+     ;; wipes out buffer-local variables' values
+     (let ((treemacs-fringe-indicator-mode nil)
+           (treemacs--in-this-buffer t))
+       (treemacs-mode))
+     (setq-local treemacs-space-between-root-nodes nil)
+     (setq-local treemacs--in-this-buffer :extension)
+     ,@init-hook
+     (treemacs-render-extension (treemacs--ext-symbol-to-instance ,extension))
+     (treemacs--evade-image)))
 
 ;;;; REDEFINITIONS -----------------------------------------------------------------------------------
 
