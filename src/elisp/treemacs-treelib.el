@@ -499,27 +499,18 @@ For a detailed description of all arguments see
 (cl-defmacro treemacs-define-variadic-entry-node-type
     (name &key
           key
-          label
-          open-icon
-          closed-icon
           children
-          face
-          child-type
-          more-properties
-          async?)
+          child-type)
 
   "Define a node type that serves as an entry-point for a variadic extension.
 'Variadic' means that the extension will produce multiple nodes when it is first
 rendered instead of just one (e.g. a single 'Buffer List' node vs multiple nodes
 each grouping buffers by major mode).
 
-The `treemacs-${NAME}-extension-instance' created by this macro can be passed to
-the `treemacs-enable-*-extension' family of functions.
+The NAME symbol can be passed to `treemacs-initialize' to render this extension
+in a buffer.
 
-The KEY, LABEL, OPEN-ICON CLOSED-ICON, CHILDREN, FACE and CHILD-TYPE arguments
-are mandatory.
-
-MORE-PROPERTIES and ASYNC are optional.
+The KEY, CHILDREN and CHILD-TYPE arguments are mandatory.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -527,23 +518,15 @@ For a detailed description of all arguments see
   (declare (indent 1))
 
   (treemacs-static-assert key         ":key parameter is mandatory")
-  (treemacs-static-assert label       ":label parameter is mandatory")
-  (treemacs-static-assert open-icon   ":open-icon parameter is mandatory")
-  (treemacs-static-assert closed-icon ":closed-icon parameter is mandatory")
   (treemacs-static-assert children    ":childen parameter is mandatory")
-  (treemacs-static-assert face        ":face parameter is mandatory")
   (treemacs-static-assert child-type  ":child-type parameter is mandatory")
 
   `(treemacs-do-define-extension-type ,name
+     :open-icon ""
      :key ,key
-     :label ,label
-     :open-icon ,open-icon
-     :closed-icon ,closed-icon
+     :closed-icon ""
      :children ,children
-     :face ,face
      :child-type ,child-type
-     :more-properties ,more-properties
-     :async? ,async?
      :variadic? t
      :entry-point? t))
 
