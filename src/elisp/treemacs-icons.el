@@ -436,7 +436,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "vsc/sql.png"       :extensions ("sql"))
     (treemacs-create-icon :file "vsc/toml.png"      :extensions ("toml"))
     (treemacs-create-icon :file "vsc/nim.png"       :extensions ("nim"))
-    (treemacs-create-icon :file "vsc/org.png"       :extensions ("org"))
+    (treemacs-create-icon :file "vsc/org.png"       :extensions ("org" "org_archive"))
     (treemacs-create-icon :file "vsc/perl.png"      :extensions ("pl" "pm" "perl"))
     (treemacs-create-icon :file "vsc/vim.png"       :extensions ("vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc"))
     (treemacs-create-icon :file "vsc/deps.png"      :extensions ("cask"))
