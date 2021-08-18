@@ -640,7 +640,8 @@ LABEL: String"
       ((key key))
     `(let* ((path (append ,parent-path (list ,key)))
             (dom-node (treemacs-dom-node->create! :key path :parent parent-dom-node))
-            (props ,more-properties))
+            (props ,more-properties)
+            (ann (treemacs-get-annotation path)))
        (treemacs-dom-node->insert-into-dom! dom-node)
        (when ,parent-dom-node
          (treemacs-dom-node->add-child! parent-dom-node dom-node))
@@ -660,6 +661,7 @@ LABEL: String"
               :key ,key
               :no-git t
               props)
+             (and ann (treemacs--get-annotation-suffix-string ann))
              (when (zerop depth) (if treemacs-space-between-root-nodes "\n\n" "\n"))))))
 
 ;; render method for extensions by the old version of the api
