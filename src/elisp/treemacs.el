@@ -47,7 +47,6 @@
 (require 'treemacs-workspaces)
 (require 'treemacs-fringe-indicator)
 (require 'treemacs-header-line)
-(require 'treemacs-extensions)
 (require 'treemacs-annotations)
 
 (defconst treemacs-version
@@ -198,9 +197,16 @@ A non-nil prefix ARG will also force a workspace switch."
             (ignore))
            ('close
             (treemacs-quit))
+           ('goto-next
+            (treemacs--jump-to-next-treemacs-window))
+           ('next-or-back
+            (or
+             (treemacs--jump-to-next-treemacs-window)
+             (select-window (get-mru-window (selected-frame) nil :not-selected))))
            ('move-back
             (select-window (get-mru-window (selected-frame) nil :not-selected))))))))
 
+(setf treemacs-select-when-already-in-treemacs 'next-or-back)
 ;;;###autoload
 (defun treemacs-show-changelog ()
   "Show the changelog of treemacs."

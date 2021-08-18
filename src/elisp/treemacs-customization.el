@@ -841,8 +841,12 @@ scrolled all the way to the top, and the cdr is used when it isn't."
 Possible values are:
  - `stay' - remain in the treemacs windows, effectively doing nothing
  - `close' - close the treemacs window
+ - `goto-next' - jump to the next treemacs-based window (e.g. treemacs-mu4e)
  - `move-back' - move point back to the most recently used window (as selected
-    by `get-mru-window')"
+   by `get-mru-window')
+ - `next-or-back' - a combination of the two previous options.  First try to
+   move to the next treemacs-based window, if none exists move back to the most
+   recently used window"
   :type '(choice (const stay)
                  (const close)
                  (const move-back))
