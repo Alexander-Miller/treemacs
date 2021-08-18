@@ -247,37 +247,35 @@ SELF may be a project struct or a root key of a top level extension."
      (memq (-> ,self (treemacs-project->position) (treemacs-button-get :state))
            treemacs--open-node-states))))
 
-(define-inline treemacs-project->refresh-path-status! (self)
+(defun treemacs-project->refresh-path-status! (self)
   "Refresh the path status of project SELF in the current buffer.
 Does not preserve the current position in the buffer."
-  (inline-letevals (self)
-    (inline-quote
-     (let ((old-path-status (treemacs-project->path-status ,self))
-           (new-path-status (treemacs--get-path-status (treemacs-project->path ,self))))
-       (unless (eq old-path-status new-path-status)
-         (setf (treemacs-project->path-status ,self) new-path-status)
-         ;; When the path transforms from unreadable or disconnected to readable,
-         ;; update the :symlink status on its button.
-         (let ((pos (treemacs-project->position ,self))
-               (path (treemacs-project->path ,self)))
-           (when (treemacs-project->is-readable? ,self)
-             (treemacs-button-put pos :symlink (file-symlink-p path)))
-           (treemacs-button-put pos 'face (treemacs--root-face ,self))))))))
+  (let ((old-path-status (treemacs-project->path-status self))
+        (new-path-status (treemacs--get-path-status (treemacs-project->path self))))
+    (unless (eq old-path-status new-path-status)
+      (setf (treemacs-project->path-status self) new-path-status)
+      ;; When the path transforms from unreadable or disconnected to readable,
+      ;; update the :symlink status on its button.
+      (let ((pos (treemacs-project->position self))
+            (path (treemacs-project->path self)))
+        (when (treemacs-project->is-readable? self)
+          (treemacs-button-put pos :symlink (file-symlink-p path)))
+        (treemacs-button-put pos 'face (treemacs--root-face self))))))
 
-(define-inline treemacs-project->refresh! (self)
+;; TODO(2021/08/17): -> rendering
+(defun treemacs-project->refresh! (self)
   "Refresh project SELF in the current buffer.
 Does not preserve the current position in the buffer."
-  (inline-letevals (self)
-    (inline-quote
-     (progn
-       (treemacs-project->refresh-path-status! ,self)
-       (when (treemacs-project->is-expanded? ,self)
-         (let ((root-btn (treemacs-project->position ,self)))
-           (goto-char root-btn)
-           (treemacs--forget-last-highlight)
-           (treemacs--collapse-root-node root-btn)
-           (unless (treemacs-project->is-unreadable? ,self)
-             (treemacs--expand-root-node root-btn))))))))
+  (treemacs-project->refresh-path-status! self)
+  (when (treemacs-project->is-expanded? self)
+    (let ((root-btn (treemacs-project->position self)))
+      (goto-char root-btn)
+      (treemacs--forget-last-highlight)
+      (funcall (alist-get (treemacs-button-get root-btn :state)
+                          treemacs-TAB-actions-config))
+      (unless (treemacs-project->is-unreadable? self)
+        (funcall (alist-get (treemacs-button-get root-btn :state)
+                            treemacs-TAB-actions-config))))))
 
 (define-inline treemacs-project->is-last? (self)
   "Return t when root node of project SELF is the last in the view."
@@ -387,6 +385,7 @@ Returns either
 * `remote-unreadable' when PATH is a remote unreadable file or directory,
 * `remote-disconnected' when PATH is remote, but the connection is down, or
 * `extension' when PATH is not a string."
+  (declare (side-effect-free t))
   (cond
    ((not (stringp path)) 'extension)
    ((not (file-remote-p path))
