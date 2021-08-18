@@ -116,6 +116,7 @@ find the key a command is bound to it will show a blank instead."
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
              (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
              (key-show-dotfiles  (treemacs--find-keybind #'treemacs-toggle-show-dotfiles))
+             (key-show-gitignore (treemacs--find-keybind #'treemacs-toggle-show-gitignored-files))
              (key-toggle-width   (treemacs--find-keybind #'treemacs-toggle-fixed-width))
              (key-add-project    (treemacs--find-keybind #'treemacs-add-project-to-workspace 12))
              (key-remove-project (treemacs--find-keybind #'treemacs-remove-project-from-workspace 12))
@@ -126,30 +127,30 @@ find the key a command is bound to it will show a blank instead."
 %s
 %s (%s)
 
-%s              ^^^^^^^^│ %s              ^^^^^^^^^^^│ %s                ^^^^^^│  %s
-――――――――――――――――――――――――┼――――――――――――――――――――――――――――┼―――――――――――――――――――――――――┼――――――――――――――――――――――――――
-%s next Line        ^^^^│ %s dwim TAB            ^^^^│ %s follow mode      ^^^^│ %s add project
-%s prev line        ^^^^│ %s dwim RET            ^^^^│ %s filewatch mode   ^^^^│ %s remove project
-%s next neighbour   ^^^^│ %s open no split       ^^^^│ %s git mode         ^^^^│ %s rename project
-%s prev neighbour   ^^^^│ %s open horizontal     ^^^^│ %s show dotfiles    ^^^^│
-%s goto parent      ^^^^│ %s open vertical       ^^^^│ %s resizability     ^^^^│
-%s down next window ^^^^│ %s open ace            ^^^^│ %s fringe indicator ^^^^│
-%s up next window   ^^^^│ %s open ace horizontal ^^^^│                         │
-%s root up          ^^^^│ %s open ace vertical   ^^^^│                         │
-%s root down        ^^^^│ %s open mru window     ^^^^│                         │
-                        │ %s open externally     ^^^^│                         │
-                        │ %s close parent        ^^^^│                         │
+%s              ^^^^^^^^│ %s              ^^^^^^^^^^^│ %s                     ^^^^^^│  %s
+――――――――――――――――――――――――┼――――――――――――――――――――――――――――┼――――――――――――――――――――――――――――――┼――――――――――――――――――――――――――
+%s next Line        ^^^^│ %s dwim TAB            ^^^^│ %s follow mode           ^^^^│ %s add project
+%s prev line        ^^^^│ %s dwim RET            ^^^^│ %s filewatch mode        ^^^^│ %s remove project
+%s next neighbour   ^^^^│ %s open no split       ^^^^│ %s git mode              ^^^^│ %s rename project
+%s prev neighbour   ^^^^│ %s open horizontal     ^^^^│ %s show dotfiles         ^^^^│
+%s goto parent      ^^^^│ %s open vertical       ^^^^│ %s show gitignored files ^^^^│
+%s down next window ^^^^│ %s open ace            ^^^^│ %s resizability          ^^^^│
+%s up next window   ^^^^│ %s open ace horizontal ^^^^│ %s fringe indicator      ^^^^│
+%s root up          ^^^^│ %s open ace vertical   ^^^^│                              │
+%s root down        ^^^^│ %s open mru window     ^^^^│                              │
+                        │ %s open externally     ^^^^│                              │
+                        │ %s close parent        ^^^^│                              │
 "
                title
                adv-hint (car (s-split":" (car key-adv-hydra)))
-               column-nav               column-nodes          column-toggles          column-projects
-               (car key-next-line)      (car key-tab)         (car key-follow-mode)   (car key-add-project)
-               (car key-prev-line)      (car key-ret)         (car key-fwatch-mode)   (car key-remove-project)
-               (car key-next-neighbour) (car key-open)        (car key-git-mode)      (car key-rename-project)
+               column-nav               column-nodes          column-toggles           column-projects
+               (car key-next-line)      (car key-tab)         (car key-follow-mode)    (car key-add-project)
+               (car key-prev-line)      (car key-ret)         (car key-fwatch-mode)    (car key-remove-project)
+               (car key-next-neighbour) (car key-open)        (car key-git-mode)       (car key-rename-project)
                (car key-prev-neighbour) (car key-open-horiz)  (car key-show-dotfiles)
-               (car key-goto-parent)    (car key-open-vert)   (car key-toggle-width)
-               (car key-down-next-w)    (car key-open-ace)    (car key-fringe-mode)
-               (car key-up-next-w)      (car key-open-ace-h)
+               (car key-goto-parent)    (car key-open-vert)   (car key-show-gitignore)
+               (car key-down-next-w)    (car key-open-ace)    (car key-toggle-width)
+               (car key-up-next-w)      (car key-open-ace-h)  (car key-fringe-mode)
                (car key-root-up)        (car key-open-ace-v)
                (car key-root-down)      (car key-open-mru)
                                         (car key-open-ext)
@@ -180,6 +181,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
               (,(cdr key-follow-mode)    #'treemacs-follow-mode)
               (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
+              (,(cdr key-show-gitignore) #'treemacs-toggle-show-dotfiles)
               (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
               (,(cdr key-fringe-mode)    #'treemacs-fringe-indicator-mode)
               (,(cdr key-git-mode)       #'treemacs-git-mode)

@@ -515,13 +515,35 @@ itself, using $HOME when there is no path at or near point to grab."
   (treemacs--create-file/dir nil))
 
 (defun treemacs-toggle-show-dotfiles ()
-  "Toggle the hiding and displaying of dotfiles."
+  "Toggle the hiding and displaying of dotfiles.
+
+For toggling the display of git-ignored files see
+`treemacs-toggle-show-gitignored-files'."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
   (treemacs-run-in-every-buffer
    (treemacs--do-refresh (current-buffer) 'all))
   (treemacs-log "Dotfiles will now be %s"
                 (if treemacs-show-hidden-files "displayed." "hidden.")))
+
+(defun treemacs-toggle-show-gitignored-files ()
+  "Toggle the hiding and displaying of files ignored by git.
+
+For toggling the display of git-ignored files see
+`treemacs-toggle-show-hidden-files'."
+  (interactive)
+  (setf treemacs-show-gitignored-files
+        (not treemacs-show-gitignored-files))
+  (if treemacs-show-gitignored-files
+      (setf treemacs-pre-file-insert-predicates
+            (delete #'treemacs-is-file-git-ignored?
+                    treemacs-pre-file-insert-predicates))
+    (add-to-list 'treemacs-pre-file-insert-predicates
+                 #'treemacs-is-file-git-ignored?))
+  (treemacs-run-in-every-buffer
+   (treemacs--do-refresh (current-buffer) 'all))
+  (treemacs-log "Git-ignored will now be %s"
+    (if treemacs-show-gitignored-files "displayed." "hidden.")))
 
 (defun treemacs-toggle-fixed-width ()
   "Toggle whether the local treemacs buffer should have a fixed width.

@@ -121,6 +121,7 @@ Will be set by `treemacs--post-command'.")
 (defvar treemacs-toggle-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "h")        'treemacs-toggle-show-dotfiles)
+    (define-key map (kbd "i")        'treemacs-toggle-show-gitignored-files)
     (define-key map (kbd "w")        'treemacs-toggle-fixed-width)
     (define-key map (kbd "v")        'treemacs-fringe-indicator-mode)
     (define-key map (kbd "g")        'treemacs-git-mode)

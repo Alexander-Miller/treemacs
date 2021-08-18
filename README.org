@@ -781,13 +781,14 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 
 *** Toggle Keybinds (Prefix ~t~)
 
-| Key | Action                         | Description                                                                            |
-|-----+--------------------------------+----------------------------------------------------------------------------------------|
-| th  | treemacs-toggle-show-dotfiles  | Toggle the hiding and displaying of dotfiles.                                          |
-| tw  | treemacs-toggle-fixed-width    | Toggle whether the treemacs window should have a fixed width. See also treemacs-width. |
-| tf  | treemacs-follow-mode           | Toggle ~treemacs-follow-mode~.                                                         |
-| ta  | treemacs-filewatch-mode        | Toggle ~treemacs-filewatch-mode~.                                                      |
-| tv  | treemacs-fringe-indicator-mode | Toggle ~treemacs-fringe-indicator-mode~.                                               |
+| Key | Action                                | Description                                                                            |
+|-----+---------------------------------------+----------------------------------------------------------------------------------------|
+| th  | treemacs-toggle-show-dotfiles         | Toggle the hiding and displaying of dotfiles.                                          |
+| ti  | treemacs-toggle-show-gitignored-files | Toggle the hiding and displaying of gitignored files.                                  |
+| tw  | treemacs-toggle-fixed-width           | Toggle whether the treemacs window should have a fixed width. See also treemacs-width. |
+| tf  | treemacs-follow-mode                  | Toggle ~treemacs-follow-mode~.                                                         |
+| ta  | treemacs-filewatch-mode               | Toggle ~treemacs-filewatch-mode~.                                                      |
+| tv  | treemacs-fringe-indicator-mode        | Toggle ~treemacs-fringe-indicator-mode~.                                               |
 
 *** Copy Keybinds (Prefix ~y~)
 
@@ -882,19 +883,10 @@ Aside from this there are the following known incompatibilities:
 
 - How do I keep treemacs from showing files that are ignored by git?
 
-  Short answer:
-
-   #+BEGIN_SRC emacs-lisp
-     (treemacs-git-mode 'extended)
-     (with-eval-after-load 'treemacs
-       (add-to-list 'treemacs-pre-file-insert-predicates #'treemacs-is-file-git-ignored?))
-   #+END_SRC
-
-  (~simple~ git-mode would also work, but only for files. ~deferred~ mode with its delay would always use the last run's git
-  information, so it might look like it's reacting incorrectly, especially on the first run)
-
-  A slightly longer explanation about how you can hook into the render process can be found in the documentation string
-  of ~treemacs-pre-file-insert-predicates~.
+  You can use ~ti~ or ~treemacs-toggle-show-gitignored-files~ to switch between hiding and displaying of gitignored
+  files. Git-mode *must* be enabled for this feature to work. (~simple~ git-mode would work only partially, because it
+  only knows about the state of files, not directories. ~deferred~ mode with its delay would always use the last run's
+  git information, so it might look like it's reacting incorrectly, especially when run the first time)
 
 - Why am I seeing no file icons and only +/- for directories?
 
