@@ -862,10 +862,16 @@ EXT: `treemacs-extension' instance"
       :node-name item
       :node-action
       (treemacs--create-node-strings
-       :parent btn
+       :parent nil
        :parent-path parent-path
        :parent-dom-node parent-dom-node
-       :more-properties (nconc `(:item ,item) (funcall properties-fn btn item))
+       :more-properties
+       (nconc `(:item ,item)
+              `(:project ,(treemacs-project->create!
+                           :name (funcall label-fn btn item)
+                           :path path
+                           :path-status 'extension))
+              (funcall properties-fn btn item))
        :icon (funcall closed-icon-fn btn item)
        :state child-state
        :key (funcall key-fn btn item)
