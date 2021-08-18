@@ -47,7 +47,6 @@
 (require 'treemacs-workspaces)
 (require 'treemacs-fringe-indicator)
 (require 'treemacs-header-line)
-(require 'treemacs-extensions)
 (require 'treemacs-annotations)
 
 (defconst treemacs-version

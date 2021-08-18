@@ -1188,6 +1188,18 @@ INITIAL-INPUT: String"
   (inline-letevals (path)
     (inline-quote (split-string ,path "/" :omit-nulls))))
 
+(defun treemacs--jump-to-next-treemacs-window ()
+  "Jump from the current to the next treemacs-based window.
+Will do nothing if no such window exists, or if there is only one treemacs
+window."
+  (let* ((current-window (selected-window))
+         (treemacs-windows
+          (--filter
+           (buffer-local-value 'treemacs--in-this-buffer (window-buffer it))
+           (window-list))))
+    (-when-let (idx (--find-index (equal it current-window) treemacs-windows))
+      (select-window (nth (% (1+ idx) (length treemacs-windows)) treemacs-windows)))))
+
 (provide 'treemacs-core-utils)
 
 ;;; treemacs-core-utils.el ends here
