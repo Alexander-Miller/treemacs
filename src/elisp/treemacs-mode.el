@@ -380,8 +380,7 @@ Will simply return `treemacs--eldoc-msg'."
   (treemacs--setup-icon-highlight)
   (treemacs--setup-icon-background-colors)
   (treemacs--setup-mode-line)
-  (treemacs--reset-dom)
-  (treemacs--reset-project-positions))
+  (treemacs--reset-dom))
 
 (defun treemacs--mode-check-advice (mode-activation &rest args)
   "Verify that `treemacs-mode' is called in the right place.

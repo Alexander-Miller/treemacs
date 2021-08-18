@@ -477,7 +477,6 @@ additional keys."
                                    (dom-node (treemacs-dom-node->create!
                                               :key ,root-key-form
                                               :position button-start)))
-                              (treemacs--set-project-position ,root-key-form (point-marker))
                               (treemacs-dom-node->insert-into-dom! dom-node)
                               (insert (propertize "Hidden Node\n"
                                                   'button '(t)
@@ -502,7 +501,6 @@ additional keys."
                                    :path ,root-key-form
                                    :path-status 'extension)]
                           (insert ,(if icon-closed closed-icon-name icon-closed-form))
-                          (treemacs--set-project-position ,root-key-form (point-marker))
                           (insert (propertize ,root-label
                                               'button '(t)
                                               'category 'default-button

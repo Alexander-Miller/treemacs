@@ -556,10 +556,11 @@ EXT: `treemacs-extension' instance"
                     :name label
                     :path key
                     :path-status 'extension))
-          (dom-node (treemacs-dom-node->create! :key key)))
+          (dom-node (treemacs-dom-node->create!
+                     :key key
+                     :position (point-marker))))
      (treemacs-dom-node->insert-into-dom! dom-node)
      (insert (treemacs-extension->get ext :closed-icon))
-     (treemacs--set-project-position key (point-marker))
      (setf (treemacs-dom-node->position dom-node) (point-marker))
      (insert (propertize
               label
@@ -592,9 +593,7 @@ EXT: `treemacs-extension' instance"
             (button-start (point-marker))
             (dom-node (treemacs-dom-node->create!
                        :key key
-                       :position button-start)))
-       ;; TODO(2020/07/08): remove project cache
-       (treemacs--set-project-position key (point-marker))
+                       :position (point-marker))))
        (treemacs-dom-node->insert-into-dom! dom-node)
        (insert (propertize "Hidden Node\n"
                            'button '(t)
@@ -921,6 +920,15 @@ EXT: `treemacs-extension' instance"
        :label (funcall label-fn btn item)))
      :post-open-action
      (progn
+       ;; projects' positions must always be known, so in this one
+       ;; case they have to be collected very manually
+       (save-excursion
+         (goto-char (point-min))
+         (-let [btn (point)]
+           (while (setf btn (next-button btn))
+             (let* ((path (treemacs-button-get btn :path))
+                    (dom-node (treemacs-find-in-dom path)))
+               (setf (treemacs-dom-node->position dom-node) btn)))))
        (treemacs-on-expand (treemacs-button-get btn :path) btn)
        (treemacs--reentry (treemacs-button-get btn :path))))))
 
