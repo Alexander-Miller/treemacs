@@ -335,8 +335,8 @@ extension, it will be used as a type-check when enabling an extension with e.g.
   (let* ((child-type   (cadr child-type))
          (child-name   (intern (s-lex-format "treemacs-${child-type}-extension-instance")))
          (struct-name  (intern (s-lex-format "treemacs-${name}-extension-instance")))
-         (open-state   (intern (s-lex-format "treemacs-${name}-open-state")))
-         (closed-state (intern (s-lex-format "treemacs-${name}-closed-state")))
+         (open-state   (intern (s-lex-format "treemacs-${name}-open")))
+         (closed-state (intern (s-lex-format "treemacs-${name}-closed")))
          (children-fn  (if async?
                            `(lambda (&optional btn item callback) (ignore btn item callback) ,children)
                          `(lambda (&optional btn item) (ignore btn item) ,children))))
