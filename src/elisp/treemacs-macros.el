@@ -278,7 +278,7 @@ not work keep it on the same line."
            (curr-state     (-some-> curr-btn (treemacs-button-get :state)))
            (collapse       (-some-> curr-btn (treemacs-button-get :collapsed)))
            (curr-file      (if collapse (treemacs-button-get curr-btn :key) (-some-> curr-btn (treemacs--nearest-path))))
-           (curr-window    (treemacs-get-local-window))
+           (curr-window    (get-buffer-window (current-buffer)))
            (curr-win-line  (when curr-window
                              (with-selected-window curr-window
                                (treemacs--current-screen-line)))))
