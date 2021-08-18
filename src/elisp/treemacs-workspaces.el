@@ -256,8 +256,8 @@ SELF may be a project struct or a root key of a top level extension."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote
-     (eq 'root-node-open
-         (-> ,self (treemacs-project->position) (treemacs-button-get :state))))))
+     (memq (-> ,self (treemacs-project->position) (treemacs-button-get :state))
+           treemacs--open-node-states))))
 
 (define-inline treemacs-project->refresh-path-status! (self)
   "Refresh the path status of project SELF in the current buffer.

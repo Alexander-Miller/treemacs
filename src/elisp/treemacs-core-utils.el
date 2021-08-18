@@ -105,7 +105,6 @@
   treemacs-workspace->projects
   treemacs-workspace->is-empty?
   treemacs-do-add-project-to-workspace
-  treemacs-project->is-expanded?
   treemacs-project->path
   treemacs-project->name
   treemacs-project->refresh!
@@ -130,7 +129,8 @@
 Used in `treemacs-is-node-collapsed?'")
 
 (defvar treemacs--open-node-states
-  '(root-node-open
+  '(project-node-open
+    root-node-open
     dir-node-open
     file-node-open
     tag-node-open)
