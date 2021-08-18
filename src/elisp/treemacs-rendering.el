@@ -619,7 +619,6 @@ PROJECT: Project Struct"
          (path (treemacs-project->path project))
          (dom-node (treemacs-dom-node->create! :key path :position pos)))
     (treemacs-dom-node->insert-into-dom! dom-node)
-    (treemacs--set-project-position project pos)
     (insert
      (propertize (treemacs-project->name project)
                  'button '(t)

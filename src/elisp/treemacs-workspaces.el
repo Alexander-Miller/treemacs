@@ -87,8 +87,6 @@
 (defvar-local treemacs--org-err-ov nil
   "The overlay that will display validations when org-editing.")
 
-(defvar-local treemacs--project-positions nil)
-
 (defvar-local treemacs--project-of-buffer nil
   "The project that the current buffer falls under, if any.")
 
@@ -221,11 +219,6 @@ Will return `point-min' if there is no next project."
   (declare (side-effect-free t))
   (inline-quote (previous-single-char-property-change (point-at-bol) :project)))
 
-(define-inline treemacs--reset-project-positions ()
-  "Reset `treemacs--project-positions'."
-  (inline-quote
-   (setq treemacs--project-positions (make-hash-table :test #'equal :size 20))))
-
 (define-inline treemacs-project->key (self)
   "Get the hash table key of SELF.
 SELF may be a project struct or a root key of a top level extension."
@@ -238,18 +231,13 @@ SELF may be a project struct or a root key of a top level extension."
          (treemacs-project->path ,self)
        ,self))))
 
-(define-inline treemacs--set-project-position (project position)
-  "Insert PROJECT's POSITION into `treemacs--project-positions'."
-  (inline-letevals (project position)
-    (inline-quote
-     (ht-set! treemacs--project-positions (treemacs-project->key ,project) ,position))))
-
 (define-inline treemacs-project->position (self)
   "Return the position of project SELF in the current buffer."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote
-     (ht-get treemacs--project-positions (treemacs-project->key ,self)))))
+     (treemacs-dom-node->position
+      (treemacs-find-in-dom (treemacs-project->path ,self))))))
 
 (define-inline treemacs-project->is-expanded? (self)
   "Return non-nil if project SELF is expanded in the current buffer."
