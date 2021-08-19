@@ -783,6 +783,17 @@ constituent parts, or any other value acceptable for `header-line-format'."
   :type 'string
   :group 'treemacs-window)
 
+(defcustom treemacs-select-when-already-in-treemacs 'move-back
+  "How `treemacs-select-window' behaves when treemacs is already selected.
+
+Possible values are:
+ - `stay' - remain in the treemacs windows, effectively doing nothing
+ - `move-back' - move point back to the most recently used window (as selected
+    by `get-mru-window')"
+  :type '(choice (const stay)
+                 (const move-back))
+  :group 'treemacs)
+
 (defcustom treemacs-position 'left
   "Position of treemacs buffer.
 

@@ -145,12 +145,20 @@ visiting a file or Emacs cannot find any tags for the current file."
   "Select the treemacs window if it is visible.
 Bring it to the foreground if it is not visible.
 Initialise a new treemacs buffer as calling `treemacs' would if there is no
-treemacs buffer for this frame."
+treemacs buffer for this frame.
+Jump back to the previously used window if point is already in treemacs."
   (interactive)
   (pcase (treemacs-current-visibility)
-    ('visible (treemacs--select-visible-window))
     ('exists  (treemacs--select-not-visible-window))
-    ('none    (treemacs--init))))
+    ('none    (treemacs--init))
+    ('visible
+     (if (not (eq treemacs--in-this-buffer t))
+         (treemacs--select-visible-window)
+       (pcase-exhaustive treemacs-select-when-already-in-treemacs
+           ('stay
+            (ignore))
+           ('move-back
+            (select-window (get-mru-window (selected-frame) nil :not-selected))))))))
 
 ;;;###autoload
 (defun treemacs-show-changelog ()
