@@ -385,8 +385,9 @@ user is supposed to select keybindings for functions like ~treemacs-find-file~ b
 
 You can find an exhaustive overview of all functions, their keybindings and functions you need to bind yourself [[#keymap][below]].
 
-The following ~use-package~ snippet includes a list of /all/ of treemacs' configuration variables in their default
-setting. Setting them all yourself is not necessary, they are only listed here to encourage discoverability.
+The following ~use-package~ snippet includes a list of /all/ of treemacs' configuration options in their default
+setting. Setting them, or activating the minor modes yourself is not necessary, they are only listed here to encourage
+discoverability.
 
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
@@ -450,12 +451,15 @@ setting. Setting them all yourself is not necessary, they are only listed here t
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t)
       (treemacs-fringe-indicator-mode 'always)
+
       (pcase (cons (not (null (executable-find "git")))
                    (not (null treemacs-python-executable)))
         (`(t . t)
          (treemacs-git-mode 'deferred))
         (`(t . _)
-         (treemacs-git-mode 'simple))))
+         (treemacs-git-mode 'simple)))
+
+      (treemacs-hide-gitignored-files-mode nil))
     :bind
     (:map global-map
           ("M-0"       . treemacs-select-window)
@@ -783,14 +787,14 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 
 *** Toggle Keybinds (Prefix ~t~)
 
-| Key | Action                                | Description                                                                            |
-|-----+---------------------------------------+----------------------------------------------------------------------------------------|
-| th  | treemacs-toggle-show-dotfiles         | Toggle the hiding and displaying of dotfiles.                                          |
-| ti  | treemacs-toggle-show-gitignored-files | Toggle the hiding and displaying of gitignored files.                                  |
-| tw  | treemacs-toggle-fixed-width           | Toggle whether the treemacs window should have a fixed width. See also treemacs-width. |
-| tf  | treemacs-follow-mode                  | Toggle ~treemacs-follow-mode~.                                                         |
-| ta  | treemacs-filewatch-mode               | Toggle ~treemacs-filewatch-mode~.                                                      |
-| tv  | treemacs-fringe-indicator-mode        | Toggle ~treemacs-fringe-indicator-mode~.                                               |
+| Key | Action                              | Description                                                                            |
+|-----+-------------------------------------+----------------------------------------------------------------------------------------|
+| th  | treemacs-toggle-show-dotfiles       | Toggle the hiding and displaying of dotfiles.                                          |
+| ti  | treemacs-hide-gitignored-files-mode | Toggle the hiding and displaying of gitignored files.                                  |
+| tw  | treemacs-toggle-fixed-width         | Toggle whether the treemacs window should have a fixed width. See also treemacs-width. |
+| tf  | treemacs-follow-mode                | Toggle ~treemacs-follow-mode~.                                                         |
+| ta  | treemacs-filewatch-mode             | Toggle ~treemacs-filewatch-mode~.                                                      |
+| tv  | treemacs-fringe-indicator-mode      | Toggle ~treemacs-fringe-indicator-mode~.                                               |
 
 *** Copy Keybinds (Prefix ~y~)
 
@@ -885,10 +889,8 @@ Aside from this there are the following known incompatibilities:
 
 - How do I keep treemacs from showing files that are ignored by git?
 
-  You can use ~ti~ or ~treemacs-toggle-show-gitignored-files~ to switch between hiding and displaying of gitignored
-  files. Git-mode *must* be enabled for this feature to work. (~simple~ git-mode would work only partially, because it
-  only knows about the state of files, not directories. ~deferred~ mode with its delay would always use the last run's
-  git information, so it might look like it's reacting incorrectly, especially when run the first time)
+  You can use ~treemacs-hide-gitignored-files-mode~ (bound to ~ti~) to switch between hiding and displaying of
+  gitignored files. Git-mode /must/ be enabled for this feature to work.
 
 - Why am I seeing no file icons and only +/- for directories?
 

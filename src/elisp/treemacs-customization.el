@@ -170,13 +170,6 @@ Can be toggled by `treemacs-toggle-show-dotfiles'."
   :type 'boolean
   :group 'treemacs)
 
-(defcustom treemacs-show-gitignored-files t
-  "Git-ignored will be shown if this is set to t and be hidden otherwise.
-
-Can be toggled by `treemacs-toggle-show-gitignored-files'."
-  :type 'boolean
-  :group 'treemacs)
-
 (defcustom treemacs-show-edit-workspace-help t
   "When non-nil the workspace-edit buffer will display a short help greeting.
 See also `treemacs-edit-workspaces'."

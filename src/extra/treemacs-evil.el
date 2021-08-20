@@ -76,7 +76,7 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
 (define-key evil-treemacs-state-map (kbd "M-J") #'treemacs-next-line-other-window)
 (define-key evil-treemacs-state-map (kbd "M-K") #'treemacs-previous-line-other-window)
 (define-key evil-treemacs-state-map (kbd "th")  #'treemacs-toggle-show-dotfiles)
-(define-key evil-treemacs-state-map (kbd "ti")  #'treemacs-toggle-show-gitignored-files)
+(define-key evil-treemacs-state-map (kbd "ti")  #'treemacs-hide-gitignored-files-mode)
 (define-key evil-treemacs-state-map (kbd "tw")  #'treemacs-toggle-fixed-width)
 (define-key evil-treemacs-state-map (kbd "tv")  #'treemacs-fringe-indicator-mode)
 (define-key evil-treemacs-state-map (kbd "tf")  #'treemacs-follow-mode)

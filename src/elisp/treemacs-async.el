@@ -17,7 +17,7 @@
 
 ;;; Commentary:
 
-;; Code for dealing with asynchronous processes.
+;; Code for dealing with treemacs' asynchronous features.
 
 ;;; Code:
 
@@ -31,10 +31,14 @@
 (require 'treemacs-workspaces)
 (require 'treemacs-dom)
 (require 'treemacs-logging)
+(require 'treemacs-visuals)
 
 (eval-when-compile
   (require 'inline)
   (require 'treemacs-macros))
+
+(treemacs-import-functions-from treemacs-rendering
+  treemacs-do-delete-single-node)
 
 (defconst treemacs--dirs-to-collapse.py
   (if (member "treemacs-dirs-to-collapse.py" (directory-files treemacs-dir))
@@ -50,6 +54,11 @@
   (if (member "treemacs-single-file-git-status.py" (directory-files treemacs-dir))
       (treemacs-join-path treemacs-dir "treemacs-single-file-git-status.py")
     (treemacs-join-path treemacs-dir "src/scripts/treemacs-single-file-git-status.py")))
+
+(defconst treemacs--find-ignored-files.py
+  (if (member "treemacs-find-ignored-files.py" (directory-files treemacs-dir))
+      (treemacs-join-path treemacs-dir "treemacs-find-ignored-files.py")
+    (treemacs-join-path treemacs-dir "src/scripts/treemacs-find-ignored-files.py")))
 
 (defvar treemacs--git-cache-max-size 60
   "Maximum size for `treemacs--git-cache'.
@@ -371,8 +380,44 @@ newline."
       (when (= 0 (process-exit-status future))
         (read output)))))
 
+(defun treemacs--prefetch-gitignore-cache (path)
+  "Preload all the git-ignored files in the given PATH.
+
+If PATH is the symbol `all' the state of all projects in the current workspace
+is gathered instead.
+
+Required for `treemacs-hide-gitignored-files-mode' to properly work with
+deferred git-mode, as otherwise ignored files will not be hidden on the first
+run because the git cache has yet to be filled."
+  (if (eq path 'all)
+      (setf path (-map #'treemacs-project->path
+                       (treemacs-workspace->projects (treemacs-current-workspace))))
+    (setf path (list path)))
+  (pfuture-callback `(,treemacs-python-executable
+                      "-O"
+                      ,treemacs--find-ignored-files.py
+                      ,@path)
+    :on-error (ignore)
+    :on-success
+    (let ((ignore-pairs (read (pfuture-callback-output)))
+          (ignored-files nil))
+      (while ignore-pairs
+        (let* ((root  (pop ignore-pairs))
+               (file  (pop ignore-pairs))
+               (cache (ht-get treemacs--git-cache root)))
+          (unless cache
+            (setf cache (make-hash-table :size 20 :test 'equal))
+            (ht-set! treemacs--git-cache root cache))
+          (ht-set! cache file "!")
+          (push file ignored-files)))
+      (treemacs-run-in-every-buffer
+       (dolist (file ignored-files)
+         (when-let (treemacs-is-path-visible? file)
+           (treemacs-do-delete-single-node file)))))))
+
 (define-minor-mode treemacs-git-mode
   "Toggle `treemacs-git-mode'.
+
 When enabled treemacs will check files' git status and highlight them
 accordingly.  This git integration is available in 3 variants: simple, extended
 and deferred.
@@ -400,7 +445,7 @@ constant time needed to fork a subprocess."
   :init-value nil
   :global     t
   :lighter    nil
-  :group      'treemacs
+  :group      'treemacs-git
   (if treemacs-git-mode
       (if (memq arg '(simple extended deferred))
           (treemacs--setup-git-mode arg)
@@ -445,6 +490,43 @@ FUTURE: Pfuture process"
              (process-put ,future 'git-table result)
              result))
        (ht)))))
+
+(define-minor-mode treemacs-hide-gitignored-files-mode
+  "Toggle `treemacs-hide-gitignored-files-mode'.
+
+When enabled treemacs will hide files that are ignored by git.
+
+Some form of `treemacs-git-mode' *must* be enabled, otherwise this feature will
+have no effect.
+
+Both `extended' and `deferred' git-mode settigs will work in full (in case of
+`deferred' git-mode treemacs will preload the list of ignored files so they will
+be hidden even on the first run).  The limitations of `simple' git-mode apply
+here as well: since it only knows about files and not directories only files
+will be hidden."
+  :init-value nil
+  :global     t
+  :lighter    nil
+  :group      'treemacs-git
+  (if treemacs-hide-gitignored-files-mode
+      (progn
+        (add-to-list 'treemacs-pre-file-insert-predicates
+                     #'treemacs-is-file-git-ignored?)
+        (when (and (eq 'deferred treemacs-git-mode)
+                   (not (get 'treemacs-hide-gitignored-files-mode
+                             :prefetch-done)))
+          (treemacs--prefetch-gitignore-cache 'all)
+          (put 'treemacs-hide-gitignored-files-mode :prefetch-done t)))
+    (setf treemacs-pre-file-insert-predicates
+          (delete #'treemacs-is-file-git-ignored?
+                  treemacs-pre-file-insert-predicates)))
+  (treemacs-run-in-every-buffer
+   (treemacs--do-refresh (current-buffer) 'all))
+  (when (called-interactively-p 'interactive)
+    (treemacs-pulse-on-success "Git-ignored files will now be %s"
+      (propertize
+       (if treemacs-hide-gitignored-files-mode "hidden." "displayed.")
+       'face 'font-lock-constant-face))) )
 
 (treemacs-only-during-init
  (let ((has-git    (not (null (executable-find "git"))))
