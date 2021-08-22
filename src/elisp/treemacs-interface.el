@@ -1168,6 +1168,8 @@ Only works with a single project in the workspace."
           (quit-window)
           (kill-buffer-and-window))
         (run-hooks 'treemacs-workspace-edit-hook)
+        (when treemacs-hide-gitignored-files-mode
+          (treemacs--prefetch-gitignore-cache 'all))
         (treemacs-log "Edit completed successfully."))))))
 
 (defun treemacs-collapse-parent-node (arg)

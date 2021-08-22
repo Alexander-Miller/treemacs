@@ -411,9 +411,10 @@ run because the git cache has yet to be filled."
           (ht-set! cache file "!")
           (push file ignored-files)))
       (treemacs-run-in-every-buffer
-       (dolist (file ignored-files)
-         (when-let (treemacs-is-path-visible? file)
-           (treemacs-do-delete-single-node file)))))))
+       (treemacs-save-position
+        (dolist (file ignored-files)
+          (when-let (treemacs-is-path-visible? file)
+            (treemacs-do-delete-single-node file))))))))
 
 (define-minor-mode treemacs-git-mode
   "Toggle `treemacs-git-mode'.

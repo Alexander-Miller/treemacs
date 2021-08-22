@@ -60,6 +60,9 @@
   treemacs--forget-last-highlight
   treemacs-pulse-on-failure)
 
+(treemacs-import-functions-from "treemacs-async"
+  treemacs--prefetch-gitignore-cache)
+
 (cl-defstruct (treemacs-project
                (:conc-name treemacs-project->)
                (:constructor treemacs-project->create!))
@@ -512,6 +515,8 @@ NAME: String"
            (when treemacs-expand-added-projects
              (treemacs--expand-root-node (treemacs-project->position project))))))
        (treemacs--persist)
+       (when (with-no-warnings treemacs-hide-gitignored-files-mode)
+         (treemacs--prefetch-gitignore-cache path))
        (run-hook-with-args 'treemacs-create-project-functions project)
        `(success ,project)))))
 
@@ -632,6 +637,11 @@ Return values may be as follows:
      (setf (treemacs-current-workspace) new-workspace)
      (treemacs--invalidate-buffer-project-cache)
      (treemacs--rerender-after-workspace-change)
+     (when (with-no-warnings treemacs-hide-gitignored-files-mode)
+       (treemacs--prefetch-gitignore-cache
+        (->> new-workspace
+             (treemacs-workspace->projects)
+             (-map #'treemacs-project->path))))
      (run-hooks 'treemacs-switch-workspace-hook)
      (treemacs-return
       `(success ,new-workspace)))))
