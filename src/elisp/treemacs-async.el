@@ -381,7 +381,7 @@ newline."
         (read output)))))
 
 (defun treemacs--prefetch-gitignore-cache (path)
-  "Preload all the git-ignored files in the given PATH.
+  "Pre-load all the git-ignored files in the given PATH.
 
 PATH is either the symbol `all', in which case the state of all projects in the
 current workspace is gathered instead, or a single project's path, when that
@@ -501,11 +501,11 @@ When enabled treemacs will hide files that are ignored by git.
 Some form of `treemacs-git-mode' *must* be enabled, otherwise this feature will
 have no effect.
 
-Both `extended' and `deferred' git-mode settigs will work in full (in case of
-`deferred' git-mode treemacs will preload the list of ignored files so they will
-be hidden even on the first run).  The limitations of `simple' git-mode apply
-here as well: since it only knows about files and not directories only files
-will be hidden."
+Both `extended' and `deferred' git-mode settings will work in full (in case of
+`deferred' git-mode treemacs will pre-load the list of ignored files so they
+will be hidden even on the first run).  The limitations of `simple' git-mode
+apply here as well: since it only knows about files and not directories only
+files will be hidden."
   :init-value nil
   :global     t
   :lighter    nil

@@ -116,7 +116,7 @@ find the key a command is bound to it will show a blank instead."
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
              (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
              (key-show-dotfiles  (treemacs--find-keybind #'treemacs-toggle-show-dotfiles))
-             (key-show-gitignore (treemacs--find-keybind #'treemacs-toggle-show-gitignored-files))
+             (key-show-gitignore (treemacs--find-keybind #'treemacs-hide-gitignored-files-mode))
              (key-toggle-width   (treemacs--find-keybind #'treemacs-toggle-fixed-width))
              (key-add-project    (treemacs--find-keybind #'treemacs-add-project-to-workspace 12))
              (key-remove-project (treemacs--find-keybind #'treemacs-remove-project-from-workspace 12))
