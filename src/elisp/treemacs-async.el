@@ -383,8 +383,9 @@ newline."
 (defun treemacs--prefetch-gitignore-cache (path)
   "Preload all the git-ignored files in the given PATH.
 
-If PATH is the symbol `all' the state of all projects in the current workspace
-is gathered instead.
+PATH is either the symbol `all', in which case the state of all projects in the
+current workspace is gathered instead, or a single project's path, when that
+project has just been added to the workspace.
 
 Required for `treemacs-hide-gitignored-files-mode' to properly work with
 deferred git-mode, as otherwise ignored files will not be hidden on the first

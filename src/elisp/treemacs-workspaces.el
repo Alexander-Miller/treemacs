@@ -638,10 +638,7 @@ Return values may be as follows:
      (treemacs--invalidate-buffer-project-cache)
      (treemacs--rerender-after-workspace-change)
      (when (with-no-warnings treemacs-hide-gitignored-files-mode)
-       (treemacs--prefetch-gitignore-cache
-        (->> new-workspace
-             (treemacs-workspace->projects)
-             (-map #'treemacs-project->path))))
+       (treemacs--prefetch-gitignore-cache 'all))
      (run-hooks 'treemacs-switch-workspace-hook)
      (treemacs-return
       `(success ,new-workspace)))))
