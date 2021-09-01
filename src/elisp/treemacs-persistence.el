@@ -46,13 +46,7 @@
 (make-obsolete-variable 'treemacs--last-error-persist-file 'treemacs-last-error-persist-file "v2.7")
 
 (defconst treemacs--persist-kv-regex
-  (rx bol
-      (? " ")
-      "- "
-      (or "path")
-      " :: "
-      (1+ (or (syntax word) (syntax symbol) (syntax punctuation) space))
-      eol)
+  (rx bol (? " ") "- path :: " (1+ any) eol)
   "The regular expression to match org's \"key :: value\" lines.")
 
 (defconst treemacs--persist-workspace-name-regex
