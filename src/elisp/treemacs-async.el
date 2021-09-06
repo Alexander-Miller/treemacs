@@ -93,6 +93,10 @@ DEFAULT: Face"
        ("R" 'treemacs-git-renamed-face)
        (_   ,default)))))
 
+(defvar treemacs--git-mode nil
+  "Saves the specific version of git-mode that is active.
+Values are either `simple', `extended', `deferred' or nil.")
+
 (define-inline treemacs--get-node-face (path git-info default)
   "Return the appropriate face for PATH based on GIT-INFO.
 If there is no git entry for PATH return DEFAULT.
@@ -448,6 +452,9 @@ constant time needed to fork a subprocess."
   :global     t
   :lighter    nil
   :group      'treemacs-git
+  ;; case when the mode is re-activated by `custom-set-minor-mode'
+  (when (and (eq t arg) treemacs--git-mode)
+    (setf arg treemacs--git-mode))
   (if treemacs-git-mode
       (if (memq arg '(simple extended deferred))
           (treemacs--setup-git-mode arg)
@@ -460,8 +467,8 @@ Use either ARG as git integration value of read it interactively."
   (interactive (list (-> (completing-read "Git Integration: " '("Simple" "Extended" "Deferred"))
                          (downcase)
                          (intern))))
-  (setq treemacs-git-mode arg)
-  (pcase treemacs-git-mode
+  (setf treemacs--git-mode arg)
+  (pcase treemacs--git-mode
     ((or 'extended 'deferred)
      (fset 'treemacs--git-status-process-function #'treemacs--git-status-process-extended)
      (fset 'treemacs--git-status-parse-function   #'treemacs--parse-git-status-extended))
@@ -474,6 +481,7 @@ Use either ARG as git integration value of read it interactively."
 
 (defun treemacs--tear-down-git-mode ()
   "Tear down `treemacs-git-mode'."
+  (setf treemacs--git-mode nil)
   (fset 'treemacs--git-status-process-function #'ignore)
   (fset 'treemacs--git-status-parse-function   (lambda (_) (ht))))
 
@@ -514,7 +522,7 @@ files will be hidden."
       (progn
         (add-to-list 'treemacs-pre-file-insert-predicates
                      #'treemacs-is-file-git-ignored?)
-        (when (and (eq 'deferred treemacs-git-mode)
+        (when (and (eq 'deferred treemacs--git-mode)
                    (not (get 'treemacs-hide-gitignored-files-mode
                              :prefetch-done)))
           (treemacs--prefetch-gitignore-cache 'all)

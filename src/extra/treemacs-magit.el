@@ -57,7 +57,7 @@ In order for the update to fully run several conditions must be met:
          3 nil
          (lambda ()
            (unwind-protect
-               (pcase treemacs-git-mode
+               (pcase treemacs--git-mode
                  ('simple
                   (treemacs-magit--simple-git-mode-update magit-root))
                  ((or 'extended 'deferred)

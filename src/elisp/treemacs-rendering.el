@@ -336,7 +336,7 @@ DIRS: List of Collapse Paths.  Each Collapse Path is a list of
               (-let [beg (point)]
                 (insert label-to-add)
                 (add-text-properties beg (point) props)
-                (unless (memq treemacs-git-mode '(deferred extended))
+                (unless (memq treemacs--git-mode '(deferred extended))
                   (add-text-properties
                    beg (point)
                    '(face treemacs-directory-collapsed-face)))))))))))
@@ -403,7 +403,7 @@ set to PARENT."
          ;; based on previous invocations
          ;; if git-mode is disabled there is nothing to do - in this case the git status parse function will always
          ;; produce an empty hash table
-         (pcase treemacs-git-mode
+         (pcase treemacs--git-mode
            ((or 'simple 'extended)
             (setf git-info (treemacs--get-or-parse-git-result ,git-future))
             (ht-set! treemacs--git-cache ,root git-info))
@@ -1039,7 +1039,7 @@ parents' git status can be updated."
                (treemacs-do-delete-single-node path project))
               ('changed
                (treemacs-do-update-node path)
-               (when (memq treemacs-git-mode '(extended deferred))
+               (when (memq treemacs--git-mode '(extended deferred))
                  (treemacs-update-single-file-git-state path)))
               ('created
                (treemacs-do-insert-single-node path (treemacs-dom-node->key node)))
