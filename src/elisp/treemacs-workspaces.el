@@ -725,10 +725,11 @@ PROJECT: Project Struct"
        (-let [project-btn (treemacs-project->position project-in-buffer)]
          (when (eq 'root-node-open (treemacs-button-get project-btn :state))
            (push project-in-buffer expanded-projects-in-buffer)
+           (goto-char project-btn)
            (treemacs--collapse-root-node project-btn))))
      ;; figure out which ones have been deleted and and remove them from the dom
      (dolist (project-in-buffer projects-in-buffer)
-       (unless (treemacs-is-path (treemacs-project->path project-in-buffer) :in-workspace current-workspace)
+       (unless (member project-in-buffer projects-in-workspace)
          (treemacs-on-collapse (treemacs-project->path project-in-buffer) :purge)
          (ht-remove! treemacs-dom (treemacs-project->path project-in-buffer))
          (setf projects-in-buffer (delete project-in-buffer projects-in-buffer))))
