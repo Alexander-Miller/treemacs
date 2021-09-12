@@ -438,6 +438,7 @@ discoverability.
             treemacs-space-between-root-nodes        t
             treemacs-tag-follow-cleanup              t
             treemacs-tag-follow-delay                1.5
+            treemacs-text-scale                      nil
             treemacs-user-mode-line-format           nil
             treemacs-user-header-line-format         nil
             treemacs-width                           35
@@ -560,6 +561,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-litter-directories              | ("/node_modules" "/.venv" "/.cask")              | List of directories affected by ~treemacs-cleanup-litter~.                                                                                                                                                                           |
 | treemacs-width-is-initially-locked       | t                                                | Indicates whether the treemacs windows starts with a locked width or not.                                                                                                                                                            |
 | treemacs-select-when-already-in-treemacs | 'move-back                                       | Indicates how ~treemacs-select-window~ behaves when treemacs is already selected.                                                                                                                                                    |
+| treemacs-text-scale                      | nil                                              | Scaling for text in treemacs, used via ~text-scale-increase~.                                                                                                                                                                        |
 
 ** Faces
 Treemacs defines and uses the following faces:

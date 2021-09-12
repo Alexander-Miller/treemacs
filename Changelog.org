@@ -25,6 +25,7 @@
 - Added ~treemacs-width-is-initially-locked~
 - Added ~treemacs-hide-gitignored-files-mode~
 - Added ~treemacs-select-when-already-in-treemacs~
+- Added ~treemacs-text-scale~
 - Added option to only show the fringe indicator when the treemacs window is
   selected
 - Implemented one hand navigation with ~h~ collapsing nodes and ~l~ functioning like ~RET~, ~M-H/L~

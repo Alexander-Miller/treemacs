@@ -776,6 +776,13 @@ constituent parts, or any other value acceptable for `header-line-format'."
   :type 'string
   :group 'treemacs-window)
 
+(defcustom treemacs-text-scale nil
+  "Optional scale for the text (not the icons) in the treemacs window.
+If set the value will be passed to `text-scale-increase'.  Both positive and
+negative values are possible."
+  :type 'integer
+  :group 'treemacs-window)
+
 (defcustom treemacs-select-when-already-in-treemacs 'move-back
   "How `treemacs-select-window' behaves when treemacs is already selected.
 

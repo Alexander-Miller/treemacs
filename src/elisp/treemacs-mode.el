@@ -304,6 +304,9 @@ Will simply return `treemacs--eldoc-msg'."
     (face-remap-add-relative 'fringe  :background (car treemacs-window-background-color))
     (face-remap-add-relative 'hl-line :background (cdr treemacs-window-background-color)))
 
+  (when treemacs-text-scale
+    (text-scale-increase treemacs-text-scale))
+
   (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
   (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
   (add-hook 'post-command-hook #'treemacs--post-command nil t)
