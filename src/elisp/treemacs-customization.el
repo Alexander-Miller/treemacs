@@ -39,12 +39,14 @@
                (s-lines)
                (--first
                 (when (file-exists-p it)
-                  (->> (concat (shell-quote-argument it) " --version")
-                       (shell-command-to-string)
-                       (s-trim)
-                       (s-replace "Python " "")
-                       (s-left 1)
-                       (version<= "3")))))
+                  (condition-case _
+                      (->> (concat (shell-quote-argument it) " --version")
+                           (shell-command-to-string)
+                           (s-trim)
+                           (s-replace "Python " "")
+                           (s-left 1)
+                           (version<= "3"))
+                    (error nil)))))
         (error nil)))))
 
 (cl-macrolet
