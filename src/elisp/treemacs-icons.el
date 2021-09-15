@@ -243,17 +243,18 @@ Necessary since root icons are not rectangular."
   accessible."
   (treemacs-static-assert (or (null icon) (null file))
     "FILE and ICON arguments are mutually exclusive")
-  `(let* ((fallback  ,(if (equal fallback (quote 'same-as-icon))
-                          icon
-                        fallback))
-          (icons-dir ,(if icons-dir icons-dir `(treemacs-theme->path treemacs--current-theme)))
-          (icon-path ,(if file `(treemacs-join-path icons-dir ,file) nil))
-          (icon-pair ,(if file `(treemacs--create-icon-strings icon-path fallback)
-                        `(cons ,(treemacs--splice-icon icon) fallback)))
-          (gui-icons (treemacs-theme->gui-icons treemacs--current-theme))
-          (tui-icons (treemacs-theme->tui-icons treemacs--current-theme))
-          (gui-icon  (car icon-pair))
-          (tui-icon  (cdr icon-pair)))
+  `(let* ((fallback   ,(if (equal fallback (quote 'same-as-icon))
+                           icon
+                         fallback))
+          (icons-dir  ,(if icons-dir icons-dir `(treemacs-theme->path treemacs--current-theme)))
+          (icon-path  ,(if file `(treemacs-join-path icons-dir ,file) nil))
+          (icon-pair  ,(if file `(treemacs--create-icon-strings icon-path fallback)
+                         `(cons ,(treemacs--splice-icon icon) fallback)))
+          (gui-icons  (treemacs-theme->gui-icons treemacs--current-theme))
+          (tui-icons  (treemacs-theme->tui-icons treemacs--current-theme))
+          (gui-icon   (car icon-pair))
+          (tui-icon   (cdr icon-pair))
+          (extensions (quote ,(--map (if (stringp it) (downcase it) it) extensions))))
      ,(unless file
         `(progn
            (ignore icon-path)
@@ -265,7 +266,7 @@ Necessary since root icons are not rectangular."
      ,@(->> (-filter #'symbolp extensions)
             (--map `(progn (add-to-list 'treemacs--icon-symbols ',it)
                            (defvar ,(intern (format "treemacs-icon-%s" it)) nil))))
-     (--each ',extensions
+     (--each extensions
        (ht-set! gui-icons it gui-icon)
        (ht-set! tui-icons it tui-icon))))
 
