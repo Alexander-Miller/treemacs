@@ -3,6 +3,7 @@
 
 * Changelog
 ** current master
+** v2.9
 - Published ~treemacs-all-the-icons~
 - Added ~treemacs-workspace-switch-cleanup~
 - Added support for disabling the mode line
