@@ -127,6 +127,7 @@ Will be set by `treemacs--post-command'.")
     (define-key map (kbd "g")        'treemacs-git-mode)
     (define-key map (kbd "f")        'treemacs-follow-mode)
     (define-key map (kbd "a")        'treemacs-filewatch-mode)
+    (define-key map (kbd "n")        'treemacs-indent-guide-mode)
     map)
   "Keymap for commands that toggle state in `treemacs-mode'.")
 

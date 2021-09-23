@@ -26,6 +26,7 @@
    - [[#fringe-indicator-mode][Fringe-indicator-mode]]
    - [[#git-mode][Git-mode]]
    - [[#filewatch-mode][Filewatch-mode]]
+   - [[#indent-guide-mode][Indent-guide-mode]]
    - [[#session-persistence][Session Persistence]]
    - [[#terminal-compatibility][Terminal Compatibility]]
    - [[#tag-view][Tag View]]
@@ -297,6 +298,18 @@ Staging and committing changes does not produce any file change events of its ow
 still need to do a manual refresh to see your files' faces go from 'changed' and 'untracked' to 'unchanged' after a
 commit.
 
+** Indent-guide-mode
+
+~treemacs-indent-guide-mode~ is a simple visual helper based on the the options provided by the ~treemacs-indentation~
+and ~treemacs-indentation-string~ settings. Its appearance is dictated by ~treemacs-indent-guide-style~, the options are
+either ~line~:
+
+[[file:screenshots/indent-guide-line.png]]
+
+or ~block~:
+
+[[file:screenshots/indent-guide-block.png]]
+
 ** Session Persistence
 Treemacs' sessions - your workspace and the projects it contains - are saved when Emacs shuts down and restored when
 treemacs is first loaded. This persistence process is fully automatic and independant, and should therefore be fully
@@ -539,7 +552,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs--fringe-indicator-bitmap        | [vertical bar]                                   | The fringe bitmap used by the fringe-indicator minor mode.                                                                                                                                                                           |
 | treemacs-deferred-git-apply-delay        | 0.5                                              | Seconds of idle time for git highlighting to apply when using the deferred ~treemacs-git-mode~.                                                                                                                                      |
 | treemacs-file-follow-delay               | 0.2                                              | Delay in seconds of idle time for treemacs to follow the selected window.                                                                                                                                                            |
-| treemacs-display-in-side-window          | t                                                | When non-nil treemacs will use a dedicated [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Side-Windows.html][side-window]].                                                                                                                                                                              |
+| treemacs-display-in-side-window          | t                                                | When non-nil treemacs will use a dedicated [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Side-Windows.html][side-window]].                                                                                             |
 | treemacs-max-git-entries                 | 5000                                             | Maximum number of git status entries treemacs will process. Anything above that number will be ignored.                                                                                                                              |
 | treemacs-missing-project-action          | ask                                              | When a persisted project is missing from filesystem, ~ask~ will prompt for action, ~keep~ will keep the project in the project list, and ~remove~ will remove it from it without prompt.                                             |
 | treemacs-show-cursor                     | nil                                              | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                                                                    |
@@ -562,6 +575,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-width-is-initially-locked       | t                                                | Indicates whether the treemacs windows starts with a locked width or not.                                                                                                                                                            |
 | treemacs-select-when-already-in-treemacs | 'move-back                                       | Indicates how ~treemacs-select-window~ behaves when treemacs is already selected.                                                                                                                                                    |
 | treemacs-text-scale                      | nil                                              | Scaling for text in treemacs, used via ~text-scale-increase~.                                                                                                                                                                        |
+| treemacs-indent-guide-style              | line                                             | Appearance option for ~treemacs-indent-guide~, either a thin line or a thick block.                                                                                                                                                  |
 
 ** Faces
 Treemacs defines and uses the following faces:
@@ -715,15 +729,6 @@ This line will load ~treemacs-all-the-icons~ (*it must not have been loaded prev
 theme. The given font argument will be used as the font for the alignment tabs used for the icons, hopefully alleviating
 the indentation problem. In addition ~treemacs-indentation~ and ~treemacs-indentation-string~ will be set to 1 and a
 (font-changed) TAB character respectively, so customizing them is (probably) not possible.
-
-*** Indent guide
-Not really part of the icons, but a useful visual feature nonetheless: An indent guide like effect can be created by
-selecting appropriate values for ~treemacs-indentation~ and ~treemacs-indentation-string~:
-
-#+BEGIN_SRC emacs-lisp
-  (setq treemacs-indentation-string (propertize " ⫶ " 'face 'font-lock-comment-face)
-        treemacs-indentation 1)
-#+END_SRC
 
 * Keymap
 ** Unbound functions

@@ -157,6 +157,16 @@ Requires eldoc mode to be enabled."
   :type 'boolean
   :group 'treemacs)
 
+(defcustom treemacs-indent-guide-style 'line
+  "Determines the apperance of `treemacs-indent-guide-mode'.
+The choices are
+ - `line' for indent guides to use the ' ┃ ' character for every indentation
+   level
+ - `block' to use a thick '██' block interspersed at every second indentation
+   level"
+  :type '(choice (const :tag "Line" 'line) (const :tag "Block" 'block))
+  :group 'treemacs)
+
 (defcustom treemacs-indentation-string " "
   "The string that is for indentation in the file tree.
 Indentation is created by repeating this string `treemacs-indentation' many

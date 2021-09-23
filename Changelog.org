@@ -3,6 +3,7 @@
 
 * Changelog
 ** current master
+- Added ~treemacs-indent-guide-mode~
 ** v2.9
 - Published ~treemacs-all-the-icons~
 - Added ~treemacs-workspace-switch-cleanup~

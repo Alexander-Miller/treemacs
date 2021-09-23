@@ -116,6 +116,7 @@ find the key a command is bound to it will show a blank instead."
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
              (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
              (key-show-dotfiles  (treemacs--find-keybind #'treemacs-toggle-show-dotfiles))
+             (key-indent-guide   (treemacs--find-keybind #'treemacs-indent-guide-mode))
              (key-show-gitignore (treemacs--find-keybind #'treemacs-hide-gitignored-files-mode))
              (key-toggle-width   (treemacs--find-keybind #'treemacs-toggle-fixed-width))
              (key-add-project    (treemacs--find-keybind #'treemacs-add-project-to-workspace 12))
@@ -136,7 +137,7 @@ find the key a command is bound to it will show a blank instead."
 %s goto parent      ^^^^│ %s open vertical       ^^^^│ %s show gitignored files ^^^^│
 %s down next window ^^^^│ %s open ace            ^^^^│ %s resizability          ^^^^│
 %s up next window   ^^^^│ %s open ace horizontal ^^^^│ %s fringe indicator      ^^^^│
-%s root up          ^^^^│ %s open ace vertical   ^^^^│                              │
+%s root up          ^^^^│ %s open ace vertical   ^^^^│ %s indent guide          ^^^^│
 %s root down        ^^^^│ %s open mru window     ^^^^│                              │
                         │ %s open externally     ^^^^│                              │
                         │ %s close parent        ^^^^│                              │
@@ -151,7 +152,7 @@ find the key a command is bound to it will show a blank instead."
                (car key-goto-parent)    (car key-open-vert)   (car key-show-gitignore)
                (car key-down-next-w)    (car key-open-ace)    (car key-toggle-width)
                (car key-up-next-w)      (car key-open-ace-h)  (car key-fringe-mode)
-               (car key-root-up)        (car key-open-ace-v)
+               (car key-root-up)        (car key-open-ace-v)  (car key-indent-guide)
                (car key-root-down)      (car key-open-mru)
                                         (car key-open-ext)
                                         (car key-close-above))))
@@ -184,6 +185,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-show-gitignore) #'treemacs-toggle-show-dotfiles)
               (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
               (,(cdr key-fringe-mode)    #'treemacs-fringe-indicator-mode)
+              (,(cdr key-indent-guide)   #'treemacs-indent-guide-mode)
               (,(cdr key-git-mode)       #'treemacs-git-mode)
               (,(cdr key-fwatch-mode)    #'treemacs-filewatch-mode)
               (,(cdr key-add-project)    #'treemacs-add-project-to-workspace)

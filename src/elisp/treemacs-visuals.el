@@ -47,6 +47,13 @@
 (defvar-local treemacs--indentation-string-cache (vector)
   "Cached propertized indentation.")
 
+(defvar treemacs--indent-guide-mode nil)
+
+(defvar treemacs--saved-indent-settings nil
+  "Saved settings overriden by `treemacs-indent-guide-mode'.
+Used to save the values of `treemacs-indentation' and
+`treemacs-indentation-string'.")
+
 (define-inline treemacs--forget-last-highlight ()
   "Set `treemacs--last-highlight' to nil."
   (inline-quote (setq treemacs--last-highlight nil)))
@@ -131,18 +138,27 @@ Optionally issue a log statement with LOG-ARGS."
 
 (defun treemacs--build-indentation-cache (depth)
   "Rebuild indentation string cache up to DEPTH levels deep."
-  (setq treemacs--indentation-string-cache (make-vector (1+ depth) nil)
-        treemacs--indentation-string-cache-key (cons treemacs-indentation treemacs-indentation-string))
+  (setq treemacs--indentation-string-cache
+        (make-vector (1+ depth) nil)
+        treemacs--indentation-string-cache-key
+        (cons treemacs-indentation treemacs-indentation-string))
   (dotimes (i (1+ depth))
     (aset treemacs--indentation-string-cache i
-          (cond ((integerp treemacs-indentation)
-                 (s-repeat (* i treemacs-indentation) treemacs-indentation-string))
-                ((not window-system)
-                 (s-repeat (* i 2) treemacs-indentation-string))
-                (t (propertize " "
-                               'display
-                               `(space . (:width (,(* (car treemacs-indentation)
-                                                      i))))))))))
+          (cond
+           ((listp treemacs-indentation-string)
+            (let ((str nil)
+                  (len (length treemacs-indentation-string)))
+              (dotimes (n i)
+                (setf str (concat str
+                                  (nth (% n len) treemacs-indentation-string))))))
+           ((integerp treemacs-indentation)
+            (s-repeat (* i treemacs-indentation) treemacs-indentation-string))
+           ((not window-system)
+            (s-repeat (* i 2) treemacs-indentation-string))
+           (t (propertize " "
+                          'display
+                          `(space . (:width (,(* (car treemacs-indentation)
+                                                 i))))))))))
 
 (define-inline treemacs--get-indentation (depth)
   "Gets an indentation string DEPTH levels deep."
@@ -156,6 +172,34 @@ Optionally issue a log statement with LOG-ARGS."
                  (not (eq (cdr treemacs--indentation-string-cache-key) treemacs-indentation-string)))
          (treemacs--build-indentation-cache ,depth))
        (aref treemacs--indentation-string-cache ,depth)))))
+
+(define-minor-mode treemacs-indent-guide-mode
+  "Toggle `treemacs-indent-guide-mode'.
+When enabled treemacs will show simple indent guides for its folder structure.
+The effect is achieved by overriding the values of `treemacs-indentation' and
+`treemacs-indentation-string'.  Disabling the mode will restore the previously
+used settings."
+  :init-value nil
+  :global     t
+  :lighter    nil
+  :group      'treemacs
+  (if treemacs-indent-guide-mode
+      (progn
+        (setf
+         treemacs--saved-indent-settings
+         (cons treemacs-indentation treemacs-indentation-string)
+         treemacs-indentation 1
+         treemacs-indentation-string
+         (pcase-exhaustive treemacs-indent-guide-style
+           ('line  (propertize " ┃ " 'face 'font-lock-comment-face))
+           ('block (list
+                    "  "
+                    (propertize "██" 'face 'font-lock-comment-face))))))
+    (setf treemacs-indentation (car treemacs--saved-indent-settings)
+          treemacs-indentation-string (cdr treemacs--saved-indent-settings)))
+  (treemacs-without-messages
+   (treemacs-run-in-every-buffer
+    (treemacs--do-refresh (current-buffer) 'all))))
 
 (provide 'treemacs-visuals)
 
