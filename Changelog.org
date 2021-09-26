@@ -3,6 +3,7 @@
 
 * Changelog
 ** current master
+- Added ~treemacs-width-increment~ and the ability to resize the treemacs window incrementally
 - Added ~treemacs-indent-guide-mode~
 - Added option to close treemacs when visiting nodes with a double prefix arg
 - Added ~treemacs-visit-node-close-treemacs~

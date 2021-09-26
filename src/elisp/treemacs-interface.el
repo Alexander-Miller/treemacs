@@ -450,6 +450,38 @@ With a prefix ARG simply reset the width of the treemacs window."
                (read-number))))
   (treemacs--set-width treemacs-width))
 
+  (defun treemacs-increase-width (&optional arg)
+    "Increase the value for `treemacs-width' with `treemacs-width-increment'.
+With a prefix ARG add the increment value multiple times."
+    (interactive "P")
+    (let* ((treemacs-window (treemacs-get-local-window))
+            (multiplier (if (numberp arg) arg 1))
+            (old-width (window-body-width treemacs-window))
+            (new-width (+ old-width (* multiplier treemacs-width-increment))))
+      (setq treemacs-width new-width)
+      (treemacs--set-width new-width)
+      (let ((current-size (window-body-width treemacs-window)))
+        (when (not (eq current-size new-width))
+          (setq treemacs-width old-width)
+          (treemacs--set-width old-width)
+          (treemacs-pulse-on-failure "Could not increase window width!")))))
+
+  (defun treemacs-decrease-width (&optional arg)
+    "Decrease the value for `treemacs-width' with `treemacs-width-increment'.
+With a prefix ARG substract the increment value multiple times."
+    (interactive "P")
+    (let* ((treemacs-window (treemacs-get-local-window))
+            (multiplier (if (numberp arg) arg 1))
+            (old-width (window-body-width treemacs-window))
+            (new-width (- old-width (* multiplier treemacs-width-increment))))
+      (setq treemacs-width new-width)
+      (treemacs--set-width new-width)
+      (let ((current-size (window-body-width treemacs-window)))
+        (when (not (eq current-size new-width))
+          (setq treemacs-width old-width)
+          (treemacs--set-width old-width)
+          (treemacs-pulse-on-failure "Could not decrease window width!")))))
+
 (defun treemacs-copy-absolute-path-at-point ()
   "Copy the absolute path of the node at point."
   (interactive)
