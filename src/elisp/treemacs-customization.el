@@ -763,6 +763,11 @@ marking the selected line."
   :type 'integer
   :group 'treemacs-window)
 
+(defcustom treemacs-width-increment 1
+  "When resizing, this value is added or substracted from the window width."
+  :type 'integer
+  :group 'treemacs-window)
+
 (defcustom treemacs-display-in-side-window t
   "When non-nil treemacs will use a dedicated side-window.
 On the one hand this will alleviate issues of unequally sized window splits when
