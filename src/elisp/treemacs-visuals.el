@@ -150,7 +150,8 @@ Optionally issue a log statement with LOG-ARGS."
                   (len (length treemacs-indentation-string)))
               (dotimes (n i)
                 (setf str (concat str
-                                  (nth (% n len) treemacs-indentation-string))))))
+                                  (nth (% n len) treemacs-indentation-string))))
+              str))
            ((integerp treemacs-indentation)
             (s-repeat (* i treemacs-indentation) treemacs-indentation-string))
            ((not window-system)
