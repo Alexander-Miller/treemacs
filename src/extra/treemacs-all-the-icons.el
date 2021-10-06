@@ -219,7 +219,10 @@
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "svg" :v-adjust 0 :face 'all-the-icons-orange) treemacs-all-the-icons-tab) :extensions ("svg") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "swagger" :v-adjust 0 :face 'all-the-icons-green) treemacs-all-the-icons-tab) :extensions ("swagger") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "swift" :v-adjust 0 :face 'all-the-icons-orange) treemacs-all-the-icons-tab) :extensions ("swift") :fallback 'same-as-icon)
-    (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "terminal" :v-adjust 0 :face 'all-the-icons-dgreen) treemacs-all-the-icons-tab) :extensions ("sh" "bash" "zsh" "fish" "zshrc" "bashrc") :fallback 'same-as-icon)
+    (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "terminal" :v-adjust 0 :face 'all-the-icons-dgreen) treemacs-all-the-icons-tab)
+                          :extensions ("sh" "zsh" "zshrc" "zshenv" "fish" "zprofile" "zlogin" "zlogout" "bash"
+                                       "bash_profile" "bashrc" "bash_login" "profile" "bash_aliases")
+                          :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "verilog" :v-adjust 0 :face 'all-the-icons-dblue) treemacs-all-the-icons-tab) :extensions ("sv" "v") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "tex" :v-adjust 0 :face 'all-the-icons-dsilver) treemacs-all-the-icons-tab) :extensions ("tex") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "typescript-alt" :v-adjust 0 :face 'all-the-icons-blue) treemacs-all-the-icons-tab) :extensions ("ts") :fallback 'same-as-icon)
