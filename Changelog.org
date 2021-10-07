@@ -4,6 +4,8 @@
 * Changelog
 ** current master
 - Added ~treemacs-indent-guide-mode~
+- Added option to close treemacs when visiting nodes with a double prefix arg
+- Added ~treemacs-visit-node-close-treemacs~
 ** v2.9
 - Published ~treemacs-all-the-icons~
 - Added ~treemacs-workspace-switch-cleanup~

@@ -110,6 +110,7 @@ find the key a command is bound to it will show a blank instead."
              (key-open-ace-v     (treemacs--find-keybind #'treemacs-visit-node-ace-vertical-split))
              (key-open-ext       (treemacs--find-keybind #'treemacs-visit-node-in-external-application))
              (key-open-mru       (treemacs--find-keybind #'treemacs-visit-node-in-most-recently-used-window))
+             (key-open-close     (treemacs--find-keybind #'treemacs-visit-node-close-treemacs))
              (key-close-above    (treemacs--find-keybind #'treemacs-collapse-parent-node))
              (key-follow-mode    (treemacs--find-keybind #'treemacs-follow-mode))
              (key-fringe-mode    (treemacs--find-keybind #'treemacs-fringe-indicator-mode))
@@ -140,6 +141,7 @@ find the key a command is bound to it will show a blank instead."
 %s root up          ^^^^│ %s open ace vertical   ^^^^│ %s indent guide          ^^^^│
 %s root down        ^^^^│ %s open mru window     ^^^^│                              │
                         │ %s open externally     ^^^^│                              │
+                        │ %s open close treemacs ^^^^│                              │
                         │ %s close parent        ^^^^│                              │
 "
                title
@@ -155,6 +157,7 @@ find the key a command is bound to it will show a blank instead."
                (car key-root-up)        (car key-open-ace-v)  (car key-indent-guide)
                (car key-root-down)      (car key-open-mru)
                                         (car key-open-ext)
+                                        (car key-open-close)
                                         (car key-close-above))))
           (eval
            `(defhydra treemacs--common-helpful-hydra (:exit nil :hint nil :columns 4)
@@ -179,6 +182,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-open-ace-v)     #'treemacs-visit-node-ace-vertical-split)
               (,(cdr key-open-mru)       #'treemacs-visit-node-in-most-recently-used-window)
               (,(cdr key-open-ext)       #'treemacs-visit-node-in-external-application)
+              (,(cdr key-open-close)     #'treemacs-visit-node-close-treemacs)
               (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
               (,(cdr key-follow-mode)    #'treemacs-follow-mode)
               (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)

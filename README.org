@@ -786,6 +786,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | ov     | treemacs-visit-node-vertical-split               | Open current file or tag by vertically splitting ~next-window~.                                                |
 | oh     | treemacs-visit-node-horizontal-split             | Open current file or tag by horizontally splitting ~next-window~.                                              |
 | oo/RET | treemacs-visit-node-no-split                     | Open current file or tag, performing no split and using ~next-window~ directly.                                |
+| oc     | treemacs-visit-node-close-treemacs               | Open current file or tag, performing no split and using ~next-window~ directly, and close treemacs.            |
 | oaa    | treemacs-visit-node-ace                          | Open current file or tag, using ace-window to decide which window to open the file in.                         |
 | oah    | treemacs-visit-node-ace-horizontal-split         | Open current file or tag by horizontally splitting a window selected by ace-window.                            |
 | oav    | treemacs-visit-node-ace-vertical-split           | Open current file or tag by vertically splitting a window selected by ace-window.                              |

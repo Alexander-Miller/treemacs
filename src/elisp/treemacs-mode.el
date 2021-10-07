@@ -108,6 +108,7 @@ Will be set by `treemacs--post-command'.")
 (defvar treemacs-node-visit-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "v")        'treemacs-visit-node-vertical-split)
+    (define-key map (kbd "c")        'treemacs-visit-node-close-treemacs)
     (define-key map (kbd "h")        'treemacs-visit-node-horizontal-split)
     (define-key map (kbd "o")        'treemacs-visit-node-no-split)
     (define-key map (kbd "aa")       'treemacs-visit-node-ace)
