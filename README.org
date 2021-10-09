@@ -876,7 +876,7 @@ Aside from this there are the following known incompatibilities:
 * FAQ
 - I don't need multiple projects, can treemacs just always show me the current project I'm in?
 
-  Yes, see the section about [[*Navigation without Projects and Workspaces]].
+  Yes, see the section about [[#navigation-without-projects-and-workspaces][Navigation without Projects and Workspace]]. 
 
 - How do I hide files I don't want to see?
 
