@@ -500,12 +500,23 @@ likewise be updated."
          "Found nothing to rename here.")
        (treemacs-error-return-if (not (file-exists-p old-path))
          "The file to be renamed does not exist.")
-       (setq new-name (treemacs--read-string "New name: " (file-name-nondirectory old-path))
+       (setq new-name (treemacs--read-string
+                       "New name: " (file-name-nondirectory old-path))
              dir      (treemacs--parent-dir old-path)
              new-path (treemacs-join-path dir new-name))
-       (treemacs-error-return-if (file-exists-p new-path)
-         "A file named %s already exists."
-         (propertize new-name 'face font-lock-string-face))
+       (pcase system-type
+         ;; macos is case-insensitive, so we need a different check to make sure
+         ;; we can still change the case a file on macs
+         ('darwin
+           (treemacs-error-return-if
+               (and (file-exists-p new-path)
+                    (string= (downcase old-path) (downcase new-path)))
+             "A file named %s already exists."
+             (propertize new-name 'face font-lock-string-face)))
+         (_
+          (treemacs-error-return-if (file-exists-p new-path)
+            "A file named %s already exists."
+            (propertize new-name 'face font-lock-string-face))))
        (treemacs--without-filewatch (rename-file old-path new-path))
        (treemacs--replace-recentf-entry old-path new-path)
        (-let [treemacs-silent-refresh t]
