@@ -128,7 +128,8 @@ Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
                   (path (-some-> node (treemacs-button-get :key))))
              (treemacs-with-writable-buffer
               (while (and node
-                          (file-exists-p path)
+                          (or (not (stringp path))
+                              (file-exists-p path))
                           (>= curr-depth start-depth))
                 (put-text-property (treemacs-button-start node) (treemacs-button-end node) 'face
                                    (treemacs--get-node-face
