@@ -133,12 +133,18 @@ This will make sure the icons' background colours will align with hl-line mode."
                 treemacs-icon-dir-closed
               (treemacs-icon-for-file file)))))
 
+(defun treemacs-icons-dired--set-tab-width ()
+  "Set the local `tab-width' to 1.
+Necessary for the all-the-icons based themes."
+  (setq-local tab-width 1))
+
 (defun treemacs-icons-dired--setup ()
   "Setup for the minor-mode."
   (treemacs--setup-icon-background-colors)
   (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
   (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
   (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
+  (add-hook 'dired-mode-hook #'treemacs-icons-dired--set-tab-width)
   (advice-add 'dired-revert :before #'treemacs-icons-dired--reset)
   (advice-add 'ranger-setup :before #'treemacs--select-icon-set)
   (advice-add 'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
@@ -146,6 +152,7 @@ This will make sure the icons' background colours will align with hl-line mode."
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
       (when (derived-mode-p 'dired-mode)
+        (treemacs-icons-dired--set-tab-width)
         (treemacs--select-icon-set)
         (treemacs-icons-dired--enable-highlight-correction)
         (treemacs-icons-dired--display)))))
@@ -155,6 +162,7 @@ This will make sure the icons' background colours will align with hl-line mode."
   (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
   (remove-hook 'dired-mode-hook #'treemacs--select-icon-set)
   (remove-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
+  (remove-hook 'dired-mode-hook #'treemacs-icons-dired--set-tab-width)
   (advice-remove 'dired-revert #'treemacs-icons-dired--reset)
   (advice-remove 'ranger-setup #'treemacs--select-icon-set)
   (advice-remove 'ranger-setup #'treemacs-icons-dired--enable-highlight-correction)
