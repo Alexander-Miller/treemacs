@@ -158,7 +158,7 @@ Requires eldoc mode to be enabled."
   :group 'treemacs)
 
 (defcustom treemacs-indent-guide-style 'line
-  "Determines the apperance of `treemacs-indent-guide-mode'.
+  "Determines the appearance of `treemacs-indent-guide-mode'.
 The choices are
  - `line' for indent guides to use the ' ┃ ' character for every indentation
    level

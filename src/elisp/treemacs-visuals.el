@@ -50,7 +50,7 @@
 (defvar treemacs--indent-guide-mode nil)
 
 (defvar treemacs--saved-indent-settings nil
-  "Saved settings overriden by `treemacs-indent-guide-mode'.
+  "Saved settings overridden by `treemacs-indent-guide-mode'.
 Used to save the values of `treemacs-indentation' and
 `treemacs-indentation-string'.")
 
