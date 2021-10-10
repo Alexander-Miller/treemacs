@@ -167,7 +167,7 @@ and ignore any prefix argument."
      :dir-action (find-file-noselect (treemacs-safe-button-get btn :path))
      :tag-action (treemacs--tag-noselect btn)
      :window (selected-window)
-     :save-window t
+     :window-arg '(4)
      :ensure-window-split nil
      :no-match-explanation "")))
 
