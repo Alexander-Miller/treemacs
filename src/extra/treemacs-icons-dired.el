@@ -184,6 +184,17 @@ Necessary for the all-the-icons based themes."
       (treemacs-icons-dired--setup)
     (treemacs-icons-dired--teardown)))
 
+;;;###autoload
+(defun treemacs-icons-dired-enable-once ()
+  "Enable `treemacs-icons-dired-mode' and remove self from `dired-mode-hook'.
+
+This function is meant to be used as a single-use toggle added to
+`dired-mode-hook' to enable icons for dired only once, without having to use
+\"with-eval-after-load 'dired\", since dired tends to be loaded early."
+  (treemacs-icons-dired-mode)
+  (remove-hook 'dired-mode-hook #'treemacs-icons-dired-enable-once))
+
+
 (provide 'treemacs-icons-dired)
 
 ;;; treemacs-icons-dired.el ends here

@@ -492,9 +492,8 @@ discoverability.
     :ensure t)
 
   (use-package treemacs-icons-dired
-    :after (dired)
-    :ensure t
-    :config (treemacs-icons-dired-mode))
+    :hook (dired-mode . treemacs-icons-dired-enable-once)
+    :ensure t)
 
   (use-package treemacs-magit
     :after (treemacs magit)
