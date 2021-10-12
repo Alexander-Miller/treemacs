@@ -186,7 +186,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
               (,(cdr key-follow-mode)    #'treemacs-follow-mode)
               (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
-              (,(cdr key-show-gitignore) #'treemacs-toggle-show-dotfiles)
+              (,(cdr key-show-gitignore) #'treemacs-hide-gitignored-files-mode)
               (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
               (,(cdr key-fringe-mode)    #'treemacs-fringe-indicator-mode)
               (,(cdr key-indent-guide)   #'treemacs-indent-guide-mode)

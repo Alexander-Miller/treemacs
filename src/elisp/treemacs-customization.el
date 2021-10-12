@@ -349,7 +349,7 @@ The difference between this and `treemacs-ignored-file-predicates' is that the
 functions in this list will be called on files just before they would be
 rendered, when the files' git status information is now available.  This for
 example allows to make files ignored by git invisible (however this particular
-use-case is already covered by `treemacs-show-gitignored-files').
+use-case is already covered by `treemacs-hide-gitignored-files-mode').
 
 The functions in this list are therefore expected to have a different signature:
 They must take two arguments - a file's absolute path and a hash table that maps

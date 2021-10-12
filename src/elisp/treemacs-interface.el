@@ -545,7 +545,7 @@ itself, using $HOME when there is no path at or near point to grab."
   "Toggle the hiding and displaying of dotfiles.
 
 For toggling the display of git-ignored files see
-`treemacs-toggle-show-gitignored-files'."
+`treemacs-hide-gitignored-files-mode'."
   (interactive)
   (setq treemacs-show-hidden-files (not treemacs-show-hidden-files))
   (treemacs-run-in-every-buffer
