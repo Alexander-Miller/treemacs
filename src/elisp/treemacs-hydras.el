@@ -195,7 +195,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-add-project)    #'treemacs-add-project-to-workspace)
               (,(cdr key-remove-project) #'treemacs-remove-project-from-workspace)
               (,(cdr key-rename-project) #'treemacs-rename-project)
-              ("ESC" nil "Exit"))))
+              ("<escape>" nil "Exit"))))
         (treemacs--common-helpful-hydra/body))
     (treemacs-log-failure "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
 
@@ -292,7 +292,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-rename-ws)      #'treemacs-rename-workspace)
               (,(cdr key-switch-ws)      #'treemacs-switch-workspace)
               (,(cdr key-fallback-ws)    #'treemacs-set-fallback-workspace)
-              ("ESC" nil "Exit"))))
+              ("<escape>" nil "Exit"))))
         (treemacs--advanced-helpful-hydra/body))
     (treemacs-log-failure "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
 
