@@ -865,12 +865,14 @@ With a prefix ARG select project to remove by name."
             save-pos (not (equal project (treemacs-project-at-point)))))
     (pcase (if save-pos
                (treemacs-save-position
-                (treemacs-do-remove-project-from-workspace project))
-             (treemacs-do-remove-project-from-workspace project))
+                (treemacs-do-remove-project-from-workspace project nil :ask))
+             (treemacs-do-remove-project-from-workspace project nil :ask))
       (`success
        (whitespace-cleanup)
        (treemacs-pulse-on-success "Removed project %s from the workspace."
          (propertize (treemacs-project->name project) 'face 'font-lock-type-face)))
+      (`user-cancel
+       (ignore))
       (`cannot-delete-last-project
        (treemacs-pulse-on-failure "Cannot delete the last project."))
       (`(invalid-project ,reason)

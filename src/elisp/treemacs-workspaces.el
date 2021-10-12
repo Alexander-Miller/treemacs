@@ -339,7 +339,7 @@ Return values may be as follows:
 
 * If only a single workspace remains:
   - the symbol `only-one-workspace'
-* If the user cancel the deletion:
+* If the user cancels the deletion:
   - the symbol `user-cancel'
 * If the workspace cannot be found:
   - the symbol `workspace-not-found'
@@ -524,7 +524,8 @@ NAME: String"
 (with-no-warnings
   (make-obsolete #'treemacs-add-project-at #'treemacs-do-add-project-to-workspace "v.2.2.1"))
 
-(defun treemacs-do-remove-project-from-workspace (project &optional ignore-last-project-restriction)
+(defun treemacs-do-remove-project-from-workspace
+    (project &optional ignore-last-project-restriction ask-to-confirm)
   "Remove the given PROJECT from the current workspace.
 
 PROJECT may either be a `treemacs-project' instance or a string path.  In the
@@ -535,11 +536,16 @@ not count as an error.  This is meant to be used in non-interactive code, where
 another project is immediately added afterwards, as leaving the project list
 empty is generally a bad idea.
 
+Ask the user to confirm the deletion when ASK-TO-CONFIRM is t (it will be when
+this is called from `treemacs-remove-project-from-workspace').
+
 Return values may be as follows:
 
 * If the given path is invalid (is nil or does not exist):
   - the symbol `invalid-project'
   - a string describing the problem
+* If the user cancels the deletion:
+  - the symbol `user-cancel'
 * If there is only one project:
   - the symbol `cannot-delete-last-project'
 * If everything went well:
@@ -557,6 +563,12 @@ Return values may be as follows:
        (treemacs-return-if (null found-project)
          `(invalid-project ,(format "Given path '%s' is not in the workspace" project)))
        (setf project found-project)))
+   (treemacs-return-if
+       (and ask-to-confirm
+            (not (yes-or-no-p (format "Remove project %s from the current workspace?"
+                                      (propertize (treemacs-project->name project)
+                                                  'face 'font-lock-type-face)))))
+     'user-cancel)
    (treemacs-run-in-every-buffer
     (treemacs-with-writable-buffer
      (let* ((project-path (treemacs-project->path project))
