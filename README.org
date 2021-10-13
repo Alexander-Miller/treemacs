@@ -835,8 +835,8 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | RET      | treemacs-RET-action                         | Run the action defined in ~treemacs-RET-actions-config~ for the current node.                          |
 | TAB      | treemacs-TAB-action                         | Run the action defined in ~treemacs-TAB-actions-config~ for the current node.                          |
 | g/r/gr   | treemacs-refresh                            | Refresh the project at point.                                                                          |
-| d        | treemacs-delete                             | Delete node at point.                                                                                  |
-| R        | treemacs-rename                             | Rename node at point.                                                                                  |
+| d        | treemacs-delete-file                        | Delete node at point.                                                                                  |
+| R        | treemacs-rename-file                        | Rename node at point.                                                                                  |
 | cf       | treemacs-create-file                        | Create a file.                                                                                         |
 | cd       | treemacs-create-dir                         | Create a directory.                                                                                    |
 | q        | treemacs-quit                               | Hide the treemacs window.                                                                              |

@@ -36,6 +36,14 @@
   treemacs-edit-workspaces
   treemacs-version)
 
+(treemacs-import-functions-from "treemacs-file-management"
+  treemacs-rename-file
+  treemacs-create-file
+  treemacs-create-dir
+  treemacs-copy-file
+  treemacs-move-file
+  treemacs-delete-file)
+
 (treemacs-import-functions-from "treemacs-hydras"
   treemacs--common-helpful-hydra/body
   treemacs--advanced-helpful-hydra/body)
@@ -225,8 +233,8 @@ find the key a command is bound to it will show a blank instead."
              (key-common-hydra   (treemacs--find-keybind #'treemacs-common-helpful-hydra))
              (key-create-file    (treemacs--find-keybind #'treemacs-create-file))
              (key-create-dir     (treemacs--find-keybind #'treemacs-create-dir))
-             (key-rename         (treemacs--find-keybind #'treemacs-rename))
-             (key-delete         (treemacs--find-keybind #'treemacs-delete))
+             (key-rename         (treemacs--find-keybind #'treemacs-rename-file))
+             (key-delete         (treemacs--find-keybind #'treemacs-delete-file))
              (key-copy-file      (treemacs--find-keybind #'treemacs-copy-file))
              (key-move-file      (treemacs--find-keybind #'treemacs-move-file))
              (key-refresh        (treemacs--find-keybind #'treemacs-refresh))
@@ -275,8 +283,8 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-common-hydra)   #'treemacs-common-helpful-hydra :exit t)
               (,(cdr key-create-file)    #'treemacs-create-file)
               (,(cdr key-create-dir)     #'treemacs-create-dir)
-              (,(cdr key-rename)         #'treemacs-rename)
-              (,(cdr key-delete)         #'treemacs-delete)
+              (,(cdr key-rename)         #'treemacs-rename-file)
+              (,(cdr key-delete)         #'treemacs-delete-file)
               (,(cdr key-copy-file)      #'treemacs-copy-file)
               (,(cdr key-move-file)      #'treemacs-move-file)
               (,(cdr key-refresh)        #'treemacs-refresh)
