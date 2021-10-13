@@ -290,6 +290,10 @@ The refresh is not called immediately after an event was received, treemacs
 instead waits `treemacs-file-event-delay' ms to see if any more files have
 changed to avoid having to refresh multiple times over a short period of time.
 
+Due to limitations in the underlying kqueue library this mode may not be able to
+track file modifications on MacOS, making it miss potentially useful updates
+when used in combination with `treemacs-git-mode.'
+
 The watch mechanism only applies to directories opened *after* this mode has
 been activated.  This means that to enable file watching in an already existing
 treemacs buffer it needs to be torn down and rebuilt by calling `treemacs' or

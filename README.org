@@ -294,9 +294,11 @@ other hand, instantaneous - it will immediately turn off all existing file watch
 actions.
 
 _Known limitations_:
-Staging and committing changes does not produce any file change events of its own, if you use ~treemacs-git-mode~ you
-still need to do a manual refresh to see your files' faces go from 'changed' and 'untracked' to 'unchanged' after a
-commit.
+- Staging and committing changes does not produce any file change events of its own, if you use ~treemacs-git-mode~ you
+  still need to do a manual refresh to see your files' faces go from 'changed' and 'untracked' to 'unchanged' after a
+  commit.
+- Filewatch-mode may not be able to track file modifications on MacOS, making git-mode miss potential changes, see also
+  [[https://github.com/Alexander-Miller/treemacs/issues/152#issuecomment-941093929][this comment]].
 
 ** Indent-guide-mode
 
