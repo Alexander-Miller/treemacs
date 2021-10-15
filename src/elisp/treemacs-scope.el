@@ -181,13 +181,14 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
 
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
-  ;; stop watch must come first since we need a reference to the killed buffer
-  ;; to remove it from the filewatch list
-  (treemacs--stop-filewatch-for-current-buffer)
   (treemacs--tear-down-icon-highlight)
-  ;; not present for extension buffers
-  (-when-let (shelf (treemacs-current-scope-shelf))
-    (setf (treemacs-scope-shelf->buffer shelf) nil)))
+  (when (eq t treemacs--in-this-buffer)
+    ;; stop watch must come first since we need a reference to the killed buffer
+    ;; to remove it from the filewatch list
+    (treemacs--stop-filewatch-for-current-buffer)
+    ;; not present for extension buffers
+    (-when-let (shelf (treemacs-current-scope-shelf))
+      (setf (treemacs-scope-shelf->buffer shelf) nil))))
 
 (defun treemacs--on-scope-kill (scope)
   "Kill and remove the buffer assigned to the given SCOPE."
