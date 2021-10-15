@@ -67,7 +67,9 @@ Used to save the values of `treemacs-indentation' and
 (defun treemacs--tear-down-icon-highlight ()
   "Tear down highlighting advice when no treemacs buffer exists anymore."
   (treemacs--forget-last-highlight)
-  (unless treemacs--scope-storage
+  (unless (or treemacs--scope-storage
+              (--any (buffer-local-value 'treemacs--in-this-buffer it)
+                     (buffer-list)))
     (advice-remove #'hl-line-highlight #'treemacs--update-icon-selection)
     (advice-remove #'enable-theme      #'treemacs--setup-icon-background-colors)
     (advice-remove #'disable-theme     #'treemacs--setup-icon-background-colors)))
