@@ -944,6 +944,15 @@ Aside from this there are the following known incompatibilities:
    Yes, you just need to expand it with a [[https://www.emacswiki.org/emacs/PrefixArgument][prefix argument]]. Closing nodes with a prefix argument works as well. In this
    case treemacs will forget about the nodes opened below the one that was closed and not reopen them automatically.
 
+- Broken display of CJK characters
+
+  If you are seeing raw bytes like ~\316~ instead of proper CJK characters like [[https://github.com/Alexander-Miller/treemacs/issues/863][in this issue]] you have to set the proper
+  language environment, e.g.:
+
+   #+BEGIN_SRC emacs-lisp
+     (set-language-environment 'Chinese-GB18030)
+   #+END_SRC
+
 * Contributing
 Contributions are very much welcome, but should fit the general scope and style of treemacs. The following is a list of
 guidelines that should be met (exceptions confirm the rule):

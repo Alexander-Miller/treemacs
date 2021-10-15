@@ -409,7 +409,11 @@ performance cap and to prevent too long directory names in the treemacs view.
 
 To minimise this option's impact on display performance the search for
 directories to collapse is done asynchronously in a python script and will thus
-only work when python installed.  The script should work both on python 2 and 3."
+only work when python installed.  The script should work both on python 2 and 3.
+
+If you experience incorrect display of CJK characters while using this feature
+you have to inform Emacs about your language environment using
+`set-language-environment'."
   :type 'integer
   :group 'treemacs)
 
