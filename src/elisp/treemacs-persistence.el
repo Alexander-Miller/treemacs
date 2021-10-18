@@ -169,7 +169,8 @@ ITER: Treemacs-Iter Struct"
               (no-kill nil)
               ;; no surprisese when using `abbreviate-file-name'
               (directory-abbrev-alist nil)
-              (abbreviated-home-dir nil))
+              (abbreviated-home-dir nil)
+              (file-precious-flag t))
           (--if-let (get-file-buffer treemacs-persist-file)
               (setq buffer it
                     no-kill t)
