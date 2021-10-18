@@ -220,11 +220,11 @@ treemacs window with a double prefix argument."
    :window-arg arg
    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
 
-(defun treemacs-visit-node-close-treemacs ()
+(defun treemacs-visit-node-close-treemacs (&optional _)
   "Open current node without and close treemacs.
 Works just like calling `treemacs-visit-node-no-split' with a double prefix
 arg."
-  (interactive)
+  (interactive "P")
   (treemacs-visit-node-no-split '(16)))
 
 (defun treemacs-visit-node-no-split (&optional arg)
