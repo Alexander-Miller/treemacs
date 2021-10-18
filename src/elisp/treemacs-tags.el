@@ -185,7 +185,8 @@ DEPTH: Int"
   "Open tag items for file BTN.
 Recursively open all tags below BTN when RECURSIVE is non-nil."
   (let* ((path (treemacs-button-get btn :path))
-         (parent-dom-node (treemacs-find-in-dom path)))
+         (parent-dom-node (treemacs-find-in-dom path))
+         (recursive (treemacs--prefix-arg-to-recurse-depth recursive)))
     (-if-let (index (treemacs--get-imenu-index path))
         (treemacs--button-open
          :button btn
@@ -215,7 +216,8 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
            (treemacs-on-expand path btn)
            (treemacs--reentry path)
            (end-of-line)
-           (when recursive
+           (when (> recursive 0)
+             (cl-decf recursive)
              (--each (treemacs-collect-child-nodes btn)
                (when (eq 'tag-node-closed (treemacs-button-get it :state))
                  (goto-char (treemacs-button-start it))
@@ -302,7 +304,8 @@ the display window."
 Open all tag section under BTN when call is RECURSIVE."
   (let* ((index (treemacs-button-get btn :index))
          (tag-path (treemacs-button-get btn :path))
-         (parent-dom-node (treemacs-find-in-dom tag-path)))
+         (parent-dom-node (treemacs-find-in-dom tag-path))
+         (recursive (treemacs--prefix-arg-to-recurse-depth recursive)))
     (treemacs--button-open
      :button btn
      :immediate-insert t
@@ -330,11 +333,13 @@ Open all tag section under BTN when call is RECURSIVE."
          (setf (treemacs-dom-node->children parent-dom-node)
                (nconc dom-nodes (treemacs-dom-node->children parent-dom-node))))
        (treemacs-on-expand tag-path btn)
-       (if recursive
-           (--each (treemacs-collect-child-nodes btn)
-             (when (eq 'tag-node-closed (treemacs-button-get it :state))
-               (goto-char (treemacs-button-start it))
-               (treemacs--expand-tag-node it t)))
+       (if (> recursive 0)
+           (progn
+             (cl-decf recursive)
+             (--each (treemacs-collect-child-nodes btn)
+               (when (eq 'tag-node-closed (treemacs-button-get it :state))
+                 (goto-char (treemacs-button-start it))
+                 (treemacs--expand-tag-node it t))))
          (treemacs--reentry tag-path))))))
 
 (defun treemacs--collapse-tag-node-recursive (btn)

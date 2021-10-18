@@ -147,6 +147,18 @@ Used in `treemacs-is-node-expanded?'")
          (substring ,path 0 -1)
        ,path))))
 
+(define-inline treemacs--prefix-arg-to-recurse-depth (arg)
+  "Translates prefix ARG into a number.
+Used for depth-based expansion of nodes - a numeric prefix will translate to
+itself, the default representation translates to 9999."
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (arg)
+    (inline-quote
+     (cond
+      ((null ,arg) 0)
+      ((integerp ,arg) ,arg)
+      (t 999)))))
+
 (define-inline treemacs--parent-dir (path)
   "Return the parent of PATH is it's a file, or PATH if it is a directory.
 
