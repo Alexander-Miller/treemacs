@@ -562,7 +562,8 @@ RECURSIVE: Bool"
       (let* ((path (treemacs-button-get btn :path))
              (git-path (if (treemacs-button-get btn :symlink) (file-truename path) path))
              (git-future (treemacs--git-status-process git-path project))
-             (collapse-future (treemacs--collapsed-dirs-process path project)))
+             (collapse-future (treemacs--collapsed-dirs-process path project))
+             (recursive (treemacs--prefix-arg-to-recurse-depth recursive)) )
         (treemacs--maybe-recenter treemacs-recenter-after-project-expand
           (treemacs--button-open
            :immediate-insert nil
@@ -583,11 +584,12 @@ RECURSIVE: Bool"
              ;; might have changed the state to connected.
              (treemacs-with-writable-buffer
               (treemacs-project->refresh-path-status! project))
-             (when (and recursive (treemacs-project->is-readable? project))
+             (when (and (> recursive 0) (treemacs-project->is-readable? project))
+               (cl-decf recursive)
                (--each (treemacs-collect-child-nodes btn)
                  (when (eq 'dir-node-closed (treemacs-button-get it :state))
                    (goto-char (treemacs-button-start it))
-                   (treemacs--expand-dir-node it :git-future git-future :recursive t)))))))))))
+                   (treemacs--expand-dir-node it :git-future git-future :recursive recursive)))))))))))
 
 (defun treemacs--collapse-root-node (btn &optional recursive)
   "Collapse the given root BTN.
@@ -615,7 +617,8 @@ RECURSIVE: Bool"
              (git-future (if (treemacs-button-get btn :symlink)
                              (treemacs--git-status-process (file-truename path) project)
                            (or git-future (treemacs--git-status-process path project))))
-             (collapse-future (treemacs--collapsed-dirs-process path project)))
+             (collapse-future (treemacs--collapsed-dirs-process path project))
+             (recursive (treemacs--prefix-arg-to-recurse-depth recursive)))
         (treemacs--button-open
          :immediate-insert nil
          :button btn
@@ -629,11 +632,12 @@ RECURSIVE: Bool"
            (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
            (treemacs--apply-directory-bottom-extensions btn path)
            (treemacs--start-watching path)
-           (when recursive
+           (when (> recursive 0)
+             (cl-decf recursive)
              (--each (treemacs-collect-child-nodes btn)
                (when (eq 'dir-node-closed (treemacs-button-get it :state))
                  (goto-char (treemacs-button-start it))
-                 (treemacs--expand-dir-node it :git-future git-future :recursive t))))))))))
+                 (treemacs--expand-dir-node it :git-future git-future :recursive recursive))))))))))
 
 (defun treemacs--collapse-dir-node (btn &optional recursive)
   "Close node given by BTN.

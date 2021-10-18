@@ -2012,6 +2012,20 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
             (expect ann2 :not :to-be nil)
             (expect (treemacs-annotation->suffix ann1) :to-equal '(("Source2" . "Suffix2")))
             (expect (treemacs-annotation->suffix ann2) :to-equal '(("Source3" . "Suffix3")))))))))
+(describe "treemacs--prefix-arg-to-recurse-depth"
+
+  (it "translates numbers literally"
+    (dotimes (n 10)
+      (expect (treemacs--prefix-arg-to-recurse-depth n) :to-be n)))
+
+  (it "translates nil to 0"
+      (expect (treemacs--prefix-arg-to-recurse-depth nil) :to-be 0))
+
+  (it "translates everything else to 999"
+    (expect (treemacs--prefix-arg-to-recurse-depth '(4)) :to-be 999)
+    (expect (treemacs--prefix-arg-to-recurse-depth 1.0) :to-be 999)
+    (expect (treemacs--prefix-arg-to-recurse-depth "a") :to-be 999)
+    (expect (treemacs--prefix-arg-to-recurse-depth (treemacs-project->create!)) :to-be 999)))
 
 (provide 'test-treemacs)
 
