@@ -860,6 +860,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | \!       | treemacs-run-shell-command-for-current-node | Run an asynchronous shell command on the current node, replacing "$path" with its path.                |
 | M-!      | treemacs-run-shell-command-in-project-root  | Run an asynchronous shell command in the root of the current project, replacing "$path" with its path. |
 | C        | treemacs-cleanup-litter                     | Close all directories matching any of ~treemacs-litter-directories~.                                   |
+| =        | treemacs-fit-window-width                   | Adjust the width of the treemacs window to that of the longsest line.                                  |
 
 * Compatibility
 The correctness of treemacs' display behaviour is, to a large degree, ensured through window properties and reacting to

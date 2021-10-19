@@ -1267,6 +1267,30 @@ To programmatically set the scope type see `treemacs-set-scope-type'."
                   (treemacs-toggle-node :purge)))))))))
     (treemacs-pulse-on-success "Cleanup complete.")))
 
+(defun treemacs-fit-window-width ()
+  "Make treemacs wide enough to display its entire content.
+
+Specifically this will increase (or reduce) the width of the treemacs window to
+that of the longest line, counting all lines, not just the ones that are
+visible."
+  (interactive)
+  (let ((longest 0)
+        (depth 0))
+    (save-excursion
+      (goto-char (point-min))
+      (while (= 0 (forward-line 1))
+        (-let [new-len (- (point-at-eol) (point-at-bol))]
+          (when (> new-len longest)
+            (setf longest new-len
+                  depth (treemacs--prop-at-point :depth))))))
+    (let* ((icon-px-diff (* depth (- treemacs--icon-size (frame-char-width))))
+           (icon-offset (% icon-px-diff (frame-char-width)))
+           (new-width (+ longest icon-offset)))
+      (setf treemacs-width new-width)
+      (treemacs--set-width new-width)
+      (treemacs-pulse-on-success "Width set to %s"
+        (propertize (format "%s" new-width) 'face 'font-lock-string-face)))))
+
 (defun treemacs-icon-catalogue ()
   "Showcase a catalogue of all treemacs themes and their icons."
   (interactive)

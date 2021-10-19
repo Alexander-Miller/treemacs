@@ -7,6 +7,7 @@
 - Added ~treemacs-indent-guide-mode~
 - Added option to close treemacs when visiting nodes with a double prefix arg
 - Added ~treemacs-visit-node-close-treemacs~
+- Added ~treemacs-fit-widdow-width~
 ** v2.9
 - Published ~treemacs-all-the-icons~
 - Added ~treemacs-workspace-switch-cleanup~
