@@ -53,21 +53,17 @@
 (eval-and-compile
   (defvar treemacs--not-selected-icon-background
     (pcase (face-attribute 'default :background nil t)
-      ('unspecified
-       (prog1 "#2d2d31"
-         (unless (or noninteractive (boundp 'treemacs-no-load-time-warnings))
-           (message "[Treemacs] Warning: coudn't find default background colour for icons, falling back on #2d2d31."))))
-      ('unspecified-bg
-       (prog1 "#2d2d31"
-         (unless (or  noninteractive (boundp 'treemacs-no-load-time-warnings))
-           (message "[Treemacs] Warning: background colour is unspecified, icons will likely look wrong. Falling back on #2d2d31."))))
+      ((or 'unspecified 'unspecified-bg "unspecified" "unspecified-bg")
+       (unless (or noninteractive (boundp 'treemacs-no-load-time-warnings))
+         (message "[Treemacs] Warning: coudn't find default background colour for icons, falling back on #2d2d31."))
+       "#2d2d31" )
       (other other)))
   "Background for non-selected icons.")
 
 (eval-and-compile
   (defvar treemacs--selected-icon-background
     (-let [bg (face-attribute 'hl-line :background nil t)]
-      (if (memq bg '(unspecified unspecified-b))
+      (if (member bg '(unspecified unspecified-b "unspecified" "unspecified-bg"))
           (prog1 treemacs--not-selected-icon-background
             (unless (or noninteractive (boundp 'treemacs-no-load-time-warnings))
               (message "[Treemacs] Warning: couldn't find hl-line-mode's background color for icons, falling back on %s."
