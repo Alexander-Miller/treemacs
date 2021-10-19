@@ -198,6 +198,7 @@ Will be set by `treemacs--post-command'.")
     (define-key map (kbd "M-!")       'treemacs-run-shell-command-in-project-root)
     (define-key map (kbd "C")         'treemacs-cleanup-litter)
     (define-key map (kbd "=")         'treemacs-fit-window-width)
+    (define-key map (kbd "W")         'treemacs-extra-wide-toggle)
     map)
   "Keymap for `treemacs-mode'.")
 

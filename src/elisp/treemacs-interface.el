@@ -1291,6 +1291,21 @@ visible."
       (treemacs-pulse-on-success "Width set to %s"
         (propertize (format "%s" new-width) 'face 'font-lock-string-face)))))
 
+(defun treemacs-extra-wide-toggle ()
+  "Expand the treemacs window to an extr-wide state (or turn it back).
+
+Specifically this will toggle treemacs' width between
+`treemacs-wide-toggle-width' and the normal `treemacs-width'."
+  (interactive)
+  (if (get 'treemacs-extra-wide-toggle :toggle-on)
+      (progn
+        (treemacs--set-width treemacs-width)
+        (put 'treemacs-extra-wide-toggle :toggle-on nil)
+        (treemacs-log "Switched to normal width display"))
+    (treemacs--set-width treemacs-wide-toggle-width)
+    (put 'treemacs-extra-wide-toggle :toggle-on t)
+    (treemacs-log "Switched to extra width display")))
+
 (defun treemacs-icon-catalogue ()
   "Showcase a catalogue of all treemacs themes and their icons."
   (interactive)
