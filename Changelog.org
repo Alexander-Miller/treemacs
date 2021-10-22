@@ -2,6 +2,8 @@
 #+STARTUP: content
 
 * Changelog
+** Current master
+*** Added ~treemacs-bulk-file-actions~
 ** v2.10
 - Added ~treemacs-width-increment~ and the ability to resize the treemacs window incrementally
 - Added ~treemacs-indent-guide-mode~
