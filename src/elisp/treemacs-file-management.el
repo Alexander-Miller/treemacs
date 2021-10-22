@@ -274,6 +274,51 @@ IS-FILE?: Bool"
      (treemacs-pulse-on-success
          "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
 
+(defun treemacs-create-file-or-dir ()
+  "Interactively create either a file or directory."
+  (interactive)
+  (let* ((curr-path (--if-let (treemacs-current-button)
+                      (treemacs--nearest-path it)
+                      (expand-file-name "~")))
+          (path-to-create (read-file-name
+                            "Create File or Directory: "
+                            (treemacs--add-trailing-slash
+                              (if (file-directory-p curr-path)
+                                curr-path
+                                (treemacs--parent-dir curr-path))))))
+    (treemacs-block
+      (treemacs-error-return-if (file-exists-p path-to-create)
+        "%s already exists." (propertize path-to-create 'face 'font-lock-string-face))
+      (treemacs--without-filewatch
+        (if (not (equal path-to-create (file-name-as-directory path-to-create)))
+          (-let [dir (treemacs--parent-dir path-to-create)]
+            (unless (file-exists-p dir)
+              (make-directory dir t))
+            (write-region "" nil path-to-create nil 0))
+          (progn
+            (setq path-to-create (directory-file-name path-to-create))
+            (make-directory path-to-create t)))
+        (run-hook-with-args 'treemacs-create-file-functions path-to-create))
+      (message "%S" path-to-create)
+      (-when-let (project (treemacs--find-project-for-path path-to-create))
+        (-when-let* ((created-under (treemacs--parent path-to-create))
+                      (created-under-pos (treemacs-find-visible-node created-under)))
+          ;; update only the part that changed to keep things smooth
+          ;; for files that's just their parent, for directories we have to take
+          ;; flattening into account
+          (if (and (treemacs-button-get created-under-pos :parent)
+                (or (treemacs-button-get created-under-pos :collapsed)
+                  ;; count includes "." "..", so it'll be flattened
+                  (= 3 (length (directory-files created-under)))))
+            (treemacs-do-update-node (-> created-under-pos
+                                        (treemacs-button-get :parent)
+                                        (treemacs-button-get :path)))
+            (treemacs-do-update-node created-under)))
+        (treemacs-goto-file-node (treemacs-canonical-path path-to-create) project)
+        (recenter))
+      (treemacs-pulse-on-success
+        "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
+
 (provide 'treemacs-file-management)
 
 ;;; treemacs-file-management.el ends here
