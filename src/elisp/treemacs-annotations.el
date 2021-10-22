@@ -71,6 +71,12 @@ PATH: Node Path"
                 (null (treemacs-annotation->suffix ,ann)))
        (ht-remove! treemacs--annotation-store ,path)))))
 
+(define-inline treemacs--delete-annotation (path)
+  "Complete delete annotation information for PATH."
+  (inline-letevals (path)
+    (inline-quote
+     (ht-remove! treemacs--annotation-store ,path))))
+
 ;;; Faces
 
 (define-inline treemacs-set-annotation-face (path face source)
