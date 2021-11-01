@@ -178,9 +178,6 @@ PATH: File Path"
   "Non-nil only in buffers meant to show treemacs.
 Used to show an error message if someone mistakenly activates `treemacs-mode'.")
 
-(defvar treemacs--pre-peek-state nil
-  "List of window, buffer to restore and buffer to kill treemacs used for peeking.")
-
 (define-inline treemacs--remove-trailing-newline (str)
   "Remove final newline in STR."
   (declare (pure t) (side-effect-free t))
@@ -1091,44 +1088,6 @@ Will refresh every project when PROJECT is 'all."
 
      (unless treemacs-silent-refresh
        (treemacs-log "Refresh complete.")))))
-
-(defun treemacs--setup-peek-buffer (btn &optional goto-tag?)
-  "Setup the peek buffer and window for BTN.
-Additionally also navigate to BTN's tag if GOTO-TAG is t.
-
-BTN: Button
-GOTO-TAG: Bool"
-  (let ((path (file-truename
-               (if goto-tag?
-                   (treemacs-with-button-buffer btn
-                     (treemacs--nearest-path btn))
-                 (treemacs-safe-button-get btn :path))))
-        (buffer-to-restore (current-buffer))
-        (buffer-to-kill nil))
-    (-if-let (buffer (get-file-buffer path))
-        (switch-to-buffer buffer)
-      (find-file path)
-      (setq buffer-to-kill (current-buffer)))
-    (when goto-tag?
-      (treemacs--goto-tag btn))
-    (unless treemacs--pre-peek-state
-      (setq treemacs--pre-peek-state `(,(selected-window) ,buffer-to-restore ,buffer-to-kill)))
-    (add-hook 'post-command-hook #'treemacs--restore-peeked-window)))
-
-(defun treemacs--restore-peeked-window ()
-  "Revert the buffer displayed in the peek window before it was used for peeking."
-  (unless (memq this-command
-                '(treemacs-peek treemacs-next-line-other-window treemacs-previous-line-other-window
-                         treemacs-next-page-other-window treemacs-previous-page-other-window))
-    (remove-hook 'post-command-hook #'treemacs--restore-peeked-window)
-    (treemacs-without-following
-      (when treemacs--pre-peek-state
-        (-let [(window buffer-to-restore buffer-to-kill) treemacs--pre-peek-state]
-          (setq treemacs--pre-peek-state nil)
-          (when (buffer-live-p buffer-to-kill)
-            (kill-buffer buffer-to-kill))
-          (with-selected-window window
-            (switch-to-buffer buffer-to-restore)))))))
 
 (define-inline treemacs-is-node-file-or-dir? (node)
   "Return t when NODE is a file or directory."

@@ -847,7 +847,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | cd       | treemacs-create-dir                         | Create a directory.                                                                                    |
 | q        | treemacs-quit                               | Hide the treemacs window.                                                                              |
 | Q        | treemacs-kill-buffer                        | Delete the treemacs buffer.                                                                            |
-| P        | treemacs-peek                               | Peek at the file (or tag) at point without fully opening it.                                           |
+| P        | treemacs-peek-mode                          | Peek at the files at point without fully opening them.                                                 |
 | ya       | treemacs-copy-absolute-path-at-point        | Copy the absolute path of the node at point.                                                           |
 | yr       | treemacs-copy-relative-path-at-point        | Copy the path of the node at point relative to the project root.                                       |
 | yp       | treemacs-copy-project-path-at-point         | Copy the absolute path of the project root for the node at point.                                      |
