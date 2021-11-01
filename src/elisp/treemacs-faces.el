@@ -147,6 +147,11 @@ Applies to buttons like
  - `treemacs-header-workspace-button'"
   :group 'treemacs-faces)
 
+(defface treemacs-peek-mode-indicator-face
+  '((t :background "#669966"))
+  "Face used to indicate that `treemacs-peek-mode' is enabled."
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here
