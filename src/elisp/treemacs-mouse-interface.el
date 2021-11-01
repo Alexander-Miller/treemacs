@@ -265,10 +265,10 @@ and ignore any prefix argument."
                 ["Open Tags"  treemacs-toggle-node :visible ,(check (memq state '(file-node-closed tag-node-closed)))]
                 ["Close Tags" treemacs-toggle-node :visible ,(check (memq state '(file-node-open tag-node-open)))]
 
-                ["--" #'ignore                         :visible ,(check node)]
-                ["Rename"           treemacs-rename    :visible ,(check node)]
-                ["Delete"           treemacs-delete    :visible ,(check node)]
-                ["Move"             treemacs-move-file :visible ,(check node)]
+                ["--" #'ignore                           :visible ,(check node)]
+                ["Rename"           treemacs-rename-file :visible ,(check node)]
+                ["Delete"           treemacs-delete-file :visible ,(check node)]
+                ["Move"             treemacs-move-file   :visible ,(check node)]
                 ("Copy"
                  ["Copy File"          treemacs-copy-file                   :visible ,(check node)]
                  ["Copy Absolute Path" treemacs-copy-absolute-path-at-point :visible ,(check node)]
