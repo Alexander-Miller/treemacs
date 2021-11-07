@@ -48,6 +48,9 @@
   treemacs--common-helpful-hydra/body
   treemacs--advanced-helpful-hydra/body)
 
+(treemacs-import-functions-from "treemacs-peek-mode"
+  treemacs-peek-mode)
+
 (cl-defun treemacs--find-keybind (func &optional (pad 8))
   "Find the keybind for FUNC in treemacs.
 Return of cons of the key formatted for inclusion in the hydra string, including
@@ -227,6 +230,7 @@ find the key a command is bound to it will show a blank instead."
              (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))
              (column-ws          (propertize "Workspaces" 'face 'treemacs-help-column-face))
              (column-misc        (propertize "Misc." 'face 'treemacs-help-column-face))
+             (column-window      (propertize "Other Window." 'face 'treemacs-help-column-face))
              (common-hint        (format "%s %s"
                                          (propertize "For common keybinds see" 'face 'treemacs-help-title-face)
                                          (propertize "treemacs-common-helpful-hydra" 'face 'font-lock-function-name-face)))
@@ -250,33 +254,38 @@ find the key a command is bound to it will show a blank instead."
              (key-rename-ws      (treemacs--find-keybind #'treemacs-rename-workspace 12))
              (key-switch-ws      (treemacs--find-keybind #'treemacs-switch-workspace 12))
              (key-fallback-ws    (treemacs--find-keybind #'treemacs-set-fallback-workspace 12))
+             (key-peek           (treemacs--find-keybind #'treemacs-peek-mode 10))
+             (key-line-down      (treemacs--find-keybind #'treemacs-next-line-other-window 10))
+             (key-line-up        (treemacs--find-keybind #'treemacs-previous-line-other-window 10))
+             (key-page-down      (treemacs--find-keybind #'treemacs-next-page-other-window 10))
+             (key-page-up        (treemacs--find-keybind #'treemacs-previous-page-other-window 10))
              (hydra-str
               (format
                "
 %s
 %s (%s)
 
-%s     ^^^^^^^^^^^^^│ %s                  ^^^^^^^^│ %s
-――――――――――――――――――――┼―――――――――――――――――――――――――――――┼―――――――――――――――――――――
- %s create file ^^^^│ %s Edit Workspaces  ^^^^^^^^│ %s refresh
- %s create dir  ^^^^│ %s Create Workspace ^^^^^^^^│ %s (re)set width
- %s rename      ^^^^│ %s Remove Workspace ^^^^^^^^│ %s copy path absolute
- %s delete      ^^^^│ %s Rename Workspace ^^^^^^^^│ %s copy path relative
- %s copy        ^^^^│ %s Switch Workspace ^^^^^^^^│ %s copy root path
- %s move        ^^^^│ %s Set Fallback     ^^^^^^^^│ %s re-sort
-                    │                             │ %s bookmark
+%s     ^^^^^^^^^^^^^│ %s                  ^^^^^^^^│ %s      ^^^^^^^^^^^│ %s
+――――――――――――――――――――┼―――――――――――――――――――――――――――――┼――――――――――――――――――――┼――――――――――――――――――――――
+ %s create file ^^^^│ %s Edit Workspaces  ^^^^^^^^│ %s peek      ^^^^^^│ %s refresh
+ %s create dir  ^^^^│ %s Create Workspace ^^^^^^^^│ %s line down ^^^^^^│ %s (re)set width
+ %s rename      ^^^^│ %s Remove Workspace ^^^^^^^^│ %s line up   ^^^^^^│ %s copy path absolute
+ %s delete      ^^^^│ %s Rename Workspace ^^^^^^^^│ %s page down ^^^^^^│ %s copy path relative
+ %s copy        ^^^^│ %s Switch Workspace ^^^^^^^^│ %s page up   ^^^^^^│ %s copy root path
+ %s move        ^^^^│ %s Set Fallback     ^^^^^^^^│                    │ %s re-sort
+                    │                             │                    │ %s bookmark
 
 "
                title
                common-hint (car (s-split":" (car key-common-hydra)))
-               column-files           column-ws             column-misc
-               (car key-create-file)  (car key-edit-ws)     (car key-refresh)
-               (car key-create-dir)   (car key-create-ws)   (car key-set-width)
-               (car key-rename)       (car key-remove-ws)   (car key-copy-path-abs)
-               (car key-delete)       (car key-rename-ws)   (car key-copy-path-rel)
-               (car key-copy-file)    (car key-switch-ws)   (car key-copy-root)
-               (car key-move-file)    (car key-fallback-ws) (car key-resort)
-                                                            (car key-bookmark))))
+               column-files           column-ws             column-window       column-misc
+               (car key-create-file)  (car key-edit-ws)     (car key-peek)      (car key-refresh)
+               (car key-create-dir)   (car key-create-ws)   (car key-line-down) (car key-set-width)
+               (car key-rename)       (car key-remove-ws)   (car key-line-up)   (car key-copy-path-abs)
+               (car key-delete)       (car key-rename-ws)   (car key-page-down) (car key-copy-path-rel)
+               (car key-copy-file)    (car key-switch-ws)   (car key-page-up)   (car key-copy-root)
+               (car key-move-file)    (car key-fallback-ws)                     (car key-resort)
+                                                                                (car key-bookmark))))
           (eval
            `(defhydra treemacs--advanced-helpful-hydra (:exit nil :hint nil :columns 3)
               ,hydra-str
@@ -300,6 +309,11 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-rename-ws)      #'treemacs-rename-workspace)
               (,(cdr key-switch-ws)      #'treemacs-switch-workspace)
               (,(cdr key-fallback-ws)    #'treemacs-set-fallback-workspace)
+              (,(cdr key-peek)           #'treemacs-peek-mode)
+              (,(cdr key-line-down)      #'treemacs-next-line-other-window)
+              (,(cdr key-line-up)        #'treemacs-previous-line-other-window)
+              (,(cdr key-page-down)      #'treemacs-next-page-other-window)
+              (,(cdr key-page-up)        #'treemacs-previous-previous-other-window)
               ("<escape>" nil "Exit"))))
         (treemacs--advanced-helpful-hydra/body))
     (treemacs-log-failure "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
