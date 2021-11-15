@@ -210,11 +210,11 @@ of how this config works and how to modify it."
     (root-node-closed . treemacs-toggle-node)
     (dir-node-open    . treemacs-toggle-node)
     (dir-node-closed  . treemacs-toggle-node)
-    (file-node-open   . treemacs-visit-node-default)
-    (file-node-closed . treemacs-visit-node-default)
+    (file-node-open   . treemacs-visit-node-in-most-recently-used-window)
+    (file-node-closed . treemacs-visit-node-in-most-recently-used-window)
     (tag-node-open    . treemacs-toggle-node)
     (tag-node-closed  . treemacs-toggle-node)
-    (tag-node         . treemacs-visit-node-default))
+    (tag-node         . treemacs-visit-node-in-most-recently-used-window))
   "Defines the behaviour of `treemacs-doubleclick-action'.
 
 See the doc string of `treemacs-RET-actions-config' for a detailed description

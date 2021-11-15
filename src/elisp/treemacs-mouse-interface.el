@@ -84,12 +84,13 @@ Must be bound to a mouse click, or EVENT will not be supplied."
 ;;;###autoload
 (defun treemacs-doubleclick-action (event)
   "Run the appropriate double-click action for the current node.
-In the default configuration this means to do the same as `treemacs-RET-action'.
+In the default configuration this means to expand/collapse directories and open
+files and tags in the most recently used window.
 
 This function's exact configuration is stored in
 `treemacs-doubleclick-actions-config'.
 
-Must be bound to a mouse click, or EVENT will not be supplied."
+Must be bound to a mouse double click to properly handle a click EVENT."
   (interactive "e")
   (when (eq 'double-mouse-1 (elt event 0))
     (goto-char (posn-point (cadr event)))
@@ -310,7 +311,7 @@ and ignore any prefix argument."
             (cmd (lookup-key menu (apply 'vector choice))))
        ;; In the terminal clicking on a nested menu item does not expand it, but actually
        ;; selects it as the chosen use option.  So as a workaround we need to manually go
-       ;; thtough the menus until we land on an executable command.
+       ;; through the menus until we land on an executable command.
        (while (and (not (commandp cmd))
                    (not (eq cmd menu)))
          (setf menu choice
