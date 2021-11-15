@@ -9,6 +9,7 @@
 - Added ~treemacs-visit-node-close-treemacs~
 - Added ~treemacs-fit-widdow-width~
 - Added ~treemacs-extra-wide-toggle~
+- Added ~treemacs-next-workspace~
 - Promoted peeking into a proper minor mode
 ** v2.9
 - Published ~treemacs-all-the-icons~

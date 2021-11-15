@@ -782,6 +782,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | C-c C-w d | treemacs-remove-workspace       | Delete a workspace.                    |
 | C-c C-w s | treemacs-switch-workspace       | Switch the current workspace.          |
 | C-c C-w e | treemacs-edit-workspaces        | Edit workspace layout via org-mode.    |
+| C-c C-w n | treemacs-next-workspace         | Switch to the next workspace.          |
 | C-c C-w f | treemacs-set-fallback-workspace | Select the default fallback workspace. |
 
 *** Node Visit Keybinds (Prefix ~o~)

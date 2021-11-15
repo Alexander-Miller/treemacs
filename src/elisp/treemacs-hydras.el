@@ -253,6 +253,7 @@ find the key a command is bound to it will show a blank instead."
              (key-remove-ws      (treemacs--find-keybind #'treemacs-remove-workspace 12))
              (key-rename-ws      (treemacs--find-keybind #'treemacs-rename-workspace 12))
              (key-switch-ws      (treemacs--find-keybind #'treemacs-switch-workspace 12))
+             (key-next-ws        (treemacs--find-keybind #'treemacs-next-workspace 12))
              (key-fallback-ws    (treemacs--find-keybind #'treemacs-set-fallback-workspace 12))
              (key-peek           (treemacs--find-keybind #'treemacs-peek-mode 10))
              (key-line-down      (treemacs--find-keybind #'treemacs-next-line-other-window 10))
@@ -272,8 +273,8 @@ find the key a command is bound to it will show a blank instead."
  %s rename      ^^^^│ %s Remove Workspace ^^^^^^^^│ %s line up   ^^^^^^│ %s copy path absolute
  %s delete      ^^^^│ %s Rename Workspace ^^^^^^^^│ %s page down ^^^^^^│ %s copy path relative
  %s copy        ^^^^│ %s Switch Workspace ^^^^^^^^│ %s page up   ^^^^^^│ %s copy root path
- %s move        ^^^^│ %s Set Fallback     ^^^^^^^^│                    │ %s re-sort
-                    │                             │                    │ %s bookmark
+ %s move        ^^^^│ %s Next Workspace   ^^^^^^^^│                    │ %s re-sort
+                    │ %s Set Fallback     ^^^^^^^^│                    │ %s bookmark
 
 "
                title
@@ -284,8 +285,8 @@ find the key a command is bound to it will show a blank instead."
                (car key-rename)       (car key-remove-ws)   (car key-line-up)   (car key-copy-path-abs)
                (car key-delete)       (car key-rename-ws)   (car key-page-down) (car key-copy-path-rel)
                (car key-copy-file)    (car key-switch-ws)   (car key-page-up)   (car key-copy-root)
-               (car key-move-file)    (car key-fallback-ws)                     (car key-resort)
-                                                                                (car key-bookmark))))
+               (car key-move-file)    (car key-next-ws)                         (car key-resort)
+                                      (car key-fallback-ws)                     (car key-bookmark))))
           (eval
            `(defhydra treemacs--advanced-helpful-hydra (:exit nil :hint nil :columns 3)
               ,hydra-str
@@ -308,6 +309,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-remove-ws)      #'treemacs-remove-workspace)
               (,(cdr key-rename-ws)      #'treemacs-rename-workspace)
               (,(cdr key-switch-ws)      #'treemacs-switch-workspace)
+              (,(cdr key-next-ws)        #'treemacs-next-workspace)
               (,(cdr key-fallback-ws)    #'treemacs-set-fallback-workspace)
               (,(cdr key-peek)           #'treemacs-peek-mode)
               (,(cdr key-line-down)      #'treemacs-next-line-other-window)

@@ -1288,6 +1288,23 @@ Specifically this will toggle treemacs' width between
     (put 'treemacs-extra-wide-toggle :toggle-on t)
     (treemacs-log "Switched to extra width display")))
 
+(defun treemacs-next-workspace (&optional arg)
+  "Switch to the next workspace.
+With a prefix ARG switch to the previous workspace instead."
+  (interactive)
+  (treemacs-block
+   (treemacs-error-return-if (= 1 (length treemacs--workspaces))
+     "There is only 1 workspace.")
+   (let* ((ws (treemacs-current-workspace))
+          (ws-count (length treemacs--workspaces))
+          (idx (--find-index (eq it ws) treemacs--workspaces))
+          (new-idx (% (+ ws-count (if arg (1- idx) (1+ idx))) ws-count))
+          (new-ws (nth new-idx treemacs--workspaces)))
+     (treemacs-do-switch-workspace new-ws)
+     (treemacs-pulse-on-success "Switched to workdpace '%s'"
+       (propertize (treemacs-workspace->name new-ws)
+                   'face 'font-lock-string-face)))))
+
 (defun treemacs-icon-catalogue ()
   "Showcase a catalogue of all treemacs themes and their icons."
   (interactive)

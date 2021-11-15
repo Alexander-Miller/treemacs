@@ -102,6 +102,7 @@ Will be set by `treemacs--post-command'.")
     (define-key map (kbd "s")     'treemacs-switch-workspace)
     (define-key map (kbd "e")     'treemacs-edit-workspaces)
     (define-key map (kbd "f")     'treemacs-set-fallback-workspace)
+    (define-key map (kbd "n")     'treemacs-next-workspace)
     map)
   "Keymap for workspace-related commands in `treemacs-mode'.")
 
