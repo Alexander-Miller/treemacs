@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE, DEVNULL
 import sys
+import os
 
 # There are 3+ command line arguments:
 # 1) the file to update
@@ -7,7 +8,7 @@ import sys
 # 3) the file's parents that need to be updated as well
 
 FILE = sys.argv[1]
-OLD_STATE = sys.argv[2]
+OLD_FACE = sys.argv[2]
 PARENTS = [p for p in sys.argv[3:]]
 
 FILE_STATE_CMD = "git status --porcelain --ignored=matching "
@@ -15,14 +16,33 @@ IS_IGNORED_CMD = "git check-ignore "
 IS_TRACKED_CMD = "git ls-files --error-unmatch "
 IS_CHANGED_CMD = "git diff-index --quiet HEAD "
 
+def face_for_status(path, status):
+    if status == "M":
+        return "treemacs-git-modified-face"
+    elif status == "U":
+        return "treemacs-git-conflict-face"
+    elif status == "?":
+        return "treemacs-git-untracked-face"
+    elif status == "!":
+        return "treemacs-git-ignored-face"
+    elif status == "A":
+        return "treemacs-git-added-face"
+    elif status == "R":
+        return "treemacs-git-renamed-face"
+    elif os.path.isdir(path):
+        return "treemacs-directory-face"
+    else:
+        return "treemacs-git-unmodified-face"
+
 def main():
     if '"' in FILE or '\\' in FILE:
         sys.exit(2)
 
     new_state = determine_file_git_state()
+    old_state = face_for_status(FILE, OLD_FACE)
 
     # nothing to do
-    if OLD_STATE == new_state:
+    if old_state == new_state:
         sys.exit(2)
 
     proc_list = []
@@ -65,7 +85,7 @@ def main():
             result_list.append((proc_list[i][0], propagate_state))
             i += 1
 
-    elisp_conses = "".join(['("{}" . "{}")'.format(path, state) for path,state in result_list])
+    elisp_conses = "".join(['("{}" . {})'.format(path, face_for_status(path, state)) for path, state in result_list])
     elisp_alist = "({})".format(elisp_conses)
     print(elisp_alist)
 

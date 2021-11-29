@@ -1742,6 +1742,253 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
            (treemacs--workspaces (list ws1 ws2)))
       (expect (treemacs--find-workspace-by-name "X") :to-be nil))))
 
+(describe "annotations"
+
+  (describe "cleanup"
+
+    (it "won't remove annotation if it has a face"
+      (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+        (treemacs-set-annotation-face "Path" 'face "Source")
+        (-let [ann (treemacs-get-annotation "Path")]
+          (treemacs--remove-annotation-if-empty ann "Path")
+          (expect (treemacs-get-annotation "Path") :to-be ann))))
+
+    (it "won't remove annotation if it has a git face"
+      (let* ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+             (ann (treemacs-annotation->create!)))
+        (ht-set! treemacs--annotation-store "Path" ann)
+        (setf (treemacs-annotation->git-face ann) 'face)
+        (treemacs--remove-annotation-if-empty ann "Path")
+        (expect (treemacs-get-annotation "Path") :to-be ann)))
+
+    (it "won't remove annotation if it has a suffix"
+      (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+        (treemacs-set-annotation-suffix "Path" "Suffix" "Source")
+        (-let [ann (treemacs-get-annotation "Path")]
+          (treemacs--remove-annotation-if-empty ann "Path")
+          (expect (treemacs-get-annotation "Path") :to-be ann))))
+
+    (it "removes empty annotation"
+      (let* ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+             (ann (treemacs-annotation->create!)))
+        (ht-set! treemacs--annotation-store "Path" ann)
+        (treemacs--remove-annotation-if-empty ann "Path")
+        (expect (treemacs-get-annotation "Path") :to-be nil))))
+
+  (describe "faces"
+
+    (describe "add"
+
+      (it "saves single value"
+        (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+          (treemacs-set-annotation-face "Path" 'face "Source")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect (treemacs-annotation->face ann)
+                    :to-equal '(("Source" . face)))
+            (expect (treemacs-annotation->face-value ann)
+                    :to-equal '(face)))))
+
+      (it "saves multiple values"
+        (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+          (treemacs-set-annotation-face "Path" 'face1 "Source1")
+          (treemacs-set-annotation-face "Path" 'face2 "Source2")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect (treemacs-annotation->face ann)
+                    :to-equal '(("Source1" . face1) ("Source2" . face2)))
+            (expect (treemacs-annotation->face-value ann)
+                    :to-equal '(face1 face2)))))
+
+      (it "updates face for same source"
+        (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+          (treemacs-set-annotation-face "Path" 'face1 "Source1")
+          (treemacs-set-annotation-face "Path" 'face2 "Source1")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect (treemacs-annotation->face ann)
+                    :to-equal '(("Source1" . face2)))
+            (expect (treemacs-annotation->face-value ann)
+                    :to-equal '(face2)))))
+
+      (it "includes git face as last value element"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+              (ann (treemacs-annotation->create!)))
+          (ht-set! treemacs--annotation-store "Path" ann)
+          (setf (treemacs-annotation->git-face ann) 'git-face)
+          (treemacs-set-annotation-face "Path" 'face1 "Source1")
+          (treemacs-set-annotation-face "Path" 'face2 "Source2")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect (treemacs-annotation->face ann)
+                    :to-equal '(("Source1" . face1) ("Source2" . face2)))
+            (expect (treemacs-annotation->face-value ann)
+                    :to-equal '(face1 face2 . git-face))))))
+
+    (describe "remove"
+
+      (it "does nothing when there is no face"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-remove-annotation-face "Path" "Source")
+          (expect (ht-size treemacs--annotation-store) :to-equal 0)))
+
+      (it "sets deleted flag after removing the last face"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+              (ann (treemacs-annotation->create!)))
+          (ht-set! treemacs--annotation-store "Path" ann)
+          (treemacs-set-annotation-face "Path" 'face "Source")
+          (treemacs-remove-annotation-face "Path" "Source")
+          (expect (ht-get treemacs--annotation-store "Path") :to-be ann)
+          (expect (treemacs-annotation->face ann) :to-equal 'deleted)))
+
+      (it "sets face value to the git face after removing the last face"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+              (ann (treemacs-annotation->create!)))
+          (ht-set! treemacs--annotation-store "Path" ann)
+          (setf (treemacs-annotation->git-face ann) 'git-face)
+          (treemacs-set-annotation-face "Path" 'face "Source")
+          (treemacs-remove-annotation-face "Path" "Source")
+          (expect (ht-get treemacs--annotation-store "Path") :to-be ann)
+          (expect (treemacs-annotation->face-value ann) :to-equal 'git-face)))
+
+      (it "leaves faces from other sources"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+              (ann (treemacs-annotation->create!)))
+          (ht-set! treemacs--annotation-store "Path" ann)
+          (setf (treemacs-annotation->git-face ann) 'git-face)
+          (treemacs-set-annotation-face "Path" 'face1 "Source1")
+          (treemacs-set-annotation-face "Path" 'face2 "Source2")
+          (treemacs-remove-annotation-face "Path" "Source1")
+          (expect (ht-get treemacs--annotation-store "Path") :to-be ann)
+          (expect (treemacs-annotation->face ann) :to-equal '(("Source2" . face2)))
+          (expect (treemacs-annotation->face-value ann) :to-equal '(face2 . git-face)))))
+
+    (describe "clear"
+
+      (it "does nothing when there are no annotations"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-clear-annotation-faces "Source")
+          (expect (ht-size treemacs--annotation-store) :to-be 0)))
+
+      (it "does not remove faces for a different source"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-set-annotation-face "Path" 'face "Source1")
+          (treemacs-clear-annotation-faces "Source2")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect ann :not :to-be nil)
+            (expect (treemacs-annotation->face ann) :to-equal '(("Source1" . face))))))
+
+      (it "removes empty annotations"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-set-annotation-face "Path" 'face "Source")
+          (treemacs-clear-annotation-faces "Source")
+          (expect (treemacs-get-annotation "Path") :to-be nil)))
+
+      (it "removes all faces for the given source"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-set-annotation-face "Path1" 'face1 "Source1")
+          (treemacs-set-annotation-face "Path1" 'face2 "Source2")
+          (treemacs-set-annotation-face "Path2" 'face1 "Source1")
+          (treemacs-set-annotation-face "Path2" 'face3 "Source3")
+          (treemacs-clear-annotation-faces "Source1")
+          (let ((ann1 (treemacs-get-annotation "Path1"))
+                (ann2 (treemacs-get-annotation "Path2")))
+            (expect ann1 :not :to-be nil)
+            (expect ann2 :not :to-be nil)
+            (expect (treemacs-annotation->face ann1) :to-equal '(("Source2" . face2)))
+            (expect (treemacs-annotation->face ann2) :to-equal '(("Source3" . face3))))))))
+
+  (describe "suffixes"
+
+    (describe "add"
+
+      (it "saves single value"
+        (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+          (treemacs-set-annotation-suffix "Path" "Suffix" "Source")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect (treemacs-annotation->suffix ann)
+                    :to-equal '(("Source" . "Suffix")))
+            (expect (treemacs-annotation->suffix-value ann)
+                    :to-equal "Suffix"))))
+
+      (it "saves multiple values"
+        (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+          (treemacs-set-annotation-suffix "Path" "Suffix1" "Source1")
+          (treemacs-set-annotation-suffix "Path" "Suffix2" "Source2")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect (treemacs-annotation->suffix ann)
+                    :to-equal '(("Source1" . "Suffix1") ("Source2" . "Suffix2")))
+            (expect (substring-no-properties (treemacs-annotation->suffix-value ann))
+                    :to-equal "Suffix1 Suffix2"))))
+
+      (it "updates suffix for same source"
+        (-let [treemacs--annotation-store (make-hash-table :size 200 :test 'equal)]
+          (treemacs-set-annotation-suffix "Path" "Suffix1" "Source1")
+          (treemacs-set-annotation-suffix "Path" "Suffix2" "Source1")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect (treemacs-annotation->suffix ann)
+                    :to-equal '(("Source1" . "Suffix2")))
+            (expect (substring-no-properties (treemacs-annotation->suffix-value ann))
+                    :to-equal "Suffix2")))))
+
+    (describe "remove"
+
+      (it "does nothing when there is no suffix"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-remove-annotation-suffix "Path" "Source")
+          (expect (ht-size treemacs--annotation-store) :to-equal 0)))
+
+      (it "sets deleted flag after removing the last suffix"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+              (ann (treemacs-annotation->create!)))
+          (ht-set! treemacs--annotation-store "Path" ann)
+          (treemacs-set-annotation-suffix "Path" "Suffix" "Source")
+          (treemacs-remove-annotation-suffix "Path" "Source")
+          (expect (ht-get treemacs--annotation-store "Path") :to-be ann)
+          (expect (treemacs-annotation->suffix ann) :to-equal 'deleted)))
+
+      (it "leaves suffixes from other sources"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
+              (ann (treemacs-annotation->create!)))
+          (ht-set! treemacs--annotation-store "Path" ann)
+          (treemacs-set-annotation-suffix "Path" "Suffix1" "Source1")
+          (treemacs-set-annotation-suffix "Path" "Suffix2" "Source2")
+          (treemacs-remove-annotation-suffix "Path" "Source1")
+          (expect (ht-get treemacs--annotation-store "Path") :to-be ann)
+          (expect (treemacs-annotation->suffix ann) :to-equal '(("Source2" . "Suffix2")))
+          (expect (treemacs-annotation->suffix-value ann) :to-equal "Suffix2"))))
+
+    (describe "clear"
+
+      (it "does nothing when there are no annotations"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-clear-annotation-faces "Source")
+          (expect (ht-size treemacs--annotation-store) :to-be 0)))
+
+      (it "does not remove suffixes for a different source"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-set-annotation-suffix "Path" "Suffix" "Source1")
+          (treemacs-clear-annotation-suffixes "Source2")
+          (-let [ann (treemacs-get-annotation "Path")]
+            (expect ann :not :to-be nil)
+            (expect (treemacs-annotation->suffix ann) :to-equal '(("Source1" . "Suffix"))))))
+
+      (it "removes empty annotations"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-set-annotation-suffix "Path" "Suffix" "Source")
+          (treemacs-clear-annotation-suffixes "Source")
+          (expect (treemacs-get-annotation "Path") :to-be nil)))
+
+      (it "removes all suffixes for the given source"
+        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
+          (treemacs-set-annotation-suffix "Path1" "Suffix1" "Source1")
+          (treemacs-set-annotation-suffix "Path1" "Suffix2" "Source2")
+          (treemacs-set-annotation-suffix "Path2" "Suffix1" "Source1")
+          (treemacs-set-annotation-suffix "Path2" "Suffix3" "Source3")
+          (treemacs-clear-annotation-suffixes "Source1")
+          (let ((ann1 (treemacs-get-annotation "Path1"))
+                (ann2 (treemacs-get-annotation "Path2")))
+            (expect ann1 :not :to-be nil)
+            (expect ann2 :not :to-be nil)
+            (expect (treemacs-annotation->suffix ann1) :to-equal '(("Source2" . "Suffix2")))
+            (expect (treemacs-annotation->suffix ann2) :to-equal '(("Source3" . "Suffix3")))))))))
+
 (provide 'test-treemacs)
 
 ;;; treemacs-test.el ends here

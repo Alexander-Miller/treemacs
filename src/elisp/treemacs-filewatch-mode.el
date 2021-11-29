@@ -158,7 +158,7 @@ An event counts as relevant when
                        (let* ((file (caddr ,event))
                               (parent (treemacs--parent-dir file))
                               (cache (ht-get treemacs--git-cache parent)))
-                         (and cache (not (string= "!" (ht-get cache file))))))
+                         (and cache (not (eq 'treemacs-git-ignored-face (ht-get cache file))))))
                   (let* ((dir (caddr ,event))
                          (filename (treemacs--filename dir)))
                     (--any? (funcall it filename dir) treemacs-ignored-file-predicates)))))))))

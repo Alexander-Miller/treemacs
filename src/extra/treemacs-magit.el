@@ -131,13 +131,19 @@ Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
                           (or (not (stringp path))
                               (file-exists-p path))
                           (>= curr-depth start-depth))
+                (treemacs--git-face-quick-change
+                    (treemacs-button-get node :key)
+                    (or (ht-get ht path)
+                        (if (memq (treemacs-button-get node :state)
+                                  '(file-node-open file-node-closed))
+                            'treemacs-git-unmodified-face
+                          'treemacs-directory-face)))
                 (put-text-property (treemacs-button-start node) (treemacs-button-end node) 'face
-                                   (treemacs--get-node-face
-                                    path ht
-                                    (if (memq (treemacs-button-get node :state)
-                                              '(file-node-open file-node-closed))
-                                        'treemacs-git-unmodified-face
-                                      'treemacs-directory-face)))
+                                   (or (ht-get ht path)
+                                       (if (memq (treemacs-button-get node :state)
+                                                 '(file-node-open file-node-closed))
+                                           'treemacs-git-unmodified-face
+                                         'treemacs-directory-face)))
                 (forward-line 1)
                 (if (eobp)
                     (setf node nil)

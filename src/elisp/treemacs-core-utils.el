@@ -121,6 +121,10 @@
 
 (declare-function treemacs-mode "treemacs-mode")
 
+(defconst treemacs--empty-table (ht)
+  "Constant value of an empty hash table.
+Used to avoid creating unnecessary garbage.")
+
 (defvar treemacs--closed-node-states
   '(root-node-closed
     dir-node-closed
