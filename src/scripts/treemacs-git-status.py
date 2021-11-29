@@ -23,11 +23,27 @@ QUOTE        = b'"'
 output       = []
 ht_size      = 0
 
+def face_for_status(status):
+    if status == b"M":
+        return b"treemacs-git-modified-face"
+    elif status == b"U":
+        return b"treemacs-git-conflict-face"
+    elif status == b"?":
+        return b"treemacs-git-untracked-face"
+    elif status == b"!":
+        return b"treemacs-git-ignored-face"
+    elif status == b"A":
+        return b"treemacs-git-added-face"
+    elif status == b"R":
+        return b"treemacs-git-renamed-face"
+    else:
+        return b"font-lock-keyword-face"
+
 def find_recursive_entries(path, state):
     global output, ht_size
     for item in listdir(path):
         full_path = join(path, item)
-        output.append(full_path + QUOTE + QUOTE + state)
+        output.append(QUOTE + full_path + QUOTE + face_for_status(state))
         ht_size += 1
         if ht_size > LIMIT:
             break
@@ -69,7 +85,7 @@ def main():
         if abs_path.endswith(b'/'):
             abs_path = abs_path[:-1]
             dirs_added[abs_path] = True
-        output.append(abs_path + QUOTE + QUOTE + state)
+        output.append(QUOTE + abs_path + QUOTE + face_for_status(state))
         ht_size += 1
 
         # for files deeper down in the file hierarchy also print all their directories
@@ -83,7 +99,7 @@ def main():
                 # directories should not be printed more than once, which would happen if
                 # e.g. both /A/B/C/x and /A/B/C/y have changes
                 if full_dirname not in dirs_added:
-                    output.append(full_dirname + QUOTE + QUOTE + b'M')
+                    output.append(QUOTE + full_dirname + QUOTE + b"treemacs-git-modified-face")
                     ht_size += 1
                     dirs_added[full_dirname] = True
         # for untracked and ignored directories we need to find an entry for every single file
@@ -100,8 +116,8 @@ def main():
         b" test equal rehash-size 1.5 rehash-threshold 0.8125 data ("
     )
     if ht_size > 0:
-      STDOUT.write(QUOTE + (QUOTE + QUOTE).join(output) + QUOTE)
-    STDOUT.write( b"))")
+      STDOUT.write(b"".join(output))
+    STDOUT.write(b"))")
 
     sys.exit(proc.poll())
 

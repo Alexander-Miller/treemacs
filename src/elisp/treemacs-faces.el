@@ -152,6 +152,11 @@ Applies to buttons like
   "Face used to indicate that `treemacs-peek-mode' is enabled."
   :group 'treemacs-faces)
 
+(defface treemacs-marked-file-face
+  '((t :foreground "#F0C674" :background "#AB3737" :bold t))
+  "Face for files marked by treemacs."
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here
