@@ -157,6 +157,8 @@ Jump back to the previously used window if point is already in treemacs."
        (pcase-exhaustive treemacs-select-when-already-in-treemacs
            ('stay
             (ignore))
+           ('close
+            (treemacs-quit))
            ('move-back
             (select-window (get-mru-window (selected-frame) nil :not-selected))))))))
 

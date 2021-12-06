@@ -814,9 +814,11 @@ negative values are possible."
 
 Possible values are:
  - `stay' - remain in the treemacs windows, effectively doing nothing
+ - `close' - close the treemacs window
  - `move-back' - move point back to the most recently used window (as selected
     by `get-mru-window')"
   :type '(choice (const stay)
+                 (const close)
                  (const move-back))
   :group 'treemacs)
 
