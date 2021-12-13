@@ -34,6 +34,18 @@
 (eval-when-compile
   (require 'treemacs-macros))
 
+(defconst treemacs--file-node-states
+  '(file-node-open file-node-closed dir-node-open dir-node-closed)
+  "List of node states treemacs is able to rename/delete etc.")
+
+(define-inline treemacs--is-node-file-manageable? (btn)
+  "Determines whether BTN is a file node treemacs can rename/delete."
+  (declare (side-effect-free t))
+  (inline-letevals (btn)
+    (inline-quote
+     (memq (treemacs-button-get ,btn :state)
+           treemacs--file-node-states))))
+
 ;;;###autoload
 (defun treemacs-delete-file (&optional arg)
   "Delete node at point.
@@ -158,55 +170,54 @@ from `treemacs-copy-file' or `treemacs-move-file'."
 
 ;;;###autoload
 (cl-defun treemacs-rename-file ()
-  "Rename the currently selected node.
-Buffers visiting the renamed file or visiting a file inside a renamed directory
-and windows showing them will be reloaded.  The list of recent files will
-likewise be updated."
+  "Rename the file/directory at point.
+
+Buffers visiting the renamed file or visiting a file inside the renamed
+directory and windows showing them will be reloaded.  The list of recent files
+will likewise be updated."
   (interactive)
   (treemacs-block
-   (-let [btn (treemacs-current-button)]
-     (treemacs-error-return-if (null btn)
-       "Nothing to rename here.")
-     (let* ((old-path (treemacs-button-get btn :path))
-            (project (treemacs--find-project-for-path old-path))
-            (new-path nil)
-            (new-name nil)
-            (dir nil))
+   (treemacs-unless-let (btn (treemacs-current-button))
+       (treemacs-pulse-on-failure "Nothing to rename here.")
+     (-let [old-path (treemacs-button-get btn :path)]
        (treemacs-error-return-if (null old-path)
          "Found nothing to rename here.")
+       (treemacs-error-return-if (not (treemacs--is-node-file-manageable? btn))
+         "Only files and directories can be deleted.")
        (treemacs-error-return-if (not (file-exists-p old-path))
          "The file to be renamed does not exist.")
-       (setq new-name (treemacs--read-string
-                       "New name: " (file-name-nondirectory old-path))
-             dir      (treemacs--parent-dir old-path)
-             new-path (treemacs-join-path dir new-name))
-       (pcase system-type
-         ;; macos is case-insensitive, so we need a different check to make sure
-         ;; we can still change the case a file on macs
-         ('darwin
-          (treemacs-error-return-if
-              (and (file-exists-p new-path)
-                   (string= (downcase old-path) (downcase new-path)))
-            "A file named %s already exists."
-            (propertize new-name 'face font-lock-string-face)))
-         (_
-          (treemacs-error-return-if (file-exists-p new-path)
-            "A file named %s already exists."
-            (propertize new-name 'face font-lock-string-face))))
-       (treemacs--without-filewatch (rename-file old-path new-path))
-       (treemacs--replace-recentf-entry old-path new-path)
-       (-let [treemacs-silent-refresh t]
-         (treemacs-run-in-every-buffer
-          (treemacs--on-rename old-path new-path treemacs-filewatch-mode)
-          (treemacs--do-refresh (current-buffer) project)))
-       (treemacs--reload-buffers-after-rename old-path new-path)
-       (treemacs-goto-file-node new-path project)
-       (run-hook-with-args
-        'treemacs-rename-file-functions
-        old-path new-path)
-       (treemacs-pulse-on-success "Renamed %s to %s."
-         (propertize (treemacs--filename old-path) 'face font-lock-string-face)
-         (propertize new-name 'face font-lock-string-face))))))
+       (let* ((old-name  (treemacs--filename old-path))
+              (new-name  (treemacs--read-string
+                          "New name: " (file-name-nondirectory old-path)))
+              (dir       (treemacs--parent-dir old-path))
+              (new-path  (treemacs-join-path dir new-name))
+              (expanded? (treemacs-is-node-expanded? btn)))
+         (treemacs-error-return-if
+             (and (file-exists-p new-path)
+                  (or (not (eq 'darwin system-type))
+                      (not (string= old-name new-name))))
+           "A file named %s already exists."
+           (propertize new-name 'face font-lock-string-face))
+         (rename-file old-path new-path)
+         (treemacs--replace-recentf-entry old-path new-path)
+         (-let [treemacs-silent-refresh t]
+           (treemacs-run-in-every-buffer
+            (treemacs--on-rename old-path new-path treemacs-filewatch-mode)
+            (when (treemacs-is-path-visible? old-path)
+              (treemacs-log "Update Node %s" dir)
+              (treemacs-update-node dir)
+              (treemacs-goto-file-node new-path)
+              (when expanded?
+                (with-no-warnings
+                  (treemacs-toggle-node))))))
+         (treemacs--reload-buffers-after-rename old-path new-path)
+         (run-hook-with-args
+          'treemacs-rename-file-functions
+          old-path new-path)
+         (treemacs-pulse-on-success "Renamed %s to %s."
+           (propertize (treemacs--filename old-path) 'face font-lock-string-face)
+           (propertize new-name 'face font-lock-string-face)))))))
+
 (defalias 'treemacs-rename #'treemacs-rename-file)
 (make-obsolete #'treemacs-rename #'treemacs-rename-file "v2.9.3")
 
