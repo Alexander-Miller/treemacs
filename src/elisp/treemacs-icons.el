@@ -239,33 +239,38 @@ Necessary since root icons are not rectangular."
   accessible."
   (treemacs-static-assert (or (null icon) (null file))
     "FILE and ICON arguments are mutually exclusive")
-  (-let [ext-list (--map (if (stringp it) (downcase it) it)
-                         (if (symbolp extensions) (symbol-value extensions) extensions))]
-    `(let* ((fallback   ,(if (equal fallback (quote 'same-as-icon))
-                             icon
-                           fallback))
-            (icons-dir  ,(if icons-dir icons-dir `(treemacs-theme->path treemacs--current-theme)))
-            (icon-path  ,(if file `(treemacs-join-path icons-dir ,file) nil))
-            (icon-pair  ,(if file `(treemacs--create-icon-strings icon-path fallback)
-                           `(cons ,(treemacs--splice-icon icon) fallback)))
-            (gui-icons  (treemacs-theme->gui-icons treemacs--current-theme))
-            (tui-icons  (treemacs-theme->tui-icons treemacs--current-theme))
-            (gui-icon   (car icon-pair))
-            (tui-icon   (cdr icon-pair)))
-       ,(unless file
-          `(progn
-             (ignore icon-path)
-             (ignore icons-dir)))
-       ;; prefer to have icons as empty strings with a display property for compatibility
-       ;; in e.g. dired, where an actual text icon would break `dired-goto-file-1'
-       (unless (get-text-property 0 'display gui-icon)
-         (setf gui-icon (propertize " " 'display gui-icon)))
-       ,@(->> (-filter #'symbolp ext-list)
-              (--map `(progn (add-to-list 'treemacs--icon-symbols ',it)
-                             (defvar ,(intern (format "treemacs-icon-%s" it)) nil))))
-       (--each (quote ,ext-list)
-         (ht-set! gui-icons it gui-icon)
-         (ht-set! tui-icons it tui-icon)))))
+  (when (and (consp extensions) (or (symbolp (car extensions))
+                                    (stringp (car extensions))))
+    (setf extensions `(quote (,@extensions))))
+  ;; (setf extensions (--map (if (stringp it) (downcase it) it) extensions))
+  `(let* ((xs (--map (if (stringp it) (downcase it) it) ,extensions))
+          (fallback   ,(if (equal fallback (quote 'same-as-icon))
+                           icon
+                         fallback))
+          (icons-dir  ,(if icons-dir icons-dir `(treemacs-theme->path treemacs--current-theme)))
+          (icon-path  ,(if file `(treemacs-join-path icons-dir ,file) nil))
+          (icon-pair  ,(if file `(treemacs--create-icon-strings icon-path fallback)
+                         `(cons ,(treemacs--splice-icon icon) fallback)))
+          (gui-icons  (treemacs-theme->gui-icons treemacs--current-theme))
+          (tui-icons  (treemacs-theme->tui-icons treemacs--current-theme))
+          (gui-icon   (car icon-pair))
+          (tui-icon   (cdr icon-pair)))
+     ,(unless file
+        `(progn
+           (ignore icon-path)
+           (ignore icons-dir)))
+     ;; prefer to have icons as empty strings with a display property for compatibility
+     ;; in e.g. dired, where an actual text icon would break `dired-goto-file-1'
+     (unless (get-text-property 0 'display gui-icon)
+       (setf gui-icon (propertize " " 'display gui-icon)))
+     (dolist (ext xs)
+       (when (symbolp ext)
+         (-let [symbol (intern (format "treemacs-icon-%s" ext))]
+           (add-to-list 'treemacs--icon-symbols ext)
+           (set symbol nil))))
+     (--each xs
+       (ht-set! gui-icons it gui-icon)
+       (ht-set! tui-icons it tui-icon))))
 
 (treemacs-create-theme "Default"
   :icon-directory (treemacs-join-path treemacs-dir "icons/default")
