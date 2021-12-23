@@ -32,7 +32,21 @@
 (require 'treemacs-rendering)
 
 (eval-when-compile
+  (require 'inline)
   (require 'treemacs-macros))
+
+(with-eval-after-load 'recentf
+
+  (declare-function recentf-remove-if-non-kept "recentf")
+  (declare-function treemacs--remove-from-recentf-after-move/rename "treemacs-file-management")
+
+  (defun treemacs--remove-from-recentf-after-move/rename (path _)
+    "Remove PATH from recentf after the file was moved or renamed."
+    (recentf-remove-if-non-kept path))
+
+  (add-hook 'treemacs-rename-file-functions #'treemacs--remove-from-recentf-after-move/rename)
+  (add-hook 'treemacs-move-file-functions   #'treemacs--remove-from-recentf-after-move/rename)
+  (add-hook 'treemacs-delete-file-functions #'recentf-remove-if-non-kept))
 
 (defconst treemacs--file-node-states
   '(file-node-open file-node-closed dir-node-open dir-node-closed)
