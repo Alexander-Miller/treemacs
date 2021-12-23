@@ -110,6 +110,42 @@ the current dir."
    '("Add Projectile project" . treemacs--projectile-project-mouse-selection-menu)
    :append))
 
+(defun treemacs-projectile--remove-from-cache (path)
+  "Remove PATH from projectile's cache."
+  (let* ((dir (if (file-directory-p path) path (treemacs--parent-dir path)))
+         (projectile-root (projectile-project-root dir)))
+    (when projectile-root
+      (let ((file-relative (file-relative-name path projectile-root)))
+        (ignore-errors (projectile-purge-file-from-cache file-relative))))))
+
+(defun treemacs-projectile--add-to-cache (path)
+  "Add PATH to projectile's cache."
+  (let* ((projectile-root (projectile-project-root path))
+         (relative-path (file-relative-name path projectile-root)))
+    (unless (or (projectile-file-cached-p relative-path projectile-root)
+                (projectile-ignored-directory-p (file-name-directory path))
+                (projectile-ignored-file-p path))
+      (puthash projectile-root
+               (cons relative-path (gethash projectile-root projectile-projects-cache))
+               projectile-projects-cache)
+      (projectile-serialize-cache))))
+
+(defun treemacs-projectile--rename-cache-entry (old-path new-path)
+  "Exchange OLD-PATH for NEW-PATH in projectile's cache."
+  (treemacs-projectile--remove-from-cache old-path)
+  (treemacs-projectile--add-to-cache new-path))
+
+(defun treemacs-projectile--add-copied-file-to-cache (_ path)
+  "Add PATH to projectile's cache.
+First argument is ignored because it is the file's original path, supplied
+as part of `treemacs-copy-file-functions'."
+  (treemacs-projectile--add-file-to-projectile-cache path))
+
+(add-hook 'treemacs-delete-file-functions #'treemacs-projectile--remove-from-cache)
+(add-hook 'treemacs-rename-file-functions #'treemacs-projectile--rename-cache-entry)
+(add-hook 'treemacs-move-file-functions   #'treemacs-projectile--rename-cache-entry)
+(add-hook 'treemacs-copy-file-functions   #'treemacs-projectile--add-copied-file-to-cache)
+
 (provide 'treemacs-projectile)
 
 ;;; treemacs-projectile.el ends here
