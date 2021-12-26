@@ -155,10 +155,16 @@ PATH: String"
   (declare (side-effect-free t))
   (inline-letevals (path)
     (inline-quote
-     (setf (treemacs-current-workspace)
-           (or (--first (treemacs-is-path ,path :in-workspace it)
-                        treemacs--workspaces)
-               (car treemacs--workspaces))))))
+     (let ((ws-for-path (--first (treemacs-is-path ,path :in-workspace it)
+                                 treemacs--workspaces)))
+       (setf (treemacs-current-workspace)
+             (pcase-exhaustive treemacs-find-workspace-method
+               ('find-for-file-or-pick-first
+                (or ws-for-path (car treemacs--workspaces)))
+               ('find-for-file-or-manually-select
+                (or ws-for-path (treemacs--select-workspace-by-name)))
+               ('always-ask
+                (treemacs--select-workspace-by-name))))))))
 
 ;; TODO(2020/11/25): NAME
 (define-inline treemacs--find-project-for-buffer (&optional buffer-file)
@@ -804,13 +810,15 @@ PROJECT: Project Struct"
 (defun treemacs--select-workspace-by-name (&optional name)
   "Interactively select the workspace with the given NAME."
   (treemacs--maybe-load-workspaces)
-  (-let [name (or name
-                   (completing-read
-                    "Workspace: "
-                    (->> treemacs--workspaces
-                         (--map (cons (treemacs-workspace->name it) it)))))]
-    (--first (string= name (treemacs-workspace->name it))
-             treemacs--workspaces)))
+  (if (= 1 (length treemacs--workspaces))
+      (car treemacs--workspaces)
+    (-let [name (or name
+                    (completing-read
+                     "Workspace: "
+                     (->> treemacs--workspaces
+                          (--map (cons (treemacs-workspace->name it) it)))))]
+      (--first (string= name (treemacs-workspace->name it))
+               treemacs--workspaces))))
 
 (defun treemacs--maybe-clean-buffers-on-workspace-switch (which)
   "Delete buffers depending on the value of WHICH.

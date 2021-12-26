@@ -891,6 +891,28 @@ deleted."
   :type 'hook
   :group 'treemacs-hooks)
 
+(defcustom treemacs-find-workspace-method 'find-for-file-or-pick-first
+  "The method by which treemacs selects a workspace when first starting.
+There are 3 options:
+ - `find-for-file-or-pick-first' means treemacs will select the first workspace
+   with a project that contains the current buffer's file. If no such workspace
+   exists, or if the current buffer is not visiting a file, the first workspace
+   in the list (as seen in `treemacs-edit-workspaces' or picked with
+   `treemacs-set-fallback-workspace') is selected
+ - `find-for-file-or-manually-select' works the same, but an interactive
+   selection is used as fallback instead
+ - `always-ask' means the workspace *always* has to be manually selected
+
+Note that the selection process will be skipped if there is only one workspace."
+  :type '(choice (const
+                  :tag "Find workspace for current file, pick the first workspace as falback"
+                  find-for-file-or-pick-first)
+                 (const
+                  :tag "Find workspace for current file, interactively select workspace as falback"
+                  find-for-file-or-manually-select)
+                 (const :tag "Always ask" always-ask))
+  :group 'treemacs-hooks)
+
 (defcustom treemacs-rename-project-functions nil
   "Hooks to run whenever a project is renamed.
 Will be called with the renamed project and the old name as its arguments."

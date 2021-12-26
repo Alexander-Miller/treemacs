@@ -10,6 +10,7 @@
 - Added ~treemacs-fit-widdow-width~
 - Added ~treemacs-extra-wide-toggle~
 - Added ~treemacs-next-workspace~
+- Added ~treemacs-find-workspace-method~
 - Added option for ~treemacs-select-window~ to close treemacs when it is already selected
 - Added ~detailed~ option for ~treemacs-eldoc-display~
 - Promoted peeking into a proper minor mode

@@ -424,6 +424,7 @@ discoverability.
             treemacs-file-name-transformer           #'identity
             treemacs-follow-after-init               t
             treemacs-expand-after-init               t
+            treemacs-find-workspace-method           'find-for-file-or-pick-first
             treemacs-git-command-pipe                ""
             treemacs-goto-tag-strategy               'refetch-index
             treemacs-indentation                     2
@@ -581,6 +582,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-select-when-already-in-treemacs | 'move-back                                       | Indicates how ~treemacs-select-window~ behaves when treemacs is already selected.                                                                                                                                                    |
 | treemacs-text-scale                      | nil                                              | Scaling for text in treemacs, used via ~text-scale-increase~.                                                                                                                                                                        |
 | treemacs-indent-guide-style              | line                                             | Appearance option for ~treemacs-indent-guide~, either a thin line or a thick block.                                                                                                                                                  |
+| treemacs-find-workspace-method           | 'find-for-file-or-pick-first                     | Determines how treemacs selects the workspace when it first starts.                                                                                                                                                                  |
 
 ** Faces
 Treemacs defines and uses the following faces:
