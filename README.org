@@ -417,7 +417,7 @@ discoverability.
             treemacs-deferred-git-apply-delay        0.5
             treemacs-directory-name-transformer      #'identity
             treemacs-display-in-side-window          t
-            treemacs-eldoc-display                   t
+            treemacs-eldoc-display                   'simple
             treemacs-file-event-delay                5000
             treemacs-file-extension-regex            treemacs-last-period-regex-value
             treemacs-file-follow-delay               0.2
@@ -563,7 +563,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-show-cursor                     | nil                                              | When non-nil the cursor will stay visible in the treemacs buffer.                                                                                                                                                                    |
 | treemacs-git-command-pipe                | ""                                               | Text to be appended to treemacs' git command. Useful for filtering with something like grep.                                                                                                                                         |
 | treemacs-no-delete-other-windows         | t                                                | Prevents the treemacs window from being deleted by commands like ~delete-other-windows~ and ~magit-status~.                                                                                                                          |
-| treemacs-eldoc-display                   | t                                                | Enables eldoc display of the file path at point. Requires ~eldoc-mode~.                                                                                                                                                              |
+| treemacs-eldoc-display                   | 'simple                                          | Enables eldoc display of the file path at point. Requires ~eldoc-mode~.                                                                                                                                                              |
 | treemacs-bookmark-title-template         | "Treemacs - ${project}: ${label}"                | When using ~bookmark-set~ in Treemacs, the default template for a bookmark label. The following patterns are available: "${project}", "${label}", "${label:N}", ${label-path}", "${label-path:N}", "${file-path}", "${file-path:N}". |
 | treemacs-file-extension-regex            | Text after last period                           | Determines how treemacs detects a file extension. Can be set to use text after first or last period.                                                                                                                                 |
 | treemacs-directory-name-transformer      | identity                                         | Transformer function that is applied to directory names before rendering for any sort of cosmetic effect.                                                                                                                            |

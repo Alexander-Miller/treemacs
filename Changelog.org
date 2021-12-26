@@ -11,6 +11,7 @@
 - Added ~treemacs-extra-wide-toggle~
 - Added ~treemacs-next-workspace~
 - Added option for ~treemacs-select-window~ to close treemacs when it is already selected
+- Added ~detailed~ option for ~treemacs-eldoc-display~
 - Promoted peeking into a proper minor mode
 ** v2.9
 - Published ~treemacs-all-the-icons~

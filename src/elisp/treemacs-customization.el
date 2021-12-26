@@ -151,10 +151,17 @@ There are 2 options:
   :type 'boolean
   :group 'treemacs)
 
-(defcustom treemacs-eldoc-display t
+(defcustom treemacs-eldoc-display 'simple
   "Enables eldoc display of the file path at point.
+
+There are 2 options:
+ - `simple': shows the absolute path of the file at point
+ - `detailed': shows the absolute path, size, last modification time and
+   permissions of the file at point
+
 Requires eldoc mode to be enabled."
-  :type 'boolean
+  :type '(choice (const :tag "Simple" 'simple)
+                 (const :tag "Detailed" 'detailed))
   :group 'treemacs)
 
 (defcustom treemacs-indent-guide-style 'line

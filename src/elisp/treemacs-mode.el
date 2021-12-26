@@ -241,17 +241,55 @@ Used as a post command hook."
                          (treemacs--nearest-path btn))))
         (when (and (treemacs-project->is-readable? project)
                    (file-readable-p path))
-          (setq treemacs--eldoc-msg path
+          (setf treemacs--eldoc-msg (treemacs--get-eldoc-message path)
                 default-directory (treemacs--add-trailing-slash
                                    (if (file-directory-p path) path (file-name-directory path)))))
       (setq treemacs--eldoc-msg nil
             default-directory "~/"))))
 
+(defun treemacs--get-eldoc-message (path)
+  "Set the eldoc message for given PATH.
+Message will be either just the path, or the path plus meta info like file size,
+depending on the value of `treemacs-eldoc-display'."
+  (pcase treemacs-eldoc-display
+    ('detailed
+     (-let [attr (file-attributes path)]
+       (format "%s -- %s: %s %s: %s %s: %s"
+               (propertize path 'face 'font-lock-string-face)
+               (propertize "Size" 'face 'font-lock-keyword-face)
+               (propertize
+                (treemacs--human-readable-bytes (file-attribute-size attr))
+                'face 'font-lock-type-face)
+               (propertize "Last Modified" 'face 'font-lock-keyword-face)
+               (propertize
+                (format-time-string "%F %T" (file-attribute-modification-time attr))
+                'face 'font-lock-type-face)
+               (propertize "Permissions" 'face 'font-lock-keyword-face)
+               (propertize
+                (file-attribute-modes attr)
+                'face 'font-lock-type-face))))
+    ('simple (propertize path 'face 'font-lock-string-face))
+    (_       (propertize path 'face 'font-lock-string-face))))
+
+(define-inline treemacs--human-readable-bytes (bytes)
+  "Return a human-readable string version of BYTES."
+  (declare (pure t) (side-effect-free t))
+  (inline-letevals (bytes)
+    (inline-quote
+     (cl-loop with result = (cons "B" ,bytes)
+              for i in '("k" "M" "G" "T" "P" "E" "Z" "Y")
+              while (>= (cdr result) 1024.0)
+              do (setf result (cons i (/ (cdr result) 1024.0)))
+              finally return
+              (pcase (car result)
+                ("B" (format "%sb" ,bytes))
+                (_ (format "%.1f%s" (cdr result) (car result))))))))
+
 (defun treemacs--eldoc-function ()
   "Treemacs' implementation of `eldoc-documentation-function'.
 Will simply return `treemacs--eldoc-msg'."
   (when (and treemacs-eldoc-display treemacs--eldoc-msg)
-    (propertize treemacs--eldoc-msg 'face 'font-lock-string-face)))
+    treemacs--eldoc-msg))
 
 ;;;###autoload
 (define-derived-mode treemacs-mode special-mode "Treemacs"
