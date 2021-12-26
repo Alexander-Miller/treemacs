@@ -763,8 +763,8 @@ PATH: Node Path"
 
 (defun treemacs-find-node (path &optional project)
   "Find position of node identified by PATH under PROJECT in the current buffer.
-In spite of the signature this function effectively supports two different calling
-conventions.
+In spite of the signature this function effectively supports two different
+calling conventions.
 
 The first one is for movement towards a node that identifies a file.  In this
 case the signature is applied as is, and this function diverges simply into
@@ -773,16 +773,16 @@ optional, as treemacs is able to determine which project, if any, a given file
 belongs to.  Providing the project is therefore only a matter of efficiency and
 convenience.  If PROJECT is not given it will be found with
 `treemacs--find-project-for-path'.  No attempt is made to verify that PATH falls
-under a project in the workspace.  It is assumed that this check has already been
-made.
+under a project in the workspace.  It is assumed that this check has already
+been made.
 
 The second calling convention deals with custom nodes defined by an extension
-for treemacs.  In this case the PATH is made up of all the node keys that lead to
-the node to be moved to.
+for treemacs.  In this case the PATH is made up of all the node keys that lead
+to the node to be moved to.
 
 For a directory extension, created with `treemacs-define-directory-extension',
-that means that the path's first element must be the filepath of its parent.  For
-a project extension, created with `treemacs-define-project-extension', the
+that means that the path's first element must be the filepath of its parent.
+For a project extension, created with `treemacs-define-project-extension', the
 first element of the path must instead be the keyword `:custom', followed by the
 node's unique path.  The second argument is therefore ignored in this case.
 
@@ -800,8 +800,8 @@ PROJECT Project Struct"
 (defun treemacs-goto-node (path &optional project ignore-file-exists)
   "Move point to button identified by PATH under PROJECT in the current buffer.
 Falls under the same constraints as `treemacs-find-node', but will actually move
-point.  Will do nothing if file at PATH does not exist, unless IGNORE-FILE-EXISTS
-is non-nil.
+point.  Will do nothing if file at PATH does not exist, unless
+IGNORE-FILE-EXISTS is non-nil.
 
 PATH: Filepath | Node Path
 PROJECT Project Struct

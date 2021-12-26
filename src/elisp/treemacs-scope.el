@@ -55,7 +55,6 @@
 (treemacs-import-functions-from "treemacs-workspaces"
   treemacs--find-workspace)
 
-
 (cl-defstruct (treemacs-scope-shelf
                (:conc-name treemacs-scope-shelf->)
                (:constructor treemacs-scope-shelf->create!))
