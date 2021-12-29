@@ -453,7 +453,7 @@ constant time needed to fork a subprocess."
   :lighter    nil
   :group      'treemacs-git
   ;; case when the mode is re-activated by `custom-set-minor-mode'
-  (when (and (eq t arg) treemacs--git-mode)
+  (when (and (= arg 1) treemacs--git-mode)
     (setf arg treemacs--git-mode))
   (if treemacs-git-mode
       (if (memq arg '(simple extended deferred))
