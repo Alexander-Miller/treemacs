@@ -353,7 +353,8 @@ In the default configuration this usually means to close the content of the
 currently selected node.  A potential prefix ARG is passed on to the executed
 action, if possible.
 
-This function's exact configuration is stored in `treemacs-COLLAPSE-actions-config'."
+This function's exact configuration is stored in
+`treemacs-COLLAPSE-actions-config'."
   (interactive "P")
   (-when-let (state (treemacs--prop-at-point :state))
     (--if-let (cdr (assq state treemacs-COLLAPSE-actions-config))

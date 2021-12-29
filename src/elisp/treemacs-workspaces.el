@@ -170,7 +170,7 @@ PATH: String"
 (define-inline treemacs--find-project-for-buffer (&optional buffer-file)
   "In the current workspace find the project current buffer's file falls under.
 Optionally supply the BUFFER-FILE in case it is not available by calling the
-function `buffer-file-name' (like in dired).
+function `buffer-file-name' (like in Dired).
 
 FILE: Filepath"
   (inline-letevals (buffer-file)

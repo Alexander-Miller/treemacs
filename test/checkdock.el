@@ -1,6 +1,7 @@
 ;;; -*- lexical-binding: t -*-
 ;;; Based on https://github.com/flycheck/flycheck/blob/master/maint/flycheck-checkdoc.el
 
+(require 'bytecomp)
 (require 'checkdoc)
 (require 'dash)
 (require 's)
@@ -58,10 +59,12 @@
             "keybind"
             "keybinds"
             "keybindings"
+            "kqueue"
             "leftclick"
             "linux"
             "localized"
             "macos"
+            "MacOS"
             "magit"
             "makefile"
             "metadata"

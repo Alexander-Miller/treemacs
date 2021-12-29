@@ -173,7 +173,7 @@ and ignore any prefix argument."
      :no-match-explanation "")))
 
 (defun treemacs--imenu-tag-noselect (file tag-path)
-  "Return a list of the source buffer for FILE and the position of the tag from TAG-PATH."
+  "Return a list of the source buffer for FILE and the tag's from TAG-PATH."
   (let ((tag (-last-item tag-path))
         (path (-butlast tag-path)))
     (condition-case e

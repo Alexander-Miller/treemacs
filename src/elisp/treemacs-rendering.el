@@ -236,9 +236,9 @@ DEPTH indicates how deep in the filetree the current button is."
 (cl-defmacro treemacs--button-open (&key button new-state new-icon open-action post-open-action immediate-insert)
   "Building block macro to open a BUTTON.
 Gives the button a NEW-STATE, and, optionally, a NEW-ICON.  Performs OPEN-ACTION
-and, optionally, POST-OPEN-ACTION.  If IMMEDIATE-INSERT is non-nil it will concat
-and apply `insert' on the items returned from OPEN-ACTION.  If it is nil either
-OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
+and, optionally, POST-OPEN-ACTION.  If IMMEDIATE-INSERT is non-nil it will
+concat and apply `insert' on the items returned from OPEN-ACTION.  If it is nil
+either OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
   `(prog1
      (save-excursion
        (let ((p (point))

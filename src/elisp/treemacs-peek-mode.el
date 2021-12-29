@@ -120,7 +120,7 @@ kept."
   "Minor mode that allows you to peek at buffers before deciding to open them.
 
 While the mode is active treemacs will automatically display the file at point,
-without leving the treemacs window.
+without leaving the treemacs window.
 
 Peeking will stop when you leave the treemacs window, be it through a command
 like `treemacs-RET-action' or some other window selection change.

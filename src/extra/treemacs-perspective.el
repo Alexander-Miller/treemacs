@@ -70,7 +70,8 @@ Will return \"No Perspective\" if no perspective is active."
 
 (defun treemacs-perspective--on-perspective-switch (&rest _)
   "Hook running after the perspective was switched.
-Will select a workspace for the now active perspective, creating it if necessary."
+Will select a workspace for the now active perspective, creating it if
+necessary."
   ;; runnig with a timer ensures that any other post-processing is finished after a perspective
   ;; was run since commands like `spacemacs/helm-persp-switch-project' first create a perspective
   ;; and only afterwards select the file to display

@@ -70,12 +70,12 @@
 ;;;###autoload
 (defun treemacs (&optional arg)
   "Initialise or toggle treemacs.
- - If the treemacs window is visible hide it.
- - If a treemacs buffer exists, but is not visible show it.
- - If no treemacs buffer exists for the current frame create and show it.
- - If the workspace is empty additionally ask for the root path of the first
-   project to add.
- - With a prefix ARG launch treemacs and force it to select a workspace"
+- If the treemacs window is visible hide it.
+- If a treemacs buffer exists, but is not visible show it.
+- If no treemacs buffer exists for the current frame create and show it.
+- If the workspace is empty additionally ask for the root path of the first
+  project to add.
+- With a prefix ARG launch treemacs and force it to select a workspace"
   (interactive "P")
   (pcase (treemacs-current-visibility)
     ((guard arg)
@@ -151,7 +151,7 @@ Bring it to the foreground if it is not visible.
 Initialise a new treemacs buffer as calling `treemacs' would if there is no
 treemacs buffer for this frame.
 
-In case treemacs is already selected behavior will depend on
+In case treemacs is already selected behaviour will depend on
 `treemacs-select-when-already-in-treemacs'.
 
 A non-nil prefix ARG will also force a workspace switch."

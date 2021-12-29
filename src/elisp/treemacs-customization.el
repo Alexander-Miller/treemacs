@@ -772,12 +772,12 @@ marking the selected line."
   :group 'treemacs-window)
 
 (defcustom treemacs-wide-toggle-width 70
-  "When resizing, this value is added or substracted from the window width."
+  "When resizing, this value is added or subtracted from the window width."
   :type 'integer
   :group 'treemacs-window)
 
 (defcustom treemacs-width-increment 1
-  "When resizing, this value is added or substracted from the window width."
+  "When resizing, this value is added or subtracted from the window width."
   :type 'integer
   :group 'treemacs-window)
 
@@ -895,7 +895,7 @@ deleted."
   "The method by which treemacs selects a workspace when first starting.
 There are 3 options:
  - `find-for-file-or-pick-first' means treemacs will select the first workspace
-   with a project that contains the current buffer's file. If no such workspace
+   with a project that contains the current buffer's file.  If no such workspace
    exists, or if the current buffer is not visiting a file, the first workspace
    in the list (as seen in `treemacs-edit-workspaces' or picked with
    `treemacs-set-fallback-workspace') is selected

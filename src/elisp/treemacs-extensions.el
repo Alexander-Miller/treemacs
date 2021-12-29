@@ -41,7 +41,8 @@
 
 (defmacro treemacs--build-extension-addition (name)
   "Internal building block.
-Creates a `treemacs-define-${NAME}-extension' function and the necessary helpers."
+Creates a `treemacs-define-${NAME}-extension' function and the necessary
+helpers."
   (let ((define-function-name  (intern (s-lex-format "treemacs-define-${name}-extension")))
         (top-extension-point (intern (s-lex-format "treemacs--${name}-top-extensions")))
         (bottom-extension-point   (intern (s-lex-format "treemacs--${name}-bottom-extensions"))))
@@ -51,8 +52,8 @@ Creates a `treemacs-define-${NAME}-extension' function and the necessary helpers
        (cl-defun ,define-function-name (&key extension predicate position)
          ,(s-lex-format
            "Define an extension of type `${name}' for treemacs to use.
-EXTENSION is an extension function, as created by `treemacs-define-expandable-node'
-when a `:root' argument is given.
+EXTENSION is an extension function, as created by
+`treemacs-define-expandable-node' when a `:root' argument is given.
 
 PREDICATE is a function that will be called to determine whether the extension
 should be displayed. It is invoked with a single argument, which is the treemacs
@@ -72,7 +73,8 @@ See also `treemacs-remove-${name}-extension'.")
 
 (defmacro treemacs--build-extension-removal (name)
   "Internal building block.
-Creates a `treemacs-remove-${NAME}-extension' function and the necessary helpers."
+Creates a `treemacs-remove-${NAME}-extension' function and the necessary
+helpers."
   (let ((remove-function-name  (intern (s-lex-format "treemacs-remove-${name}-extension")))
         (top-extension-point (intern (s-lex-format "treemacs--${name}-top-extensions")))
         (bottom-extension-point   (intern (s-lex-format "treemacs--${name}-bottom-extensions"))))
@@ -225,8 +227,8 @@ variable and a `treemacs-${name}-icon' icon variable.  If the icon should not be
 static, and should be instead computed every time this node is rendered in its
 parent's :render-action use 'dynamic-icon as a value for ICON.
 
-The ICON is a string that should be created with `treemacs-as-icon'.  If the icon
-is for a file you can also use `treemacs-icon-for-file'.
+The ICON is a string that should be created with `treemacs-as-icon'.  If the
+icon is for a file you can also use `treemacs-icon-for-file'.
 
 RET-ACTION, TAB-ACTION and MOUSE1-ACTION are function references that will be
 invoked when RET or TAB are pressed or mouse1 is double-clicked a node of this
@@ -268,12 +270,11 @@ type.  VISIT-ACTION is used in `treemacs-visit-node-no-split' actions."
   "Define a type of node with given NAME that can be further expanded.
 
 ICON-OPEN and ICON-CLOSED are strings and must be created by `treemacs-as-icon'.
-They will be defvar'd as 'treemacs-icon-${name}-open/closed'.
-As an alternative to static icons you can also supply ICON-OPEN-FORM and
-ICON-CLOSED-FORM that will be dynamically executed whenever a new icon is
-needed.  Keep in mind that, since child nodes are first rendered by their
-parents, an ICON-CLOSED-FORM will need to be repeated in the parent's
-RENDER-ACTION.
+They will be defvar'd as 'treemacs-icon-${name}-open/closed'.  As an alternative
+to static icons you can also supply ICON-OPEN-FORM and ICON-CLOSED-FORM that
+will be dynamically executed whenever a new icon is needed.  Keep in mind that,
+since child nodes are first rendered by their parents, an ICON-CLOSED-FORM will
+need to be repeated in the parent's RENDER-ACTION.
 
 QUERY-FUNCTION is a form and will be invoked when the node is expanded.  It must
 provide the list of elements that will be rendered with RENDER-ACTION.
@@ -285,8 +286,8 @@ bound under the name `item'.  The form itself should end in a call to
 
 RET-ACTION will define what function is called when RET is pressed on this type
 of node.  Only RET, without TAB and mouse1 can be defined since for expandable
-nodes both TAB and RET should toggle expansion/collapse.  VISIT-ACTION is used in
-`treemacs-visit-node-no-split' actions.
+nodes both TAB and RET should toggle expansion/collapse.  VISIT-ACTION is used
+in `treemacs-visit-node-no-split' actions.
 
 AFTER-EXPAND and AFTER-COLLAPSE are optional forms that will be called after a
 node has been expanded or collapsed.  The closed or opened node marker will be
@@ -307,8 +308,8 @@ way as the KEY-FORM argument in `treemacs-render-node'.
 
 TOP-LEVEL-MARKER works much the same way as ROOT-MARKER (and is mutually
 exclusive with it).  The difference is that it declares the node defined here to
-a top level element with nothing above it, like a project, instead of a
-top level node *inside* a project.  Other than that things work the same.  Setting
+a top level element with nothing above it, like a project, instead of a top
+level node *inside* a project.  Other than that things work the same.  Setting
 TOP-LEVEL-MARKER will define a function named `treemacs-${NAME}-extension' that
 can be passed to `treemacs-define-root-extension', and it requires the same
 additional keys."
@@ -524,8 +525,8 @@ child nodes when expanded. For example think of an extension that groups buffers
 based on the major mode, with each major-mode being its own top-level group, so
 it is not known which (if any) major-mode groupings exist.
 
-Works the same as `treemacs-define-expandable-node', so the same restrictions and
-rules apply for QUERY-FUNCTION, RENDER-ACTION and ROOT-KEY-FORM."
+Works the same as `treemacs-define-expandable-node', so the same restrictions
+and rules apply for QUERY-FUNCTION, RENDER-ACTION and ROOT-KEY-FORM."
   (declare (indent 1))
   `(treemacs-define-expandable-node ,name
      :icon-closed ""

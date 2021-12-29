@@ -21,7 +21,7 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Treemacs icons for dired.  Code is based on all-the-icons-dired.el
+;;; Treemacs icons for Dired.  Code is based on all-the-icons-dired.el
 
 ;;; Code:
 
@@ -43,7 +43,7 @@
   "List of subdirs icons were already added for.")
 
 (defun treemacs-icons-dired--display ()
-  "Display the icons of files in a dired buffer."
+  "Display the icons of files in a Dired buffer."
   (when (and (display-graphic-p)
              (not treemacs-icons-dired-displayed)
              dired-subdir-alist)
@@ -72,7 +72,7 @@
           (forward-line 1) ))))))
 
 (defun treemacs-icons-dired--insert-subdir-advice (&rest args)
-  "Advice to dired & dired+ insert-subdir commands.
+  "Advice to Dired & Dired+ insert-subdir commands.
 Will add icons for the subdir in the `car' of ARGS."
   (let* ((path (car args))
          (pos (cdr (assoc path dired-subdir-alist))))
@@ -85,7 +85,7 @@ Will add icons for the subdir in the `car' of ARGS."
     (advice-add #'diredp-insert-subdirs :after #'treemacs-icons-dired--insert-subdir-advice)))
 
 (defun treemacs-icons-dired--kill-subdir-advice (&rest _args)
-  "Advice to dired kill-subdir commands.
+  "Advice to Dired kill-subdir commands.
 Will remove the killed subdir from `treemacs-icons-dired--covered-subdirs'."
   (setf treemacs-icons-dired--covered-subdirs (delete (dired-current-directory) treemacs-icons-dired--covered-subdirs)))
 
@@ -127,7 +127,7 @@ This will make sure the icons' background colours will align with hl-line mode."
   (remove-hook 'post-command-hook #'treemacs-icons-dired--update-icon-selection :local))
 
 (defun treemacs-icons-dired--add-icon-for-new-entry (file &rest _)
-  "Add an icon for a new single FILE added by dired."
+  "Add an icon for a new single FILE added by Dired."
   (let (buffer-read-only)
     (insert (if (file-directory-p file)
                 treemacs-icon-dir-closed
@@ -175,7 +175,7 @@ Necessary for the all-the-icons based themes."
 
 ;;;###autoload
 (define-minor-mode treemacs-icons-dired-mode
-  "Display treemacs icons for each file in a dired buffer."
+  "Display treemacs icons for each file in a Dired buffer."
   :require    'treemacs-icons-dired
   :init-value nil
   :global     t
@@ -189,8 +189,8 @@ Necessary for the all-the-icons based themes."
   "Enable `treemacs-icons-dired-mode' and remove self from `dired-mode-hook'.
 
 This function is meant to be used as a single-use toggle added to
-`dired-mode-hook' to enable icons for dired only once, without having to use
-\"with-eval-after-load 'dired\", since dired tends to be loaded early."
+`dired-mode-hook' to enable icons for Dired only once, without having to use
+\"with-eval-after-load 'dired\", since Dired tends to be loaded early."
   (treemacs-icons-dired-mode)
   (remove-hook 'dired-mode-hook #'treemacs-icons-dired-enable-once))
 
