@@ -13,6 +13,7 @@
 - Added ~treemacs-find-workspace-method~
 - Added option for ~treemacs-select-window~ to close treemacs when it is already selected
 - Added ~detailed~ option for ~treemacs-eldoc-display~
+- Added ~treemacs-select-directory~
 - Added option to select workspace when starting/selecting treemacs
 - Promoted peeking into a proper minor mode
 ** v2.9

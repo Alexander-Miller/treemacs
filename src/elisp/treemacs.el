@@ -86,6 +86,33 @@
     ('none    (treemacs--init))))
 
 ;;;###autoload
+(defun treemacs-select-directory ()
+  "Select a directory to open in treemacs.
+This command will open *just* the selected directory in treemacs.  If there are
+other projects in the workspace they will be removed.
+
+To *add* a project to the current workspace use
+`treemacs-add-project-to-workspace' or
+`treemacs-add-and-display-current-project' instead."
+  (interactive)
+  (treemacs-block
+   (let* ((path (-> "Directory: "
+                    (read-directory-name)
+                    (treemacs-canonical-path)))
+          (name (treemacs--filename path))
+          (ws (treemacs-current-workspace)))
+     (treemacs-return-if
+         (and (= 1 (length (treemacs-workspace->projects ws)))
+              (string= path (-> ws
+                                (treemacs-workspace->projects)
+                                (car)
+                                (treemacs-project->path))))
+       (treemacs-select-window))
+     (treemacs--show-single-project path name)
+     (treemacs-pulse-on-success "Now showing %s"
+       (propertize path 'face 'font-lock-string-face)))))
+
+;;;###autoload
 (defun treemacs-find-file (&optional arg)
   "Find and focus the current file in the treemacs window.
 If the current buffer has visits no file or with a prefix ARG ask for the
@@ -224,25 +251,9 @@ only project, all other projects *will be removed* from the current workspace."
            (and (= 1 (length (treemacs-workspace->projects ws)))
                 (treemacs-is-path path :in-workspace ws))
          (treemacs-select-window))
-       (if (treemacs-workspace->is-empty?)
-           (progn
-             (treemacs-do-add-project-to-workspace path name)
-             (treemacs-select-window)
-             (treemacs-pulse-on-success))
-         (setf (treemacs-workspace->projects ws)
-               (--filter (string= path (treemacs-project->path it))
-                         (treemacs-workspace->projects ws)))
-         (unless (treemacs-workspace->projects ws)
-           (let ((treemacs--no-messages t)
-                 (treemacs-pulse-on-success nil))
-             (treemacs-add-project-to-workspace path name)))
-         (treemacs-select-window)
-         (treemacs--consolidate-projects)
-         (goto-char 2)
-         (-let [btn (treemacs-current-button)]
-           (unless (treemacs-is-node-expanded? btn)
-             (treemacs--expand-root-node btn)))
-         (treemacs-pulse-on-success))))))
+       (treemacs--show-single-project path name)
+       (treemacs-pulse-on-success "Now showing %s"
+         (propertize path 'face 'font-lock-string-face))))))
 
 ;;;###autoload
 (defun treemacs-add-and-display-current-project ()
