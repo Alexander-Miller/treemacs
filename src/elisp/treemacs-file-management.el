@@ -75,7 +75,7 @@ they will instead be wiped irreversibly."
        "Only files and directories can be deleted.")
      (treemacs--without-filewatch
       (let* ((delete-by-moving-to-trash (not arg))
-             (path (treemacs-button-get btn :path))
+             (path (treemacs--select-file-from-btn btn "Delete: "))
              (file-name (propertize (treemacs--filename path) 'face 'font-lock-string-face)))
         (cond
          ((file-symlink-p path)
@@ -153,7 +153,8 @@ from `treemacs-copy-file' or `treemacs-move-file'."
          (treemacs-error-return no-node-msg)
        (treemacs-error-return-if (not (treemacs-is-node-file-or-dir? node))
          wrong-type-msg)
-       (let* ((source (treemacs-button-get node :path))
+       (let* ((source (treemacs--select-file-from-btn
+                       node (if (eq action :copy "File to copy: " "File to move: "))))
               (source-name (treemacs--filename source))
               (destination (treemacs--unslash (read-file-name prompt nil default-directory)))
               (target-is-dir? (file-directory-p destination))
@@ -193,7 +194,7 @@ will likewise be updated."
   (treemacs-block
    (treemacs-unless-let (btn (treemacs-current-button))
        (treemacs-pulse-on-failure "Nothing to rename here.")
-     (-let [old-path (treemacs-button-get btn :path)]
+     (-let [old-path (treemacs--select-file-from-btn btn "Rename: ")]
        (treemacs-error-return-if (null old-path)
          "Found nothing to rename here.")
        (treemacs-error-return-if (not (treemacs--is-node-file-manageable? btn))
@@ -205,25 +206,20 @@ will likewise be updated."
                           "New name: " (file-name-nondirectory old-path)))
               (dir       (treemacs--parent-dir old-path))
               (new-path  (treemacs-join-path dir new-name))
-              (expanded? (treemacs-is-node-expanded? btn)))
+              (parent    (treemacs-button-get btn :parent)))
          (treemacs-error-return-if
              (and (file-exists-p new-path)
                   (or (not (eq 'darwin system-type))
                       (not (string= old-name new-name))))
            "A file named %s already exists."
            (propertize new-name 'face font-lock-string-face))
-         (rename-file old-path new-path)
-         (treemacs--replace-recentf-entry old-path new-path)
-         (-let [treemacs-silent-refresh t]
-           (treemacs-run-in-every-buffer
-            (treemacs--on-rename old-path new-path treemacs-filewatch-mode)
-            (when (treemacs-is-path-visible? old-path)
-              (treemacs-log "Update Node %s" dir)
-              (treemacs-update-node dir)
-              (treemacs-goto-file-node new-path)
-              (when expanded?
-                (with-no-warnings
-                  (treemacs-toggle-node))))))
+         (treemacs--without-filewatch
+          (rename-file old-path new-path)
+          (treemacs--replace-recentf-entry old-path new-path)
+          (-let [treemacs-silent-refresh t]
+            (treemacs-run-in-every-buffer
+             (treemacs--on-rename old-path new-path treemacs-filewatch-mode)
+             (treemacs-update-node (treemacs-button-get parent :path)))))
          (treemacs--reload-buffers-after-rename old-path new-path)
          (run-hook-with-args
           'treemacs-rename-file-functions
@@ -261,14 +257,15 @@ itself, using $HOME when there is no path at or near point to grab."
 IS-FILE?: Bool"
   (interactive)
   (let* ((curr-path (--if-let (treemacs-current-button)
-                        (treemacs--nearest-path it)
+                        (treemacs--select-file-from-btn it "Create in: ")
                       (expand-file-name "~")))
-         (path-to-create (read-file-name
-                          (if is-file? "Create File: " "Create Directory: ")
-                          (treemacs--add-trailing-slash
-                           (if (file-directory-p curr-path)
-                               curr-path
-                             (treemacs--parent-dir curr-path))))))
+         (path-to-create (treemacs-canonical-path
+                          (read-file-name
+                           (if is-file? "Create File: " "Create Directory: ")
+                           (treemacs--add-trailing-slash
+                            (if (file-directory-p curr-path)
+                                curr-path
+                              (treemacs--parent-dir curr-path)))))))
     (treemacs-block
      (treemacs-error-return-if (file-exists-p path-to-create)
        "%s already exists." (propertize path-to-create 'face 'font-lock-string-face))
@@ -282,22 +279,25 @@ IS-FILE?: Bool"
       (run-hook-with-args 'treemacs-create-file-functions path-to-create))
      (-when-let (project (treemacs--find-project-for-path path-to-create))
        (-when-let* ((created-under (treemacs--parent path-to-create))
-                    (created-under-pos (treemacs-find-visible-node created-under)))
+                    (created-under-btn (treemacs-find-visible-node created-under)))
          ;; update only the part that changed to keep things smooth
          ;; for files that's just their parent, for directories we have to take
          ;; flattening into account
-         (if (and (treemacs-button-get created-under-pos :parent)
-                  (or (treemacs-button-get created-under-pos :collapsed)
-                      ;; count includes "." "..", so it'll be flattened
-                      (= 3 (length (directory-files created-under)))))
-             (treemacs-do-update-node (-> created-under-pos
-                                          (treemacs-button-get :parent)
-                                          (treemacs-button-get :path)))
-           (treemacs-do-update-node created-under)))
-       (treemacs-goto-file-node (treemacs-canonical-path path-to-create) project)
+         (if (treemacs-button-get created-under-btn :collapsed)
+             (treemacs-update-node (treemacs-button-get (treemacs-button-get created-under-btn :parent) :path))
+           (treemacs-update-node (treemacs-button-get created-under-btn :path))))
+       (treemacs-goto-file-node path-to-create project)
        (recenter))
      (treemacs-pulse-on-success
          "Created %s." (propertize path-to-create 'face 'font-lock-string-face)))))
+
+(defun treemacs--select-file-from-btn (btn prompt)
+  "Select the file represented by BTN for file management.
+Offer a specifying dialogue with PROMPT when BTN is flattened."
+  (declare (side-effect-free t))
+  (-if-let (collapse-info (treemacs-button-get btn :collapsed))
+      (completing-read prompt collapse-info nil :require-match)
+    (treemacs-button-get btn :key)))
 
 (provide 'treemacs-file-management)
 
