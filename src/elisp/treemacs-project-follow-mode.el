@@ -26,9 +26,8 @@
 (require 'treemacs-scope)
 (require 'treemacs-follow-mode)
 (require 'treemacs-core-utils)
-
-(treemacs-import-functions-from "treemacs"
-  treemacs-display-current-project-exclusively)
+(eval-when-compile
+  (require 'treemacs-macros))
 
 (defvar treemacs--project-follow-timer nil
   "Idle timer for `treemacs-project-follow-mode'.")
