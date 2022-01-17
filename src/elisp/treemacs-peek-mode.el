@@ -44,7 +44,8 @@
 
 (defun treemacs--setup-peek-buffer (path)
   "Setup the peek buffer and window for PATH."
-  (let* ((file-buffer (get-file-buffer path))
+  (let* ((inhibit-message t)
+         (file-buffer (get-file-buffer path))
          (next-window (next-window (selected-window)))
          (window (if file-buffer
                      (or (get-buffer-window file-buffer)
