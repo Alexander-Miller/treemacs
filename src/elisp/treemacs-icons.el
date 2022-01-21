@@ -388,7 +388,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "vsc/cobol.png"     :extensions ("cobol"))
     (treemacs-create-icon :file "vsc/cfscript.png"  :extensions ("coffeescript"))
     (treemacs-create-icon :file "vsc/cpp.png"       :extensions ("cpp" "cxx" "tpp" "cc"))
-    (treemacs-create-icon :file "vsc/cpph.png"      :extensions ("hpp" "hh"))
+    (treemacs-create-icon :file "vsc/cpph.png"      :extensions ("hpp" "hxx" "hh"))
     (treemacs-create-icon :file "vsc/cucumber.png"  :extensions ("feature"))
     (treemacs-create-icon :file "vsc/cython.png"    :extensions ("cython"))
     (treemacs-create-icon :file "vsc/delphi.png"    :extensions ("pascal" "objectpascal"))
