@@ -29,6 +29,7 @@
 (require 'treemacs-tags)
 (require 'treemacs-tag-follow-mode)
 (require 'treemacs-mouse-interface)
+(require 'treemacs-file-management)
 (require 'org)
 (require 'buttercup)
 
@@ -1635,6 +1636,59 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
                (treemacs--workspaces (list ws1 ws2)))
           (expect (treemacs-do-switch-workspace ws2)
                   :to-equal `(success ,ws2)))))))
+
+(describe "treemacs--select-file-from-current-btn"
+  :var (btn)
+
+  (before-each
+    (fset
+     'make-btn
+     (lambda (&rest props)
+       (insert "abc")
+       (goto-char 0)
+       (put-text-property 1 3 :path "/a/b/c")
+       (put-text-property 1 3 :button t)
+       (when props
+         (apply #'put-text-property 1 3 props))
+       (setf btn (point-marker))))
+    (spy-on #'treemacs-current-button :and-return-value btn)
+    (spy-on #'file-directory-p :and-return-value nil)
+    (spy-on #'file-regular-p :and-return-value nil))
+
+  (it "returns interactively chosen path for flattened nodes"
+    (with-temp-buffer
+      (make-btn :collapsed '(2 "/a" "/a/b" "/a/b/c"))
+      (spy-on #'completing-read :and-return-value "/a/b")
+      (expect (treemacs--select-file-from-btn btn "prompt")
+              :to-equal "/a/b")))
+
+  (it "returns path when it is a directory"
+    (with-temp-buffer
+      (make-btn)
+      (spy-on #'file-directory-p :and-return-value t)
+      (expect (treemacs--select-file-from-btn btn "prompt")
+              :to-equal "/a/b/c")))
+
+  (it "returns parent path when path is file and dir-only is set"
+    (with-temp-buffer
+      (make-btn)
+      (spy-on #'file-regular-p :and-return-value t)
+      (expect (treemacs--select-file-from-btn btn "prompt" :dir-only)
+              :to-equal "/a/b")))
+
+  (it "returns path when it is a file and dir-only is not set"
+    (with-temp-buffer
+      (make-btn)
+      (spy-on #'file-regular-p :and-return-value t)
+      (expect (treemacs--select-file-from-btn btn "prompt" nil)
+              :to-equal "/a/b/c")))
+
+  (it "returns HOME when path is not a string"
+    (with-temp-buffer
+      (make-btn :path '(a b c))
+      (spy-on #'file-regular-p :and-return-value t)
+      (expect (treemacs--select-file-from-btn btn "prompt")
+              :to-equal (expand-file-name "~")))) )
 
 (provide 'test-treemacs)
 
