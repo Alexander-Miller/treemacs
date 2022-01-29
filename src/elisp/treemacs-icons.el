@@ -300,7 +300,7 @@ Necessary since root icons are not rectangular."
 
     ;; file icons
     (treemacs-create-icon :file "txt.png"           :extensions (fallback))
-    (treemacs-create-icon :file "emacs.png"         :extensions ("el" "elc"))
+    (treemacs-create-icon :file "emacs.png"         :extensions ("el" "elc" "eln"))
     (treemacs-create-icon :file "ledger.png"        :extensions ("ledger"))
     (treemacs-create-icon :file "yaml.png"          :extensions ("yml" "yaml" "travis.yml"))
     (treemacs-create-icon
