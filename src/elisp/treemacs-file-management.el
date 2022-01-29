@@ -155,7 +155,7 @@ from `treemacs-copy-file' or `treemacs-move-file'."
          wrong-type-msg)
        (let* ((source (treemacs--select-file-from-btn
                        node
-                       (if (eq action :copy "File to copy: " "File to move: "))))
+                       (if (eq action :copy) "File to copy: " "File to move: ")))
               (source-name (treemacs--filename source))
               (destination (treemacs--unslash (read-file-name prompt nil default-directory)))
               (target-is-dir? (file-directory-p destination))
