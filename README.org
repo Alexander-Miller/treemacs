@@ -142,8 +142,9 @@ the current root's parent. Another restriction is that the same part of the file
 part of the workspace. For example it is not possible to have both /Documents and /Documents/ProjectX as projects in the
 same workspace, since internally treemacs heavily relies on every node having a unique natural key in its absolute path.
 Nonetheless the pros certainly outweigh the cons, as a multiroot setup allows to work on multiple projects with any
-combination concern/buffer separating frameworks, be it persp/perspective, eyebrowse, or project.el/projectile. It also
-opens the potential for concurrent display not only of the file system, but e.g. the currently open buffers.
+combination concern/buffer separating frameworks, be it persp/perspective, eyebrowse, tab-bar-mode, or
+project.el/projectile. It also opens the potential for concurrent display not only of the file system, but e.g. the
+currently open buffers.
 
 *** Workspace Selection
 When a workspace is first needed, treemacs will select a workspace in the following manner:
@@ -382,6 +383,9 @@ Allows you to use treemacs icons in dired buffers with ~treemacs-icons-dired-mod
 *** treemacs-persp/treemacs-perspective
 Integration with persp-mode or perspective.el that allows treemacs buffers to be unique inside the active perspective
 instead of the default frame-based buffer scope.
+*** treemacs-tab-bar
+Integration with tab-bar-mode that allows treemacs buffers to be unique inside the active tab
+instead of the default frame-based buffer scope.
 *** treemacs-all-the-icons
 Provides a theme using [[https://github.com/domtronn/all-the-icons.el][all-the-icons]].
 ** Treemacs as a Framework
@@ -509,6 +513,11 @@ discoverability.
     :after (treemacs persp-mode) ;;or perspective vs. persp-mode
     :ensure t
     :config (treemacs-set-scope-type 'Perspectives))
+
+  (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+    :after (treemacs)
+    :ensure t
+    :config (treemacs-set-scope-type 'Tabs))
 #+END_SRC
 
 * Configuration
@@ -997,7 +1006,7 @@ into their own module in ~treemacs-icons.el~).
 If you want to delve into the treemacs' code base, check out [[https://github.com/Alexander-Miller/treemacs/wiki][the wiki]] for some general pointers.
 
 * Dependencies
- - emacs >= 26.1
+ - emacs >= 26.1 (>= 27.1 for tab-bar)
  - s
  - dash
  - cl-lib
