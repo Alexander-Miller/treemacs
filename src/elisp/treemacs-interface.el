@@ -1074,7 +1074,7 @@ Only works with a single project in the workspace."
          treemacs-persist-file
          nil :silent)
         (treemacs--restore)
-        (-if-let (ws (treemacs--select-workspace-by-name
+        (-if-let (ws (treemacs--find-workspace-by-name
                       (treemacs-workspace->name (treemacs-current-workspace))))
             (setf (treemacs-current-workspace) ws)
           (treemacs--find-workspace))

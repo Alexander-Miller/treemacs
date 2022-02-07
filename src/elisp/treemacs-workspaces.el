@@ -810,18 +810,27 @@ PROJECT: Project Struct"
      (--when-let (funcall fun)
        (treemacs-return it)))))
 
-(defun treemacs--select-workspace-by-name (&optional name)
-  "Interactively select the workspace with the given NAME."
+(defun treemacs--find-workspace-by-name (name)
+  "Find a workspace with the given NAME.
+Returns nil when there is no match."
   (treemacs--maybe-load-workspaces)
-  (if (= 1 (length treemacs--workspaces))
-      (car treemacs--workspaces)
-    (-let [name (or name
-                    (completing-read
-                     "Workspace: "
-                     (->> treemacs--workspaces
-                          (--map (cons (treemacs-workspace->name it) it)))))]
-      (--first (string= name (treemacs-workspace->name it))
-               treemacs--workspaces))))
+  (--first (string= name (treemacs-workspace->name it))
+           treemacs--workspaces))
+
+(defun treemacs--select-workspace-by-name ()
+  "Interactively select the workspace.
+Selection is based on the list of names of all workspaces and still happens
+when there is only one workspace."
+  (treemacs--maybe-load-workspaces)
+  (let (name)
+    (while (or (null name) (string-empty-p name))
+      (setf name (completing-read
+                  "Workspace: "
+                  (->> treemacs--workspaces
+                       (--map (cons (treemacs-workspace->name it) it)))
+                  nil :require-match)))
+    (--first (string= name (treemacs-workspace->name it))
+             treemacs--workspaces)))
 
 (defun treemacs--maybe-clean-buffers-on-workspace-switch (which)
   "Delete buffers depending on the value of WHICH.

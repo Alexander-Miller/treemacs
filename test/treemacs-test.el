@@ -1657,38 +1657,90 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
 
   (it "returns interactively chosen path for flattened nodes"
     (with-temp-buffer
-      (make-btn :collapsed '(2 "/a" "/a/b" "/a/b/c"))
+      (with-no-warnings (make-btn :collapsed '(2 "/a" "/a/b" "/a/b/c")))
       (spy-on #'completing-read :and-return-value "/a/b")
       (expect (treemacs--select-file-from-btn btn "prompt")
               :to-equal "/a/b")))
 
   (it "returns path when it is a directory"
     (with-temp-buffer
-      (make-btn)
+      (with-no-warnings (make-btn))
       (spy-on #'file-directory-p :and-return-value t)
       (expect (treemacs--select-file-from-btn btn "prompt")
               :to-equal "/a/b/c")))
 
   (it "returns parent path when path is file and dir-only is set"
     (with-temp-buffer
-      (make-btn)
+      (with-no-warnings (make-btn))
       (spy-on #'file-regular-p :and-return-value t)
       (expect (treemacs--select-file-from-btn btn "prompt" :dir-only)
               :to-equal "/a/b")))
 
   (it "returns path when it is a file and dir-only is not set"
     (with-temp-buffer
-      (make-btn)
+      (with-no-warnings (make-btn))
       (spy-on #'file-regular-p :and-return-value t)
       (expect (treemacs--select-file-from-btn btn "prompt" nil)
               :to-equal "/a/b/c")))
 
   (it "returns HOME when path is not a string"
     (with-temp-buffer
-      (make-btn :path '(a b c))
+      (with-no-warnings (make-btn :path '(a b c)))
       (spy-on #'file-regular-p :and-return-value t)
       (expect (treemacs--select-file-from-btn btn "prompt")
               :to-equal (expand-file-name "~")))) )
+
+(describe "treemacs--select-workspace-by-name"
+  (before-each
+    (spy-on #'treemacs--maybe-load-workspaces :and-return-value nil))
+
+  (it "returns match for only 1 workspace"
+    (spy-on #'completing-read :and-return-value "WS")
+    (let* ((ws (treemacs-workspace->create! :name "WS"))
+           (treemacs--workspaces (list ws)))
+      (expect (treemacs--select-workspace-by-name) :to-be ws)))
+
+  (it "returns match for more than 1 workspace"
+    (spy-on #'completing-read :and-return-value "WS2")
+    (let* ((ws1 (treemacs-workspace->create! :name "WS1"))
+           (ws2 (treemacs-workspace->create! :name "WS2"))
+           (treemacs--workspaces (list ws1 ws2)))
+      (expect (treemacs--select-workspace-by-name) :to-be ws2)))
+
+  (it "forces a name selection"
+    (spy-on #'completing-read :and-call-fake
+            (-let [c 0]
+              (lambda (&rest _)
+                (if (> c 3)
+                    "WS2"
+                  (cl-incf c)
+                  ""))))
+    (let* ((ws1 (treemacs-workspace->create! :name "WS1"))
+           (ws2 (treemacs-workspace->create! :name "WS2"))
+           (treemacs--workspaces (list ws1 ws2)))
+
+      (expect (treemacs--select-workspace-by-name) :to-be ws2))))
+
+(describe "treemacs--find-workspace-by-name"
+  (before-each
+    (spy-on #'treemacs--maybe-load-workspaces :and-return-value nil))
+
+  (it "returns match for only 1 workspace"
+    (let* ((ws (treemacs-workspace->create! :name "WS1"))
+           (treemacs--workspaces (list ws)))
+      (expect (treemacs--find-workspace-by-name "WS1") :to-be ws)))
+
+  (it "returns match for more than 1 workspace"
+    (let* ((ws1 (treemacs-workspace->create! :name "WS1"))
+           (ws2 (treemacs-workspace->create! :name "WS2"))
+           (treemacs--workspaces (list ws1 ws2)))
+      (expect (treemacs--find-workspace-by-name "WS2") :to-be ws2)))
+
+  (it "returns nil when there is no match"
+    (let* ((ws1 (treemacs-workspace->create! :name "WS1"))
+           (ws2 (treemacs-workspace->create! :name "WS2"))
+           (treemacs--workspaces (list ws1 ws2)))
+      (expect (treemacs--find-workspace-by-name "X") :to-be nil))))
 
 (provide 'test-treemacs)
 

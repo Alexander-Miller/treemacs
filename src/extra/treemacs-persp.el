@@ -82,7 +82,7 @@ necessary."
 Matching happens by name.  If no workspace can be found it will be created."
   (let* ((persp-name (treemacs-scope->current-scope-name
                       (treemacs-current-scope-type) (treemacs-current-scope)))
-         (workspace (or (treemacs--select-workspace-by-name persp-name)
+         (workspace (or (treemacs--find-workspace-by-name persp-name)
                         (treemacs-persp--create-workspace persp-name))))
     (setf (treemacs-current-workspace) workspace)
     (treemacs--invalidate-buffer-project-cache)
