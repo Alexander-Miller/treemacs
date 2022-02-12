@@ -142,7 +142,7 @@ find the key a command is bound to it will show a blank instead."
 
 %s              ^^^^^^^^│ %s              ^^^^^^^^^^^│ %s                     ^^^^^^│  %s
 ――――――――――――――――――――――――┼――――――――――――――――――――――――――――┼――――――――――――――――――――――――――――――┼――――――――――――――――――――――――――
-%s next Line        ^^^^│ %s dwim TAB            ^^^^│ %s follow mode           ^^^^│ %s add project
+%s next line        ^^^^│ %s dwim TAB            ^^^^│ %s follow mode           ^^^^│ %s add project
 %s prev line        ^^^^│ %s dwim RET            ^^^^│ %s filewatch mode        ^^^^│ %s remove project
 %s next neighbour   ^^^^│ %s open no split       ^^^^│ %s git mode              ^^^^│ %s rename project
 %s prev neighbour   ^^^^│ %s open horizontal     ^^^^│ %s show dotfiles         ^^^^│
