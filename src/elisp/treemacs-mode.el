@@ -225,7 +225,8 @@ Will be set by `treemacs--post-command'.")
                (doom-modeline-def-modeline 'treemacs '(bar " " major-mode))
                (doom-modeline 'treemacs))
               (t
-               '(" Treemacs ")))))
+               '(:eval (format " Treemacs: %s"
+                               (treemacs-workspace->name (treemacs-current-workspace))))))))
 
 (defun treemacs--post-command ()
   "Set the default directory to the nearest directory of the current node.
