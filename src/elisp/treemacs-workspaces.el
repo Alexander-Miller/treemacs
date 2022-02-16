@@ -27,6 +27,7 @@
 (require 'treemacs-core-utils)
 (require 'treemacs-dom)
 (require 'treemacs-scope)
+(require 'treemacs-customization)
 
 (eval-when-compile
   (require 'cl-lib)
