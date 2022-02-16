@@ -38,7 +38,7 @@
 
 (cl-defmethod treemacs-scope->current-scope ((_ (subclass treemacs-tab-bar-scope)))
   "Get the current tab as scope.
-Returns the symbol `none' if tab-bar-mode is not active."
+Returns the symbol `none' if `tab-bar-mode' is not active."
   (if tab-bar-mode
       (cdr (assq 'name (tab-bar-get-buffer-tab nil)))
     'none))
@@ -68,7 +68,7 @@ Will return \"No Tab\" if no tab is active."
         (delete #'treemacs-tab-bar--on-tab-close tab-bar-tab-pre-close-functions)))
 
 (defun treemacs-tab-bar--on-tab-close (tab &rest _)
-  "Cleanup hook to run when a tab is closed."
+  "Cleanup hook to run when a TAB is closed."
   (treemacs--on-scope-kill (cdr (assq 'name tab))))
 
 (defun treemacs-tab-bar--on-tab-switch (&rest _)
