@@ -50,6 +50,7 @@ ELS += $(EXTRA_DIR)/treemacs-magit.el
 ELS += $(EXTRA_DIR)/treemacs-persp.el
 ELS += $(EXTRA_DIR)/treemacs-perspective.el
 ELS += $(EXTRA_DIR)/treemacs-projectile.el
+ELS += $(EXTRA_DIR)/treemacs-tab-bar.el
 ELCS = $(ELS:.el=.elc)
 
 .PHONY: test compile checkdoc clean lint prepare clean-start .prepare-lint
