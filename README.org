@@ -118,7 +118,7 @@ If you don't care about reading the full readme here's a list of some bare bones
    treemacs.
  * Treemacs doesn't bind any global keys, you need to use whatever fits you best. A full install setup can be found
    [[#installation][below]]. Otherwise just add a keybind for ~treemacs~.
- * For navigation use n/p (j/k when evil), M-n/M-p to move to same-height neighbour u to go to parent, and C-n/C-k to
+ * For navigation use n/p (j/k when evil), M-n/M-p to move to same-height neighbour, u to go to parent, and C-j/C-k to
    move between projects.
  * There's half a dozen different ways to open nodes, all bound under o as prefix. Pick your favourite.
  * TAB and RET are particularly configurable. See ~treemacs-TAB/RET-actions-config~.
