@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'dash)
+(require 'tab-bar)
 (require 'treemacs)
 
 (eval-when-compile
