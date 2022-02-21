@@ -54,7 +54,8 @@ Will return \"No Tab\" if no tab is active."
 
 (cl-defmethod treemacs-scope->setup ((_ (subclass treemacs-tab-bar-scope)))
   "Tabs-scope setup."
-  (advice-add #'tab-bar-tabs-set :after #'treemacs-tab-bar--on-tab-switch)
+  (when (fboundp 'tab-bar-tabs-set)
+    (advice-add #'tab-bar-tabs-set :after #'treemacs-tab-bar--on-tab-switch))
   (advice-add #'tab-bar-select-tab :after #'treemacs-tab-bar--on-tab-switch)
   (add-to-list 'tab-bar-tab-post-open-functions #'treemacs-tab-bar--on-tab-switch)
   (add-to-list 'tab-bar-tab-pre-close-functions #'treemacs-tab-bar--on-tab-close)
@@ -62,7 +63,8 @@ Will return \"No Tab\" if no tab is active."
 
 (cl-defmethod treemacs-scope->cleanup ((_ (subclass treemacs-tab-bar-scope)))
   "Tabs-scope tear-down."
-  (advice-remove #'tab-bar-tabs-set #'treemacs-tab-bar--on-tab-switch)
+  (when (fboundp 'tab-bar-tabs-set)
+    (advice-remove #'tab-bar-tabs-set #'treemacs-tab-bar--on-tab-switch))
   (advice-remove #'tab-bar-select-tab #'treemacs-tab-bar--on-tab-switch)
   (setq tab-bar-tab-post-open-functions
         (delete #'treemacs-tab-bar--on-tab-switch tab-bar-tab-post-open-functions))
