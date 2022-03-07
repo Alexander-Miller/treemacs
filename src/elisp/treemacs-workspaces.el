@@ -109,7 +109,7 @@ To be called whenever a project or workspace changes."
 (defun treemacs--current-builtin-project-function ()
   "Find the current project.el project."
   (declare (side-effect-free t))
-  (-some-> (project-current) (cdr) (file-truename) (treemacs-canonical-path)))
+  (-some-> (project-current) (project-root) (file-truename) (treemacs-canonical-path)))
 
 (defun treemacs--current-directory-project-function ()
   "Find the current working directory."
