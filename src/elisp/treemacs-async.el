@@ -196,7 +196,7 @@ GIT-FUTURE: Pfuture"
   "Start a simple git status process for files under PATH."
   (let* ((default-directory (file-truename path))
          (process-environment (cons "GIT_OPTIONAL_LOCKS=0" process-environment))
-         (future (pfuture-new "git" "status" "--porcelain" "--ignored" "-z" ".")))
+         (future (pfuture-new "git" "status" "--porcelain" "--ignored=matching" "-z" ".")))
     (process-put future 'default-directory default-directory)
     future))
 

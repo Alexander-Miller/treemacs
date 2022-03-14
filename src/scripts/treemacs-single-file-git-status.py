@@ -10,7 +10,7 @@ FILE = sys.argv[1]
 OLD_STATE = sys.argv[2]
 PARENTS = [p for p in sys.argv[3:]]
 
-FILE_STATE_CMD = "git status --porcelain --ignored "
+FILE_STATE_CMD = "git status --porcelain --ignored=matching "
 IS_IGNORED_CMD = "git check-ignore "
 IS_TRACKED_CMD = "git ls-files --error-unmatch "
 IS_CHANGED_CMD = "git diff-index --quiet HEAD "
