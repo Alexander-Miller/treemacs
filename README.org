@@ -186,8 +186,8 @@ indentation is caused by ~org-indent-mode~)
 If a strict workspace and project structure, as described above, is too stringent for your use-case there are multiple
 other ways to use treemacs in a more "free-form" style:
 
-- You can use ~treemacs-display-current-project-exclusively~ to switch to the current project (deleting any others that
-  might be present).
+- You can use ~treemacs-display-current-project-exclusively~ to display only the current project (removing all other
+  projects from the workspace).
 - You can enable ~treemacs-project-follow-mode~ to make treemacs automatically switch to the project for the current
   buffer.
 - As long as there is exactly /a single project/ in your workspace you can also use ~M-H~ and ~M-L~ (or
