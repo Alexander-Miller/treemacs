@@ -16,7 +16,7 @@ import sys
 
 GIT_ROOT     = str.encode(sys.argv[1])
 LIMIT        = int(sys.argv[2])
-GIT_CMD      = "git status --porcelain --ignored . " + sys.argv[3]
+GIT_CMD      = "git status --porcelain --ignored=matching . " + sys.argv[3]
 STDOUT       = sys.stdout.buffer
 RECURSE_DIRS = set([str.encode(it[(len(GIT_ROOT)):]) + b"/" for it in sys.argv[4:]]) if len(sys.argv) > 4 else []
 QUOTE        = b'"'
