@@ -148,7 +148,6 @@
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "fsharp" :v-adjust 0 :face 'all-the-icons-lblue) treemacs-all-the-icons-tab) :extensions ("fsharp") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "godot" :v-adjust 0 :face 'all-the-icons-dblue) treemacs-all-the-icons-tab) :extensions ("gdscript") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "git" :height 0.85 :v-adjust 0 :face 'all-the-icons-red) treemacs-all-the-icons-tab) :extensions ("gitmodules" "gitconfig" "gitignore" "gitattributes") :fallback 'same-as-icon)
-    (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "gradle" :v-adjust 0 :face 'all-the-icons-dblue) treemacs-all-the-icons-tab) :extensions ("gradle") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "graphql" :v-adjust 0 :face 'all-the-icons-pink) treemacs-all-the-icons-tab) :extensions ("graphql") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-fileicon "jenkins" :v-adjust 0 :face 'all-the-icons-lsilver) treemacs-all-the-icons-tab) :extensions ("jenkins") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (all-the-icons-alltheicon "java" :v-adjust 0 :face 'all-the-icons-orange) treemacs-all-the-icons-tab) :extensions ("jar") :fallback 'same-as-icon)
