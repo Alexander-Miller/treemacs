@@ -220,7 +220,10 @@ will likewise be updated."
           (-let [treemacs-silent-refresh t]
             (treemacs-run-in-every-buffer
              (treemacs--on-rename old-path new-path treemacs-filewatch-mode)
-             (treemacs-update-node (treemacs-button-get parent :path)))))
+             ;; save-excursion does not work for whatever reason
+             (-let [p (point)]
+               (treemacs-do-update-node (treemacs-button-get parent :path))
+               (goto-char p)))))
          (treemacs--reload-buffers-after-rename old-path new-path)
          (run-hook-with-args
           'treemacs-rename-file-functions
