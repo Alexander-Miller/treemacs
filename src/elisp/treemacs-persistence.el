@@ -86,7 +86,7 @@ SELF: Treemacs-Iter struct."
 
 (define-inline treemacs--should-not-run-persistence? ()
   "No saving and loading in noninteractive and CI environments."
-  (inline-quote (or noninteractive (getenv "CI"))))
+  (inline-quote (or noninteractive (getenv "CI") (null treemacs-persist-file))))
 
 (defun treemacs--read-workspaces (iter)
   "Read a list of workspaces from the lines in ITER.

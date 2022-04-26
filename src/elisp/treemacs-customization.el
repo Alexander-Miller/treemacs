@@ -572,7 +572,8 @@ Can be set to nil to use the default value."
 
 (defcustom treemacs-persist-file
   (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-  "Path to the file treemacs uses to persist its state."
+  "Path to the file treemacs uses to persist its state.
+Can be set to nil to disable workspace persistence."
   :group 'treemacs
   :type 'string)
 
