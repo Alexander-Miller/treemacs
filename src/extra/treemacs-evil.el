@@ -82,6 +82,7 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
 (define-key evil-treemacs-state-map (kbd "tf")  #'treemacs-follow-mode)
 (define-key evil-treemacs-state-map (kbd "ta")  #'treemacs-filewatch-mode)
 (define-key evil-treemacs-state-map (kbd "tg")  #'treemacs-git-mode)
+(define-key evil-treemacs-state-map (kbd "tc")  #'treemacs-indicate-top-scroll-mode)
 (define-key evil-treemacs-state-map (kbd "tn")  #'treemacs-indent-guide-mode)
 (define-key evil-treemacs-state-map (kbd "w")   #'treemacs-set-width)
 (define-key evil-treemacs-state-map (kbd ">")   #'treemacs-increase-width)

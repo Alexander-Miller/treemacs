@@ -431,6 +431,7 @@ discoverability.
             treemacs-find-workspace-method           'find-for-file-or-pick-first
             treemacs-git-command-pipe                ""
             treemacs-goto-tag-strategy               'refetch-index
+            treemacs-header-scroll-indicators        '(nil . "^^^^^^")'
             treemacs-indentation                     2
             treemacs-indentation-string              " "
             treemacs-is-never-other-window           nil
@@ -593,6 +594,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-text-scale                      | nil                                              | Scaling for text in treemacs, used via ~text-scale-increase~.                                                                                                                                                                        |
 | treemacs-indent-guide-style              | line                                             | Appearance option for ~treemacs-indent-guide~, either a thin line or a thick block.                                                                                                                                                  |
 | treemacs-find-workspace-method           | 'find-for-file-or-pick-first                     | Determines how treemacs selects the workspace when it first starts.                                                                                                                                                                  |
+| treemacs-header-scroll-indicators        | '(nil . "^^^^^^")                                | Indicators used for ~treemacs-indicate-top-scroll-mode~.                                                                                                                                                                             |
 
 ** Faces
 Treemacs defines and uses the following faces:

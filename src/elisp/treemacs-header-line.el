@@ -116,6 +116,34 @@ Consists for 4 different buttons:
 - `treemacs-header-workspace-button'
 - `treemacs-header-toggles-button'")
 
+(defun treemacs--header-top-scroll-indicator ()
+  "Determine header line for `treemacs-indicate-top-scroll-mode'."
+  (if (= (window-start) (point-min))
+      (car treemacs-header-scroll-indicators)
+    (cdr treemacs-header-scroll-indicators)))
+
+;;;###autoload
+(define-minor-mode treemacs-indicate-top-scroll-mode
+  "Minor mode which shows whether treemacs is scrolled all the way to the top.
+
+When this mode is enabled the header line of the treemacs window will display
+whether the window's first line is visible or not.
+
+The strings used for the display are determined by
+`treemacs-header-scroll-indicators'.
+
+This mode makes use of `treemacs-user-header-line-format' - and thus
+`header-line-format' - and is therefore incompatible with other modifications to
+these options."
+  :init-value nil
+  :global t
+  :group 'treemacs
+  (setf treemacs-user-header-line-format
+        (when treemacs-indicate-top-scroll-mode
+          '("%e" (:eval (treemacs--header-top-scroll-indicator)))))
+  (treemacs-run-in-every-buffer
+   (setf header-line-format treemacs-user-header-line-format)))
+
 (provide 'treemacs-header-line)
 
 ;;; treemacs-header-line.el ends here

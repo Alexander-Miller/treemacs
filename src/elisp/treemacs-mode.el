@@ -130,6 +130,7 @@ Will be set by `treemacs--post-command'.")
     (define-key map (kbd "f")        'treemacs-follow-mode)
     (define-key map (kbd "a")        'treemacs-filewatch-mode)
     (define-key map (kbd "n")        'treemacs-indent-guide-mode)
+    (define-key map (kbd "c")        'treemacs-indicate-top-scroll-mode)
     map)
   "Keymap for commands that toggle state in `treemacs-mode'.")
 

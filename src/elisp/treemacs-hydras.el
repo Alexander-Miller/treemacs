@@ -51,6 +51,9 @@
 (treemacs-import-functions-from "treemacs-peek-mode"
   treemacs-peek-mode)
 
+(treemacs-import-functions-from "treemacs-header-line"
+  treemacs-indicate-top-scroll-mode)
+
 (cl-defun treemacs--find-keybind (func &optional (pad 8))
   "Find the keybind for FUNC in treemacs.
 Return of cons of the key formatted for inclusion in the hydra string, including
@@ -124,6 +127,7 @@ find the key a command is bound to it will show a blank instead."
              (key-open-close     (treemacs--find-keybind #'treemacs-visit-node-close-treemacs))
              (key-close-above    (treemacs--find-keybind #'treemacs-collapse-parent-node))
              (key-follow-mode    (treemacs--find-keybind #'treemacs-follow-mode))
+             (key-header-mode    (treemacs--find-keybind #'treemacs-indicate-top-scroll-mode))
              (key-fringe-mode    (treemacs--find-keybind #'treemacs-fringe-indicator-mode))
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
              (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
@@ -150,7 +154,7 @@ find the key a command is bound to it will show a blank instead."
 %s down next window ^^^^│ %s open ace            ^^^^│ %s resizability          ^^^^│
 %s up next window   ^^^^│ %s open ace horizontal ^^^^│ %s fringe indicator      ^^^^│
 %s root up          ^^^^│ %s open ace vertical   ^^^^│ %s indent guide          ^^^^│
-%s root down        ^^^^│ %s open mru window     ^^^^│                              │
+%s root down        ^^^^│ %s open mru window     ^^^^│ %s top scroll indicator  ^^^^│
                         │ %s open externally     ^^^^│                              │
                         │ %s open close treemacs ^^^^│                              │
                         │ %s close parent        ^^^^│                              │
@@ -166,7 +170,7 @@ find the key a command is bound to it will show a blank instead."
                (car key-down-next-w)    (car key-open-ace)    (car key-toggle-width)
                (car key-up-next-w)      (car key-open-ace-h)  (car key-fringe-mode)
                (car key-root-up)        (car key-open-ace-v)  (car key-indent-guide)
-               (car key-root-down)      (car key-open-mru)
+               (car key-root-down)      (car key-open-mru)    (car key-header-mode)
                                         (car key-open-ext)
                                         (car key-open-close)
                                         (car key-close-above))))
@@ -196,6 +200,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-open-close)     #'treemacs-visit-node-close-treemacs)
               (,(cdr key-close-above)    #'treemacs-collapse-parent-node)
               (,(cdr key-follow-mode)    #'treemacs-follow-mode)
+              (,(cdr key-header-mode)    #'treemacs-indicate-top-scroll-mode)
               (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
               (,(cdr key-show-gitignore) #'treemacs-hide-gitignored-files-mode)
               (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)

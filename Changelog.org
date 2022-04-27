@@ -15,6 +15,7 @@
 - Added ~detailed~ option for ~treemacs-eldoc-display~
 - Added ~treemacs-select-directory~
 - Added option to select workspace when starting/selecting treemacs
+- Added ~treemacs-indicate-top-scroll-mode~
 - Promoted peeking into a proper minor mode
 ** v2.9
 - Published ~treemacs-all-the-icons~

@@ -819,6 +819,13 @@ negative values are possible."
   :type 'integer
   :group 'treemacs-window)
 
+(defcustom treemacs-header-scroll-indicators '(nil . "^^^^^^")
+  "The strings used for `treemacs-indicate-top-scroll-mode'.
+The value must be a cons, where the car is the string used when treemacs is
+scrolled all the way to the top, and the cdr is used when it isn't."
+  :type '(cons string string)
+  :group 'treemacs-window)
+
 (defcustom treemacs-select-when-already-in-treemacs 'move-back
   "How `treemacs-select-window' behaves when treemacs is already selected.
 
