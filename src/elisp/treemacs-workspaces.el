@@ -64,6 +64,9 @@
 (treemacs-import-functions-from "treemacs-async"
   treemacs--prefetch-gitignore-cache)
 
+(treemacs-import-functions-from "project"
+  project-root)
+
 (cl-defstruct (treemacs-project
                (:conc-name treemacs-project->)
                (:constructor treemacs-project->create!))
