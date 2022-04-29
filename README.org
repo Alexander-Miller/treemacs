@@ -720,8 +720,8 @@ files with ~auto-mode-alist~ would look like this:
 #+BEGIN_SRC emacs-lisp
   (treemacs-map-icons-with-auto-mode-alist
    '(".cc" ".hh")
-   '((c-mode   . (treemacs-get-icon-value "c"))
-     (c++-mode . (treemacs-get-icon-value "cpp"))))
+   `((c-mode   . ,(treemacs-get-icon-value "c"))
+     (c++-mode . ,(treemacs-get-icon-value "cpp"))))
 #+END_SRC
 
 **** GUI vs TUI

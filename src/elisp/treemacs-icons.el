@@ -560,15 +560,14 @@ EXTENSIONS should be a list of file extensions such that they match the regex
 stored in `auto-mode-alist', for example '\(\".cc\"\).
 MODE-ICON-ALIST is an alist that maps which mode from `auto-mode-alist' should
 be assigned which treemacs icon, for example
-'\(\(c-mode . treemacs-icon-c\)
-  \(c++-mode . treemacs-icon-cpp\)\)"
+`((c-mode . ,(treemacs-get-icon-value \"c\"))
+  (c++-mode . ,(treemacs-get-icon-value \"cpp\")))"
   (dolist (extension extensions)
     (-when-let* ((mode (cdr (--first (s-matches? (car it) extension) auto-mode-alist)))
                  (icon (cdr (assq mode mode-icon-alist))))
-      (treemacs-log "Map %s to %s" extension (symbol-name icon))
       (ht-set! (treemacs-theme->gui-icons treemacs--current-theme)
                (substring extension 1)
-               (symbol-value icon)))))
+               icon))))
 
 (treemacs-only-during-init
   (treemacs-load-theme "Default"))
