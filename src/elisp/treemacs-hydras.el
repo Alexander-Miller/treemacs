@@ -42,7 +42,8 @@
   treemacs-create-dir
   treemacs-copy-file
   treemacs-move-file
-  treemacs-delete-file)
+  treemacs-delete-file
+  treemacs-bulk-file-actions)
 
 (treemacs-import-functions-from "treemacs-hydras"
   treemacs--common-helpful-hydra/body
@@ -265,21 +266,22 @@ find the key a command is bound to it will show a blank instead."
              (key-line-up        (treemacs--find-keybind #'treemacs-previous-line-other-window 10))
              (key-page-down      (treemacs--find-keybind #'treemacs-next-page-other-window 10))
              (key-page-up        (treemacs--find-keybind #'treemacs-previous-page-other-window 10))
+             (key-bulk-actions   (treemacs--find-keybind #'treemacs-bulk-file-actions))
              (hydra-str
               (format
                "
 %s
 %s (%s)
 
-%s     ^^^^^^^^^^^^^│ %s                  ^^^^^^^^│ %s      ^^^^^^^^^^^│ %s
-――――――――――――――――――――┼―――――――――――――――――――――――――――――┼――――――――――――――――――――┼――――――――――――――――――――――
- %s create file ^^^^│ %s Edit Workspaces  ^^^^^^^^│ %s peek      ^^^^^^│ %s refresh
- %s create dir  ^^^^│ %s Create Workspace ^^^^^^^^│ %s line down ^^^^^^│ %s (re)set width
- %s rename      ^^^^│ %s Remove Workspace ^^^^^^^^│ %s line up   ^^^^^^│ %s copy path absolute
- %s delete      ^^^^│ %s Rename Workspace ^^^^^^^^│ %s page down ^^^^^^│ %s copy path relative
- %s copy        ^^^^│ %s Switch Workspace ^^^^^^^^│ %s page up   ^^^^^^│ %s copy root path
- %s move        ^^^^│ %s Next Workspace   ^^^^^^^^│                    │ %s re-sort
-                    │ %s Set Fallback     ^^^^^^^^│                    │ %s bookmark
+%s      ^^^^^^^^^^^^^│ %s                  ^^^^^^^^│ %s      ^^^^^^^^^^^│ %s
+―――――――――――――――――――――┼―――――――――――――――――――――――――――――┼――――――――――――――――――――┼――――――――――――――――――――――
+ %s create file  ^^^^│ %s Edit Workspaces  ^^^^^^^^│ %s peek      ^^^^^^│ %s refresh
+ %s create dir   ^^^^│ %s Create Workspace ^^^^^^^^│ %s line down ^^^^^^│ %s (re)set width
+ %s rename       ^^^^│ %s Remove Workspace ^^^^^^^^│ %s line up   ^^^^^^│ %s copy path absolute
+ %s delete       ^^^^│ %s Rename Workspace ^^^^^^^^│ %s page down ^^^^^^│ %s copy path relative
+ %s copy         ^^^^│ %s Switch Workspace ^^^^^^^^│ %s page up   ^^^^^^│ %s copy root path
+ %s move         ^^^^│ %s Next Workspace   ^^^^^^^^│                    │ %s re-sort
+ %s bulk actions ^^^^│ %s Set Fallback     ^^^^^^^^│                    │ %s bookmark
 
 "
                title
@@ -291,7 +293,7 @@ find the key a command is bound to it will show a blank instead."
                (car key-delete)       (car key-rename-ws)   (car key-page-down) (car key-copy-path-rel)
                (car key-copy-file)    (car key-switch-ws)   (car key-page-up)   (car key-copy-root)
                (car key-move-file)    (car key-next-ws)                         (car key-resort)
-                                      (car key-fallback-ws)                     (car key-bookmark))))
+               (car key-bulk-actions) (car key-fallback-ws)                     (car key-bookmark))))
           (eval
            `(defhydra treemacs--advanced-helpful-hydra (:exit nil :hint nil :columns 3)
               ,hydra-str
@@ -321,6 +323,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-line-up)        #'treemacs-previous-line-other-window)
               (,(cdr key-page-down)      #'treemacs-next-page-other-window)
               (,(cdr key-page-up)        #'treemacs-previous-previous-other-window)
+              (,(cdr key-bulk-actions)   #'treemacs-bulk-file-actions)
               ("<escape>" nil "Exit"))))
         (treemacs--advanced-helpful-hydra/body))
     (treemacs-log-failure "The helpful hydra cannot be summoned without an existing treemacs buffer.")))
