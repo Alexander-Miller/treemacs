@@ -435,10 +435,11 @@ This pattern is oftentimes used in treemacs, see also `treemacs-return-if',
 LEFT is a file path, OP is the operator and RIGHT is either a path, project, or
 workspace.  OP can be one of the following:
 
- * `:same-as' will check for string equality
+ * `:same-as' will check for string equality.
  * `:in' will check will check whether LEFT is a child or the same as RIGHT.
- * `:parent-of' will check whether LEFT is a parent of, and not equal to, RIGHT
- * `:in-project' will check whether LEFT is part of the project RIGHT
+ * `:directly-in' will check will check whether LEFT is *direct* child of RIGHT.
+ * `:parent-of' will check whether LEFT is a parent of, and not equal to, RIGHT.
+ * `:in-project' will check whether LEFT is part of the project RIGHT.
  * `:in-workspace' will check whether LEFT is part of the workspace RIGHT and
    return the appropriate project when it is.  If RIGHT is not given it will
    default to calling `treemacs-current-workspace'.
@@ -449,10 +450,10 @@ also `treemacs-canonical-path').
 Even if LEFT or RIGHT should be a form and not a variable it is guaranteed that
 they will be evaluated only once."
   (declare (debug (&rest form)))
-  (treemacs-static-assert (memq op '(:same-as :in :parent-of :in-project :in-workspace))
+  (treemacs-static-assert (memq op '(:same-as :in :directly-in :parent-of :in-project :in-workspace))
     "Invalid treemacs-is-path operator: `%s'" op)
   (treemacs-static-assert (or (eq op :in-workspace) right)
-    ":in-workspace operator requires right-side argument.")
+    "Right-side argument is required")
   (macroexp-let2* nil
       ((left left)
        (right right))
@@ -462,6 +463,11 @@ they will be evaluated only once."
       (:in
        `(or (string= ,left ,right)
             (s-starts-with? (treemacs--add-trailing-slash ,right) ,left)))
+      (:directly-in
+       `(let ((l (length ,right)))
+          (and (> (length ,left) l)
+               (string= (treemacs--filename ,left) (substring ,left (1+ l)))
+               (string-prefix-p ,right ,left))))
       (:parent-of
        `(and (s-starts-with? (treemacs--add-trailing-slash ,left) ,right)
              (not (string= ,left ,right))))

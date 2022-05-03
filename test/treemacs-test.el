@@ -78,6 +78,38 @@
             (parent "~/A/prefix2"))
         (expect (treemacs-is-path path :in parent) :not :to-be-truthy))))
 
+  (describe ":directly-in matcher"
+
+    (it "identifies direct parent"
+      (let ((path "~/A/B/c")
+            (parent "~/A/B"))
+        (expect (treemacs-is-path path :directly-in parent) :to-be-truthy)))
+
+    (it "rejects indirect parent"
+      (let ((path "~/A/B/c")
+            (parent "~/A"))
+        (expect (treemacs-is-path path :directly-in parent) :to-be nil)))
+
+    (it "rejects non-parent"
+      (let ((path "~/A/B/c")
+            (parent "x"))
+        (expect (treemacs-is-path path :directly-in parent) :to-be nil)))
+
+    (it "rejects non-parent with same length as parent"
+      (let ((path "~/A/B/c")
+            (parent "~/A/X"))
+        (expect (treemacs-is-path path :directly-in parent) :to-be nil)))
+
+    (it "rejects non-parent with similar preix"
+      (let ((path "~/A/prefix1")
+            (parent "~/A/prefix2"))
+        (expect (treemacs-is-path path :directly-in parent) :to-be nil)))
+
+    (it "rejects shorter path than parent"
+      (let ((path "~/A")
+            (parent "~/A/B/C"))
+        (expect (treemacs-is-path path :directly-in parent) :to-be nil))))
+
   (describe ":in-project matcher"
 
     (it "Identifies that a path is in a project"
@@ -1933,15 +1965,6 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
         (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal)))
           (treemacs-remove-annotation-suffix "Path" "Source")
           (expect (ht-size treemacs--annotation-store) :to-equal 0)))
-
-      (it "sets deleted flag after removing the last suffix"
-        (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
-              (ann (treemacs-annotation->create!)))
-          (ht-set! treemacs--annotation-store "Path" ann)
-          (treemacs-set-annotation-suffix "Path" "Suffix" "Source")
-          (treemacs-remove-annotation-suffix "Path" "Source")
-          (expect (ht-get treemacs--annotation-store "Path") :to-be ann)
-          (expect (treemacs-annotation->suffix ann) :to-equal 'deleted)))
 
       (it "leaves suffixes from other sources"
         (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))

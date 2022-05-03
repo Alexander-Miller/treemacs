@@ -93,6 +93,19 @@ is a marker pointing to POS."
   (inline-letevals (pos)
     (inline-quote (copy-marker ,pos t))))
 
+(define-inline treemacs--button-in-line (pos)
+  "Return the button in the line at POS in the current buffer, or nil.
+If the button at POS is a text property button, the return value
+is a marker pointing to POS."
+  (inline-letevals (pos)
+    (inline-quote
+     (save-excursion
+       (goto-char ,pos)
+       (copy-marker
+        (next-single-property-change
+         (line-beginning-position) 'button nil (line-end-position))
+        t)))))
+
 (define-inline treemacs--current-screen-line ()
   "Get the current screen line in the selected window."
   (declare (side-effect-free t))
