@@ -478,7 +478,7 @@ set to PARENT."
             0
             (length it)
             'face
-            (if-let* ((ann (treemacs-get-annotation (concat ,root "/" it))))
+            (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
                 (treemacs-annotation->face-value ann)
               'treemacs-directory-face)
             it))
@@ -490,7 +490,7 @@ set to PARENT."
             0
             (length it)
             'face
-            (if-let* ((ann (treemacs-get-annotation (concat ,root "/" it))))
+            (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
                 (treemacs-annotation->face-value ann)
               'treemacs-git-unmodified-face)
             it))

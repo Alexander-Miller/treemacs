@@ -381,7 +381,7 @@ run because the git cache has yet to be filled."
       (treemacs-run-in-every-buffer
        (treemacs-save-position
         (dolist (file ignored-files)
-          (when-let (treemacs-is-path-visible? file)
+          (-when-let (treemacs-is-path-visible? file)
             (treemacs-do-delete-single-node file))))))))
 
 (define-minor-mode treemacs-git-mode

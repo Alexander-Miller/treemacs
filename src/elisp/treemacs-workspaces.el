@@ -827,7 +827,7 @@ Selection is based on the list of names of all workspaces and still happens
 when there is only one workspace."
   (treemacs--maybe-load-workspaces)
   (let (name)
-    (while (or (null name) (string-empty-p name))
+    (while (or (null name) (string= "" name))
       (setf name (completing-read
                   "Workspace: "
                   (->> treemacs--workspaces
