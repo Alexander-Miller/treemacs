@@ -296,8 +296,8 @@ OVERRIDE-STATUS: Boolean"
 (define-inline treemacs--git-face-quick-change (path git-face &optional git-cache)
   "Quick-change of PATH's GIT-FACE.
 Updates the visible face and git-cache + annotation store entries.  GIT-CACHE
-might be already known or not. If not it will be pulled from BTN's parent.  Used
-when asynchronous processes report back git changes."
+might be already known or not.  If not it will be pulled from BTN's parent.
+Used when asynchronous processes report back git changes."
   (inline-letevals (path git-face git-cache)
     (inline-quote
      (let ((git-cache (or ,git-cache

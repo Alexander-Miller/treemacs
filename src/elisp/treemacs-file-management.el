@@ -130,7 +130,7 @@ For marking files see `treemacs-bulk-file-actions'."
      (treemacs-error-return-if (null treemacs--marked-paths)
        "There are no marked files")
 
-     (unless (yes-or-no-p (format "Really delete %s marked files"
+     (unless (yes-or-no-p (format "Really delete %s marked files?"
                                   (length to-delete)))
        (treemacs-return (treemacs-log "Cancelled.")))
 
@@ -190,7 +190,15 @@ For marking files see `treemacs-bulk-file-actions'."
      prompt
      flat-prompt
      finish-verb)
-  "Internal implementation for copying and moving files."
+  "Internal implementation for copying and moving files.
+
+ACTION: either `copy' or `move'
+NO-NODE-MSG: error message in case there is no node in the current line
+WRONG-TYPE-MSG: error message in case current node is not a file
+ACTION-FN: function to actually copy or move a file
+PROMPT: prompt to read the target directory
+FLAT-PROMPT: prompt to select source file when node is flattened
+FINISH-VERB: finisher for the success message."
   (treemacs-block
    (let ((btn (treemacs-current-button)))
      (treemacs-error-return-if (null btn)
@@ -265,7 +273,11 @@ For marking files see `treemacs-bulk-file-actions'."
      action-fn
      prompt
      finish-verb)
-  "Internal implementation for bulk-copying and -moving files."
+  "Internal implementation for bulk-copying and -moving files.
+ACTION: either `copy' or `move'
+ACTION-FN: function to actually copy or move a file
+PROMPT: prompt to read the target directory
+FINISH-VERB: finisher for the success message."
   (treemacs-block
    (let* ((to-move (-filter #'file-exists-p treemacs--marked-paths))
           (destination-dir (treemacs--canonical-path
@@ -380,7 +392,7 @@ will likewise be updated."
 
 ;;;###autoload
 (defun treemacs-mark-or-unmark-path-at-point ()
-  "Marks or unmarks the absolute path of the node at point."
+  "Mark or unmark the absolute path of the node at point."
   (interactive)
   (treemacs-block
    (-let [path (treemacs--prop-at-point :path)]
@@ -404,7 +416,7 @@ will likewise be updated."
 
 ;;;###autoload
 (defun treemacs-reset-marks ()
-  "Removes all previously made marks in the current buffer."
+  "Unmark all previously marked files in the current buffer."
   (interactive)
   (let ((count (length treemacs--marked-paths))
         (projects))
@@ -418,6 +430,7 @@ will likewise be updated."
 
 ;;;###autoload
 (defun treemacs-delete-marked-paths ()
+  "Delete all previously marked files."
   (interactive)
   (treemacs-save-position
    (when (yes-or-no-p
@@ -452,8 +465,8 @@ This interface allows to quickly (unmark) files, so as to copy, move or delete
 them in bulk.
 
 Note that marking files is *permanent*, files will stay marked until they are
-either manually unmarked or deleted. You can show a list of all currently marked
-files with `treemacs-show-marked-files' or `s' in the hydra."
+either manually unmarked or deleted.  You can show a list of all currently
+marked files with `treemacs-show-marked-files' or `s' in the hydra."
   (interactive)
   (treemacs-bulk-file-actions-hydra/body))
 
