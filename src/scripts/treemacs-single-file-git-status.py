@@ -14,7 +14,7 @@ PARENTS = [p for p in sys.argv[3:]]
 FILE_STATE_CMD = "git status --porcelain --ignored=matching "
 IS_IGNORED_CMD = "git check-ignore "
 IS_TRACKED_CMD = "git ls-files --error-unmatch "
-IS_CHANGED_CMD = "git diff-index --quiet HEAD "
+IS_CHANGED_CMD = "git ls-files --modified --others --exclude-standard "
 
 def face_for_status(path, status):
     if status == "M":
@@ -73,7 +73,7 @@ def main():
             propagate_state = "?"
             result_list.append((path, propagate_state))
             break
-        elif changed_proc.wait() == 1:
+        elif (changed_proc.wait() == 0 and changed_proc.stdout.read1() != b''):
             result_list.append((path, "M"))
         else:
             result_list.append((path, "0"))
@@ -92,7 +92,7 @@ def main():
 def add_git_processes(status_listings, path):
     ignored_proc = Popen(IS_IGNORED_CMD + path, shell=True, stdout=DEVNULL, stderr=DEVNULL)
     tracked_proc = Popen(IS_TRACKED_CMD + path, shell=True, stdout=DEVNULL, stderr=DEVNULL)
-    changed_proc = Popen(IS_CHANGED_CMD + path, shell=True, stdout=DEVNULL, stderr=DEVNULL)
+    changed_proc = Popen(IS_CHANGED_CMD + path, shell=True, stdout=PIPE,    stderr=DEVNULL)
 
     status_listings.append((path, ignored_proc, tracked_proc, changed_proc))
 
