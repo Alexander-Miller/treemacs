@@ -174,8 +174,10 @@ TARGET-POS: End position of the mouse drag."
       (treemacs--without-filewatch
        (rename-file source-key target-file))
       (run-hook-with-args 'treemacs-copy-file-functions source-key target-dir)
+      (treemacs-do-insert-single-node target-file target-dir)
+      (treemacs-update-single-file-git-state source-key)
+      (treemacs-update-single-file-git-state target-file)
       (treemacs--on-file-deletion source-key)
-      (treemacs-update-node target-dir)
       (treemacs-goto-file-node target-file)
       (treemacs-pulse-on-success "Moved %s to %s"
         (propertize (treemacs--filename target-file) 'face 'font-lock-string-face)
