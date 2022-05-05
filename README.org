@@ -105,6 +105,9 @@ Automatic reaction to changes in git:
 Full-featured mouse interface:
 [[file:screenshots/mouse-interface.gif]]
 
+Including moving and opening files via mouse drag:
+[[file:screenshots/mouse-drag.gif]]
+
 Resizable icons:
 [[file:screenshots/icon-resize.gif]]
 
@@ -221,7 +224,7 @@ A right click popup-menu is also available:
 
 [[file:screenshots/right-click.png]]
 
-You can also open a file in a specific window by dragging using left click from treemacs to the required window.
+You can move and open files by dragging them with the mouse.
 
 ** Follow-mode
 ~treemacs-follow-mode~ is a global minor mode which allows the treemacs view to always move its focus to the currently

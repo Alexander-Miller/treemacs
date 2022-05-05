@@ -4,6 +4,7 @@
 * Changelog
 ** Current master
 *** Added ~treemacs-bulk-file-actions~
+*** Added support for moving files via mouse drag
 ** v2.10
 - Added ~treemacs-width-increment~ and the ability to resize the treemacs window incrementally
 - Added ~treemacs-indent-guide-mode~
