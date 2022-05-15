@@ -142,8 +142,8 @@ There are 2 options:
    minibuffer input is used.
  - `from-minibuffer': will read input from the minibuffer, same as baseline
    Emacs."
-  :type '(choice (const :tag "With Child Frame Popup" 'from-child-frame)
-                 (const :tag "From the Minibuffer (Emacs Default)" 'from-minibuffer))
+  :type '(choice (const :tag "With Child Frame Popup" from-child-frame)
+                 (const :tag "From the Minibuffer (Emacs Default)" from-minibuffer))
   :group 'treemacs)
 
 (defcustom treemacs-move-forward-on-expand nil
@@ -160,8 +160,8 @@ There are 2 options:
    permissions of the file at point
 
 Requires eldoc mode to be enabled."
-  :type '(choice (const :tag "Simple" 'simple)
-                 (const :tag "Detailed" 'detailed))
+  :type '(choice (const :tag "Simple" simple)
+                 (const :tag "Detailed" detailed))
   :group 'treemacs)
 
 (defcustom treemacs-indent-guide-style 'line
@@ -171,7 +171,8 @@ The choices are
    level
  - `block' to use a thick '██' block interspersed at every second indentation
    level"
-  :type '(choice (const :tag "Line" 'line) (const :tag "Block" 'block))
+  :type '(choice (const :tag "Line" line)
+                 (const :tag "Block" block))
   :group 'treemacs)
 
 (defcustom treemacs-indentation-string " "
