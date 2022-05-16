@@ -156,7 +156,11 @@
         (expect (treemacs--reject-ignored-files "foo.el") :to-be t))
 
       (it "Accepts directory"
-        (expect (treemacs--reject-ignored-files "~/A/B/C/") :to-be t)))
+        (expect (treemacs--reject-ignored-files "~/A/B/C/") :to-be t))
+
+      (it "Accepts .git when it is not hidden"
+        (-let [treemacs-hide-dot-git-directory nil]
+          (expect (treemacs--reject-ignored-files "~/A/B/C/.git") :to-be t))))
 
     (describe "Rejecting"
 
@@ -178,9 +182,6 @@
       (it "Rejects flycheck's temp file"
         (expect (treemacs--reject-ignored-files "~/A/B/C/flycheck_foo.el") :to-be nil))
 
-      (it "Rejects .git"
-        (expect (treemacs--reject-ignored-files "~/A/B/C/.git") :to-be nil))
-
       (it "Rejects dot"
         (expect (treemacs--reject-ignored-files ".") :to-be nil))
 
@@ -191,7 +192,7 @@
 
   (let ((treemacs-ignored-file-predicates (default-value 'treemacs-ignored-file-predicates)))
 
-    (describe "Acceptions"
+    (describe "Accepting"
 
       (it "Accepts common absolute path"
         (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/foo.el") :to-be t))
@@ -202,7 +203,7 @@
       (it "Accepts directory"
         (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/") :to-be t)))
 
-    (describe "Rejections"
+    (describe "Rejecting"
 
       (it "Fails on nil input"
         (expect (treemacs--reject-ignored-and-dotfiles nil) :to-throw))
@@ -226,7 +227,7 @@
         (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/.foo.el") :to-be nil))
 
       (it "Rejects .git"
-        (expect (treemacs--reject-ignored-files "~/A/B/C/.git") :to-be nil))
+        (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/.git") :to-be nil))
 
       (it "Rejects dot"
         (expect (treemacs--reject-ignored-and-dotfiles ".") :to-be nil))

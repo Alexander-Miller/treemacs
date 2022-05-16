@@ -278,8 +278,16 @@ of how this config works and how to modify it."
   :group 'treemacs)
 
 (defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
-  "Files matching this regular expression count as dotfiles."
+  "Files matching this regular expression count as dotfiles.
+This controls the matching behaviour of `treemacs-toggle-show-dotfiles'."
   :type 'regexp
+  :group 'treemacs)
+
+(defcustom treemacs-hide-dot-git-directory t
+  "Indicates whether the .git directory should be hidden.
+When this is non-nil the .git dir will be hidden regardless of current setting
+of `treemacs-toggle-show-dotfiles'."
+  :type 'list
   :group 'treemacs)
 
 (defcustom treemacs-sorting 'alphabetic-asc

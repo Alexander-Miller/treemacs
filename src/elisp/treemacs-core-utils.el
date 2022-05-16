@@ -940,7 +940,7 @@ Will return t when FILE
 2) starts with 'flycheck_' (flycheck temp files)
 3) ends with '~' (backup files)
 4) is surrounded with # (auto save files)
-5) is '.git'
+5) is '.git' (see also `treemacs-hide-dot-git-directory')
 6) is '.' or '..' (default dirs)"
   (declare (side-effect-free t) (pure t))
   (inline-letevals (file)
@@ -951,7 +951,8 @@ Will return t when FILE
            (eq ?~ last)
            (string-equal ,file ".")
            (string-equal ,file "..")
-           (string-equal ,file ".git")
+           (and treemacs-hide-dot-git-directory
+                (string-equal ,file ".git"))
            (string-prefix-p "flycheck_" ,file))))))
 
 (define-inline treemacs--mac-ignore-file-predicate (file _)
