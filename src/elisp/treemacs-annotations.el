@@ -301,15 +301,16 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
                      ((and old-git-face (null ,git-face))
                       (mapcar #'cdr faces))
                      (t face-value))))
-               (when new-face-value
-                 (setf
-                  (treemacs-annotation->face-value ann)
-                  new-face-value
-                  (treemacs-annotation->git-face ann)
-                  ,git-face)
+                 (setf (treemacs-annotation->face-value ann)
+                       new-face-value
+                       (treemacs-annotation->git-face ann)
+                       ,git-face)
                  (put-text-property
                   btn-start btn-end 'face
-                  new-face-value))))
+                  (or new-face-value
+                      (if (file-regular-p (treemacs-button-get ,btn :key))
+                          'treemacs-file-face
+                        'treemacs-directory-face)))))
 
            ;; Suffix
            (goto-char ,btn)
