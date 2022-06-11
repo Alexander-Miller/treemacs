@@ -143,7 +143,7 @@ to your workspace. Just like projects you can add, remove, rename and switch bet
 This design approach has various advantages and disadvantages. It is now no longer possible to "free roam" in the file
 system with treemacs, i.e. you can no longer arbitrarily switch the single file tree's root to the directory at point or
 the current root's parent. Another restriction is that the same part of the file system may not appear more than once as
-part of the workspace. For example it is not possible to have both /Documents and /Documents/ProjectX as projects in the
+part of the workspace. For example, it is not possible to have both /Documents and /Documents/ProjectX as projects in the
 same workspace, since internally treemacs heavily relies on every node having a unique natural key in its absolute path.
 Nonetheless the pros certainly outweigh the cons, as a multiroot setup allows to work on multiple projects with any
 combination concern/buffer separating frameworks, be it persp/perspective, eyebrowse, tab-bar-mode, or
@@ -195,7 +195,7 @@ other ways to use treemacs in a more "free-form" style:
 - You can enable ~treemacs-project-follow-mode~ to make treemacs automatically switch to the project for the current
   buffer.
 - As long as there is exactly /a single project/ in your workspace you can also use ~M-H~ and ~M-L~ (or
-  ~treemacs-root-up~ and ~treemacs-root-down~) to to arbitrarily change the project's root and freely navigate through
+  ~treemacs-root-up~ and ~treemacs-root-down~) to arbitrarily change the project's root and freely navigate through
   your your file system, similar to dired. ~M-H~ will navigate one level upward in the file system, ~M-L~ will move into
   the directory at point.
 
@@ -215,7 +215,7 @@ double click expands or collapses a directory or tag section node and visits a f
 
 Additionally tag sections can be expanded or collapsed by a single click on the file/tag section icon.
 
-If you prefer to expand/collpase nodes with a single mouse click you can also use ~treemacs-single-click-expand-action~:
+If you prefer to expand/collapse nodes with a single mouse click you can also use ~treemacs-single-click-expand-action~:
 
 #+BEGIN_SRC emacs-lisp
   (with-eval-after-load 'treemacs
@@ -315,7 +315,7 @@ bulk action implementation is using treemacs' (yet to be documented) annotation 
 likewise be permanent, even if you collapse the directories containing those files and they are no longer visible.
 ** Indent-guide-mode
 
-~treemacs-indent-guide-mode~ is a simple visual helper based on the the options provided by the ~treemacs-indentation~
+~treemacs-indent-guide-mode~ is a simple visual helper based on the options provided by the ~treemacs-indentation~
 and ~treemacs-indentation-string~ settings. Its appearance is dictated by ~treemacs-indent-guide-style~, the options are
 either ~line~:
 
@@ -331,7 +331,7 @@ is ahead or behind its remote counterpart:
 [[file:screenshots/git-commit-diff.png]]
 ** Session Persistence
 Treemacs' sessions - your workspace and the projects it contains - are saved when Emacs shuts down and restored when
-treemacs is first loaded. This persistence process is fully automatic and independant, and should therefore be fully
+treemacs is first loaded. This persistence process is fully automatic and independent, and should therefore be fully
 compatible with ~desktop-save-mode~.
 
 The persisted state is saved under ~user-emacs-directory/.cache/treemacs-persist~ by default. The exact file location
@@ -690,7 +690,7 @@ for example "Readme.md" can use a different icon than normal markdown files.
 
 Instead of a string extension a symbol can also be used. In this case treemacs will also create a variable for that icon
 named ~treemacs-icon-$symbol~. Treemacs uses several such icon variables and any new theme should define their own
-versions (it it's not extending the default theme). The following icons are used:
+versions (it's not extending the default theme). The following icons are used:
 
  - root-open
  - root-closed
@@ -751,7 +751,7 @@ thus which icon they should be assigned. Treemacs offers the option that automat
 list of file extensions based on the major mode the icons are mapped to in ~auto-mode-alist~.
 
 ~treemacs-map-icons-with-auto-mode-alist~ takes 2 arguments: first a list of file extensions, then an alist that decides
-which icon should be used for which mapped major mode. For example the code to decide the icons for ".hh" and ".cc"
+which icon should be used for which mapped major mode. For example, the code to decide the icons for ".hh" and ".cc"
 files with ~auto-mode-alist~ would look like this:
 
 #+BEGIN_SRC emacs-lisp
@@ -770,7 +770,7 @@ If your emacs has been compiled with Imagemagick support, or you're using Emacs 
 *** all-the-icons indent issues
 Depending on your font you may experience the problem of treemacs' icons seemingly jumping around left and right when
 they are expanded and collapsed when using the all-the-icons theme. The straighforward solution is to use a different
-font. You may also try a workaround of using a different font that applies onyl to the TAB characters used to align
+font. You may also try a workaround of using a different font that applies only to the TAB characters used to align
 treemacs' all-the-icons-based icons. To do that do not load ~treemacs-all-the-icons~ with ~require~. Instead use the
 following alternative provided by treemacs itself:
 
@@ -946,7 +946,7 @@ Aside from this there are the following known incompatibilities:
    You need to define a predicate function and add it to ~treemacs-ignored-file-predicates~. This function accepts two
    arguments, a file's name and its absolute path, and must return non-nil when treemacs should hide that file.
 
-   For example the code to ignore files eiter called "foo" or located in "/x/y/z/" would look like this:
+   For example, the code to ignore files either called "foo" or located in "/x/y/z/" would look like this:
 
    #+BEGIN_SRC emacs-lisp
      (with-eval-after-load 'treemacs
