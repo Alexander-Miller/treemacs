@@ -324,6 +324,20 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
            (delete-region (point) (point-at-eol))
            (when suffix-value (insert suffix-value))))))))
 
+(defun treemacs-apply-single-annotation (path)
+  "Apply annotations for a single node at given PATH."
+  (treemacs-run-in-all-derived-buffers
+   (-when-let (btn (treemacs-find-node path))
+     (treemacs-with-writable-buffer
+      (save-excursion
+        (treemacs--do-apply-annotation
+         btn
+         (-when-let (git-cache
+                     (->> path
+                          (treemacs--parent-dir)
+                          (ht-get treemacs--git-cache)))
+           (ht-get git-cache path))))))))
+
 (defun treemacs-apply-annotations (path)
   "Apply annotations for all nodes under the given PATH.
 
