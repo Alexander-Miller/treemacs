@@ -69,7 +69,7 @@ Look for the PROJECT either in BUFFER or the local treemacs buffer."
        (treemacs--update-git-commit-diff project)))))
 
 (defun treemacs--disable-git-commit-diff-mode ()
-  "Teardown for `treemacs-comit-diff-mode'."
+  "Tear-down for `treemacs-comit-diff-mode'."
   (remove-hook 'treemacs-post-project-refresh-functions #'treemacs--update-git-commit-diff)
   (treemacs-run-in-every-buffer
    (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
@@ -80,6 +80,7 @@ Look for the PROJECT either in BUFFER or the local treemacs buffer."
 ;;;###autoload
 (define-minor-mode treemacs-git-commit-diff-mode
   "Minor mode to display commit differences for your git-tracked projects.
+
 When enabled treemacs will add an annotation next to every git project showing
 how many commits ahead or behind your current branch is compared to its remote
 counterpart.
