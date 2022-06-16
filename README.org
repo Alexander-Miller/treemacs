@@ -26,6 +26,7 @@
    - [[#filewatch-mode][Filewatch-mode]]
    - [[#file-management][File Management]]
    - [[#indent-guide-mode][Indent-guide-mode]]
+   - [[#git-commit-diff-mode][Git-commit-diff-mode]]
    - [[#session-persistence][Session Persistence]]
    - [[#terminal-compatibility][Terminal Compatibility]]
    - [[#tag-view][Tag View]]
@@ -322,7 +323,11 @@ either ~line~:
 or ~block~:
 
 [[file:screenshots/indent-guide-block.png]]
+** Git-commit-diff-mode
+~treemacs-git-commit-diff-mode~ will annotate git-tracked project to show how many commits the local repo
+is ahead or behind its remote counterpart:
 
+[[file:screenshots/git-commit-diff.png]]
 ** Session Persistence
 Treemacs' sessions - your workspace and the projects it contains - are saved when Emacs shuts down and restored when
 treemacs is first loaded. This persistence process is fully automatic and independant, and should therefore be fully
@@ -486,6 +491,8 @@ discoverability.
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t)
       (treemacs-fringe-indicator-mode 'always)
+      (when treemacs-python-executable
+        (treemacs-git-commit-diff-mode t))
 
       (pcase (cons (not (null (executable-find "git")))
                    (not (null treemacs-python-executable)))
@@ -837,6 +844,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | tf  | treemacs-follow-mode                | Toggle ~treemacs-follow-mode~.                                                         |
 | ta  | treemacs-filewatch-mode             | Toggle ~treemacs-filewatch-mode~.                                                      |
 | tv  | treemacs-fringe-indicator-mode      | Toggle ~treemacs-fringe-indicator-mode~.                                               |
+| td  | treemacs-git-commit-diff-mode       | Toggle ~treemacs-git-commit-diff-mode~.                                                |
 
 *** Copy Keybinds (Prefix ~y~)
 

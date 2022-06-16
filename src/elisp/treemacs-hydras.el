@@ -55,6 +55,9 @@
 (treemacs-import-functions-from "treemacs-header-line"
   treemacs-indicate-top-scroll-mode)
 
+(treemacs-import-functions-from "treemacs-git-commit-diff-mode"
+  treemacs-git-commit-diff-mode)
+
 (cl-defun treemacs--find-keybind (func &optional (pad 8))
   "Find the keybind for FUNC in treemacs.
 Return of cons of the key formatted for inclusion in the hydra string, including
@@ -131,6 +134,7 @@ find the key a command is bound to it will show a blank instead."
              (key-header-mode    (treemacs--find-keybind #'treemacs-indicate-top-scroll-mode))
              (key-fringe-mode    (treemacs--find-keybind #'treemacs-fringe-indicator-mode))
              (key-fwatch-mode    (treemacs--find-keybind #'treemacs-filewatch-mode))
+             (key-commit-diff    (treemacs--find-keybind #'treemacs-git-commit-diff-mode))
              (key-git-mode       (treemacs--find-keybind #'treemacs-git-mode))
              (key-show-dotfiles  (treemacs--find-keybind #'treemacs-toggle-show-dotfiles))
              (key-indent-guide   (treemacs--find-keybind #'treemacs-indent-guide-mode))
@@ -156,7 +160,7 @@ find the key a command is bound to it will show a blank instead."
 %s up next window   ^^^^│ %s open ace horizontal ^^^^│ %s fringe indicator      ^^^^│
 %s root up          ^^^^│ %s open ace vertical   ^^^^│ %s indent guide          ^^^^│
 %s root down        ^^^^│ %s open mru window     ^^^^│ %s top scroll indicator  ^^^^│
-                        │ %s open externally     ^^^^│                              │
+                        │ %s open externally     ^^^^│ %s git commit difference ^^^^│
                         │ %s open close treemacs ^^^^│                              │
                         │ %s close parent        ^^^^│                              │
 "
@@ -172,7 +176,7 @@ find the key a command is bound to it will show a blank instead."
                (car key-up-next-w)      (car key-open-ace-h)  (car key-fringe-mode)
                (car key-root-up)        (car key-open-ace-v)  (car key-indent-guide)
                (car key-root-down)      (car key-open-mru)    (car key-header-mode)
-                                        (car key-open-ext)
+                                        (car key-open-ext)    (car key-commit-diff)
                                         (car key-open-close)
                                         (car key-close-above))))
           (eval
@@ -205,6 +209,7 @@ find the key a command is bound to it will show a blank instead."
               (,(cdr key-show-dotfiles)  #'treemacs-toggle-show-dotfiles)
               (,(cdr key-show-gitignore) #'treemacs-hide-gitignored-files-mode)
               (,(cdr key-toggle-width)   #'treemacs-toggle-fixed-width)
+              (,(cdr key-commit-diff)    #'treemacs-git-commit-diff-mode)
               (,(cdr key-fringe-mode)    #'treemacs-fringe-indicator-mode)
               (,(cdr key-indent-guide)   #'treemacs-indent-guide-mode)
               (,(cdr key-git-mode)       #'treemacs-git-mode)

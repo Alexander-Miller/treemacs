@@ -157,6 +157,11 @@ Applies to buttons like
   "Face for files marked by treemacs."
   :group 'treemacs-faces)
 
+(defface treemacs-git-commit-diff-face
+  '((t :inherit 'font-lock-comment-face))
+  "Face for `treemacs-git-commit-diff-mode' annotations."
+  :group 'treemacs-faces)
+
 (provide 'treemacs-faces)
 
 ;;; treemacs-faces.el ends here
