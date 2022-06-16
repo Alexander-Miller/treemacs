@@ -467,7 +467,7 @@ In practice this means expand PATH and remove its final slash."
   "Determined if FILE is ignored by git by means of GIT-INFO."
   (declare (side-effect-free t))
   (inline-letevals (file git-info)
-    (inline-quote (string= "!" (ht-get ,git-info ,file)))))
+    (inline-quote (eq 'treemacs-git-ignored-face (ht-get ,git-info ,file)))))
 
 (define-inline treemacs-is-treemacs-window-selected? ()
   "Return t when the treemacs window is selected."
