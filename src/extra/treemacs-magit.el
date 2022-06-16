@@ -39,6 +39,8 @@
     (defalias 'if-let* #'if-let)
     (defalias 'when-let* #'when-let)))
 
+;;;; Filewatch
+
 (defvar treemacs-magit--timers nil
   "Cached list of roots an update is scheduled for.")
 
@@ -156,6 +158,49 @@ Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
   (add-hook 'git-commit-post-finish-hook #'treemacs-magit--schedule-update)
   (add-hook 'magit-post-stage-hook       #'treemacs-magit--schedule-update)
   (add-hook 'magit-post-unstage-hook     #'treemacs-magit--schedule-update))
+
+;;;; Git Commit Diff
+
+(defvar treemacs--git-commit-diff.py)
+(defvar treemacs--commit-diff-ann-source)
+
+(defconst treemacs--commit-diff-update-commands
+  (list "pull" "push" "commit" "merge" "rebase" "cherry-pick" "fetch" "checkout")
+  "List of git commands that change local/remote commit status info.
+Relevant for integrating with `treemacs-git-commit-diff-mode'.")
+
+(defun treemacs--update-commit-diff-after-magit-process (process &rest _)
+  "Update commit diffs after completion of a magit git PROCESS."
+  (when (memq (process-status process) '(exit signal))
+    (let* ((args (process-command process))
+           (command (car (nthcdr (1+ (length magit-git-global-arguments)) args))))
+      (when (member command treemacs--commit-diff-update-commands)
+        (-let [path (process-get process 'default-dir)]
+          (pfuture-callback `(,treemacs-python-executable "-O" ,treemacs--git-commit-diff.py ,path)
+            :directory path
+            :on-success
+            (-let [out (-> (pfuture-callback-output)
+                           (string-trim-right)
+                           (read))]
+              (treemacs-run-in-every-buffer
+               (-when-let* ((project (treemacs--find-project-for-path path))
+                            (project-path (treemacs-project->path project)))
+                 (if out
+                     (treemacs-set-annotation-suffix
+                      project-path out treemacs--commit-diff-ann-source)
+                   (treemacs-remove-annotation-suffix project-path treemacs--commit-diff-ann-source))
+                 (treemacs-apply-single-annotation project-path))))))))))
+
+(defun treemacs--magit-commit-diff-setup ()
+  "Enable or disable magit advice for `treemacs-git-commit-diff-mode'."
+  (if (bound-and-true-p treemacs-git-commit-diff-mode)
+      (advice-add #'magit-process-sentinel :after #'treemacs--update-commit-diff-after-magit-process)
+    (advice-remove #'magit-process-sentinel #'treemacs--update-commit-diff-after-magit-process)))
+
+(unless (featurep 'treemacs-magit)
+  (add-hook 'treemacs-git-commit-diff-mode-hook  #'treemacs--magit-commit-diff-setup)
+  (when (bound-and-true-p treemacs-git-commit-diff-mode)
+      (advice-add #'magit-process-sentinel :after #'treemacs--update-commit-diff-after-magit-process)))
 
 (provide 'treemacs-magit)
 

@@ -18,22 +18,30 @@ def main():
         sys.exit(0)
 
     ahead = 0
+    ahead_len = 0
     behind = 0
+    behind_len = 0
 
     for inf in line[i_open+1 : i_close].split(b", "):
         split = inf.split(b" ")
         status = split[0]
-        number = int(split[1])
+        text = split[1]
+        number = int(text)
         if status == b"ahead":
             ahead = number
+            ahead_len = len(text)
         elif status == b"behind":
             behind = number
+            behind_len = len(text)
 
     if ahead == 0 and behind != 0:
-        print('#(" ↓{}" 0 3 (face treemacs-git-commit-diff-face))'.format(behind))
+        face_len = 2 + behind_len
+        print('#(" ↓{}" 0 {} (face treemacs-git-commit-diff-face))'.format(behind, face_len))
     elif ahead != 0 and behind == 0:
-        print('#(" ↑{}" 0 3 (face treemacs-git-commit-diff-face))'.format(ahead))
+        face_len = 2 + ahead_len
+        print('#(" ↑{}" 0 {} (face treemacs-git-commit-diff-face))'.format(ahead, face_len))
     else:
-        print('#(" ↑{} ↓{}" 0 6 (face treemacs-git-commit-diff-face))'.format(ahead, behind))
+        face_len = 4 + ahead_len + behind_len
+        print('#(" ↑{} ↓{}" 0 {} (face treemacs-git-commit-diff-face))'.format(ahead, behind, face_len))
 
 main()
