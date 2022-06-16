@@ -799,11 +799,12 @@ successful.
 
 PATH: Filepath | Node Path
 PROJECT Project Struct"
-  (treemacs-with-path path
-    :file-action (when (file-exists-p path) (treemacs-find-file-node path project))
-    :top-level-extension-action (treemacs--find-custom-top-level-node path)
-    :directory-extension-action (treemacs--find-custom-dir-node path)
-    :project-extension-action (treemacs--find-custom-project-node path)))
+  (save-excursion
+    (treemacs-with-path path
+      :file-action (when (file-exists-p path) (treemacs-find-file-node path project))
+      :top-level-extension-action (treemacs--find-custom-top-level-node path)
+      :directory-extension-action (treemacs--find-custom-dir-node path)
+      :project-extension-action (treemacs--find-custom-project-node path))))
 
 (defun treemacs-goto-node (path &optional project ignore-file-exists)
   "Move point to button identified by PATH under PROJECT in the current buffer.
