@@ -371,9 +371,11 @@ Maps ITEMS at given index INTERVAL using MAPPER function."
                    (_ (error "Interval %s is not handled yet" interval)))))
     `(let ((,l ,items))
        (while ,l
-         (setq ,l (,tail-op ,l))
-         (let ((it (pop ,l)))
-           ,@mapper)))))
+          (setq ,l (,tail-op ,l))
+          (let ((it (car ,l)))
+            (setf (car ,l) ,@mapper)
+            (pop ,l)))
+       ,items)))
 
 (define-inline treemacs--create-branch (root depth git-future collapse-process &optional parent)
   "Create a new treemacs branch under ROOT.
@@ -474,26 +476,43 @@ set to PARENT."
            (treemacs-dom-node->insert-into-dom! it))
 
          (treemacs--inplace-map-when-unrolled dir-strings 2
-           (put-text-property
-            0
-            (length it)
-            'face
-            (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
-                (treemacs-annotation->face-value ann)
-              'treemacs-directory-face)
-            it))
+           (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
+               (progn
+                 (put-text-property
+                  0
+                  (length it)
+                  'face
+                  (treemacs-annotation->face-value ann)
+                  it)
+                 (concat it (treemacs-annotation->suffix-value ann)))
+             (put-text-property
+              0
+              (length it)
+              'face
+              'treemacs-directory-face
+              it)
+             it))
          (insert (apply #'concat dir-strings))
 
          (end-of-line)
-         (treemacs--inplace-map-when-unrolled file-strings 3
-           (put-text-property
-            0
-            (length it)
-            'face
-            (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
-                (treemacs-annotation->face-value ann)
-              'treemacs-git-unmodified-face)
-            it))
+         (setf file-strings
+               (treemacs--inplace-map-when-unrolled file-strings 3
+                 (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
+                     (progn
+                       (put-text-property
+                        0
+                        (length it)
+                        'face
+                        (treemacs-annotation->face-value ann)
+                        it)
+                       (concat it (treemacs-annotation->suffix-value ann)))
+                   (put-text-property
+                    0
+                    (length it)
+                    'face
+                    'treemacs-git-unmodified-face
+                    it)
+                   it)))
          (insert (apply #'concat file-strings))
 
          (save-excursion
@@ -509,7 +528,7 @@ Run POST-CLOSE-ACTION after everything else is done."
       ,@(when new-icon
           `((treemacs--button-symbol-switch ,new-icon)))
       (treemacs-button-put ,button :state ,new-state)
-      (-let [next (next-button (point-at-eol))]
+      (-let [next (next-button (button-end ,button))]
         (if (or (null next)
                 (/= (1+ (treemacs-button-get ,button :depth))
                     (treemacs-button-get (copy-marker next t) :depth)))
@@ -519,7 +538,7 @@ Run POST-CLOSE-ACTION after everything else is done."
           ;; current button, making the treemacs--projects-end marker track
           ;; properly when collapsing the last project or a last directory of the
           ;; last project.
-          (let* ((pos-start (treemacs-button-end ,button))
+          (let* ((pos-start (point-at-eol))
                  (next (treemacs--next-non-child-button ,button))
                  (pos-end (if next
                               (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))
