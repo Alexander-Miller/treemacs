@@ -858,6 +858,12 @@ Valid values are
                  (const right))
   :group 'treemacs)
 
+(defcustom treemacs-post-project-refresh-functions nil
+  "Hook that runs after a project was updated with `treemacs-refresh'.
+Will be called with the new project as the sole argument."
+  :type 'hook
+  :group 'treemacs-hooks)
+
 (defcustom treemacs-create-project-functions nil
   "Hooks to run whenever a project is created.
 Will be called with the new project as the sole argument."

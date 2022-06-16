@@ -872,8 +872,10 @@ workspaces."
   (interactive)
   (treemacs-unless-let (btn (treemacs-current-button))
       (treemacs-log-failure "There is nothing to refresh.")
-    (treemacs-without-recenter
-     (treemacs--do-refresh (current-buffer) (treemacs-project-of-node btn)))))
+    (-let [project (treemacs-project-of-node btn)]
+      (treemacs-without-recenter
+       (treemacs--do-refresh (current-buffer) project))
+      (run-hook-with-args 'treemacs-post-project-refresh-functions project))))
 
 (defun treemacs-collapse-project (&optional arg)
   "Close the project at point.
