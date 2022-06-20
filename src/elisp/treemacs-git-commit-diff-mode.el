@@ -60,17 +60,24 @@ Look for the PROJECT either in BUFFER or the local treemacs buffer."
               (treemacs-remove-annotation-suffix path treemacs--commit-diff-ann-source))
             (treemacs-apply-single-annotation path)))))))
 
+(defun treemacs--update-commit-diff-in-every-project ()
+  "Update diffs for every project in the current scope.
+To be run when commt-diff-mode is activated or a treemacs buffer is created."
+  (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
+    (when (vc-git-responsible-p (treemacs-project->path project))
+      (treemacs--update-git-commit-diff project))))
+
 (defun treemacs--enable-git-commit-diff-mode ()
   "Setup for `treemacs-comit-diff-mode'."
   (add-hook 'treemacs-post-project-refresh-functions #'treemacs--update-git-commit-diff)
+  (add-hook 'treemacs-post-buffer-init-hook #'treemacs--update-commit-diff-in-every-project)
   (treemacs-run-in-every-buffer
-   (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
-     (when (vc-git-responsible-p (treemacs-project->path project))
-       (treemacs--update-git-commit-diff project)))))
+   (treemacs--update-commit-diff-in-every-project)))
 
 (defun treemacs--disable-git-commit-diff-mode ()
   "Tear-down for `treemacs-comit-diff-mode'."
   (remove-hook 'treemacs-post-project-refresh-functions #'treemacs--update-git-commit-diff)
+  (remove-hook 'treemacs-post-buffer-init-hook #'treemacs--update-commit-diff-in-every-project)
   (treemacs-run-in-every-buffer
    (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
      (-let [path (treemacs-project->path project)]
