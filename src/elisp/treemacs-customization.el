@@ -858,6 +858,12 @@ Valid values are
                  (const right))
   :group 'treemacs)
 
+(defcustom treemacs-post-buffer-init-hook nil
+  "Hook run after a treemacs buffer is first initialised.
+Only applies to treemacs filetree buffers, not extensions."
+  :type 'hook
+  :group 'treemacs-hooks)
+
 (defcustom treemacs-post-project-refresh-functions nil
   "Hook that runs after a project was updated with `treemacs-refresh'.
 Will be called with the new project as the sole argument."

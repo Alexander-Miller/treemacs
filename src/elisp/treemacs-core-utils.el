@@ -537,6 +537,7 @@ Add a project for ROOT and NAME if they are non-nil."
            (treemacs-do-add-project-to-workspace path name)
            (treemacs-log "Created first project.")))
        (goto-char 2)
+       (run-hooks 'treemacs-post-buffer-init-hook)
        (setf run-hook? t)))
     (when root (treemacs-do-add-project-to-workspace (treemacs-canonical-path root) name))
     (with-no-warnings (setq treemacs--ready-to-follow t))
