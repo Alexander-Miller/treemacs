@@ -190,7 +190,7 @@ Necessary for the all-the-icons based themes."
 
 This function is meant to be used as a single-use toggle added to
 `dired-mode-hook' to enable icons for Dired only once, without having to use
-\"with-eval-after-load 'dired\", since Dired tends to be loaded early."
+\"with-eval-after-load \\='dired\", since Dired tends to be loaded early."
   (treemacs-icons-dired-mode)
   (remove-hook 'dired-mode-hook #'treemacs-icons-dired-enable-once))
 

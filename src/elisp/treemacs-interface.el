@@ -133,7 +133,7 @@ conditions:
    ends in \" definition*\". This indicates the section is the parent element in
    a nested class/function definition and can be moved to.
  * Tags belong to a .org file and the tag section element possesses a
-   'org-imenu-marker text property. This indicates that the section is a
+   \\='org-imenu-marker text property. This indicates that the section is a
    headline with further org elements below it.
 
 The prefix argument ARG is treated the same way as with `treemacs-toggle-node'."

@@ -113,7 +113,7 @@
 (defcustom treemacs-indentation 2
   "The number of spaces or pixels each level is indented in the file tree.
 If the value is integer, indentation is created by repeating
-`treemacs-indentation-string'.  If the value is a list of form '(INTEGER px),
+`treemacs-indentation-string'.  If the value is a list of form \\='(INTEGER px),
 indentation will be a space INTEGER pixels wide."
   :type '(choice (integer :tag "Spaces" :value 2)
                  (list :tag "Pixels"
@@ -257,7 +257,7 @@ single argument.
 
 To keep the alist clean changes should not be made directly, but with
 `treemacs-define-RET-action', for example like this:
-\(treemacs-define-RET-action 'file-node-closed #'treemacs-visit-node-ace\)"
+\(treemacs-define-RET-action \\='file-node-closed #'treemacs-visit-node-ace)"
   :type '(alist :key-type symbol :value-type treemacs-ret-action)
   :group 'treemacs)
 
@@ -316,7 +316,7 @@ Deciding on the order in which its nodes are inserted is a part of this path.
 As such certain trade-offs need to be accounted far.
 
 In plaintext: some sort settings are much slower than others.  Alphabetic
-sorting \(the default) is fastest and causes no additional overhead (even when
+sorting (the default) is fastest and causes no additional overhead (even when
 compared against foregoing sorting altogether).
 
 Modification time sorting takes the middle, being ca.  4x slower than
@@ -351,9 +351,9 @@ absolute path and returns t if the file should be ignored and nil otherwise.  A
 file which returns t for *any* function in this list counts as ignored.
 
 By default this list contains `treemacs--std-ignore-file-predicate' which
-filters out '.', '..', Emacs' lock files as well temp files created by flycheck.
-This means that this variable should *not* be set directly, but instead modified
-with functions like `add-to-list'.
+filters out \".\", \"..\", Emacs' lock files as well temp files created by
+flycheck.  This means that this variable should *not* be set directly, but
+instead modified with functions like `add-to-list'.
 
 Additionally `treemacs--mac-ignore-file-predicate' is also included on
 Mac-derived operating systems (when `system-type' is `darwin')."
@@ -372,7 +372,7 @@ The functions in this list are therefore expected to have a different signature:
 They must take two arguments - a file's absolute path and a hash table that maps
 files to their git status.  The files' paths are the table's keys, its values
 are characters (and not strings) indicating the file's git condition.  The chars
-map map as follows: (the pattern is derived from 'git status --porcelain')
+map map as follows: (the pattern is derived from \\='git status --porcelain\\=')
 
  * M - file is modified
  * U - file is in conflict
@@ -473,8 +473,8 @@ Specifically applies to calling `treemacs-next-project' and
 
 Possible values are:
  * nil: never recenter
- * 'always: always recenter
- * 'on-distance: recenter based on `treemacs-recenter-distance'"
+ * \\='always: always recenter
+ * \\='on-distance: recenter based on `treemacs-recenter-distance'"
   :type '(choice (const :tag "Always" always)
                  (const :tag "Based on Distance" on-distance)
                  (const :tag "Never" nil))
@@ -485,9 +485,9 @@ Possible values are:
 
 Possible values are:
  * nil: never recenter
- * 'always: always recenter
- * 'on-distance: recenter based on `treemacs-recenter-distance'
- * 'on-visibility: recenter only when the newly rendered lines don't fit the
+ * \\='always: always recenter
+ * \\='on-distance: recenter based on `treemacs-recenter-distance'
+ * \\='on-visibility: recenter only when the newly rendered lines don't fit the
    current screen"
   :type '(choice (const :tag "Always" always)
                  (const :tag "Based on Distance" on-distance)
@@ -686,8 +686,8 @@ flooded with their tags."
   "Decides when to recenter view after following a file.
 Possible values are:
  * nil: never recenter
- * 'always: always recenter
- * 'on-distance: recenter based on `treemacs-recenter-distance'"
+ * \\='always: always recenter
+ * \\='on-distance: recenter based on `treemacs-recenter-distance'"
   :type '(choice (const :tag "Always" always)
                  (const :tag "Based on Distance" on-distance)
                  (const :tag "Never" nil))
@@ -697,8 +697,8 @@ Possible values are:
   "Decides when to recenter view after following a tag.
 Possible values are:
  * nil: never recenter
- * 'always: always recenter
- * 'on-distance: recenter based on `treemacs-recenter-distance'"
+ * \\='always: always recenter
+ * \\='on-distance: recenter based on `treemacs-recenter-distance'"
   :type '(choice (const :tag "Always" always)
                  (const :tag "Based on Distance" on-distance)
                  (const :tag "Never" nil))
@@ -723,9 +723,9 @@ This is only relevant when using the deferred variant of git-mode."
 
 (defcustom treemacs-max-git-entries 5000
   "Maximum number of git status entries treemacs will process.
-Information for entries that number will be silently ignored.  The 'entries'
-refer to the lines output by `git status --porcelain --ignored=matching'.
-The limit does not apply to the simple `treemacs-git-mode.'"
+Information for entries that number will be silently ignored.  The \"entries\"
+refer to the lines output by `git status --porcelain --ignored=matching'.  The
+limit does not apply to the simple `treemacs-git-mode.'"
   :type 'number
   :group 'treemacs-git)
 
@@ -852,8 +852,8 @@ Possible values are:
   "Position of treemacs buffer.
 
 Valid values are
- * left,
- * right."
+ * `left',
+ * `right'"
   :type '(choice (const left)
                  (const right))
   :group 'treemacs)
@@ -1006,7 +1006,7 @@ During the refresh the project is effectively collapsed and then expanded again.
 This hook runs *before* that happens.  It runs with treemacs as the
 `current-buffer' and receives as its arguments all the information that treemacs
 collects for its refresh process:
- * The project being refreshed (might be 'all)
+ * The project being refreshed (might be \\='all)
  * The current screen-line number (can be nil).
  * The current button.  Might be nil if point is on the header line.
  * The current button's state.  See also `treemacs-valid-button-states'.  Is nil
@@ -1025,7 +1025,7 @@ This hook runs *after* that has happened.  It runs with treemacs as the
 collects for its refresh process.  Note that these values were collected at the
 start of the refresh, and may now be longer valid (for example the current
 button's position will be wrong, even if it wasn't deleted outright):
- * The project being refreshed (might be 'all)
+ * The project being refreshed (might be \\='all)
  * The current screen-line number (can be nil).
  * The current button.  Might be nil if point was on the header line.
  * The current button's state.  See also `treemacs-valid-button-states'.  Is nil

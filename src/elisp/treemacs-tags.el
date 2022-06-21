@@ -371,7 +371,7 @@ The position can be stored in the following ways:
 * ITEM is a raw number pointing to a buffer position.
 * ITEM is a cons: special case for imenu elements of an `org-mode' buffer.
   ITEM is an imenu sub-tree and the position is stored as a marker in the first
-  element's 'org-imenu-marker text property.
+  element's \\='org-imenu-marker text property.
 * ITEM is a cons: special case for imenu elements of an `pdfview-mode' buffer.
   In this case no position is stored directly, navigation to the tag must happen
   via callback
@@ -399,7 +399,7 @@ tags."
   "Call the imenu index of the tag at TAG-PATH and go to its position.
 ORG? should be t when this function is called for an org buffer and index since
 org requires a slightly different position extraction because the position of a
-headline with sub-elements is saved in an 'org-imenu-marker' text property."
+headline with sub-elements is saved in an `org-imenu-marker' text property."
   (let* ((file (car tag-path))
          (path (-butlast (cdr tag-path)))
          (tag (-last-item tag-path)))

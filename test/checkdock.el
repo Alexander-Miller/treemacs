@@ -16,6 +16,7 @@
             "api"
             "arg"
             "args"
+            "baz"
             "boolean"
             "bool"
             "btn"

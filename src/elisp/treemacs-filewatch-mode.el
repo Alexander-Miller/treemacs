@@ -46,8 +46,8 @@ Collapsed directories require special handling since all directories of a series
 need to be put under watch so as to be notified when the collapsed structure
 needs to change, but removing the file watch is not straightforward:
 
-Assume a series of directories are collapsed into one as '/c1/c2/c3/c4' and a
-new file is created in '/c1/c2'.  A refresh is started and only '/c1/c2' is
+Assume a series of directories are collapsed into one as \"/c1/c2/c3/c4\" and a
+new file is created in \"/c1/c2\".  A refresh is started and only \"/c1/c2\" is
 collapsed now, c3 and c4 are no longer part of the treemacs view and must be
 removed from the filewatch list.  However the event that triggered the refresh
 was one of a file being created, so it is not possible to know that c3 and c4

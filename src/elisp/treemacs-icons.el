@@ -465,8 +465,8 @@ Uses `treemacs-icon-fallback' as fallback."
 (defun treemacs-resize-icons (size)
   "Resize the current theme's icons to the given SIZE.
 
-If SIZE is 'nil' the icons are not resized and will retain their default size of
-22 pixels.
+If SIZE is \\='nil' the icons are not resized and will retain their default size
+of 22 pixels.
 
 There is only one size, the icons are square and the aspect ratio will be
 preserved when resizing them therefore width and height are the same.
@@ -557,7 +557,7 @@ should be used for."
 (defun treemacs-map-icons-with-auto-mode-alist (extensions mode-icon-alist)
   "Remaps icons for EXTENSIONS according to `auto-mode-alist'.
 EXTENSIONS should be a list of file extensions such that they match the regex
-stored in `auto-mode-alist', for example '\(\".cc\"\).
+stored in `auto-mode-alist', for example \\='(\".cc\").
 MODE-ICON-ALIST is an alist that maps which mode from `auto-mode-alist' should
 be assigned which treemacs icon, for example
 `((c-mode . ,(treemacs-get-icon-value \"c\"))

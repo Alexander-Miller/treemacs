@@ -37,6 +37,8 @@
   (require 'inline)
   (require 'treemacs-macros))
 
+(declare-function string-join "subr-x.el")
+
 (defconst treemacs--mark-annotation-source "treemacs-marked-paths")
 
 (defvar-local treemacs--marked-paths nil)

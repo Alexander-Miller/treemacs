@@ -225,7 +225,7 @@ node for quick retrieval later."
 Based on the given NAME this macro will define a `treemacs-${name}-state' state
 variable and a `treemacs-${name}-icon' icon variable.  If the icon should not be
 static, and should be instead computed every time this node is rendered in its
-parent's :render-action use 'dynamic-icon as a value for ICON.
+parent's :render-action use \\='dynamic-icon as a value for ICON.
 
 The ICON is a string that should be created with `treemacs-as-icon'.  If the
 icon is for a file you can also use `treemacs-icon-for-file'.
@@ -270,11 +270,12 @@ type.  VISIT-ACTION is used in `treemacs-visit-node-no-split' actions."
   "Define a type of node with given NAME that can be further expanded.
 
 ICON-OPEN and ICON-CLOSED are strings and must be created by `treemacs-as-icon'.
-They will be defvar'd as 'treemacs-icon-${name}-open/closed'.  As an alternative
-to static icons you can also supply ICON-OPEN-FORM and ICON-CLOSED-FORM that
-will be dynamically executed whenever a new icon is needed.  Keep in mind that,
-since child nodes are first rendered by their parents, an ICON-CLOSED-FORM will
-need to be repeated in the parent's RENDER-ACTION.
+They will be defvar'd as \\='treemacs-icon-${name}-open/closed'.  As an
+alternative to static icons you can also supply ICON-OPEN-FORM and
+ICON-CLOSED-FORM that will be dynamically executed whenever a new icon is
+needed.  Keep in mind that, since child nodes are first rendered by their
+parents, an ICON-CLOSED-FORM will need to be repeated in the parent's
+RENDER-ACTION.
 
 QUERY-FUNCTION is a form and will be invoked when the node is expanded.  It must
 provide the list of elements that will be rendered with RENDER-ACTION.

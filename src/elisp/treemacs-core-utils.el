@@ -938,12 +938,12 @@ The second test not apply if `treemacs-show-hidden-files' is t."
 (define-inline treemacs--std-ignore-file-predicate (file _)
   "The default predicate to detect ignored files.
 Will return t when FILE
-1) starts with '.#' (lockfiles)
-2) starts with 'flycheck_' (flycheck temp files)
-3) ends with '~' (backup files)
-4) is surrounded with # (auto save files)
-5) is '.git' (see also `treemacs-hide-dot-git-directory')
-6) is '.' or '..' (default dirs)"
+1) starts with \".#\" (lockfiles)
+2) starts with \"flycheck_\" (flycheck temp files)
+3) ends with \"~\" (backup files)
+4) is surrounded with \"#\" (auto save files)
+5) is \".git\" (see also `treemacs-hide-dot-git-directory')
+6) is \".\" or \"..\" (default dirs)"
   (declare (side-effect-free t) (pure t))
   (inline-letevals (file)
     (inline-quote
@@ -1080,7 +1080,7 @@ through the buffer list and kill buffer if PATH is a prefix."
   "Execute the refresh process for BUFFER and PROJECT in that buffer.
 Specifically extracted with the buffer to refresh being supplied so that
 filewatch mode can refresh multiple buffers at once.
-Will refresh every project when PROJECT is 'all."
+Will refresh every project when PROJECT is \\='all."
   (with-current-buffer buffer
     (treemacs-save-position
      (progn

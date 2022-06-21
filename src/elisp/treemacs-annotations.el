@@ -94,7 +94,7 @@ FACE: Face
 SOURCE: String"
   (inline-letevals (source path face)
     (inline-quote
-     (if-let* ((ann (treemacs-get-annotation ,path)))
+     (-if-let* ((ann (treemacs-get-annotation ,path)))
          (let* ((face-list (treemacs-annotation->face ann))
                 (old-face (--first (string= ,source (car it)) face-list)))
            (if old-face
@@ -117,7 +117,7 @@ PATH: Node Path
 SOURCE: String"
   (inline-letevals (path source)
     (inline-quote
-     (when-let* ((ann (treemacs-get-annotation ,path)))
+     (-when-let (ann (treemacs-get-annotation ,path))
        (let* ((git-face (treemacs-annotation->git-face ann))
               (old-faces (treemacs-annotation->face ann))
               (new-faces (--reject-first
@@ -168,7 +168,7 @@ SOURCE: String"
     (inline-quote
      (progn
        (put-text-property 0 (length ,suffix) 'treemacs-suffix-annotation t ,suffix)
-       (if-let* ((ann (treemacs-get-annotation ,path)))
+       (-if-let (ann (treemacs-get-annotation ,path))
            (let* ((suffix-list (treemacs-annotation->suffix ann))
                   (old-suffix (--first (string= ,source (car it)) suffix-list)))
              (if old-suffix
@@ -190,7 +190,7 @@ PATH: Node Path
 SOURCE: String"
   (inline-letevals (path source)
     (inline-quote
-     (when-let* ((ann (treemacs-get-annotation ,path)))
+     (-when-let (ann (treemacs-get-annotation ,path))
        (let* ((old-suffixes (treemacs-annotation->suffix ann))
               (new-suffixes (--reject-first
                              (string= ,source (car it))

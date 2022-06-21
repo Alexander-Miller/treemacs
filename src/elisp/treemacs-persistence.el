@@ -221,10 +221,10 @@ than once.
 PROJ-COUNT counts the number of non-disabled projects in a workspace to make
 sure that there is at least of project that will be displayed.
 
-A successful validation returns just the symbol 'success, in case of an error a
-list of 3 items is returned: the symbol 'error, the exact line where the error
-happened, and the error message.  In some circumstances (for example when a
-project is missing a path property) it makes sense to display the error not in
+A successful validation returns just the symbol \\='success, in case of an error
+a list of 3 items is returned: the symbol \\='error, the exact line where the
+error happened, and the error message.  In some circumstances (for example when
+a project is missing a path property) it makes sense to display the error not in
 the currently looked at line, but the one above, which is why the previously
 looked at line PREV is given as well.
 

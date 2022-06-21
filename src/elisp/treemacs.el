@@ -238,8 +238,9 @@ Like `treemacs-add-and-display-current-project' this will add the current
 project to treemacs based on either projectile, the built-in project.el, or the
 current working directory.
 
-However the 'exclusive' part means that it will make the current project the
-only project, all other projects *will be removed* from the current workspace."
+However the \\='exclusive\\=' part means that it will make the current project
+the only project, all other projects *will be removed* from the current
+workspace."
   (interactive)
   (treemacs-block
    (treemacs-unless-let (root (treemacs--find-current-user-project))

@@ -255,7 +255,7 @@ Returns nil if no treemacs buffer is visible."
 
 (define-inline treemacs-current-visibility ()
   "Return whether the current visibility state of the treemacs buffer.
-Valid states are 'visible, 'exists and 'none."
+Valid states are \\='visible, \\='exists and \\='none."
   (declare (side-effect-free t))
   (inline-quote
    (cond
