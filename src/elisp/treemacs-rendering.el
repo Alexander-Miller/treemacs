@@ -671,6 +671,7 @@ PROJECT: Project Struct"
                  'category 'default-button
                  'face (treemacs--root-face project)
                  :project project
+                 :default-face 'treemacs-root-face
                  :key path
                  :symlink (when (treemacs-project->is-readable? project)
                             (file-symlink-p path))

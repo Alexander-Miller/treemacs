@@ -294,24 +294,22 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
              ;; annotations are present, value needs updating if the git face
              ;; has changed
              (let ((new-face-value
-                    (cond
-                     ((and ,git-face (not (equal ,git-face old-git-face)))
-                      (append (mapcar #'cdr faces)
-                              (list ,git-face)))
-                     ((and old-git-face (null ,git-face))
-                      (mapcar #'cdr faces))
-                     (t face-value))))
-               (when new-face-value
-                 (setf (treemacs-annotation->face-value ann)
-                       new-face-value
-                       (treemacs-annotation->git-face ann)
-                       ,git-face)
-                 (put-text-property
-                  btn-start btn-end 'face
-                  (or new-face-value
-                      (if (file-regular-p (treemacs-button-get ,btn :key))
-                          'treemacs-file-face
-                        'treemacs-directory-face))))))
+                    (or
+                     (cond
+                      ((and ,git-face (not (equal ,git-face old-git-face)))
+                       (append (mapcar #'cdr faces)
+                               (list ,git-face)))
+                      ((and old-git-face (null ,git-face))
+                       (mapcar #'cdr faces))
+                      (t face-value))
+                     (treemacs-button-get ,btn :default-face))))
+               (setf (treemacs-annotation->face-value ann)
+                     new-face-value
+                     (treemacs-annotation->git-face ann)
+                     ,git-face)
+               (put-text-property
+                btn-start btn-end 'face
+                new-face-value)))
 
            ;; Suffix
            (goto-char ,btn)
