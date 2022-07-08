@@ -40,7 +40,9 @@
   (require 'treemacs-macros))
 
 (autoload 'ansi-color-apply-on-region "ansi-color")
-(autoload 'aw-select "ace-window")
+
+(treemacs-import-functions-from "ace-window"
+  ace-select-window)
 
 (treemacs-import-functions-from "cfrs"
   cfrs-read)
@@ -251,7 +253,7 @@ Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
   (treemacs--execute-button-action
-   :window (aw-select "Select window")
+   :window (ace-select-window "Select window")
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
@@ -282,7 +284,7 @@ treemacs window with a double prefix argument."
   (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
-   :window (aw-select "Select window")
+   :window (ace-select-window "Select window")
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
@@ -297,7 +299,7 @@ treemacs window with a double prefix argument."
   (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
-   :window (aw-select "Select window")
+   :window (ace-select-window "Select window")
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
