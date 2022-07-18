@@ -51,6 +51,8 @@ Used as a hook for `window-buffer-change-functions', thus the ignored parameter.
           (treemacs-return-if
               (or treemacs--in-this-buffer
                   (null new-project-path)
+                  (string= (expand-file-name "~")
+                           new-project-path)
                   (bound-and-true-p edebug-mode)
                   (frame-parent)
                   (and (= 1 (length (treemacs-workspace->projects ws)))
@@ -67,6 +69,8 @@ Used as a hook for `window-buffer-change-functions', thus the ignored parameter.
 
 (defun treemacs--setup-project-follow-mode ()
   "Setup all the hooks needed for `treemacs-project-follow-mode'."
+  (when treemacs--project-follow-timer (cancel-timer treemacs--project-follow-timer))
+  (setf treemacs--project-follow-timer nil)
   (add-hook 'window-buffer-change-functions #'treemacs--follow-project)
   (add-hook 'window-selection-change-functions #'treemacs--follow-project)
   (treemacs--follow-project nil))
