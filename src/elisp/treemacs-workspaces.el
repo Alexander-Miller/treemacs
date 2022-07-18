@@ -581,8 +581,7 @@ Return values may be as follows:
      'user-cancel)
    (treemacs-run-in-every-buffer
     (treemacs-with-writable-buffer
-     (let* ((project-path (treemacs-project->path project))
-            (project-pos (goto-char (treemacs-project->position project-path)))
+     (let* ((project-pos (goto-char (treemacs-project->position project)))
             (prev-project-pos (move-marker (make-marker) (treemacs--prev-project-pos)))
             (next-project-pos (move-marker (make-marker) (treemacs--next-project-pos))))
        (when (treemacs-project->is-expanded? project)
@@ -760,6 +759,7 @@ PROJECT: Project Struct"
          (setf projects-in-buffer (delete project-in-buffer projects-in-buffer))))
      (treemacs-with-writable-buffer
       (treemacs--forget-last-highlight)
+      (treemacs--reset-dom)
       ;; delete everything's that's visible and render it again - the order of projects could
       ;; have been changed
       (erase-buffer)
