@@ -156,7 +156,12 @@ For marking files see `treemacs-bulk-file-actions'."
 
 ;;;###autoload
 (defun treemacs-move-file ()
-  "Move file (or directory) at point."
+  "Move file (or directory) at point.
+
+If the selected target is an existing directory the source file will be directly
+moved into this directory.  If the given target instead does not exist then it
+will be treated as the moved file's new name, meaning the original source file
+will be both moved and renamed."
   (interactive)
   (treemacs--copy-or-move
    :action 'move
@@ -169,7 +174,12 @@ For marking files see `treemacs-bulk-file-actions'."
 
 ;;;###autoload
 (defun treemacs-copy-file ()
-  "Copy file (or directory) at point."
+  "Copy file (or directory) at point.
+
+If the selected target is an existing directory the source file will be directly
+copied into this directory.  If the given target instead does not exist then it
+will be treated as the copied file's new name, meaning the original source file
+will be both copied and renamed."
   (interactive)
   (treemacs--copy-or-move
    :action 'copy
@@ -210,10 +220,16 @@ FINISH-VERB: finisher for the success message."
                     '(file-node-open file-node-closed dir-node-open dir-node-closed)))
        wrong-type-msg)
      (let* ((source (treemacs--select-file-from-btn btn flat-prompt))
-            (destination-dir (treemacs--canonical-path
-                              (read-directory-name prompt nil default-directory)))
-            (target (->> source
-                         (treemacs--filename)
+            (destination (treemacs--canonical-path
+                          (read-directory-name prompt nil default-directory)))
+            (destination-dir (if (file-directory-p destination)
+                                 destination
+                               (treemacs--parent-dir destination)))
+            (target-name (treemacs--filename
+                          (if (file-directory-p destination)
+                              source
+                            destination)))
+            (target (->> target-name
                          (treemacs-join-path destination-dir)
                          (treemacs--find-repeated-file-name))))
        (unless (file-exists-p destination-dir)
