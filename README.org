@@ -635,7 +635,6 @@ Treemacs defines and uses the following faces:
 | treemacs-on-success-pulse-face         | :fg #111111 :bg #669966                          | Pulse face used when pulsing on a successful action.                         |
 | treemacs-on-failure-puse-face          | :fg #111111 :bg #ab3737                          | Pulse face used when pulsing on a failed action.                             |
 | treemacs-marked-file-face              | :fg #f0c674 :bg #ab3737                          | Face for files marked for bulk file management.                              |
-| treemacs-hl-line-face                  | hl-line                                          | Face for the hl-line overlay in treemacs buffers.                            |
 | treemacs-fringe-indicator-face         | cursor                                           | Face for the fringe indicator.                                               |
 | treemacs-header-button-face            | font-lock-keyword-face                           | Face for header buttons.                                                     |
 | treemacs-git-commit-diff-face          | font-lock-comment-face                           | Face used for ~treemacs-indicate-top-scroll-mode~ annotations.               |
