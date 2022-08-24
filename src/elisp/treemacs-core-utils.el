@@ -1039,16 +1039,21 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
 
 (defun treemacs--popup-window ()
   "Pop up a side window and buffer for treemacs."
-  (if treemacs-display-in-side-window
-      (-> (treemacs-get-local-buffer-create)
-          (display-buffer-in-side-window `((side . ,treemacs-position)))
-          (select-window))
-    (-> (selected-window)
-        (frame-root-window)
-        (split-window nil treemacs-position)
-        (select-window))
-    (-let [buf (treemacs-get-local-buffer-create)]
-      (switch-to-buffer buf))))
+  (let ((buf (treemacs-get-local-buffer-create)))
+    (display-buffer buf
+                    `(,(if treemacs-display-in-side-window
+                           'display-buffer-in-side-window
+                         'display-buffer-in-direction)
+                      . (;; for buffer in direction
+                         (direction . ,treemacs-position)
+                         (window . root)
+                         ;; for side windows
+                         (slot . -1)
+                         (side . ,treemacs-position)
+                         ;; general-purpose settings
+                         (window-width . ,treemacs-width)
+                         (dedicated . t))))
+    (select-window (get-buffer-window buf))))
 
 (defun treemacs--setup-buffer ()
   "Create and setup a buffer for treemacs in the right position and size."
@@ -1065,10 +1070,7 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
         (with-current-buffer lv-buffer (setf window-size-fixed t)))
     (treemacs--popup-window))
   (treemacs--forget-last-highlight)
-  (set-window-dedicated-p (selected-window) t)
-  (setq-local treemacs--in-this-buffer t)
-  (let ((window-size-fixed))
-    (treemacs--set-width treemacs-width)))
+  (setq-local treemacs--in-this-buffer t))
 
 (define-inline treemacs--parent (path)
   "Parent of PATH, or PATH itself if PATH is the root directory.
