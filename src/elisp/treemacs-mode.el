@@ -261,8 +261,9 @@ Used as a post command hook."
           (setf treemacs--eldoc-msg (treemacs--get-eldoc-message path)
                 default-directory (treemacs--add-trailing-slash
                                    (if (file-directory-p path) path (file-name-directory path)))))
-      (setq treemacs--eldoc-msg nil
-            default-directory "~/"))))
+      (setf treemacs--eldoc-msg nil)
+      (when (eq t treemacs--in-this-buffer)
+        (setf default-directory "~/")))))
 
 (defun treemacs--get-eldoc-message (path)
   "Set the eldoc message for given PATH.
