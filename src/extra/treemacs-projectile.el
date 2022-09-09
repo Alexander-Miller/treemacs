@@ -1,6 +1,6 @@
 ;;; treemacs-projectile.el --- Projectile integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021 Alexander Miller
+;; Copyright (C) 2022 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "26.1") (projectile "0.14.0") (treemacs "0.0"))

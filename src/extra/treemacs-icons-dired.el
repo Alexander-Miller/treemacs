@@ -1,6 +1,6 @@
 ;;; treemacs-icons-dired.el --- Treemacs icons for dired -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021 Alexander Miller
+;; Copyright (C) 2022 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((treemacs "0.0") (emacs "26.1"))
