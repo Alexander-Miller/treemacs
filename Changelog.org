@@ -2,7 +2,8 @@
 #+STARTUP: content
 
 * Changelog
-** Current master
+** v3
+*** Complete rewrite of the extension api
 *** Added ~treemacs-bulk-file-actions~
 *** Added support for moving files via mouse drag
 *** Added ~treemacs-hide-dot-git-directory~
