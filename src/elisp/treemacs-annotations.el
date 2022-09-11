@@ -317,9 +317,9 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
                            ,btn
                            'treemacs-suffix-annotation
                            (current-buffer)
-                           (point-at-eol))
+                           (line-end-position))
                           btn-end))
-           (delete-region (point) (point-at-eol))
+           (delete-region (point) (line-end-position))
            (when suffix-value (insert suffix-value))))))))
 
 (defun treemacs-apply-single-annotation (path)

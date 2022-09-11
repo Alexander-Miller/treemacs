@@ -221,7 +221,7 @@ If STR already has a slash return it unchanged."
   "Delete the current line.
 Unlike the function `kill-whole-line' this won't pollute the kill ring."
   (inline-quote
-     (delete-region (point-at-bol) (min (point-max) (1+ (point-at-eol))))))
+    (delete-region (line-beginning-position) (min (point-max) (1+ (line-end-position))))))
 
 (define-inline treemacs-current-button ()
   "Get the button in the current line.
@@ -229,7 +229,7 @@ Returns nil when point is between projects."
   (declare (side-effect-free error-free))
   (inline-quote
    (-some->
-    (text-property-not-all (point-at-bol) (point-at-eol) 'button nil)
+    (text-property-not-all (line-beginning-position) (line-end-position) 'button nil)
     (copy-marker t))))
 (defalias 'treemacs-node-at-point #'treemacs-current-button)
 
@@ -336,7 +336,7 @@ EXCLUDE-PREFIX: File Path"
     (inline-quote
      (save-excursion
        (let ((len (length ,new-symbol)))
-         (goto-char (- (treemacs-button-start (next-button (point-at-bol) t)) len))
+         (goto-char (- (treemacs-button-start (next-button (line-beginning-position) t)) len))
          (insert ,new-symbol)
          (delete-char len))))))
 
@@ -644,7 +644,7 @@ failed.  PROJECT is used for determining whether Git actions are appropriate."
                        ;; first a plain text-based search for the current dir-part string
                        ;; then we grab the node we landed at and see what's going on
                        ;; there's a couple ways this can go
-                       (while (progn (goto-char (point-at-eol)) (search-forward dir-part nil :no-error))
+                       (while (progn (goto-char (line-end-position)) (search-forward dir-part nil :no-error))
                          (setq current-btn (treemacs-current-button))
                          (cond
                           ;; somehow we landed on a line where there isn't even anything to look at
