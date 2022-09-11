@@ -223,13 +223,13 @@ FILE: Filepath"
   "Get the position of the next project.
 Will return `point-max' if there is no next project."
   (declare (side-effect-free t))
-  (inline-quote (next-single-char-property-change (point-at-eol) :project)))
+  (inline-quote (next-single-char-property-change (line-end-position) :project)))
 
 (define-inline treemacs--prev-project-pos ()
   "Get the position of the next project.
 Will return `point-min' if there is no next project."
   (declare (side-effect-free t))
-  (inline-quote (previous-single-char-property-change (point-at-bol) :project)))
+  (inline-quote (previous-single-char-property-change (line-beginning-position) :project)))
 
 (define-inline treemacs--reset-project-positions ()
   "Reset `treemacs--project-positions'."
@@ -595,7 +595,7 @@ Return values may be as follows:
           ;; the end of the previous button's line. If the `treemacs--projects-end'
           ;; is at the EOL of the  it will move to EOL of the previous button.
           (previous-button
-           (delete-region (treemacs-button-end previous-button) (point-at-eol))
+           (delete-region (treemacs-button-end previous-button) (line-end-position))
            (when next-button (forward-button 1)))
           ;; Previous project does not exist, but a next button exists. Delete from
           ;; BOL to the start of the next buttons line.
@@ -604,12 +604,12 @@ Return values may be as follows:
              ;; The first item after the deletion will be bottom extensions. Project
              ;; end will be at its BOL, making it move upon expand/collapse. Lock the marker.
              (set-marker-insertion-type (treemacs--projects-end) nil))
-           (delete-region (point-at-bol) (progn (goto-char next-button) (forward-line 0) (point))))
+           (delete-region (line-beginning-position) (progn (goto-char next-button) (forward-line 0) (point))))
 
           ;; Neither the previous nor the next button exists. Simply delete the
           ;; current line.
           (t
-           (delete-region (point-at-bol) (point-at-eol)))))
+           (delete-region (line-beginning-position) (line-end-position)))))
        (if (equal (point-min) prev-project-pos)
            (goto-char next-project-pos)
          (goto-char prev-project-pos)))
@@ -717,7 +717,7 @@ PROJECT: Project Struct"
   (interactive)
   (save-excursion
     (goto-char (treemacs-project->position project))
-    (let* ((start (point-at-bol))
+    (let* ((start (line-beginning-position))
            (next  (treemacs--next-non-child-button (treemacs-project->position project)))
            (end   (if next
                       (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))
@@ -794,7 +794,7 @@ PROJECT: Project Struct"
       (_
        (goto-char 0)
        (search-forward-regexp (rx-to-string `(seq bol ,line eol)))))
-    (setf treemacs--org-err-ov (make-overlay (point-at-eol) (point-at-eol)))
+    (setf treemacs--org-err-ov (make-overlay (line-end-position) (line-end-position)))
     (overlay-put treemacs--org-err-ov 'after-string
                  (concat (propertize " ← " 'face 'error) message))
     (add-hook 'after-change-functions #'treemacs--org-edit-remove-validation-msg nil :local)))

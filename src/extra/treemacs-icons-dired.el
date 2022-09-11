@@ -106,7 +106,7 @@ This will make sure the icons' background colours will align with hl-line mode."
           (treemacs--evade-image)
           (unless (region-active-p)
             (let* ((last-pos treemacs--last-highlight)
-                   (curr-pos (next-single-char-property-change (point-at-bol) 'img-selected nil (point-at-eol)))
+                   (curr-pos (next-single-char-property-change (line-beginning-position) 'img-selected nil (line-end-position)))
                    (img-selected (get-text-property curr-pos 'img-selected)))
               (treemacs-with-writable-buffer
                (when (and last-pos (< last-pos (point-max)))

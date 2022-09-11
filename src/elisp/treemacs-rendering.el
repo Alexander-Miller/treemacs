@@ -110,7 +110,7 @@ is a marker pointing to POS."
   "Get the current screen line in the selected window."
   (declare (side-effect-free t))
   (inline-quote
-   (max 1 (count-screen-lines (window-start) (point-at-eol)))))
+   (max 1 (count-screen-lines (window-start) (line-end-position)))))
 
 (define-inline treemacs--lines-in-window ()
   "Determine the number of lines visible in the current (treemacs) window.
@@ -518,7 +518,7 @@ set to PARENT."
          (save-excursion
            (treemacs--flatten-dirs (treemacs--parse-collapsed-dirs ,collapse-process))
            (treemacs--reentry ,root ,git-future))
-         (point-at-eol))))))
+         (line-end-position))))))
 
 (cl-defmacro treemacs--button-close (&key button new-icon new-state post-close-action)
   "Close node given by BUTTON, use NEW-ICON and BUTTON's state to NEW-STATE.
@@ -538,7 +538,7 @@ Run POST-CLOSE-ACTION after everything else is done."
           ;; current button, making the treemacs--projects-end marker track
           ;; properly when collapsing the last project or a last directory of the
           ;; last project.
-          (let* ((pos-start (point-at-eol))
+          (let* ((pos-start (line-end-position))
                  (next (treemacs--next-non-child-button ,button))
                  (pos-end (if next
                               (-> next (treemacs-button-start) (previous-button) (treemacs-button-end))
@@ -984,7 +984,7 @@ FLATTEN-INFO [Int File Path...]"
 
          ;; Insert new label
          (goto-char parent-btn)
-         (delete-region (point) (point-at-eol))
+         (delete-region (point) (line-end-position))
          (insert (apply #'propertize new-button-label properties))
 
          ;; Fixing marker probably necessary since it's also in the dom
