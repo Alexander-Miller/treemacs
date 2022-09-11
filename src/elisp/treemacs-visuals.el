@@ -82,7 +82,7 @@ Used to save the values of `treemacs-indentation' and
           (when treemacs-fringe-indicator-mode
             (treemacs--move-fringe-indicator-to-point))
           (-when-let (btn (treemacs-current-button))
-            (let* ((pos (max (point-at-bol) (- (treemacs-button-start btn) 2)))
+            (let* ((pos (max (line-beginning-position) (- (treemacs-button-start btn) 2)))
                    (img-selected (get-text-property pos 'img-selected)))
               (treemacs-with-writable-buffer
                (when (and treemacs--last-highlight
@@ -101,7 +101,7 @@ Used to save the values of `treemacs-indentation' and
   (when (eq 'treemacs-mode major-mode)
     (treemacs-with-writable-buffer
      (-when-let (btn (treemacs-current-button))
-       (let* ((start (max (point-at-bol) (- (treemacs-button-start btn) 2)))
+       (let* ((start (max (line-beginning-position) (- (treemacs-button-start btn) 2)))
               (end (1+ start))
               (img (get-text-property start 'display))
               (cp (copy-sequence img)))

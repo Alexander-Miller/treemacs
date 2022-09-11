@@ -709,7 +709,7 @@ For slower scrolling see `treemacs-previous-line-other-window'"
            (treemacs--forget-last-highlight)
            ;; after renaming, delete and redisplay the project
            (goto-char (treemacs-button-end project-btn))
-           (delete-region (point-at-bol) (point-at-eol))
+           (delete-region (line-beginning-position) (line-end-position))
            (treemacs--add-root-element project)
            (when (eq state 'root-node-open)
              (treemacs--collapse-root-node (treemacs-project->position project))
@@ -1265,7 +1265,7 @@ visible."
     (save-excursion
       (goto-char (point-min))
       (while (= 0 (forward-line 1))
-        (-let [new-len (- (point-at-eol) (point-at-bol))]
+        (-let [new-len (- (line-end-position) (line-beginning-position))]
           (when (> new-len longest)
             (setf longest new-len
                   depth (treemacs--prop-at-point :depth))))))
