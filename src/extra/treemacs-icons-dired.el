@@ -59,7 +59,7 @@
     (treemacs-with-writable-buffer
      (save-excursion
        (goto-char pos)
-       (forward-line (if treemacs-icons-dired--ranger-adjust 1 2))
+       (dired-goto-next-file)
        (treemacs-block
         (while (not (eobp))
           (if (dired-move-to-filename nil)
