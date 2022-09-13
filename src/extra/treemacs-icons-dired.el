@@ -74,7 +74,7 @@
 (defun treemacs-icons-dired--insert-subdir-advice (&rest args)
   "Advice to Dired & Dired+ insert-subdir commands.
 Will add icons for the subdir in the `car' of ARGS."
-  (let* ((path (car args))
+  (let* ((path (file-name-as-directory (car args)))
          (pos (cdr (assoc path dired-subdir-alist))))
     (when pos
       (treemacs-icons-dired--display-icons-for-subdir path pos))))
