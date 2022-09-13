@@ -8,7 +8,8 @@ NO_LOAD_WARNINGS = --eval "(defvar treemacs-no-load-time-warnings t)"
 SRC_DIR          = src/elisp
 EXTRA_DIR        = src/extra
 EMACSFLAGS       = -Q -batch -L $(SRC_DIR) $(NO_LOAD_WARNINGS)
-COMPILE_COMMAND  = --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile
+COMPILE_COMMAND  = --eval "(setq byte-compile-error-on-warn t cl-print-readably t)" -f batch-byte-compile
+NATIVE_COMMAND   = --eval "(setq byte-compile-error-on-warn t cl-print-readably t)" -f batch-native-compile
 CHECKDOC_COMMAND = -l "test/checkdock.el"
 LINT_DIR         = /tmp/treemacs
 LINT_FLAG        = --eval "(setq byte-compile-dest-file-function (lambda (f) (concat \"$(LINT_DIR)\" (file-name-nondirectory f) \"c\")))"
@@ -52,6 +53,7 @@ ELS += $(EXTRA_DIR)/treemacs-perspective.el
 ELS += $(EXTRA_DIR)/treemacs-projectile.el
 ELS += $(EXTRA_DIR)/treemacs-tab-bar.el
 ELCS = $(ELS:.el=.elc)
+ELNS = $(ELS:.el=.eln)
 
 .PHONY: test compile checkdoc clean lint prepare clean-start .prepare-lint
 
@@ -61,7 +63,13 @@ ELCS = $(ELS:.el=.elc)
 	@printf "Compiling $<\n"
 	$(CASK) exec $(EMACS) $(EMACSFLAGS) $(COMPILE_COMMAND) $<
 
+%.eln: %.elc
+	@printf "Native Compiling $<\n"
+	$(CASK) exec $(EMACS) $(EMACSFLAGS) $(NATIVE_COMMAND) $<
+
 compile: prepare $(ELCS)
+
+native-compile: compile $(ELNS)
 
 .cask: Cask
 	@echo Updating external dependencies...
