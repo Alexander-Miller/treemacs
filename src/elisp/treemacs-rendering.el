@@ -1173,26 +1173,23 @@ GIT-INFO is passed through from the previous branch build."
 
 (defun treemacs--show-single-project (path name)
   "Show only a project for the given PATH and NAME in the current workspace."
-  (-let [ws (treemacs-current-workspace)]
-    (if (treemacs-workspace->is-empty?)
-        (progn
-          (treemacs-do-add-project-to-workspace path name)
-          (treemacs-select-window)
-          (treemacs-pulse-on-success))
-      (setf (treemacs-workspace->projects ws)
-            (--filter (string= path (treemacs-project->path it))
-                      (treemacs-workspace->projects ws)))
-      (unless (treemacs-workspace->projects ws)
-        (let ((treemacs--no-messages t)
-              (treemacs-pulse-on-success nil))
-          (treemacs-add-project-to-workspace path name)))
-      (treemacs-select-window)
-      (treemacs--consolidate-projects)
-      (goto-char 2)
-      (-let [btn (treemacs-current-button)]
-        (unless (treemacs-is-node-expanded? btn)
-          (treemacs--expand-root-node btn)))
-      (treemacs-pulse-on-success))))
+  (let* ((ws (treemacs-current-workspace)))
+    (setf  (treemacs-workspace->projects ws)
+           (list (treemacs-project->create!
+                  :name name
+                  :path path
+                  :path-status (treemacs--get-path-status path))))
+    (--when-let (treemacs-get-local-buffer)
+      (with-current-buffer it
+        (treemacs--consolidate-projects)))
+    (-let [treemacs-select-when-already-in-treemacs 'stay]
+      (treemacs-select-window))
+    (goto-char (point-min))
+    (-if-let (btn (treemacs-current-button))
+      (unless (treemacs-is-node-expanded? btn)
+        (treemacs--expand-root-node btn)))
+    (treemacs-pulse-on-success)
+    (treemacs--evade-image)))
 
 (provide 'treemacs-rendering)
 

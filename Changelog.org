@@ -2,12 +2,15 @@
 #+STARTUP: content
 
 * Changelog
+** current master
+- Treemacs can now be resized with the mouse, even when it width is locked
+- Bug fixes
 ** v3
-*** Complete rewrite of the extension api
-*** Added ~treemacs-bulk-file-actions~
-*** Added support for moving files via mouse drag
-*** Added ~treemacs-hide-dot-git-directory~
-*** Added ~treemacs-git-commit-diff-mode~
+- Complete rewrite of the extension api
+- Added ~treemacs-bulk-file-actions~
+- Added support for moving files via mouse drag
+- Added ~treemacs-hide-dot-git-directory~
+- Added ~treemacs-git-commit-diff-mode~
 ** v2.10
 - Added ~treemacs-width-increment~ and the ability to resize the treemacs window incrementally
 - Added ~treemacs-indent-guide-mode~
