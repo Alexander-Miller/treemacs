@@ -43,6 +43,17 @@
 (defvar treemacs--mouse-project-list-functions
   '(("Add Project.el project" . treemacs--builtin-project-mouse-selection-menu)))
 
+(defun treemacs--mouse-drag-advice (fn &rest args)
+  "Advice to wrap `adjust-window-trailing-edge' as FN and its ARGS.
+Ensure that treemacs' window width can be changed with the mouse, even if it is
+locked."
+  (with-selected-window (or (treemacs-get-local-window) (selected-window))
+    (let ((treemacs--width-is-locked)
+          (window-size-fixed))
+      (apply fn args))))
+
+(advice-add #'adjust-window-trailing-edge :around #'treemacs--mouse-drag-advice)
+
 (defun treemacs--builtin-project-mouse-selection-menu ()
   "Build a mouse selection menu for project.el projects."
   (pcase (if (fboundp 'project-known-project-roots)
