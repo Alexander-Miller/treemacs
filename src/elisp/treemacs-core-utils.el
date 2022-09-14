@@ -973,7 +973,7 @@ PROJECT: Project Struct")
   "Set the width of the treemacs buffer to WIDTH."
   (unless (one-window-p)
     (let ((window-size-fixed)
-          (w (max width window-min-width)))
+          (w (max width window-safe-min-width)))
       (cond
        ((> (window-width) w)
         (shrink-window-horizontally  (- (window-width) w)))
