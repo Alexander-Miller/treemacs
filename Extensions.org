@@ -113,12 +113,13 @@ Finally ~:children~ is special in that it has access to 2 parameters:
 - The ~btn~ for the node at point, as returned by ~treemacs-current-button~
   (the value is a text-properties button as it would be created by the builtin button.el library, hence the name)
 
+We also don't use a ~:face~ property, instead we supply the face directly via the ~label~.
+
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-expandable-node-type showcase-buffer-group
     :closed-icon "+ "
     :open-icon "- "
-    :label (symbol-name item)
-    :face 'font-lock-variable-name-face
+    :label (propertize (symbol-name item) 'face 'font-lock-variable-name-face)
     :key item
     :children (treemacs-showcase--buffers-by-mode (treemacs-button-get btn :major-mode))
     :child-type 'showcase-buffer-leaf

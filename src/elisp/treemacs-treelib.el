@@ -291,8 +291,9 @@ be un-ambiguous.
 LABEL is a form to query a node's text label (the text after the icon) for one
 of the items produced by CHILDREN.  The return value should be a string.
 
-FACE is a form the query to face of a node's LABEL for one of the items produced
-by children.  The return value should be a face symbol.
+FACE is a form to query the face of a node's LABEL for one of the items produced
+by children.  The return value should be a face symbol.  Alternatively it is
+also possible for the face to be directly supplied by the LABEL.
 
 OPEN-ICON and CLOSED-ICON are forms to determine the icons used for the node's
 open and closed states.  The return value should be a string.
@@ -435,7 +436,6 @@ For a detailed description of all arguments see
   (treemacs-static-assert closed-icon ":closed-icon parameter is mandatory")
   (treemacs-static-assert open-icon   ":open-icon parameter is mandatory")
   (treemacs-static-assert label       ":label parameter is mandatory")
-  (treemacs-static-assert face        ":face parameter is mandatory")
   (treemacs-static-assert key         ":key parameter is mandatory")
   (treemacs-static-assert children    ":children parameter is mandatory")
   (treemacs-static-assert child-type  ":child-type parameter is mandatory")
@@ -651,7 +651,8 @@ LABEL: String"
               #'propertize ,label
               'button '(t)
               'category 'default-button
-              ,@(when face `((quote face) ,face))
+              'face (or ,face
+                        (get-text-property 0 'face ,label))
               'help-echo nil
               :custom t
               :state ,state
