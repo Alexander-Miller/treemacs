@@ -71,6 +71,8 @@
             "macos"
             "MacOS"
             "magit"
+            "maildir"
+            "maildirs"
             "makefile"
             "metadata"
             "minibuffer"
