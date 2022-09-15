@@ -513,6 +513,7 @@ NAME: String"
            (when treemacs-expand-added-projects
              (treemacs--expand-root-node (treemacs-project->position project))))))
        (treemacs--persist)
+       (treemacs--invalidate-buffer-project-cache)
        (when (with-no-warnings treemacs-hide-gitignored-files-mode)
          (treemacs--prefetch-gitignore-cache path))
        (run-hook-with-args 'treemacs-create-project-functions project)
@@ -602,6 +603,7 @@ Return values may be as follows:
            (goto-char next-project-pos)
          (goto-char prev-project-pos)))
      (treemacs--forget-last-highlight)
+     (treemacs--invalidate-buffer-project-cache)
      (--when-let (treemacs-get-local-window)
        (with-selected-window it
          (recenter)))
@@ -715,6 +717,7 @@ PROJECT: Project Struct"
 
 (defun treemacs--consolidate-projects ()
   "Correct treemacs buffers' content after the workspace was edited."
+  (treemacs--invalidate-buffer-project-cache)
   (treemacs-run-in-every-buffer
    (let* ((current-file (--when-let (treemacs-current-button) (treemacs--nearest-path it)))
           (current-workspace (treemacs-current-workspace))

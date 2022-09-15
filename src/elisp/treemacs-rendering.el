@@ -1188,7 +1188,6 @@ GIT-INFO is passed through from the previous branch build."
     (-if-let (btn (treemacs-current-button))
       (unless (treemacs-is-node-expanded? btn)
         (treemacs--expand-root-node btn)))
-    (treemacs-pulse-on-success)
     (treemacs--evade-image)))
 
 (provide 'treemacs-rendering)
