@@ -213,12 +213,13 @@ Label and weight metadata will be sourced from possibly pre-filled
    (t
     (treemacs-get-icon-value 'mail)))
   :ret-action #'treemacs-mu4e--visit-maildir
-  :label (treemacs-maildir->label item)
-  :key (treemacs-maildir->folder item)
-  :face
+  :label
   (if (treemacs-maildir->parent-folder item)
-      'treemacs-directory-face
-    'treemacs-root-face)
+      (propertize (treemacs-maildir->label item)
+                  'face 'treemacs-directory-face)
+    (propertize (treemacs-maildir->label item)
+                'face 'treemacs-root-face))
+  :key (treemacs-maildir->folder item)
   :children (treemacs-mu4e--child-maidirs-datasource btn)
   :more-properties
   `(:maildir ,item

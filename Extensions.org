@@ -88,12 +88,11 @@ only summarise the most important points:
 
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-entry-node-type showcase-buffers
-    :label "Buffers"
+    :label (propertize "Buffers" 'face 'font-lock-keyword-face)
     :key 'showcase-buffers
     :open-icon (treemacs-get-icon-value 'list)
     :closed-icon (treemacs-get-icon-value 'list)
     :children (treemacs-showcase--buffer-major-modes)
-    :face 'font-lock-keyword-face
     :child-type 'showcase-buffer-group)
 #+END_SRC
 
@@ -112,8 +111,6 @@ Finally ~:children~ is special in that it has access to 2 parameters:
 - The ~item~ being rendered, as returned by its parent's ~:children~ data source
 - The ~btn~ for the node at point, as returned by ~treemacs-current-button~
   (the value is a text-properties button as it would be created by the builtin button.el library, hence the name)
-
-We also don't use a ~:face~ property, instead we supply the face directly via the ~label~.
 
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-expandable-node-type showcase-buffer-group
@@ -134,9 +131,9 @@ defined above can use that information.
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-leaf-node-type showcase-buffer-leaf
     :icon "• "
-    :label (or (buffer-name item) "#<killed buffer>")
+    :label (propertize (or (buffer-name item) "#<killed buffer>")
+                       'face 'font-lock-string-face)
     :key item
-    :face 'font-lock-string-face
     :more-properties `(:buffer ,item)
     :ret-action #'treemacs-showcase-RET-buffer-action)
 #+END_SRC
@@ -182,7 +179,7 @@ Most of the code is the same, there are only 2 differences:
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-entry-node-type showcase-async-buffers
     :key 'showcase-buffers-async
-    :label "Async Buffers"
+    :label (propertize"Async Buffers" 'face 'font-lock-keyword-face)
     :open-icon (treemacs-get-icon-value 'list)
     :closed-icon (treemacs-get-icon-value 'list)
     :children
@@ -190,7 +187,6 @@ Most of the code is the same, there are only 2 differences:
       (run-with-timer
        (1+ (random 3)) nil
        (lambda () (funcall callback items))))
-    :face 'font-lock-keyword-face
     :child-type 'showcase-async-buffer-group
     :async? t)
 #+END_SRC
@@ -201,8 +197,7 @@ Leaves have no asynchronous parts, so the previous definition can be re-used dir
   (treemacs-define-expandable-node-type showcase-async-buffer-group
     :closed-icon "+ "
     :open-icon "- "
-    :label (symbol-name item)
-    :face 'font-lock-variable-name-face
+    :label (propertize (symbol-name item) 'face 'font-lock-variable-name-face)
     :key item
     :children
     (let ((items (treemacs-showcase--buffers-by-mode (treemacs-button-get btn :major-mode))))
@@ -326,12 +321,8 @@ In this example we combine both the buffer groups and individual buffer leaves i
       "- ")
     :label
     (if (bufferp item)
-        (buffer-name item)
-      (symbol-name item))
-    :face
-    (if (bufferp item)
-        'font-lock-string-face
-      'font-lock-variable-name-face)
+        (propertize (buffer-name item) 'face 'font-lock-string-face)
+      (propertize (symbol-name item) 'face 'font-lock-variable-name-face))
     :key
     (if (bufferp item)
         (buffer-name item)
@@ -355,12 +346,11 @@ Entry points cannot be combined, they still need to be set up individually:
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-entry-node-type showcase-buffers-monotype-entry
     :key 'showcase-buffers-monotype-entry
-    :label "Monotype Buffers"
+    :label (propertize "Monotype Buffers" 'face 'font-lock-keyword-face)
     :open-icon (treemacs-get-icon-value 'list)
     :closed-icon (treemacs-get-icon-value 'list)
     :children (treemacs-showcase--buffer-major-modes)
     :more-properties nil
-    :face 'font-lock-keyword-face
     :child-type 'showcase-monotype-buffers)
 #+END_SRC
 

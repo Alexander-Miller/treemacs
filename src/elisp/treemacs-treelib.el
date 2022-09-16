@@ -70,9 +70,6 @@ Set by `treemacs--async-update-part-complete'.")
   ;; produces a key for one item returned by children
   key
 
-  ;; produces a face for one item returned by children
-  face
-
   ;; produces a text label for one item returned by children
   label
 
@@ -246,7 +243,6 @@ Also pass additional DATA to predicate function.")
           more-properties
           key
           label
-          face
           open-icon
           closed-icon
           child-type
@@ -278,8 +274,8 @@ extracted via `(treemacs-button-get node :property)' (see also MORE-PROPERTIES).
 In addition the item (as produced by the form passed here) that was used to
 create the node will also be available under the name `item'.
 
-KEY, LABEL, FACE, OPEN-ICON, CLOSE-ICON and MORE-PROPERTIES all act on one of
-the items produced by CHILDREN.  The node and the item that produced it will be
+KEY, LABEL, OPEN-ICON, CLOSE-ICON and MORE-PROPERTIES all act on one of the
+items produced by CHILDREN.  The node and the item that produced it will be
 bound under the names `btn' and `item' respectively.
 
 KEY is a form to generate a semi-unique key for a given node for one of the
@@ -291,10 +287,6 @@ be un-ambiguous.
 LABEL is a form to query a node's text label (the text after the icon) for one
 of the items produced by CHILDREN.  The return value should be a string.
 
-FACE is a form to query the face of a node's LABEL for one of the items produced
-by children.  The return value should be a face symbol.  Alternatively it is
-also possible for the face to be directly supplied by the LABEL.
-
 OPEN-ICON and CLOSED-ICON are forms to determine the icons used for the node's
 open and closed states.  The return value should be a string.
 
@@ -304,8 +296,8 @@ querying the node's CHILDREN (see above).
 
 CHILD-TYPE is, unlike all the other arguments, not a form, but a quoted symbol.
 It must refer to the NAME argument of a another (or the same) extension type and
-determines the behaviours (LABEL, FACE etc.) used to create the children of the
-node type being defined here.
+determines the behaviours (LABEL etc.) used to create the children of the node
+type being defined here.
 
 RET-ACTION is the function that is called when RET is pressed on a node of this
 be able to handle both a closed and open state.  If no explicit RET-ACTION type.
@@ -351,7 +343,6 @@ extension, it will be used as a type-check when enabling an extension with e.g.
           :entry-point?    ,entry-point?
           :label           (lambda (&optional btn item) "" (ignore item) (ignore btn) ,label)
           :key             (lambda (&optional btn item) "" (ignore item) (ignore btn) ,key)
-          :face            (lambda (&optional btn item) "" (ignore item) (ignore btn) ,face)
           :open-icon       (lambda (&optional btn item) "" (ignore item) (ignore btn) ,open-icon)
           :closed-icon     (lambda (&optional btn item) "" (ignore item) (ignore btn) ,closed-icon)
           :more-properties (lambda (&optional btn item) "" (ignore item) (ignore btn) ,more-properties)
@@ -379,12 +370,11 @@ extension, it will be used as a type-check when enabling an extension with e.g.
           icon
           label
           key
-          face
           more-properties
           ret-action)
 
   "Define a type of node that is a leaf and cannot be further expanded.
-The NAME, ICON, LABEL, KEY and FACE arguments are mandatory.
+The NAME, ICON, LABEL and KEY arguments are mandatory.
 
 MORE-PROPERTIES and RET-ACTION are optional.
 
@@ -396,12 +386,10 @@ For a detailed description of all arguments see
   (treemacs-static-assert icon  ":icon parameter is mandatory")
   (treemacs-static-assert label ":label parameter is mandatory")
   (treemacs-static-assert key   ":key parameter is mandatory")
-  (treemacs-static-assert face  ":face parameter is mandatory")
 
   `(treemacs-do-define-extension-type ,name
      :key ,key
      :label ,label
-     :face ,face
      :more-properties ,more-properties
      :closed-icon ,icon
      :ret-action ,ret-action
@@ -415,7 +403,6 @@ For a detailed description of all arguments see
           open-icon
           label
           key
-          face
           children
           child-type
           more-properties
@@ -423,8 +410,8 @@ For a detailed description of all arguments see
           async?)
 
   "Define a general-purpose expandable node-type.
-The NAME, CLOSED-ICON, OPEN-ICON LABEL, KEY, FACE, CHILDREN and CHILD-TYPE
-arguments are mandatory.
+The NAME, CLOSED-ICON, OPEN-ICON LABEL, KEY, CHILDREN and CHILD-TYPE arguments
+are mandatory.
 
 MORE-PROPERTIES, RET-ACTION and ASYNC are optional.
 
@@ -444,7 +431,6 @@ For a detailed description of all arguments see
      :closed-icon ,closed-icon
      :open-icon   ,open-icon
      :label ,label
-     :face ,face
      :key ,key
      :children ,children
      :child-type ,child-type
@@ -459,7 +445,6 @@ For a detailed description of all arguments see
           open-icon
           closed-icon
           children
-          face
           child-type
           more-properties
           ret-action
@@ -467,8 +452,8 @@ For a detailed description of all arguments see
 
   "Define a node type with NAME that serves as an entry-point for an extension.
 
-The KEY, LABEL, OPEN-ICON CLOSED-ICON, CHILDREN, FACE and CHILD-TYPE arguments
-are mandatory.
+The KEY, LABEL, OPEN-ICON CLOSED-ICON, CHILDREN and CHILD-TYPE arguments are
+mandatory.
 
 MORE-PROPERTIES, RET-ACTION and ASYNC are optional.
 
@@ -482,7 +467,6 @@ For a detailed description of all arguments see
   (treemacs-static-assert open-icon   ":open-icon parameter is mandatory")
   (treemacs-static-assert closed-icon ":closed-icon parameter is mandatory")
   (treemacs-static-assert children    ":childen parameter is mandatory")
-  (treemacs-static-assert face        ":face parameter is mandatory")
   (treemacs-static-assert child-type  ":child-type parameter is mandatory")
 
   `(treemacs-do-define-extension-type ,name
@@ -491,7 +475,6 @@ For a detailed description of all arguments see
      :open-icon ,open-icon
      :closed-icon ,closed-icon
      :children ,children
-     :face ,face
      :child-type ,child-type
      :more-properties ,more-properties
      :async? ,async?
@@ -566,7 +549,6 @@ EXT: `treemacs-extension' instance"
               label
               'button '(t)
               'category 'default-button
-              'face (treemacs-extension->get ext :face)
               :custom t
               :key key
               :path key
@@ -620,7 +602,6 @@ EXT: `treemacs-extension' instance"
           state
           key
           depth
-          face
           label)
 
   "Create the strings needed to render an extension node.
@@ -633,7 +614,6 @@ ICON: String
 STATE: Symbol
 KEY: Any
 DEPTH: Int
-FACE: Face
 LABEL: String"
 
   (macroexp-let2* nil
@@ -651,8 +631,6 @@ LABEL: String"
               #'propertize ,label
               'button '(t)
               'category 'default-button
-              'face (or ,face
-                        (get-text-property 0 'face ,label))
               'help-echo nil
               :custom t
               :state ,state
@@ -687,7 +665,6 @@ PARENT: Button"
      (propertize (treemacs-extension->get ext :label)
                  'button '(t)
                  'category 'default-button
-                 'face (treemacs-extension->get ext :face)
                  :custom t
                  :key key
                  :path path
@@ -846,7 +823,6 @@ ITEMS: List<Any>"
           (closed-icon-fn  (treemacs-extension->closed-icon child-ext))
           (label-fn        (treemacs-extension->label child-ext))
           (properties-fn   (treemacs-extension->more-properties child-ext))
-          (face-fn         (treemacs-extension->face child-ext))
           (key-fn          (treemacs-extension->key child-ext)))
      (treemacs--button-open
       :button btn
@@ -869,7 +845,6 @@ ITEMS: List<Any>"
         :state child-state
         :key (funcall key-fn btn item)
         :depth depth
-        :face (funcall face-fn btn item)
         :label (funcall label-fn btn item)))
       :post-open-action
       (progn
@@ -890,7 +865,6 @@ EXT: `treemacs-extension' instance"
          (closed-icon-fn  (treemacs-extension->closed-icon child-ext))
          (label-fn        (treemacs-extension->label child-ext))
          (properties-fn   (treemacs-extension->more-properties child-ext))
-         (face-fn         (treemacs-extension->face child-ext))
          (key-fn          (treemacs-extension->key child-ext)))
     (treemacs--button-open
      :button btn
@@ -917,7 +891,6 @@ EXT: `treemacs-extension' instance"
        :state child-state
        :key (funcall key-fn btn item)
        :depth depth
-       :face (funcall face-fn btn item)
        :label (funcall label-fn btn item)))
      :post-open-action
      (progn
