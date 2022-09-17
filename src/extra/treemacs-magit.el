@@ -92,7 +92,8 @@ current git status and just go through the lines as they are right now."
                             (treemacs-find-in-dom)
                             (treemacs-dom-node->children)
                             (-map #'treemacs-dom-node->key)))
-       (push dir visible-dirs)))
+       (when (stringp dir)
+         (push dir visible-dirs))))
     (pfuture-callback `(,treemacs-python-executable
                         "-O" "-S"
                         ,treemacs--git-status.py
@@ -130,22 +131,22 @@ Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
                   (path (-some-> node (treemacs-button-get :key))))
              (treemacs-with-writable-buffer
               (while (and node
-                          (or (not (stringp path))
-                              (file-exists-p path))
                           (>= curr-depth start-depth))
-                (treemacs--git-face-quick-change
-                    (treemacs-button-get node :key)
-                    (or (ht-get ht path)
-                        (if (memq (treemacs-button-get node :state)
-                                  '(file-node-open file-node-closed))
-                            'treemacs-git-unmodified-face
-                          'treemacs-directory-face)))
-                (put-text-property (treemacs-button-start node) (treemacs-button-end node) 'face
-                                   (or (ht-get ht path)
-                                       (if (memq (treemacs-button-get node :state)
-                                                 '(file-node-open file-node-closed))
-                                           'treemacs-git-unmodified-face
-                                         'treemacs-directory-face)))
+                (when (and (stringp path)
+                           (file-exists-p path))
+                  (treemacs--git-face-quick-change
+                   (treemacs-button-get node :key)
+                   (or (ht-get ht path)
+                       (if (memq (treemacs-button-get node :state)
+                                 '(file-node-open file-node-closed))
+                           'treemacs-git-unmodified-face
+                         'treemacs-directory-face)))
+                  (put-text-property (treemacs-button-start node) (treemacs-button-end node) 'face
+                                     (or (ht-get ht path)
+                                         (if (memq (treemacs-button-get node :state)
+                                                   '(file-node-open file-node-closed))
+                                             'treemacs-git-unmodified-face
+                                           'treemacs-directory-face))))
                 (forward-line 1)
                 (if (eobp)
                     (setf node nil)
