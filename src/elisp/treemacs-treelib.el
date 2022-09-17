@@ -568,13 +568,14 @@ EXT: `treemacs-extension' instance"
      ;; node. Its depth is -1 and it is not visible, but can still be used to update
      ;; the entire extension without explicitly worrying about complex dom changes.
      (let* ((key (treemacs-extension->get ext :key nil nil))
+            (path (list key))
             (pr (treemacs-project->create!
                  :name (treemacs-extension->get ext :label nil nil)
-                 :path key
+                 :path path
                  :path-status 'extension))
             (button-start (point-marker))
             (dom-node (treemacs-dom-node->create!
-                       :key key
+                       :key path
                        :position (point-marker))))
        (treemacs-dom-node->insert-into-dom! dom-node)
        (insert (propertize "Hidden Node\n"
@@ -584,7 +585,7 @@ EXT: `treemacs-extension' instance"
                            'skip t
                            :custom t
                            :key key
-                           :path key
+                           :path path
                            :depth -1
                            :project pr
                            :state (treemacs-extension->get ext :closed-state)))
