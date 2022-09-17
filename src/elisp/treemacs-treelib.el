@@ -31,7 +31,7 @@
 (eval-when-compile
   (cl-declaim (optimize (speed 3) (safety 0))))
 
-(defconst treemacs-treelib-version "1.0")
+(defconst treemacs-treelib-version "1.1")
 
 (defconst treemacs--treelib-async-load-string
   (propertize " Loading …"
@@ -350,7 +350,12 @@ extension, it will be used as a type-check when enabling an extension with e.g.
           :open-state      (lambda ()                   "" ',open-state)
           :closed-state    (lambda ()                   "" ',closed-state)))
 
-       (treemacs-define-TAB-action ',closed-state ,(if no-tab? '#'ignore '#'treemacs-expand-extension-node))
+       (treemacs-define-TAB-action
+        ',closed-state
+        ,(cond
+          (no-tab?   '#'ignore)
+          (variadic? '#'treemacs--expand-variadic-parent)
+          (t         '#'treemacs-expand-extension-node)))
        (treemacs-define-TAB-action ',open-state   ,(if no-tab? '#'ignore '#'treemacs-collapse-extension-node))
        (treemacs-define-RET-action ',closed-state ,(or ret-action (if no-tab? '#'ignore '#'treemacs-expand-extension-node)))
        (treemacs-define-RET-action ',open-state   ,(or ret-action (if no-tab? '#'ignore '#'treemacs-collapse-extension-node)))
@@ -578,7 +583,7 @@ EXT: `treemacs-extension' instance"
                        :key path
                        :position (point-marker))))
        (treemacs-dom-node->insert-into-dom! dom-node)
-       (insert (propertize "Hidden Node\n"
+       (insert (propertize "Hidden node"
                            'button '(t)
                            'category 'default-button
                            'invisible t
@@ -590,7 +595,7 @@ EXT: `treemacs-extension' instance"
                            :project pr
                            :state (treemacs-extension->get ext :closed-state)))
        (let ((marker (copy-marker (point) t)))
-         (treemacs--expand-variadic-parent button-start ext)
+         (treemacs--do-expand-variadic-parent button-start ext)
          (goto-char marker)))))
   t)
 
@@ -692,33 +697,33 @@ If a prefix ARG is provided expand recursively."
       (error "No extension is registered for state '%s'" state))
     (unless (or (treemacs-button-get btn :leaf) already-loading)
       (-let [async-cache (ht-get treemacs--async-update-cache path)]
-        (cond
-         (async-cache
-          ;; IMPORTANT
-          ;; Asynchronous updates must be directed *very* carefully.
-          ;; If there is no pre-computed cache the expand happens normally with
-          ;; a "Loading..." string and normal async delay.
-          ;; If the cache already exists then we at first open the async nodes
-          ;; as if they were normal nodes, using the cache as their items.
-          ;; Then, in the background, we start an asynchronous update via
-          ;; `treemacs-update-async-node'.
-          ;; However this first mundane node expansion will trigger re-entry, so
-          ;; every child that is re-entered might trigger its own async update,
-          ;; which is bad for 2 reasons:
-          ;; 1. `treemacs-update-async-node' already updates a full path
-          ;; including all its children
-          ;; 2. At the end of every update is a call to `treemacs-update-node'
-          ;; with a new async cache, causing another round of re-entry and
-          ;; potential async updates.
-          ;; In short: there is strong potential for an infinite loop!
-          ;;
-          ;; To keep this from happening the async background update must be
-          ;; suppressed for all nodes but the very first, both for re-entry and
-          ;; the final update.
-          ;; This is achieved by setting the `busy' flag at the first async
-          ;; node, and only starting the second update if, and only if, neither
-          ;; the current node, nor any of its parents, are marked as busy.
-          (treemacs-with-writable-buffer
+        (treemacs-with-writable-buffer
+         (cond
+          (async-cache
+           ;; IMPORTANT
+           ;; Asynchronous updates must be directed *very* carefully.
+           ;; If there is no pre-computed cache the expand happens normally with
+           ;; a "Loading..." string and normal async delay.
+           ;; If the cache already exists then we at first open the async nodes
+           ;; as if they were normal nodes, using the cache as their items.
+           ;; Then, in the background, we start an asynchronous update via
+           ;; `treemacs-update-async-node'.
+           ;; However this first mundane node expansion will trigger re-entry, so
+           ;; every child that is re-entered might trigger its own async update,
+           ;; which is bad for 2 reasons:
+           ;; 1. `treemacs-update-async-node' already updates a full path
+           ;; including all its children
+           ;; 2. At the end of every update is a call to `treemacs-update-node'
+           ;; with a new async cache, causing another round of re-entry and
+           ;; potential async updates.
+           ;; In short: there is strong potential for an infinite loop!
+           ;;
+           ;; To keep this from happening the async background update must be
+           ;; suppressed for all nodes but the very first, both for re-entry and
+           ;; the final update.
+           ;; This is achieved by setting the `busy' flag at the first async
+           ;; node, and only starting the second update if, and only if, neither
+           ;; the current node, nor any of its parents, are marked as busy.
            (let* ((busy? (treemacs-button-get btn :busy))
                   (parent btn))
              (unless busy?
@@ -730,11 +735,11 @@ If a prefix ARG is provided expand recursively."
              (treemacs--do-expand-extension-node
               btn ext async-cache arg)
              (unless busy?
-               (treemacs-update-async-node path)))))
-         ((treemacs-extension->async? ext)
-          (treemacs--do-expand-async-extension-node btn ext arg))
-         (t
-          (treemacs--do-expand-extension-node btn ext nil arg)))))))
+               (treemacs-update-async-node path))))
+          ((treemacs-extension->async? ext)
+           (treemacs--do-expand-async-extension-node btn ext arg))
+          (t
+           (treemacs--do-expand-extension-node btn ext nil arg))))))))
 
 (defun treemacs-collapse-extension-node (&optional arg)
   "Collapse a node created with the extension api.
@@ -864,21 +869,36 @@ ITEMS: List<Any>"
               (goto-char (treemacs-button-start it))
               (treemacs-expand-extension-node recursive)))))))))
 
-(defun treemacs--expand-variadic-parent (btn ext &optional _arg)
+(defun treemacs--expand-variadic-parent (&optional arg)
+  "Interactive command to expand a variadic parent.
+Only required to set up `treemacs-TAB-actions-config'.
+
+ARG: Prefix Arg"
+  (interactive "P")
+  (let* ((btn (treemacs-node-at-point))
+         (state (treemacs-button-get btn :state))
+         (ext (alist-get state treemacs--extension-registry)))
+    (when (null ext)
+      (error "No extension is registered for state '%s'" state))
+    (treemacs-with-writable-buffer
+     (treemacs--do-expand-variadic-parent btn ext arg))))
+
+(defun treemacs--do-expand-variadic-parent (btn ext &optional _arg)
   "Expand the hidden parent BTN of a variadic extension instance EXT.
 
 BTN: Button
 EXT: `treemacs-extension' instance"
   (let* ((items           (treemacs-extension->get ext :children))
-         (btn-path        (treemacs-button-get btn :path))
-         (parent-path     (list btn-path))
-         (parent-dom-node (treemacs-find-in-dom btn-path))
+         (parent-path     (treemacs-button-get btn :path))
+         (parent-dom-node (treemacs-find-in-dom parent-path))
          (child-ext       (treemacs-extension->get ext :child-type))
          (child-state     (treemacs-extension->get child-ext :closed-state))
          (closed-icon-fn  (treemacs-extension->closed-icon child-ext))
          (label-fn        (treemacs-extension->label child-ext))
          (properties-fn   (treemacs-extension->more-properties child-ext))
          (key-fn          (treemacs-extension->key child-ext)))
+    (goto-char (button-end btn))
+    (insert (apply #'propertize "\n" (text-properties-at btn)))
     (treemacs--button-open
      :button btn
      :new-state (treemacs-extension->get ext :open-state)
