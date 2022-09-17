@@ -390,7 +390,7 @@ For a detailed description of all arguments see
   `(treemacs-do-define-extension-type ,name
      :key ,key
      :label ,label
-     :more-properties ,more-properties
+     :more-properties (nconc '(:leaf t) ,more-properties)
      :closed-icon ,icon
      :ret-action ,ret-action
      :no-tab? t
