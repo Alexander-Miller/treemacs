@@ -728,13 +728,13 @@ If a prefix ARG is provided expand recursively."
              (unless busy?
                (treemacs-button-put btn :busy t))
              (treemacs--do-expand-extension-node
-              btn ext arg async-cache)
+              btn ext async-cache arg)
              (unless busy?
                (treemacs-update-async-node path)))))
          ((treemacs-extension->async? ext)
           (treemacs--do-expand-async-extension-node btn ext arg))
          (t
-          (treemacs--do-expand-extension-node btn ext arg)))))))
+          (treemacs--do-expand-extension-node btn ext nil arg)))))))
 
 (defun treemacs-collapse-extension-node (&optional arg)
   "Collapse a node created with the extension api.
@@ -747,8 +747,9 @@ If a prefix ARG is provided expand recursively."
       (error "No extension is registered for state '%s'" state))
     (treemacs--do-collapse-extension-node btn ext arg)))
 
-(defun treemacs--do-expand-async-extension-node (btn ext &optional _arg)
+(defun treemacs--do-expand-async-extension-node (btn ext &optional arg)
   "Expand an async extension node BTN for the given extension EXT.
+Predix ARG is used to set expand recursion depth.
 
 BTN: Button
 EXT: `treemacs-extension' instance
@@ -771,14 +772,15 @@ ARG: Prefix Arg"
     (lambda (items)
       (ht-set! treemacs--async-update-cache (treemacs-button-get btn :path)
                (or items 'nothing))
-      (treemacs--complete-async-expand-callback items btn ext)))))
+      (treemacs--complete-async-expand-callback btn items ext arg)))))
 
-(defun treemacs--complete-async-expand-callback (items btn ext)
-  "Properly expand an async node after its children were computed.
+(defun treemacs--complete-async-expand-callback (btn items ext arg)
+  "Properly expand an async node at BTN after its child ITEMS were computed.
 
-ITEMS are the node's children.
-BTN is the button leading to the node.
-EXT is the node's extension instance."
+BTN: Button
+ITEMS: List<Any>
+EXT: `treemacs-extension' instance
+ARG: Prefix Arg"
   (treemacs-with-button-buffer btn
     (save-excursion
       (goto-char btn)
@@ -788,14 +790,17 @@ EXT is the node's extension instance."
         (point-at-eol)))
       (if (eq :async-error (car items))
           (treemacs-log-err "Something went wrong in an asynchronous context: %s" (cadr items))
-        (treemacs--do-expand-extension-node btn ext nil (or items 'nothing))))
+        (treemacs--do-expand-extension-node btn ext (or items 'nothing) arg)))
     (hl-line-highlight)))
 
-(defun treemacs--do-expand-extension-node (btn ext &optional _arg items)
+(defun treemacs--do-expand-extension-node (btn ext &optional items arg)
   "Expand an extension node BTN for the given extension EXT.
+
 ITEMS will override the node's normal `children' function.  This is only used
 when the node is asynchronous and this call is used to complete the async
 computation.
+
+Predix ARG is used to set expand recursion depth.
 
 BTN: Button
 EXT: `treemacs-extension' instance
@@ -824,7 +829,8 @@ ITEMS: List<Any>"
           (closed-icon-fn  (treemacs-extension->closed-icon child-ext))
           (label-fn        (treemacs-extension->label child-ext))
           (properties-fn   (treemacs-extension->more-properties child-ext))
-          (key-fn          (treemacs-extension->key child-ext)))
+          (key-fn          (treemacs-extension->key child-ext))
+          (recursive       (treemacs--prefix-arg-to-recurse-depth arg)))
      (treemacs--button-open
       :button btn
       :new-state (treemacs-extension->get ext :open-state)
@@ -850,9 +856,15 @@ ITEMS: List<Any>"
       :post-open-action
       (progn
         (treemacs-on-expand btn-path btn)
-        (treemacs--reentry btn-path))))))
+        (treemacs--reentry btn-path)
+        (when (> recursive 0)
+          (cl-decf recursive)
+          (--each (treemacs-collect-child-nodes btn)
+            (when (treemacs-is-node-collapsed? it)
+              (goto-char (treemacs-button-start it))
+              (treemacs-expand-extension-node recursive)))))))))
 
-(defun treemacs--expand-variadic-parent (btn ext)
+(defun treemacs--expand-variadic-parent (btn ext &optional _arg)
   "Expand the hidden parent BTN of a variadic extension instance EXT.
 
 BTN: Button
