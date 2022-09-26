@@ -290,12 +290,18 @@ That's it. Now we just need to define an interactive command that will display o
       (--when-let (get-buffer bufname) (kill-buffer it))
       (let ((buf (get-buffer-create bufname)))
         (pop-to-buffer buf)
-        (treemacs-initialize 'showcase-buffers-variadic))))
+        (treemacs-initialize showcase-buffers-variadic
+          :with-expand-depth 'all
+          :and-do (setf treemacs-space-between-root-nodes t)))))
         #+END_SRC
 
-~treemacs-initialize~ must be called for the buffer to be used by treemacs. It must be used *before* any buffer-local
-values are set because the initialization will switch the major-mode to ~treemacs-mode~, which erases buffer-local
-values.
+~treemacs-initialize~ must be called for the buffer to be used by treemacs. It can optionally accept two keyword
+arguments:
+
+- ~:with-expand-depth~ :: Indicates the extra depth that this extension should be expanded with. Can be either a number or
+  a symbol like ~'all~ to expand everything.
+- ~:and-do~ :: General purpose form for code that should run as part of your setup, like setting buffer-local values
+  (which could otherwise be overridden when initialisation enabled ~treemacs-mode~)
 
 ** Monotyped Nodes
 

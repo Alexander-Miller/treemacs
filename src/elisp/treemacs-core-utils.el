@@ -166,6 +166,23 @@ itself, the default representation translates to 9999."
       ((integerp ,arg) ,arg)
       (t 999)))))
 
+(defun treemacs--all-buttons-with-depth (depth)
+  "Get all buttons with the given DEPTH."
+  (declare (side-effect-free t))
+  (save-excursion
+    (goto-char (point-min))
+    (let ((current-btn (treemacs-current-button))
+          (result))
+      (when (and current-btn
+                 (= depth (treemacs-button-get current-btn :depth)))
+        (push current-btn result))
+      (while (= 0 (forward-line 1))
+        (setf current-btn (treemacs-current-button))
+        (when (and current-btn
+                   (= depth (treemacs-button-get current-btn :depth)))
+          (push current-btn result)))
+      result)))
+
 (define-inline treemacs--parent-dir (path)
   "Return the parent of PATH is it's a file, or PATH if it is a directory.
 

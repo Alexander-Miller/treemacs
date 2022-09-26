@@ -224,7 +224,7 @@ Also pass additional DATA to predicate function.")
                    ;; to be removed eventually
                    (setf is-first (if (functionp extension)
                                       (funcall extension)
-                                    (treemacs-render-extension extension))))))
+                                    (treemacs--render-extension extension))))))
              (not is-first))))))
   (build-extension-addition    "project")
   (build-extension-removal     "project")
@@ -520,16 +520,20 @@ For a detailed description of all arguments see
      :variadic? t
      :entry-point? t))
 
-(defun treemacs-render-extension (ext)
+(defun treemacs--render-extension (ext &optional expand-depth)
   "Render the entry point of the given extension EXT.
+
 Also serves as an entry point to render an extension in an independent buffer
 outside of treemacs proper.
 
-EXT: `treemacs-extension' instance"
+EXPAND-DEPTH indicates the additional recursion depth.
+
+EXT: `treemacs-extension' instance
+EXPAND-DEPTH: Int"
   (when (symbolp ext)
     (setf ext (treemacs--ext-symbol-to-instance ext)))
   (if (treemacs-extension->variadic? ext)
-      (treemacs--variadic-extension-entry-render ext)
+      (treemacs--variadic-extension-entry-render ext expand-depth)
     (treemacs--singular-extension-entry-render ext)))
 
 (defun treemacs--singular-extension-entry-render (ext)
@@ -562,11 +566,14 @@ EXT: `treemacs-extension' instance"
               :state (treemacs-extension->get ext :closed-state)))))
   nil)
 
-(defun treemacs--variadic-extension-entry-render (ext)
+(defun treemacs--variadic-extension-entry-render (ext &optional expand-depth)
   "Render the entry point of the given variadic top level extension EXT.
 Will create and insert the required strings and make a new dom entry.
 
-EXT: `treemacs-extension' instance"
+EXPAND-DEPTH indicates the additional recursion depth.
+
+EXT: `treemacs-extension' instance
+EXPAND-DEPTH: Int"
   (save-excursion
     (treemacs-with-writable-buffer
      ;; When the extension is variadic it will be managed by a hidden top-level
@@ -595,7 +602,7 @@ EXT: `treemacs-extension' instance"
                            :project pr
                            :state (treemacs-extension->get ext :closed-state)))
        (let ((marker (copy-marker (point) t)))
-         (treemacs--do-expand-variadic-parent button-start ext)
+         (treemacs--do-expand-variadic-parent button-start ext expand-depth)
          (goto-char marker)))))
   t)
 
@@ -883,11 +890,14 @@ ARG: Prefix Arg"
     (treemacs-with-writable-buffer
      (treemacs--do-expand-variadic-parent btn ext arg))))
 
-(defun treemacs--do-expand-variadic-parent (btn ext &optional _arg)
+(defun treemacs--do-expand-variadic-parent (btn ext &optional expand-depth)
   "Expand the hidden parent BTN of a variadic extension instance EXT.
 
+EXPAND-DEPTH indicates the additional recursion depth.
+
 BTN: Button
-EXT: `treemacs-extension' instance"
+EXT: `treemacs-extension' instance
+EXPAND-DEPTH: Int"
   (let* ((items           (treemacs-extension->get ext :children))
          (parent-path     (treemacs-button-get btn :path))
          (parent-dom-node (treemacs-find-in-dom parent-path))
@@ -896,7 +906,8 @@ EXT: `treemacs-extension' instance"
          (closed-icon-fn  (treemacs-extension->closed-icon child-ext))
          (label-fn        (treemacs-extension->label child-ext))
          (properties-fn   (treemacs-extension->more-properties child-ext))
-         (key-fn          (treemacs-extension->key child-ext)))
+         (key-fn          (treemacs-extension->key child-ext))
+         (expand-depth    (treemacs--prefix-arg-to-recurse-depth expand-depth)))
     (goto-char (button-end btn))
     (insert (apply #'propertize "\n" (text-properties-at btn)))
     (treemacs--button-open
@@ -937,7 +948,13 @@ EXT: `treemacs-extension' instance"
                     (dom-node (treemacs-find-in-dom path)))
                (setf (treemacs-dom-node->position dom-node) btn)))))
        (treemacs-on-expand (treemacs-button-get btn :path) btn)
-       (treemacs--reentry (treemacs-button-get btn :path))))))
+       (treemacs--reentry (treemacs-button-get btn :path))
+       (when (> expand-depth 0)
+         (cl-decf expand-depth)
+         (--each (treemacs--all-buttons-with-depth 0)
+           (when (treemacs-is-node-collapsed? it)
+             (goto-char (treemacs-button-start it))
+             (treemacs-expand-extension-node expand-depth))))))))
 
 (defun treemacs-update-async-node (path)
   "Update an asynchronous node at the given PATH.
@@ -1001,30 +1018,46 @@ ARG: Prefix Arg"
    :post-close-action
    (treemacs-on-collapse (treemacs-button-get btn :path))))
 
-(defmacro treemacs-initialize (extension &rest init-body)
+(cl-defmacro treemacs-initialize
+    (extension
+     &key
+     (with-expand-depth 0)
+     and-do)
   "Initialise an external buffer for use with the given EXTENSION.
-INIT-BODY can be used to set up buffer-local variables after the buffer has
+
+EXTENSION is the same symbol that was passed as a `:key' argument
+to `treemacs-define-variadic-entry-node-type'.
+
+WITH-EXPAND-DEPTH indicates the number of nodes that should be expanded *in
+addition* to the default.  If a value is given that is not a number then
+treemacs will assume that *all* possible nodes should be expanded.
+
+AND-DO can be used to set up buffer-local variables after the buffer has
 switched over to `treemacs-mode'."
   (declare (indent 1))
   `(progn
      (treemacs--disable-fringe-indicator)
      (treemacs-with-writable-buffer
       (erase-buffer))
-     ;; make sure the fringe indicator is enabled later, otherwise treemacs attempts
-     ;; to move it right after the `treemacs-mode' call
-     ;; the indicator cannot be created before either since the major-mode activation
-     ;; wipes out buffer-local variables' values
+     ;; make sure the fringe indicator is enabled later, otherwise treemacs
+     ;; attempts to move it right after the `treemacs-mode' call the indicator
+     ;; cannot be created before either since the major-mode activation wipes
+     ;; out buffer-local variables' values
      (let ((treemacs-fringe-indicator-mode nil)
            (treemacs--in-this-buffer t))
        (treemacs-mode))
      (setq-local treemacs-space-between-root-nodes nil)
      (setq-local treemacs--in-this-buffer :extension)
-     ,@init-body
-     (treemacs-render-extension (treemacs--ext-symbol-to-instance ,extension))
+     ,and-do
+     (treemacs--render-extension
+      (let ((instance (treemacs--ext-symbol-to-instance ',extension)))
+        (treemacs-static-assert
+            (and instance (treemacs-extension->variadic? instance))
+          "%s is not a variadic extension" ,extension)
+        instance)
+      (if (numberp ,with-expand-depth) ,with-expand-depth 999))
      (goto-char 1)
      (treemacs--evade-image)))
-
-
 
 (provide 'treemacs-treelib)
 
