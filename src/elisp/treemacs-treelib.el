@@ -761,7 +761,7 @@ If a prefix ARG is provided expand recursively."
 
 (defun treemacs--do-expand-async-extension-node (btn ext &optional arg)
   "Expand an async extension node BTN for the given extension EXT.
-Predix ARG is used to set expand recursion depth.
+Prefix ARG is used to set expand recursion depth.
 
 BTN: Button
 EXT: `treemacs-extension' instance
@@ -812,7 +812,7 @@ ITEMS will override the node's normal `children' function.  This is only used
 when the node is asynchronous and this call is used to complete the async
 computation.
 
-Predix ARG is used to set expand recursion depth.
+Prefix ARG is used to set expand recursion depth.
 
 BTN: Button
 EXT: `treemacs-extension' instance
