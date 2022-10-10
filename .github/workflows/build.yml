@@ -12,6 +12,7 @@ jobs:
         - 27.1
         - 27.2
         - 28.1
+        - 28.2
         - snapshot
     steps:
     - name: Install Emacs
