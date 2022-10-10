@@ -372,8 +372,8 @@
 
 (describe "treemacs--parent"
 
-  (it "Fails on nil input"
-    (expect (treemacs--parent nil) :to-throw))
+  (it "Does not fail for nil input"
+    (expect (treemacs--parent nil) :to-be nil))
 
   (it "Returns nil when input is empty"
     (expect (treemacs--parent "") :to-be nil))
@@ -388,21 +388,10 @@
     (expect (treemacs--parent "/") :to-equal "/"))
 
   (it "Returns parent of root-level extension node."
-    (expect (treemacs--parent '(:custom "a" "b")) :to-equal '(:custom "a")))
+    (expect (treemacs--parent '(a b)) :to-equal '(a)))
 
-  (it "Returns directory extension of extension sub-item node."
-    (expect (treemacs--parent '("/test1" "a" "b")) :to-equal '("/test1" "a")))
-
-  (it "Returns directory of a directory extension node."
-    (expect (treemacs--parent '("/test1" "a")) :to-equal "/test1"))
-
-  (it "Returns project extension of a project sub-item node."
-    (let ((p (treemacs-project->create! :path "/A" :path-status 'local-readable)))
-      (expect (treemacs--parent (list p "a" "b")) :to-equal (list p "a"))))
-
-  (it "Returns project of a project extension node."
-    (let ((p (treemacs-project->create! :path "/A" :path-status 'local-readable)))
-      (expect (treemacs--parent (list p "a")) :to-equal "/A"))))
+  (it "Returns parent of directory extension node."
+    (expect (treemacs--parent '("/test1" "a" "b")) :to-equal '("/test1" "a"))))
 
 (describe "treemacs--get-or-parse-git-result"
 
