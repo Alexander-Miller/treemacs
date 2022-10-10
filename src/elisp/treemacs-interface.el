@@ -510,7 +510,8 @@ With a prefix ARG substract the increment value multiple times."
        "Path at point is not a file.")
      (when (file-directory-p path)
        (setf path (treemacs--add-trailing-slash path)))
-     (-let [copied (-> path (file-relative-name (treemacs-project->path project)) (kill-new))]
+     (-let [copied (-> path (file-relative-name (treemacs-project->path project)))]
+       (kill-new copied)
        (treemacs-pulse-on-success "Copied relative path: %s" (propertize copied 'face 'font-lock-string-face))))))
 
 (defun treemacs-copy-project-path-at-point ()
@@ -522,7 +523,8 @@ With a prefix ARG substract the increment value multiple times."
        "There is nothing to copy here")
      (treemacs-error-return-if (not (stringp (treemacs-project->path project)))
        "Project at point is not a file.")
-    (-let [copied (-> project (treemacs-project->path) (kill-new))]
+    (-let [copied (-> project (treemacs-project->path))]
+      (kill-new copied)
       (treemacs-pulse-on-success "Copied project path: %s" (propertize copied 'face 'font-lock-string-face))))))
 
 (defun treemacs-delete-other-windows ()
