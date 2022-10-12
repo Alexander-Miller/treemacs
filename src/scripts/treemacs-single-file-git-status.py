@@ -73,7 +73,7 @@ def main():
             propagate_state = "?"
             result_list.append((path, propagate_state))
             break
-        elif (changed_proc.wait() == 0 and changed_proc.stdout.read1() != b''):
+        elif (changed_proc.wait() == 0 and changed_proc.stdout.read1(1) != b''):
             result_list.append((path, "M"))
         else:
             result_list.append((path, "0"))
