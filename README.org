@@ -34,6 +34,7 @@
    - [[#tramp-support][Tramp Support]]
    - [[#org-support][Org Support]]
    - [[#theme-support][Theme Support]]
+   - [[#peeking][Peeking]]
    - [[#additional-packages][Additional Packages]]
    - [[#treemacs-as-a-framework][Treemacs as a Framework]]
 - [[#installation][Installation]]
@@ -381,6 +382,17 @@ Do keep in mind that by default treemacs' theme support is all theory: the stand
 default theme; this feature is meant to easily allow *others* to extend, create and distribute themes for treemacs.
 
 A detailed explanation on modifying themes and icons can be found in the [[#customizing-themes-and-icons][Configuration]] section.
+** Peeking
+If you want to look at files from within treemacs, without opening them with ~RET~ and switching to another window, you
+can do so with ~P~ which activates ~treemacs-peek-mode~. When peek-mode is active treemacs will automatically preview the
+file at point.
+
+To quit peek-mode either press ~P~ again to disable it or open a file with ~RET~. Either way upon exiting peek-mode all
+files that have been opened due to peeking will be closed again (with the exception of the one that you opened with ~RET~,
+of course).
+
+You can scroll the window being peeked (and in general ~other-window~ when you are in treemacs) with ~M-N/P~ or ~M-J/K~ if you
+use ~treemacs-evil~.
 ** Additional Packages
 Next to treemacs itself you can optionally install:
 
