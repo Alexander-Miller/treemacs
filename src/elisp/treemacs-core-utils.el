@@ -1060,9 +1060,9 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
         ;; workaround for LV windows like spacemacs' transient states preventing
         ;; side windows from popping up right
         ;; see https://github.com/abo-abo/hydra/issues/362
-        (setf (buffer-local-value 'window-size-fixed lv-buffer) nil)
+        (with-current-buffer lv-buffer (setf window-size-fixed nil))
         (treemacs--popup-window)
-        (setf (buffer-local-value 'window-size-fixed lv-buffer) t))
+        (with-current-buffer lv-buffer (setf window-size-fixed t)))
     (treemacs--popup-window))
   (treemacs--forget-last-highlight)
   (set-window-dedicated-p (selected-window) t)

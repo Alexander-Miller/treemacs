@@ -102,7 +102,8 @@ rely on the current buffer and workspace being aligned.")
 To be called whenever a project or workspace changes."
   (inline-quote
   (dolist (buf (buffer-list))
-    (setf (buffer-local-value 'treemacs--project-of-buffer buf) nil))))
+    (with-current-buffer buf
+      (setf treemacs--project-of-buffer nil)))))
 
 (defun treemacs--current-builtin-project-function ()
   "Find the current project.el project."
