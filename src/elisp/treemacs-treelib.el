@@ -695,11 +695,11 @@ If a prefix ARG is provided expand recursively."
          (state (treemacs-button-get btn :state))
          (path (treemacs-button-get btn :path))
          (ext (alist-get state treemacs--extension-registry))
-         (eol (point-at-eol))
+         (eol (line-end-position))
          (already-loading
           (/= eol
              (next-single-property-change
-              (point-at-bol) 'treemacs-async-string nil eol))))
+              (line-beginning-position) 'treemacs-async-string nil eol))))
     (when (null ext)
       (error "No extension is registered for state '%s'" state))
     (unless (or (treemacs-button-get btn :leaf) already-loading)
@@ -775,7 +775,7 @@ ARG: Prefix Arg"
                  'face 'font-lock-type-face))
    (save-excursion
      (treemacs-with-writable-buffer
-      (goto-char (point-at-eol))
+      (goto-char (line-end-position))
       (insert treemacs--treelib-async-load-string)))
    (funcall
     (treemacs-extension->children ext)
@@ -799,7 +799,7 @@ ARG: Prefix Arg"
       (treemacs-with-writable-buffer
        (delete-region
         (next-single-char-property-change (point) 'treemacs-async-string)
-        (point-at-eol)))
+        (line-end-position)))
       (if (eq :async-error (car items))
           (treemacs-log-err "Something went wrong in an asynchronous context: %s" (cadr items))
         (treemacs--do-expand-extension-node btn ext (or items 'nothing) arg)))

@@ -257,7 +257,7 @@ single argument.
 
 To keep the alist clean changes should not be made directly, but with
 `treemacs-define-RET-action', for example like this:
-\(treemacs-define-RET-action \\='file-node-closed #'treemacs-visit-node-ace)"
+\(treemacs-define-RET-action \\='file-node-closed #\\='treemacs-visit-node-ace)"
   :type '(alist :key-type symbol :value-type treemacs-ret-action)
   :group 'treemacs)
 

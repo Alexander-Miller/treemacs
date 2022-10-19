@@ -266,7 +266,7 @@ either OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
           ,@(when new-icon
               `((beginning-of-line)
                 (treemacs--button-symbol-switch ,new-icon)))
-          (goto-char (point-at-eol))
+          (goto-char (line-end-position))
           ,@(if immediate-insert
                 `((progn
                     (insert (apply #'concat ,open-action))))
