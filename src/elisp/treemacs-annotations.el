@@ -38,7 +38,6 @@
   (cl-declaim (optimize (speed 3) (safety 0))))
 
 (defconst treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
-(defconst treemacs--annotation-cache (make-hash-table :size 200 :test 'equal))
 
 ;; TODO(2022/02/23): clear on file delete
 
