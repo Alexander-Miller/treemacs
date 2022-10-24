@@ -56,7 +56,7 @@
   treemacs-advanced-helpful-hydra)
 
 (treemacs-import-functions-from "treemacs-tags"
-  treemacs--create-imenu-index-functione)
+  treemacs--create-imenu-index-function)
 
 (defvar bookmark-make-record-function)
 
