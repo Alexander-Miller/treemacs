@@ -33,7 +33,6 @@
 (require 'treemacs-customization)
 (require 'treemacs-workspaces)
 (require 'treemacs-persistence)
-(require 'treemacs-extensions)
 (require 'treemacs-logging)
 
 (eval-when-compile

@@ -551,6 +551,8 @@ and rules apply for QUERY-FUNCTION, RENDER-ACTION and ROOT-KEY-FORM."
     (treemacs-mode))
   (setq-local treemacs--in-this-buffer :extension))
 
+(treemacs-log "The treemacs-extensions module is obsolete, treemacs-treelib should be used instead.")
+
 (provide 'treemacs-extensions)
 
 ;;; treemacs-extensions.el ends here

@@ -54,14 +54,6 @@
   treemacs-add-project-to-workspace
   treemacs-TAB-action)
 
-(treemacs-import-functions-from "treemacs-extensions"
-  treemacs--apply-root-top-extensions
-  treemacs--apply-root-bottom-extensions
-  treemacs--apply-project-top-extensions
-  treemacs--apply-project-bottom-extensions
-  treemacs--apply-directory-top-extensions
-  treemacs--apply-directory-bottom-extensions)
-
 (treemacs-import-functions-from "treemacs-tags"
   treemacs--expand-file-node
   treemacs--expand-tag-node)
@@ -575,9 +567,11 @@ RECURSIVE: Bool"
              ;; TODO(2019/10/14): go back to post open
              ;; expand first because it creates a dom node entry
              (treemacs-on-expand path btn)
-             (treemacs--apply-project-top-extensions btn project)
-             (save-excursion
-               (treemacs--apply-project-bottom-extensions btn project))
+             (when (fboundp 'treemacs--apply-project-top-extensions)
+               (treemacs--apply-project-top-extensions btn project))
+             (when (fboundp 'treemacs--apply-project-bottom-extensions)
+               (save-excursion
+                 (treemacs--apply-project-bottom-extensions btn project)))
              (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn)
              (treemacs--start-watching path)
              ;; Performing FS ops on a disconnected Tramp project
@@ -628,9 +622,11 @@ RECURSIVE: Bool"
          (progn
            ;; do on-expand first so buttons that need collapsing can quickly find their parent
            (treemacs-on-expand path btn)
-           (treemacs--apply-directory-top-extensions btn path)
+           (when (fboundp 'treemacs--apply-directory-top-extensions)
+             (treemacs--apply-directory-top-extensions btn path))
            (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
-           (treemacs--apply-directory-bottom-extensions btn path)
+           (when (fboundp 'treemacs--apply-directory-bottom-extensions)
+             (treemacs--apply-directory-bottom-extensions btn path))
            (treemacs--start-watching path)
            (when (> recursive 0)
              (cl-decf recursive)
@@ -690,7 +686,8 @@ PROJECT: Project Struct"
      (setq treemacs--projects-end (make-marker)))
    (let* ((projects (-reject #'treemacs-project->is-disabled? projects))
           (current-workspace (treemacs-current-workspace))
-          (has-previous (treemacs--apply-root-top-extensions current-workspace)))
+          (has-previous (when (fboundp 'treemacs--apply-root-top-extensions)
+                          (treemacs--apply-root-top-extensions current-workspace))))
 
      (--each projects
        (when has-previous (treemacs--insert-root-separator))
@@ -700,7 +697,8 @@ PROJECT: Project Struct"
      ;; Set the end marker after inserting the extensions. Otherwise, the
      ;; extensions would move the marker.
      (let ((projects-end-point (point)))
-       (treemacs--apply-root-bottom-extensions current-workspace has-previous)
+       (when (fboundp 'treemacs--apply-root-bottom-extensions)
+         (treemacs--apply-root-bottom-extensions current-workspace has-previous))
        ;; If the marker lies at the start of the buffer, expanding extensions would
        ;; move the marker. Make sure that the marker does not move when doing so.
        (set-marker-insertion-type treemacs--projects-end has-previous)
