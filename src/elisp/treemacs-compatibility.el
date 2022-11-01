@@ -143,7 +143,8 @@ width of the new window when the treemacs window is visible."
       (add-hook 'org-store-link-functions #'treemacs-store-org-link))))
 
 (with-eval-after-load 'evil-escape
-  (when (boundp 'evil-escape-excluded-major-modes)
+  ;; Disable old versions of evil-escape but keep newer versions active
+  (when (and (boundp 'evil-escape-excluded-major-modes) (not (boundp 'evil-escape-version)))
     (add-to-list 'evil-escape-excluded-major-modes 'treemacs-mode)))
 
 (defun treemacs-load-all-the-icons-with-workaround-font (font)
