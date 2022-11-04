@@ -224,7 +224,9 @@ GIT-FUTURE: Pfuture"
                           (setq i (1+ i))
                         (ht-set! git-info-hash
                                  (treemacs-join-path git-root (s-trim-left path))
-                                 (substring (s-trim-left status) 0 1)))))
+                                 (treemacs--git-status-face
+                                  (substring (s-trim-left status) 0 1)
+                                  'treemacs-git-unmodified-face)))))
                   (setq i (1+ i)))))))))
     git-info-hash))
 
