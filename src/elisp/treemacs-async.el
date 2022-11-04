@@ -266,6 +266,7 @@ OVERRIDE-STATUS: Boolean"
            (null (ht-get treemacs--single-git-update-debouce-store file)))
       (ht-set! treemacs--single-git-update-debouce-store file t)
       (let* ((parents (unless (or exclude-parents
+                                  (eq 'simple treemacs--git-mode)
                                   (null (treemacs-dom-node->parent parent-node)))
                         ;; include the first parent...
                         (cons (treemacs-dom-node->key parent-node)
