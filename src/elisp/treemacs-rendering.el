@@ -468,13 +468,14 @@ set to PARENT."
            (treemacs-dom-node->insert-into-dom! it))
 
          (treemacs--inplace-map-when-unrolled dir-strings 2
-           (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
+           (-if-let* ((ann (treemacs-get-annotation (concat ,root "/" it)))
+                      (face (treemacs-annotation->face-value ann)))
                (progn
                  (put-text-property
                   0
                   (length it)
                   'face
-                  (treemacs-annotation->face-value ann)
+                  face
                   it)
                  (concat it (treemacs-annotation->suffix-value ann)))
              (put-text-property
@@ -489,13 +490,14 @@ set to PARENT."
          (end-of-line)
          (setf file-strings
                (treemacs--inplace-map-when-unrolled file-strings 3
-                 (-if-let (ann (treemacs-get-annotation (concat ,root "/" it)))
+                 (-if-let* ((ann (treemacs-get-annotation (concat ,root "/" it)))
+                            (face (treemacs-annotation->face-value ann)))
                      (progn
                        (put-text-property
                         0
                         (length it)
                         'face
-                        (treemacs-annotation->face-value ann)
+                        face
                         it)
                        (concat it (treemacs-annotation->suffix-value ann)))
                    (put-text-property
