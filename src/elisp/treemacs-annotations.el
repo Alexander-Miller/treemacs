@@ -129,7 +129,7 @@ SOURCE: String"
               (treemacs-annotation->face-value ann)
               (append (mapcar #'cdr new-faces) git-face))
            (setf
-            (treemacs-annotation->face ann) 'deleted
+            (treemacs-annotation->face ann) nil
             (treemacs-annotation->face-value ann) git-face)))))))
 
 (defun treemacs-clear-annotation-faces (source)
@@ -277,38 +277,25 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
                (old-git-face (treemacs-annotation->git-face ann)))
 
            ;; Faces
-           (if (eq 'deleted faces)
-               ;; face annotation was deleted - only the git face remains
-               ;; as the annotation value
-               (progn
-                 (setf
-                  (treemacs-annotation->face ann) nil
-                  (treemacs-annotation->face-value ann) ,git-face
-                  (treemacs-annotation->git-face ann) ,git-face)
-                 (unless ,git-face
-                   (treemacs--remove-annotation-if-empty ann path))
-                 (put-text-property
-                  btn-start btn-end 'face
-                  ,git-face))
-             ;; annotations are present, value needs updating if the git face
-             ;; has changed
-             (let ((new-face-value
-                    (or
-                     (cond
-                      ((and ,git-face (not (equal ,git-face old-git-face)))
-                       (append (mapcar #'cdr faces)
-                               (list ,git-face)))
-                      ((and old-git-face (null ,git-face))
-                       (mapcar #'cdr faces))
-                      (t face-value))
-                     (treemacs-button-get ,btn :default-face))))
-               (setf (treemacs-annotation->face-value ann)
-                     new-face-value
-                     (treemacs-annotation->git-face ann)
-                     ,git-face)
-               (put-text-property
-                btn-start btn-end 'face
-                new-face-value)))
+           ;; annotations are present, value needs updating if the git face
+           ;; has changed
+           (let ((new-face-value
+                  (or
+                   (cond
+                    ((and ,git-face (not (equal ,git-face old-git-face)))
+                     (append (mapcar #'cdr faces)
+                             (list ,git-face)))
+                    ((and old-git-face (null ,git-face))
+                     (mapcar #'cdr faces))
+                    (t face-value))
+                   (treemacs-button-get ,btn :default-face))))
+             (setf (treemacs-annotation->face-value ann)
+                   new-face-value
+                   (treemacs-annotation->git-face ann)
+                   ,git-face)
+             (put-text-property
+              btn-start btn-end 'face
+              new-face-value))
 
            ;; Suffix
            (goto-char ,btn)

@@ -1850,14 +1850,15 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
           (treemacs-remove-annotation-face "Path" "Source")
           (expect (ht-size treemacs--annotation-store) :to-equal 0)))
 
-      (it "sets deleted flag after removing the last face"
+      (it "removes the last face"
         (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
               (ann (treemacs-annotation->create!)))
           (ht-set! treemacs--annotation-store "Path" ann)
           (treemacs-set-annotation-face "Path" 'face "Source")
           (treemacs-remove-annotation-face "Path" "Source")
           (expect (ht-get treemacs--annotation-store "Path") :to-be ann)
-          (expect (treemacs-annotation->face ann) :to-equal 'deleted)))
+          (expect (treemacs-annotation->face ann) :to-be nil)
+          (expect (treemacs-annotation->face-value ann) :to-be nil)))
 
       (it "sets face value to the git face after removing the last face"
         (let ((treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
