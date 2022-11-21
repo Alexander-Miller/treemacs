@@ -241,7 +241,7 @@ find the key a command is bound to it will show a blank instead."
              (column-files       (propertize "File Management" 'face 'treemacs-help-column-face))
              (column-ws          (propertize "Workspaces" 'face 'treemacs-help-column-face))
              (column-misc        (propertize "Misc." 'face 'treemacs-help-column-face))
-             (column-window      (propertize "Other Window." 'face 'treemacs-help-column-face))
+             (column-window      (propertize "Other Window" 'face 'treemacs-help-column-face))
              (common-hint        (format "%s %s"
                                          (propertize "For common keybinds see" 'face 'treemacs-help-title-face)
                                          (propertize "treemacs-common-helpful-hydra" 'face 'font-lock-function-name-face)))
@@ -278,7 +278,7 @@ find the key a command is bound to it will show a blank instead."
 %s
 %s (%s)
 
-%s      ^^^^^^^^^^^^^│ %s                  ^^^^^^^^│ %s      ^^^^^^^^^^^│ %s
+%s      ^^^^^^^^^^^^^│ %s                  ^^^^^^^^│ %s       ^^^^^^^^^^│ %s
 ―――――――――――――――――――――┼―――――――――――――――――――――――――――――┼――――――――――――――――――――┼――――――――――――――――――――――
  %s create file  ^^^^│ %s Edit Workspaces  ^^^^^^^^│ %s peek      ^^^^^^│ %s refresh
  %s create dir   ^^^^│ %s Create Workspace ^^^^^^^^│ %s line down ^^^^^^│ %s (re)set width
