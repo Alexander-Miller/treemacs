@@ -742,7 +742,7 @@ If a prefix ARG is provided expand recursively."
              (treemacs--do-expand-extension-node
               btn ext async-cache arg)
              (unless busy?
-               (treemacs-update-async-node path))))
+               (treemacs-update-async-node path (marker-buffer btn)))))
           ((treemacs-extension->async? ext)
            (treemacs--do-expand-async-extension-node btn ext arg))
           (t
@@ -956,8 +956,9 @@ EXPAND-DEPTH: Int"
              (goto-char (treemacs-button-start it))
              (treemacs-expand-extension-node expand-depth))))))))
 
-(defun treemacs-update-async-node (path)
-  "Update an asynchronous node at the given PATH.
+(defun treemacs-update-async-node (path buffer)
+  "Update an asynchronous node at PATH in the given BUFFER.
+
 The update process will asynchronously pre-compute the children for every node
 currently expanded under PATH.  The results of this computation will be cached
 and then used to update the UI in one go."
@@ -973,7 +974,7 @@ and then used to update the UI in one go."
          children-fn btn item
          (lambda (items)
            (treemacs--async-update-part-complete
-            path item-path items)))))))
+            path item-path items buffer)))))))
 
 (defun treemacs--get-async-update-items (path)
   "Get the items needed for an async update at the given PATH.
@@ -988,18 +989,19 @@ extensions instance."
           (push (cons key ext) items))))
     items))
 
-(defun treemacs--async-update-part-complete (top-path updated-path items)
+(defun treemacs--async-update-part-complete (top-path updated-path items buffer)
   "Partial completion for an asynchronous update.
 TOP-PATH is the path of the node the update was called for.
 UPDATED-PATH is the path of one of top node's children (may also be TOP-PATH)
 whose content has just been computed.
 ITEMS are the new items for the UPDATED-PATH that will be cached for the next
-update."
+update.
+BUFFER is the buffer where the node is located."
   (ht-set! treemacs--async-update-cache updated-path (or items 'nothing))
   (-let [count (cl-decf (ht-get treemacs--async-update-count top-path))]
     (when (= 0 count)
-      (--when-let (treemacs-get-local-buffer)
-        (with-current-buffer it
+      (--when-let (buffer-live-p buffer)
+        (with-current-buffer buffer
           (treemacs-with-writable-buffer
            (treemacs-update-node top-path)
            (treemacs-button-put (treemacs-find-node updated-path) :busy nil)))))))
