@@ -45,26 +45,29 @@ Used as a hook for `window-buffer-change-functions', thus the ignored parameter.
   "Actual, un-debounced, implementation of project following."
   (-when-let (window (treemacs-get-local-window))
     (treemacs-block
-     (let* ((ws (treemacs-current-workspace))
-            (new-project-path (treemacs--find-current-user-project))
-            (old-project-path (-some-> ws
-                                (treemacs-workspace->projects)
-                                (car)
-                                (treemacs-project->path))))
-       (treemacs-return-if
-           (or treemacs--in-this-buffer
-               (null new-project-path)
-               (string= (expand-file-name "~")
-                        new-project-path)
-               (bound-and-true-p edebug-mode)
-               (frame-parent)
-               (and (= 1 (length (treemacs-workspace->projects ws)))
-                    (string= new-project-path old-project-path))))
-       (save-selected-window
-         (treemacs--show-single-project
-          new-project-path (treemacs--filename new-project-path))
-         (treemacs--follow)
-         (hl-line-highlight))))))
+      (let* ((ws (treemacs-current-workspace))
+              (new-project-path (treemacs--find-current-user-project))
+              (old-project-path (-some-> ws
+                                  (treemacs-workspace->projects)
+                                  (car)
+                                  (treemacs-project->path))))
+        (treemacs-return-if
+          (or treemacs--in-this-buffer
+            (null new-project-path)
+            (and
+              (null treemacs-project-follow-into-home)
+              (string=
+                (expand-file-name "~")
+                new-project-path))
+            (bound-and-true-p edebug-mode)
+            (frame-parent)
+            (and (= 1 (length (treemacs-workspace->projects ws)))
+              (string= new-project-path old-project-path))))
+        (save-selected-window
+          (treemacs--show-single-project
+            new-project-path (treemacs--filename new-project-path))
+          (treemacs--follow)
+          (hl-line-highlight))))))
 
 (defun treemacs--follow-project-after-buffer-init ()
   "Hook to follow the current project when a treemacs buffer is created.

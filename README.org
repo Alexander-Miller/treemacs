@@ -478,6 +478,7 @@ discoverability.
             treemacs-recenter-after-project-jump     'always
             treemacs-recenter-after-project-expand   'on-distance
             treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+            treemacs-project-follow-into-home        nil
             treemacs-show-cursor                     nil
             treemacs-show-hidden-files               t
             treemacs-silent-filewatch                nil
@@ -626,6 +627,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-find-workspace-method           | 'find-for-file-or-pick-first                     | Determines how treemacs selects the workspace when it first starts.                                                                                                                                                                  |
 | treemacs-header-scroll-indicators        | '(nil . "^^^^^^")                                | Indicators used for ~treemacs-indicate-top-scroll-mode~.                                                                                                                                                                             |
 | treemacs-hide-dot-git-directory          | t                                                | Indicates whether ~.git~ directories should always be hidden.                                                                                                                                                                        |
+| treemacs-project-follow-into-home        | nil                                              | Indicates whether ~treemacs-project-follow-mode~ can follow into the $HOME directory.                                                                                                                                                |
 
 ** Faces
 Treemacs defines and uses the following faces:

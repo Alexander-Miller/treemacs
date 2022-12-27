@@ -3,6 +3,7 @@
 
 * Changelog
 ** current master
+- Added ~treemacs-project-follow-into-home~ option
 - Treemacs can now be resized with the mouse, even when it width is locked
 - Bug fixes
 ** v3

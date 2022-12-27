@@ -715,6 +715,15 @@ fairly expensive."
   :type 'boolean
   :group 'treemacs-follow)
 
+(defcustom treemacs-project-follow-into-home nil
+  "When non-nil `treemacs-project-follow-mode' will also follow into $HOME.
+
+By default project-following excludes the home directory as an option for the
+current project.  Setting this to non-nil will open up $HOME to being the final
+fallback."
+  :type 'boolean
+  :group 'treemacs-follow)
+
 (defcustom treemacs-deferred-git-apply-delay 0.5
   "Delay in seconds of idle time before git fontification is applied.
 This is only relevant when using the deferred variant of git-mode."
