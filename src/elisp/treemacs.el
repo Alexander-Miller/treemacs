@@ -256,8 +256,11 @@ workspace."
             (name (treemacs--filename path))
             (ws (treemacs-current-workspace)))
        (treemacs-return-if
-           (and (= 1 (length (treemacs-workspace->projects ws)))
-                (treemacs-is-path path :in-workspace ws))
+           (-let [projects (treemacs-workspace->projects ws)]
+             (and (= 1 (length projects))
+                  (string=
+                   path
+                   (treemacs-project->path (car projects)))))
          (treemacs-select-window))
        (treemacs--show-single-project path name)
        (treemacs-pulse-on-success "Now showing %s"
