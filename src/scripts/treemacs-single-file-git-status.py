@@ -1,4 +1,4 @@
-from subprocess import Popen, PIPE, DEVNULL
+from subprocess import run, Popen, PIPE, DEVNULL, check_output
 import sys
 import os
 
@@ -65,15 +65,15 @@ def main():
     propagate_state = None
     while i < l:
         path, ignore_proc, tracked_proc, changed_proc = proc_list[i]
-        if ignore_proc.wait() == 0:
+        if ignore_proc.communicate() and ignore_proc.returncode == 0:
             propagate_state = "!"
             result_list.append((path, propagate_state))
             break
-        elif tracked_proc.wait() == 1:
+        elif tracked_proc.communicate() and tracked_proc.returncode == 1:
             propagate_state = "?"
             result_list.append((path, propagate_state))
             break
-        elif (changed_proc.wait() == 0 and changed_proc.stdout.read1(1) != b''):
+        elif changed_proc.communicate() != b'' and changed_proc.returncode == 0:
             result_list.append((path, "M"))
         else:
             result_list.append((path, "0"))
