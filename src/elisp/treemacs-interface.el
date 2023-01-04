@@ -1312,6 +1312,36 @@ With a prefix ARG switch to the previous workspace instead."
        (propertize (treemacs-workspace->name new-ws)
                    'face 'font-lock-string-face)))))
 
+(defun treemacs-create-workspace-from-project (&optional arg)
+  "Create (and switch to) a workspace containing only the current project.
+
+By default uses the project at point in the treemacs buffer.  If there is no
+treemacs buffer, then the project of the current file is used instead.  With a
+prefix ARG it is also possible to interactively select the project."
+  (interactive "P")
+  (treemacs-block
+    (-let [project nil]
+      (if (eq t treemacs--in-this-buffer)
+          (setf project (treemacs-project-of-node (treemacs-current-button)))
+        (setf project (treemacs--find-project-for-buffer (buffer-file-name (current-buffer))))
+        (treemacs-select-window))
+      (when (or arg (null project))
+        (setf project (treemacs--select-project-by-name))
+        (treemacs-return-if (null project)))
+      (let* ((ws-name (treemacs-project->name project))
+             (new-ws (treemacs--find-workspace-by-name ws-name)))
+        (if new-ws
+            (setf (treemacs-workspace->projects new-ws) (list project))
+          (-let [ws-create-result (treemacs-do-create-workspace ws-name)]
+            (treemacs-error-return-if (not (equal 'success (car ws-create-result)))
+              "Something went wrong when creating a new workspace: %s" ws-create-result)
+            (setf new-ws (cdr ws-create-result))
+            (setf (treemacs-workspace->projects new-ws) (list project))
+            (treemacs--persist)))
+        (treemacs-do-switch-workspace new-ws)
+        (treemacs-pulse-on-success "Switched to project workspace '%s'"
+          (propertize ws-name 'face 'font-lock-type-face))))))
+
 (defun treemacs-icon-catalogue ()
   "Showcase a catalogue of all treemacs themes and their icons."
   (interactive)

@@ -803,6 +803,7 @@ These functions are not bound to any keys by default. It's left up to users to f
 | treemacs-load-theme                                  | Load a different icon theme.                                               |
 | treemacs-icon-catalogue                              | Showcases all themes and their icons.                                      |
 | treemacs-narrow-to-current-file                      | Close everything except the view on the current file.                      |
+| treemacs-create-workspace-from-project               | Create a new workspace containing only the current project.                |
 |------------------------------------------------------+----------------------------------------------------------------------------|
 | treemacs-projectile                                  | Add a project from projectile to treemacs.                                 |
 | treemacs-add-and-display-current-project             | Add current project to treemacs and open it.                               |
