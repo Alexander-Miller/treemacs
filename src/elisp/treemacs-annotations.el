@@ -254,7 +254,7 @@ GIT-FUTURE: Pfuture"
 GIT-FACE is taken from the latest git cache, or nil if it's not known."
   (inline-letevals (btn git-face)
     (inline-quote
-     (let* ((path (treemacs-button-get ,btn :key))
+     (let* ((path (treemacs-button-get ,btn :path))
             (ann (treemacs-get-annotation path))
             (btn-start (treemacs-button-start ,btn))
             (btn-end (treemacs-button-end ,btn)))
@@ -331,13 +331,15 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
          (goto-char (point-min))
          (let* ((btn (point)))
            (while (setf btn (next-button btn))
-             (-let [path (treemacs-button-get btn :key)]
+             (let ((path (treemacs-button-get btn :path))
+                   (use-git (not (treemacs-button-get btn :no-git))))
                (treemacs--do-apply-annotation
                 btn
                 (-when-let (git-cache
-                            (->> path
-                                 (treemacs--parent-dir)
-                                 (ht-get treemacs--git-cache)))
+                            (and use-git
+                                 (->> path
+                                      (treemacs--parent-dir)
+                                      (ht-get treemacs--git-cache))))
                   (ht-get git-cache path)))))))))))
 
 (defun treemacs-apply-annotations (path)
