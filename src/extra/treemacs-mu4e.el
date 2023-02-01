@@ -1,6 +1,6 @@
 ;;; treemacs-mu4e.el --- mu4e integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022 Alexander Miller
+;; Copyright (C) 2023 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "26.1") (treemacs "0.0") (pfuture "1.7") (dash "2.11.0") (s "1.10.0") (ht "2.2"))
@@ -60,55 +60,57 @@
   "Face for message count annotations."
   :group 'treemacs-mu4e)
 
+(defcustom treemacs-mu4e-local-folders "Local Folders"
+  "Name for group of local folders."
+  :group 'treemacs-mu4e
+  :type 'string)
+
 ;;;;; Globals
 
 (defconst treemacs-mu4e--buffer-name " *Treemacs Mu4e*")
-
-(defconst treemacs-mu4e--local-folders "Local Folders")
 
 (defconst treemacs-mu4e--count-script
   (expand-file-name "src/scripts/treemacs-count-mail.py" treemacs-dir))
 
 (defconst treemacs-mu4e--maildir-map
   (make-hash-table :size 200 :test 'equal)
-  "Maps maildir names to maildir objects.")
+  "Maps mu's maildir names to maildir objects.")
 
 (defconst treemacs-mu4e--label-map
   (make-hash-table :size 200 :test 'equal)
   "Maps maildir names to their display labels.")
 
-(defconst treemacs-mu4e--weight-map
-  (make-hash-table :size 200 :test 'equal)
+(defconst treemacs-mu4e--weight-map (make-hash-table :size 200 :test 'equal)
   "Maps maildir names to their weights.")
 
 (cl-defstruct (treemacs-maildir
                (:conc-name treemacs-maildir->)
                (:constructor treemacs-maildir->create!))
-  (folder nil :read-only t)
+  (mu-dir nil :read-only t)
   label
   weight
-  has-children?
-  (parent-folder nil :read-only t))
+  children
+  parent)
 
 ;;;;; Maildir collection & setup
 
 (define-inline treemacs-maildir->true-folder (self)
   "Get the maildir of SELF, but without the workaround for local folders.
-Will replace the folder string's `treemacs-mu4e--local-folders' prefix with just
+Will replace the folder string's `treemacs-mu4e-local-folders' prefix with just
 \"/\" again."
   (declare (side-effect-free t))
   (inline-letevals (self)
     (inline-quote
-     (s-replace (concat "/" treemacs-mu4e--local-folders)
+     (s-replace (concat "/" treemacs-mu4e-local-folders)
                 ""
-                (treemacs-maildir->folder ,self)))))
+                (treemacs-maildir->mu-dir ,self)))))
 
 (define-inline treemacs-mu4e--get-default-label (maildir)
   "Use the string after the last slash as MAILDIR's default label."
   (declare (pure t) (side-effect-free t))
   (inline-letevals (maildir)
     (inline-quote
-     (-last-item (s-split "/" ,maildir)))))
+     (-last-item (-reject #'s-blank? (s-split "/" ,maildir))))))
 
 (define-inline treemacs-mu4e--maildir-sort-function (m1 m2)
   "Sort M1 and M2 based on their weight values."
@@ -120,63 +122,63 @@ Will replace the folder string's `treemacs-mu4e--local-folders' prefix with just
 
 (defun treemacs-mu4e--collect-maildirs ()
   "Collect all maildirs when this module is first loaded.
+
 Maildir strings will be mapped to maildir objects in
 `treemacs-mu4e--maildir-map'.
 
 Local folders (without subdirs) will be collected under the
-`treemacs-mu4e--local-folders' prefix.
+`treemacs-mu4e-local-folders' prefix.
 
 Label and weight metadata will be sourced from possibly pre-filled
 `treemacs-mu4e--label-map' and `treemacs-mu4e--weight-map'."
 
   (ht-clear! treemacs-mu4e--maildir-map)
 
-  (dolist (maildir-str (mu4e-get-maildirs))
-    (let* ((split (s-split-up-to "/" maildir-str 2 :omit-nulls)))
-      (treemacs-mu4e--create-maildir-hierarchy split)))
-
-  (-let [maildirs (ht-values treemacs-mu4e--maildir-map)]
-    (dolist (maildir maildirs)
-      (-let [folder (treemacs-maildir->folder maildir)]
-        (setf (treemacs-maildir->has-children? maildir)
-              (--any? (string= (treemacs-maildir->parent-folder it) folder)
-                      maildirs))))))
-
-(defun treemacs-mu4e--create-maildir-hierarchy (split-path)
-  "Create maildir objects for every step of SPLIT-PATH."
-  (when (= 1 (length split-path))
-    (push treemacs-mu4e--local-folders split-path))
-  (let* ((current-subdir (format "/%s" (pop split-path)))
-         (current-maildir (treemacs-maildir->create!
-                           :folder current-subdir
-                           :weight (ht-get treemacs-mu4e--weight-map current-subdir 100)
-                           :label (ht-get treemacs-mu4e--label-map current-subdir
-                                          (treemacs-mu4e--get-default-label current-subdir)))))
-    (ht-set! treemacs-mu4e--maildir-map current-subdir current-maildir)
-
-    (while split-path
-      (let* ((next-subdir (concat current-subdir "/" (pop split-path)))
-             (next-maildir (treemacs-maildir->create!
-                            :folder next-subdir
-                            :parent-folder current-subdir
-                            :weight (ht-get treemacs-mu4e--weight-map next-subdir 100)
-                            :label (ht-get treemacs-mu4e--label-map next-subdir
-                                           (treemacs-mu4e--get-default-label next-subdir)))))
-        (ht-set! treemacs-mu4e--maildir-map next-subdir next-maildir)))))
+  (let ((mu-maildirs (mu4e-get-maildirs)))
+    (dolist (mu-maildir mu-maildirs)
+      (let* ((is-leaf? (not (s-ends-with? "/" mu-maildir)))
+             (strs (cdr (s-split "/" mu-maildir)))
+             (strs (if (length= strs 1)
+                       (list treemacs-mu4e-local-folders (car strs))
+                     strs))
+             (max (length strs))
+             (steps))
+        (dolist (n (number-sequence 1 max))
+          (push (format (if (and is-leaf? (= n max))
+                            "/%s"
+                          "/%s/")
+                        (s-join "/" (-take n strs)))
+                steps))
+        (let ((previous))
+          (dolist (step (nreverse steps))
+            (let* ((default-label (treemacs-mu4e--get-default-label step))
+                   (maildir
+                    (or (ht-get treemacs-mu4e--maildir-map step)
+                        (-let ((new-maildir
+                                (treemacs-maildir->create!
+                                 :mu-dir step
+                                 :parent previous
+                                 :label (ht-get treemacs-mu4e--label-map step default-label)
+                                 :weight (ht-get treemacs-mu4e--weight-map step 1000))))
+                          (ht-set! treemacs-mu4e--maildir-map step new-maildir)
+                          new-maildir))))
+              (when previous
+                (cl-pushnew maildir (treemacs-maildir->children previous)))
+              (setf previous maildir))))))))
 
 ;;;;; Treelib setup
 
 (defun treemacs-mu4e--top-level-maildirs-datasource ()
   "Data source for the very first level of maildirs."
   (->> (ht-values treemacs-mu4e--maildir-map)
-       (--filter (null (treemacs-maildir->parent-folder it)))
+       (--filter (null (treemacs-maildir->parent it)))
        (-sort #'treemacs-mu4e--maildir-sort-function)))
 
 (defun treemacs-mu4e--child-maidirs-datasource (btn)
   "Data source for maildirs whose direct parent is BTN."
-  (-let [parent (treemacs-maildir->folder (treemacs-button-get btn :maildir))]
-    (->> (ht-values treemacs-mu4e--maildir-map)
-         (--filter (string= parent (treemacs-maildir->parent-folder it)))
+  (-let [parent-dir (treemacs-maildir->mu-dir (treemacs-button-get btn :maildir))]
+    (->> (ht-get treemacs-mu4e--maildir-map parent-dir)
+         (treemacs-maildir->children)
          (-sort #'treemacs-mu4e--maildir-sort-function))))
 
 (defun treemacs-mu4e--visit-maildir (&optional _arg)
@@ -198,32 +200,36 @@ Label and weight metadata will be sourced from possibly pre-filled
 (treemacs-define-expandable-node-type mu4e-maildir
   :open-icon
   (cond
-   ((null (treemacs-maildir->parent-folder item))
+   ((null (treemacs-maildir->parent item))
     (treemacs-get-icon-value 'root-open))
-   ((treemacs-maildir->has-children? item)
+   ((treemacs-maildir->children item)
     (treemacs-get-icon-value 'mail-plus))
    (t
     (treemacs-get-icon-value 'mail)))
   :closed-icon
   (cond
-   ((null (treemacs-maildir->parent-folder item))
+   ((null (treemacs-maildir->parent item))
     (treemacs-get-icon-value 'root-closed))
-   ((treemacs-maildir->has-children? item)
-    (treemacs-get-icon-value 'mail-more))
+   ((treemacs-maildir->children item)
+    (treemacs-get-icon-value 'mail-plus))
    (t
     (treemacs-get-icon-value 'mail)))
   :ret-action #'treemacs-mu4e--visit-maildir
   :label
-  (if (treemacs-maildir->parent-folder item)
+  (if (treemacs-maildir->parent item)
       (propertize (treemacs-maildir->label item)
                   'face 'treemacs-directory-face)
     (propertize (treemacs-maildir->label item)
                 'face 'treemacs-root-face))
-  :key (treemacs-maildir->folder item)
+  :key (treemacs-maildir->mu-dir item)
   :children (treemacs-mu4e--child-maidirs-datasource btn)
   :more-properties
   `(:maildir ,item
-             ,@(unless (treemacs-maildir->has-children? item)
+             :default-face
+             ,(if (treemacs-maildir->parent item)
+                  'treemacs-directory-face
+                'treemacs-root-face)
+             ,@(unless (treemacs-maildir->children item)
                  '(:leaf t)))
   :child-type 'mu4e-maildir)
 
@@ -266,12 +272,28 @@ weight in the view.  Higher values are sorted later.  The default weight is 100.
 This might be useful when filling up setting up `treemacs-mu4e-define-aliases'
 and `treemacs-mu4e-define-weights'."
   (interactive)
-  (message "Treemacs-Mu4e Maildirs:")
-  (dolist (maildir (ht-values treemacs-mu4e--maildir-map))
-    (message "\nMaildir: %s\nDisplay Name: %s\nWeight: %s"
-             (treemacs-maildir->folder maildir)
-             (treemacs-maildir->label  maildir)
-             (treemacs-maildir->weight maildir))))
+  (pop-to-buffer (get-buffer-create "Treemacs Mu4e Maildirs"))
+  (erase-buffer)
+  (org-mode)
+  (setq-local org-hide-emphasis-markers nil)
+  (let ((roots (--filter
+                (null (treemacs-maildir->parent it))
+                (ht-values treemacs-mu4e--maildir-map))))
+    (dolist (root roots)
+      (treemacs-mu4e--print-maildir root 1)))
+  (goto-char 0))
+
+(defun treemacs-mu4e--print-maildir (maildir d)
+  "Print MAILDIR at depth D as an org sub-tree."
+  (insert (format
+           "%s %s\n- label :: %s\n- weight :: %s\n"
+           (make-string d ?*)
+           (treemacs-maildir->mu-dir maildir)
+           (treemacs-maildir->label maildir)
+           (treemacs-maildir->weight maildir) ))
+  (dolist (child (-sort #'treemacs-mu4e--maildir-sort-function
+                          (treemacs-maildir->children maildir)))
+    (treemacs-mu4e--print-maildir child (1+ d))))
 
 ;;;###autoload
 (defun treemacs-mu4e ()
@@ -295,7 +317,7 @@ and `treemacs-mu4e-define-weights'."
   (let* ((buf (get-buffer-create treemacs-mu4e--buffer-name))
          (window (display-buffer-in-side-window buf `((side . ,treemacs-position) (slot . 1)))))
     (select-window window)
-    (treemacs-initialize 'mu4e-top-maildirs
+    (treemacs-initialize mu4e-top-maildirs
       :and-do (setq-local treemacs-space-between-root-nodes t))
     (treemacs-mu4e--update-mailcounts)
     (treemacs--evade-image)))
@@ -304,23 +326,24 @@ and `treemacs-mu4e-define-weights'."
 
 (defun treemacs-mu4e--update-mailcounts ()
   "Shell out to mu to update the message counts and redraw them."
-  (-let [maildirs (mapcar #'treemacs-maildir->true-folder
-                          (ht-values treemacs-mu4e--maildir-map))]
+  (-let [maildirs (-map #'treemacs-maildir->mu-dir
+                        (ht-values treemacs-mu4e--maildir-map))]
     (pfuture-callback `("python"
                         "-O" "-S"
                         ,treemacs-mu4e--count-script
-                        ,(if mu4e-headers-include-related "True" "False")
+                        ,treemacs-mu4e-local-folders
                         ,@maildirs)
       :on-error
-      (treemacs-log "Mail count update error: %s" (pfuture-callback-output))
+      (treemacs-log-failure "Mail count update error: %s" (pfuture-callback-output))
       :on-success
       (-let [source "treemacs-mu4e-mailcount"]
         (treemacs-clear-annotation-suffixes source)
         (pcase-dolist (`(,path ,suffix) (read (pfuture-callback-output)))
           (put-text-property 0 (length suffix) 'face 'treemacs-mu4e-mailcount-face suffix)
-          (treemacs-set-annotation-suffix path suffix source))
-        (--when-let (get-buffer treemacs-mu4e--buffer-name)
-          (treemacs-apply-annotations-in-buffer it))))))
+          (treemacs-set-annotation-suffix
+           path suffix source)
+          (--when-let (get-buffer treemacs-mu4e--buffer-name)
+            (treemacs-apply-annotations-in-buffer it)))))))
 
 (advice-add #'mu4e-update-index :after #'treemacs-mu4e--update-mailcounts)
 

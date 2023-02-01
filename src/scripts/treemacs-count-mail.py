@@ -1,49 +1,61 @@
 from subprocess import Popen, PIPE
 import sys
 
-# mu4e-headers-include-related
-REL_FLAG    = "-r" if sys.argv[1] == "True" else ""
-UNREAD_CMD  = "mu find maildir:'{}' " + REL_FLAG + " --fields 'i' flag:'unread' 2> /dev/null | wc -l"
-PATH_PREFIX = "treemacs-mu4e"
-
-# First arg indicates whether 'mu4e-headers-include-related' is t and mu's '-r' flag should be set
-# to also count related messages
-# The remaining arguments are a list of maildirs
+# Command line arguments are a list of maildirs.
 # The output is a list of items in the form '((P1 A1) (P2 A2))' where P is the node path for a maildir
 # node, and A is the mail count annotation text
-# Exmaple: '(((treemacs-mu4e "/web" "/web/") " (176)")((treemacs-mu4e "/web" "/web/Inbox") " (161)"))'
+# Exmaple: '(((treemacs-mu4e "/web/") " (176)")((treemacs-mu4e "/web/" "/web/Inbox") " (161)"))'
+
+UNREAD_CMD  = "mu find maildir:'{}'  --fields 'i' flag:'unread' 2> /dev/null | wc -l"
+PATH_PREFIX = "treemacs-mu4e"
+LOCAL_PREFIX = "/" + sys.argv[1]
 
 def main():
     maildirs = sys.argv[2:]
 
-    ret = ["("]
+    output = ["("]
     for maildir in maildirs:
 
-        unread = Popen(UNREAD_CMD.format(maildir), shell=True, stdout=PIPE, bufsize=100, encoding='utf-8').communicate()[0][:-1]
+        mu_dir = maildir
+        is_local = False
+        is_leaf = not maildir.endswith("/")
+        # "Local Folders" is an artificial maildir that is used to group
+        # otherwise free standing folders under a single header like
+        # in thunderbird
+        if mu_dir.startswith(LOCAL_PREFIX):
+            is_local = True
+            mu_dir = mu_dir.replace(LOCAL_PREFIX, "")
+            if mu_dir == "/":
+                continue
+
+        unread = Popen(UNREAD_CMD.format(mu_dir.replace(" ", "\ ")),
+                       shell=True,
+                       stdout=PIPE,
+                       bufsize=100,
+                       encoding='utf-8'
+                    ).communicate()[0][:-1]
 
         if unread == "0":
             continue
 
-        path = []
-        path_item = ""
-        split_path = maildir.split("/")[1:]
+        node_path = []
+        path_item = "/"
+        split_path = maildir.split("/")[1:] if is_leaf else maildir.split("/")[1:-1]
 
-        # the script must have access to the true folder for the count to work
-        # when passing things back to elisp the pseudo-hierarchy must be re-established
-        if len(split_path) == 1:
-            split_path.insert(0, "Local Folders")
-
-        for split_part in split_path:
-            path_item = path_item + "/" + split_part
-            path.append("\"" + path_item + "\"")
+        # it makes difference for mu whether a maildir ends in a slash or not
+        for i in range(0, len(split_path) - 1):
+            path_item = path_item + split_path[i] + "/"
+            node_path.append("\"" + path_item + "\"")
+        final_item = "" if is_leaf else "/"
+        node_path.append("\"" + path_item + split_path[-1] + final_item + "\"")
 
         suffix = '" ({})"'.format(unread)
 
-        ret.append('(({} {}) {})'.format(
-            PATH_PREFIX, " ".join(path), suffix
+        output.append('(({} {}) {})'.format(
+            PATH_PREFIX, " ".join(node_path), suffix
         ))
 
-    ret.append(")")
-    print("".join(ret))
+    output.append(")")
+    print("".join(output))
 
 main()
