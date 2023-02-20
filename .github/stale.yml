@@ -1,0 +1,10 @@
+daysUntilStale: 60
+daysUntilClose: false
+exemptLabels:
+  - pinned
+  - security
+staleLabel: stale
+markComment: >
+  This issue has been automatically marked as stale because it has not had
+  recent activity.
+closeComment: false

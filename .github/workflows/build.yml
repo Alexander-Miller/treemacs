@@ -1,0 +1,40 @@
+name: CI Build
+on: [ push, pull_request ]
+env:
+  CI: "true"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs_version:
+        - 27.1
+        - 27.2
+        - 28.1
+        - 28.2
+        - snapshot
+    steps:
+    - name: Install Emacs
+      uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+    - name: Install Cask
+      uses: conao3/setup-cask@master
+      with:
+        version: 'snapshot'
+    - name: Install Aspell
+      run: sudo apt-get install -y aspell
+    - name: Checkout treemacs
+      uses: actions/checkout@v2
+      with:
+        repository: Alexander-Miller/treemacs
+        path: treemacs
+    - name: Cask Install
+      run: cask --path treemacs install
+    - name: Checkdoc
+      run: make -C treemacs checkdoc
+    - name: Compile
+      run: make -C treemacs compile
+    - name: Test
+      run: make -C treemacs test
