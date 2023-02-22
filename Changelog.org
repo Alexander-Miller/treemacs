@@ -1,0 +1,190 @@
+# -*- fill-column: 100 -*-
+#+STARTUP: content
+
+* Changelog
+** current master
+- Added ~treemacs-create-workspace-from-project~ command
+- Added ~treemacs-project-follow-into-home~ option
+- Treemacs can now be resized with the mouse, even when it width is locked
+- Bug fixes
+** v3
+- Complete rewrite of the extension api
+- Added ~treemacs-bulk-file-actions~
+- Added support for moving files via mouse drag
+- Added ~treemacs-hide-dot-git-directory~
+- Added ~treemacs-git-commit-diff-mode~
+** v2.10
+- Added ~treemacs-width-increment~ and the ability to resize the treemacs window incrementally
+- Added ~treemacs-indent-guide-mode~
+- Added option to close treemacs when visiting nodes with a double prefix arg
+- Added ~treemacs-visit-node-close-treemacs~
+- Added ~treemacs-fit-widdow-width~
+- Added ~treemacs-extra-wide-toggle~
+- Added ~treemacs-next-workspace~
+- Added ~treemacs-find-workspace-method~
+- Added option for ~treemacs-select-window~ to close treemacs when it is already selected
+- Added ~detailed~ option for ~treemacs-eldoc-display~
+- Added ~treemacs-select-directory~
+- Added option to select workspace when starting/selecting treemacs
+- Added ~treemacs-indicate-top-scroll-mode~
+- Promoted peeking into a proper minor mode
+** v2.9
+- Published ~treemacs-all-the-icons~
+- Added ~treemacs-workspace-switch-cleanup~
+- Added support for disabling the mode line
+- Added ~treemacs-user-header-line-format~
+- Added ~treemacs-display-current-project-exclusively~
+- Added ~treemacs-icon-catalogue~
+- Added ~treemacs-read-string-input~
+- Split the helpful hydra in 2, so it can fit on smaller screens
+- Replaced ~treemacs-select-hook~ with ~treemacs-select-functions~ because it is
+  now called with treemacs' previous visibility
+- Added imenu support
+   + Added ~treemacs-imenu-scope~
+- Added ~treemacs-copy-relative-path-at-point~
+- Added ~treemacs-expand-added-projects~
+- Added ~treemacs-window-background-color~
+- Added ~treemacs-define-custom-image-icon~
+- Added ~treemacs-narrow-to-current-file~
+- Added ~treemacs-cleanup-litter~
+- Added ~treemacs-expand-after-init~
+- Added ~treemacs-width-is-initially-locked~
+- Added ~treemacs-hide-gitignored-files-mode~
+- Added ~treemacs-select-when-already-in-treemacs~
+- Added ~treemacs-text-scale~
+- Added option to only show the fringe indicator when the treemacs window is
+  selected
+- Implemented one hand navigation with ~h~ collapsing nodes and ~l~ functioning like ~RET~, ~M-H/L~
+  is used now for changing root nodes.
+- Reduced ~treemacs-file-event-delay~ to 2000ms
+- New icons
+- Bug Fixes
+** v2.8
+ - Made workspaces lazy-loaded as needed
+ - Published ~treemacs-persp~
+ - Added ~treemacs-file-extension-regex~
+ - Added ~treemacs-directory-name-transformer~
+ - Added ~treemacs-file-name-transformer~
+ - Added ~treemacs-move-forward-on-expand~
+ - Added ~treemacs-user-mode-line-format~
+ - Many more and better icons.
+ - Bug fixes
+** v2.7
+ - Suppor for icon themes
+ - Integration with bookmarks
+ - Performance improvements
+ - Changed icon selection to allow icons for specific file names
+ - New functions to run shell commands for current node or project
+ - Feature-completion of workspaces api
+ - New Icons
+ - Bug Fixes
+** v2.6
+ - Added ~treemacs-add-and-display-current-project~ (both projectile and project.el)
+ - Added ~treemacs-eldoc-display~
+ - Added ~treemacs-visit-node-in-most-recently-used-window~
+ - Added ~treemacs-wrap-around~
+ - Basic theme support
+ - Added hooks for selecting, quitting and killing treemacs
+ - Moved completely to python3, improved python3 detection
+ - Expansion of and fixes for the extension api
+ - Split similar command keybinds into common keymaps
+ - New Icons
+ - Bug Fixes
+** v2.5
+ - Added ~treemacs-magit~ helper package.
+ - Added ~treemacs-recenter-after-project-jump~ option.
+ - Added ~treemacs-recenter-after-project-expand~ option.
+ - ~recenter-after-x~ can now be set to ~always~ or ~on-distance~.
+ - Replaced ~treemacs-follow-recenter-distance~ with ~treemacs-recenter-distance~.
+ - Added ~treemacs-copy-file~ command.
+ - Added ~treemacs-move-file~ command.
+** 2.4
+ - Add support for using ~org-store-link~ inside treemacs.
+ - Introduce the ~treemacs-icons-dired~ package.
+ - Add ability to control workspaces and projects by editing an org-mode file.
+ - Introduce ~treemacs-collapse-parent-node~.
+ - Add mouse right-click menu.
+ - New Icons
+ - Bug fixes
+** 2.3
+ - Added ~treemacs-single-click-expand-action~ for single leftclick node expansion.
+ - Added ~deferred~ variant of ~treemacs-git-mode~.
+ - Added ~treemacs-show-cursor~ to keep the cursor visible.
+ - Added ~treemacs-display-in-side-window~.
+ - Added ~treemacs-move-project-up~ and ~-down~ to change the order of projects.
+ - Added ~treemacs-git-command-pipe~ to append filters to the git status command.
+ - Added ~treemacs-move-project-up/down~ to change the order of projects.
+ - Added preliminary version of a rightclick menu.
+ - Changed ~treemacs-follow-mode~ to run with an idle timer and added ~treemacs-file-follow-delay~
+   to control the delay.
+ - Switch to org-mode syntax as persistence format (in preparation for making it editable).
+ - Started using vscode icons.
+ - Introduce extension API.
+ - Bug fixes.
+ - Performance improvements.
+** 2.2
+ - Reduced minimum required emacs version to 25.2.
+ - Integrated symlinks with git-mode (symlinks will always be resolved).
+ - Added ~fringe-indicator-minor-mode~ to make point more visible.
+ - Made all GUI icons resizable with ~treemacs-resize-icons~.
+ - Added ~treemacs-space-between-projects~ config option.
+ - Added ~treemacs-peek~ command.
+ - Added ~treemacs-next/previous-page-other-window~ commands.
+ - Bug fixes.
+** v2.1
+ - Add ~treemacs-show-changelog~ command,
+ - Add ~treemacs-project-follow-cleanup~ option.
+ - ~default-directory~ will not be set based on the (nearest) path at point.
+ - New scala and sbt icon.
+ - Delete files by moving them to the trash by default.
+ - Much improved file & directory creation interface.
+ - Add commands to close all/current/other projects.
+ - Reintroduces free navigation with h & l when there's only 1 project in the workspace.
+ - ~treemacs-find-file~ can now ask for the file to be found.
+ - Various bug fixes.
+** v2
+ * Start keeping changelog and retroactively fill it.
+ * Major refactoring to allow display of multiple projects in a workspace.
+ * Full removal of functions and variables previously declared obsolete.
+ * New java icon.
+ * New kotlin icon.
+ * New vue.js icon.
+ * New case-sensitive option for ~treemacs-sorting~.
+ * Many bugfixes & performance improvements.
+** v1.18
+ - New golang icon.
+ - Refactor left-click mouse interface to behave like a graphical application would.
+ - Make TAB & RET particularly configurable.
+ - Improved imenu-expression for more accurate tags in elisp.
+ - Introduce smarter recenter with (tag-)follow-mode with ~treemacs-follow-recenter-distance~.
+ - Bug fixes.
+** v1.17
+ - Added license.
+ - Bug fixes and internal refactoring.
+** V1.16
+ - Use pulse.el for visual feedback.
+ - Add ~treemacs-next/previous-line-other-window~.
+ - Bug fixes.
+** v1.15
+ - New yaml icon.
+ - Added ~treemacs-recenter-after-tag/file-follow~.
+ - Added ~treemacs-tag-follow-cleanup~.
+ - Added ~treemacs-git-mode~.
+ - Added ~treemacs-bookmark~.
+ - Bug fixes.
+** v1.14
+ - Added ~treemacs-pre-file-insert-predicates~.
+ - Added ~treemacs-directory-collapsed-face~.
+ - Added ~treemacs-pre/post-refresh-hook~.
+ - Bug fixes.
+** v1.13
+ - Make treemacs buffers unique for every frame.
+ - Make all icons customizable.
+ - Make treemacs buffers invisible in the buffer list.
+ - Bug fixes.
+** v1.12
+ - New hy icon.
+ - Added ~treemacs-tag-follow-mode~.
+ - Added ~treemacs-find-tag~.
+ - Added ~treemacs-resort~.
+ - Bug fixes.
