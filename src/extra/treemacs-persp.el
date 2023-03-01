@@ -67,7 +67,7 @@ Will return \"No Perspective\" if no perspective is active."
   "Hook running after the perspective was switched.
 Will select a workspace for the now active perspective, creating it if
 necessary."
-  ;; runnig with a timer ensures that any other post-processing is finished after a perspective
+  ;; running with a timer ensures that any other post-processing is finished after a perspective
   ;; was run since commands like `spacemacs/helm-persp-switch-project' first create a perspective
   ;; and only afterwards select the file to display
   (run-with-timer
@@ -109,7 +109,7 @@ does not return anything the projects of the fallback workspace will be copied."
                       :path root-path
                       :path-status (treemacs--get-path-status root-path))))
        (-let [fallback-workspace (car treemacs--workspaces)]
-         ;; copy the projects instead of reusing them so we don't accidentially rename
+         ;; copy the projects instead of reusing them so we don't accidentally rename
          ;; a project in 2 workspaces
          (dolist (project (treemacs-workspace->projects fallback-workspace))
            (push (treemacs-project->create!

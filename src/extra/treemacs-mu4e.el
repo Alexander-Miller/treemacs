@@ -25,7 +25,7 @@
 ;; This package creates a thunderbird-inspired sidebar for mu4e using
 ;; treemacs' treelib api.
 ;;
-;; Some of mu's directoties are not part of a maildir hierarchy, but stand at the
+;; Some of mu's directories are not part of a maildir hierarchy, but stand at the
 ;; top alone.  Like in thunderbird, they are grouped in a fake "Local Folders" tree.
 ;; Since the top of this does not really exist it is sometimes necessary to make
 ;; the mapping towards the "true" maildir' folder, e.g. when displaying the maildir

@@ -98,7 +98,7 @@ the current dir."
                 (--reject (treemacs-is-path it :in-workspace))
                 (-sort #'string<))]
       (if (null projects)
-          (list (vector "All Projectile projects are alread in the workspace" #'ignore))
+          (list (vector "All Projectile projects are already in the workspace" #'ignore))
         (--map (vector it (lambda () (interactive) (treemacs-add-project-to-workspace it))) projects)))))
 
 (add-to-list 'treemacs--find-user-project-functions #'treemacs--projectile-current-user-project-function)
