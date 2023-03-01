@@ -318,6 +318,7 @@ and `treemacs-mu4e-define-weights'."
          (window (display-buffer-in-side-window buf `((side . ,treemacs-position) (slot . 1)))))
     (select-window window)
     (treemacs-initialize mu4e-top-maildirs
+      :with-expand-depth 1
       :and-do (setq-local treemacs-space-between-root-nodes t))
     (treemacs-mu4e--update-mailcounts)
     (treemacs--evade-image)))
