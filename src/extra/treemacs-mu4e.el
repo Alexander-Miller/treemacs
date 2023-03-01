@@ -351,7 +351,8 @@ and `treemacs-mu4e-define-weights'."
               (when (buffer-live-p buffer)
                 (treemacs-apply-annotations-in-buffer buffer)))))))))
 
-(advice-add #'mu4e-update-index :after #'treemacs-mu4e--update-mailcounts)
+(add-hook 'mu4e-index-updated-hook #'treemacs-mu4e--update-mailcounts)
+(add-hook 'mu4e-message-changed-hook #'treemacs-mu4e--update-mailcounts)
 
 (with-no-warnings
   (with-eval-after-load 'winum
