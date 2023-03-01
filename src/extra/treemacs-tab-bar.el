@@ -115,7 +115,7 @@ does not return anything the projects of the fallback workspace will be copied."
                       :path root-path
                       :path-status (treemacs--get-path-status root-path))))
        (-let [fallback-workspace (car treemacs--workspaces)]
-         ;; copy the projects instead of reusing them so we don't accidentially rename
+         ;; copy the projects instead of reusing them so we don't accidentally rename
          ;; a project in 2 workspaces
          (dolist (project (treemacs-workspace->projects fallback-workspace))
            (push (treemacs-project->create!
