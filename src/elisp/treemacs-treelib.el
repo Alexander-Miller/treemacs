@@ -1055,7 +1055,7 @@ switched over to `treemacs-mode'."
       (let ((instance (treemacs--ext-symbol-to-instance ',extension)))
         (treemacs-static-assert
             (and instance (treemacs-extension->variadic? instance))
-          "%s is not a variadic extension" ,extension)
+          "%s is not a variadic extension" ',extension)
         instance)
       (if (numberp ,with-expand-depth) ,with-expand-depth 999))
      (goto-char 1)
