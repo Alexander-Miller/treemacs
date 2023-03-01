@@ -83,6 +83,9 @@
 (defconst treemacs-mu4e--weight-map (make-hash-table :size 200 :test 'equal)
   "Maps maildir names to their weights.")
 
+(defvar treemacs-mu4e--mailcount-update-timer nil
+  "Timer for debounced the maildir updates.")
+
 (cl-defstruct (treemacs-maildir
                (:conc-name treemacs-maildir->)
                (:constructor treemacs-maildir->create!))
@@ -325,26 +328,28 @@ and `treemacs-mu4e-define-weights'."
 
 ;;;;; Async Mailcount
 
-(defun treemacs-mu4e--update-mailcounts ()
+(defun treemacs-mu4e--update-mailcounts (&rest _)
   "Shell out to mu to update the message counts and redraw them."
-  (-let [maildirs (-map #'treemacs-maildir->mu-dir
-                        (ht-values treemacs-mu4e--maildir-map))]
-    (pfuture-callback `("python"
-                        "-O" "-S"
-                        ,treemacs-mu4e--count-script
-                        ,treemacs-mu4e-local-folders
-                        ,@maildirs)
-      :on-error
-      (treemacs-log-failure "Mail count update error: %s" (pfuture-callback-output))
-      :on-success
-      (-let [source "treemacs-mu4e-mailcount"]
-        (treemacs-clear-annotation-suffixes source)
-        (pcase-dolist (`(,path ,suffix) (read (pfuture-callback-output)))
-          (put-text-property 0 (length suffix) 'face 'treemacs-mu4e-mailcount-face suffix)
-          (treemacs-set-annotation-suffix
-           path suffix source)
-          (--when-let (get-buffer treemacs-mu4e--buffer-name)
-            (treemacs-apply-annotations-in-buffer it)))))))
+  (treemacs-debounce treemacs-mu4e--mailcount-update-timer 3
+    (-let [maildirs (-map #'treemacs-maildir->mu-dir
+                          (ht-values treemacs-mu4e--maildir-map))]
+      (pfuture-callback `("python"
+                          "-O" "-S"
+                          ,treemacs-mu4e--count-script
+                          ,treemacs-mu4e-local-folders
+                          ,@maildirs)
+        :on-error
+        (treemacs-log-failure "Mail count update error: %s" (pfuture-callback-output))
+        :on-success
+        (-let [source "treemacs-mu4e-mailcount"]
+          (treemacs-clear-annotation-suffixes source)
+          (pcase-dolist (`(,path ,suffix) (read (pfuture-callback-output)))
+            (put-text-property 0 (length suffix) 'face 'treemacs-mu4e-mailcount-face suffix)
+            (treemacs-set-annotation-suffix
+             path suffix source)
+            (-let [buffer (get-buffer treemacs-mu4e--buffer-name)]
+              (when (buffer-live-p buffer)
+                (treemacs-apply-annotations-in-buffer buffer)))))))))
 
 (advice-add #'mu4e-update-index :after #'treemacs-mu4e--update-mailcounts)
 
