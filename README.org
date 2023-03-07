@@ -10,6 +10,7 @@
 [[file:screenshots/screenshot.png]]
 
 * Content                                                                            :TOC:noexport:
+- [[#state-of-development][State of Development]]
 - [[#quick-feature-overview][Quick Feature Overview]]
    - [[#fancy-gifs][Fancy Gifs!]]
 - [[#quick-start][Quick Start]]
@@ -51,6 +52,13 @@
 - [[#contributing][Contributing]]
 - [[#working-with-the-code-base][Working With The Code Base]]
 - [[#dependencies][Dependencies]]
+
+* State of Development
+
+Treemacs is currently in an active - but low intensity - state of development. New features are worked on, PRs will be
+looked at and issues answered - eventually. My time budget is limited, so looking for new work just means looking at
+whatever is currently at the top of my inbox. If you feel like the ticket you've opened has gone unanswered for a while
+feel free to give it a bump - you are explicitly encouraged to do so.
 
 * Quick Feature Overview
 Treemacs is a file and project explorer similar to NeoTree or vim's NerdTree, but largely inspired by the Project
