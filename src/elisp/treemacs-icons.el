@@ -529,7 +529,7 @@ Return the fallback icons if TUI is non-nil."
 Note that treemacs has a very loose definition of what constitutes a file
 extension - it's either everything past the last period, or just the file's full
 name if there is no period.  This makes it possible to match file names like
-'.gitignore' and 'Makefile'.
+\\='.gitignore' and \\='Makefile'.
 
 Additionally FILE-EXTENSIONS are also not case sensitive and will be stored in a
 down-cased state."
