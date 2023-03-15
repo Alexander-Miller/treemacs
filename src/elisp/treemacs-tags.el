@@ -99,7 +99,8 @@ should be placed under."
   (let ((buff)
         (result)
         (mode)
-        (existing-buffer (get-file-buffer file))
+        (existing-buffer (get-file-buffer
+                          (or (file-symlink-p file) file)))
         (org-imenu-depth (max 10 (or 0 (and (boundp 'org-imenu-depth) org-imenu-depth)))))
     (ignore org-imenu-depth)
     (if existing-buffer
