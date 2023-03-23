@@ -253,7 +253,7 @@ Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
   (treemacs--execute-button-action
-   :window (ace-select-window "Select window")
+   :window (ace-select-window)
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
@@ -284,7 +284,7 @@ treemacs window with a double prefix argument."
   (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-horizontally
-   :window (ace-select-window "Select window")
+   :window (ace-select-window)
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
@@ -299,7 +299,7 @@ treemacs window with a double prefix argument."
   (interactive "P")
   (treemacs--execute-button-action
    :split-function #'split-window-vertically
-   :window (ace-select-window "Select window")
+   :window (ace-select-window)
    :file-action (find-file (treemacs-safe-button-get btn :path))
    :dir-action (dired (treemacs-safe-button-get btn :path))
    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
