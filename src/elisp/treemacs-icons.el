@@ -194,7 +194,8 @@ Necessary since root icons are not rectangular."
          (treemacs--root-icon-size-adjust width height))
        (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
            (create-image ,file-path 'imagemagick nil :ascent 'center :width width :height height)
-         (create-image ,file-path 'png nil :ascent 'center :width width :height height))))))
+         (create-image ,file-path (intern (treemacs--file-extension ,file-path)) nil
+                       :ascent 'center :width width :height height))))))
 
 (define-inline treemacs--create-icon-strings (file fallback)
   "Create propertized icon strings for a given FILE image and TUI FALLBACK."
@@ -298,6 +299,42 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "svgrepo/briefcase.png" :extensions (briefcase)   :fallback " ")
     (treemacs-create-icon :file "svgrepo/mail.png"      :extensions (mail)        :fallback " ")
     (treemacs-create-icon :file "svgrepo/mail-plus.png" :extensions (mail-plus)   :fallback " ")
+
+    ;; custom dir icons
+    (treemacs-create-icon :file "vsc/dir-src-closed.svg"      :extensions ("src-closed")     :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-src-open.svg"        :extensions ("src-open")       :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-test-closed.svg"     :extensions ("test-closed")    :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-test-open.svg"       :extensions ("test-open")      :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-binary-closed.svg"   :extensions ("bin-closed")     :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-binary-open.svg"     :extensions ("bin-open")       :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-services-closed.svg" :extensions ("build-closed")   :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-services-open.svg"   :extensions ("build-open")     :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-git-closed.svg"      :extensions ("git-closed")     :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-git-open.svg"        :extensions ("git-open")       :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-github-closed.svg"   :extensions ("github-closed")  :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-github-open.svg"     :extensions ("github-open")    :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-public-closed.svg"   :extensions ("public-closed")  :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-public-open.svg"     :extensions ("public-open")    :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-private-closed.svg"  :extensions ("private-closed") :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon :file "vsc/dir-private-open.svg"    :extensions ("private-open")   :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon
+     :file "vsc/dir-temp-closed.svg" :extensions ("temp-closed" "tmp-closed")
+     :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon
+     :file "vsc/dir-temp-open.svg" :extensions ("temp-open" "tmp-open")
+     :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon
+     :file "vsc/dir-docs-closed.svg" :extensions ("readme-closed" "docs-closed")
+     :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon
+     :file "vsc/dir-docs-open.svg" :extensions ("readme-open" "docs-open")
+     :fallback (propertize "- " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon
+     :file "vsc/dir-images-closed.svg" :extensions ("screenshots-closed" "icons-closed")
+     :fallback (propertize "+ " 'face 'treemacs-term-node-face))
+    (treemacs-create-icon
+     :file "vsc/dir-images-open.svg" :extensions ("screenshots-open" "icons-open")
+     :fallback (propertize "- " 'face 'treemacs-term-node-face))
 
     ;; file icons
     (treemacs-create-icon :file "txt.png"           :extensions (fallback))
@@ -452,6 +489,7 @@ Necessary since root icons are not rectangular."
 
 (define-inline treemacs-icon-for-file (file)
   "Retrieve an icon for FILE from `treemacs-icons' based on its extension.
+Works only with files, not directories.
 Uses `treemacs-icon-fallback' as fallback."
   (declare (side-effect-free t))
   (inline-letevals (file)
@@ -461,6 +499,28 @@ Uses `treemacs-icon-fallback' as fallback."
            (ht-get treemacs-icons
                    (treemacs--file-extension file-downcased)
                    (with-no-warnings treemacs-icon-fallback)))))))
+
+(define-inline treemacs-icon-for-dir (dir state)
+  "Retrieve an icon for DIR from `treemacs-icons' in given STATE.
+STATE must be either `open' or `closed'.
+
+Works only with directories, not files.
+Uses the `dir-open' and `dir-closed' icons as fallback."
+  (declare (side-effect-free t))
+  (inline-letevals (dir state)
+    (inline-quote
+     (let ((name-downcased (-> ,dir (treemacs--filename) (downcase))))
+       (when (eq ?. (aref name-downcased 0))
+         (setf name-downcased (substring name-downcased 1)))
+       (pcase-exhaustive ,state
+         (`open
+          (let ((name (format "%s-%s" name-downcased "open")))
+            (or (ht-get treemacs-icons name)
+                (ht-get treemacs-icons 'dir-open))))
+         (`closed
+          (let ((name (format "%s-%s" name-downcased "closed")))
+            (or (ht-get treemacs-icons name)
+                (ht-get treemacs-icons 'dir-closed)))))))))
 
 ;;;###autoload
 (defun treemacs-resize-icons (size)

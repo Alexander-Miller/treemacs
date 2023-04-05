@@ -3,9 +3,11 @@
 
 * Changelog
 ** current master
+** v3.1
 - Added ~treemacs-create-workspace-from-project~ command
 - Added ~treemacs-project-follow-into-home~ option
 - Treemacs can now be resized with the mouse, even when it width is locked
+- Added support for directory-specific icons
 - Bug fixes
 ** v3
 - Complete rewrite of the extension api

@@ -82,8 +82,8 @@ overview looks as follows:
    to the treemacs workspace. ~project.el~ compatibility is built-in.
  * Simple mouse interface :: Left clicks will work the same as you're used to from with graphical applications
  * Session persistence :: Treemacs automatically saves and restores your workspaces.
- * Dashing good looks :: Treemacs uses (optionally resizable) png images in HD 22x22 resolution for its icons (quantity
-   is, of course, another matter). When run in a terminal a simple fallback is used.
+ * Dashing good looks :: Treemacs uses (optionally resizable) png images in HD 22x22 resolution for its icons. When run
+   in a terminal a simple fallback is used.
  * Tag view :: Treemacs can display files' tags. All file types that Emacs can generate a (semantic) imenu index for are
    supported.
  * Visual feedback :: When it would otherwise be difficult to see the message in the minibuffer success/failure is
@@ -742,7 +742,6 @@ for its name or declaring icon directories:
   (treemacs-define-custom-icon treemacs-custom-html-icon "html" "htm")
 #+END_SRC
 
-
 *Important*: There is a restriction that all icons must must be exactly 2 characters long. That's including the space
 that will separate an icon from the filename.
 
@@ -751,6 +750,15 @@ If you want to create an icon based on an image you can use ~treemacs-define-cus
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-custom-image-icon "/path/to/icon.png" "htm" "html")
 #+END_SRC
+
+For icons of directories two icon variants are needed: one for an open and one for a closed directory state. These can
+be indicated with a simple ~"-open"~ and ~"-closed"~ suffix. For example the following lines will add special icons for
+directories named "scripts":
+
+ #+BEGIN_SRC emacs-lisp
+   (treemacs-define-custom-icon "X " "scripts-closed")
+   (treemacs-define-custom-icon "Y " "scripts-open")
+ #+END_SRC
 
 **** Icons according to ~auto-mode-alist~
 For some file extensions, like ".cc" or ".hh", it is not immediately obvious which major mode will open these files, and
