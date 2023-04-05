@@ -1,6 +1,6 @@
 ;;; treemacs-git-commit-diff-mode.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022 Alexander Miller
+;; Copyright (C) 2023 Alexander Miller
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

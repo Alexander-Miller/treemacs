@@ -1,6 +1,6 @@
 ;;; treemacs-magit.el --- Magit integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022 Alexander Miller
+;; Copyright (C) 2023 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "26.1") (treemacs "0.0") (pfuture "1.3" ) (magit "2.90.0"))
