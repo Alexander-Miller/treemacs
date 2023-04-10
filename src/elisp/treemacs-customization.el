@@ -298,8 +298,12 @@ Files will still always be shown after directories.
 Valid values are:
  * `alphabetic-asc',
  * `alphabetic-desc',
+ * `alphabetic-numeric-asc',
+ * `alphabetic-numeric-desc',
  * `alphabetic-case-insensitive-asc',
  * `alphabetic-case-insensitive-desc',
+ * `alphabetic-numeric-case-insensitive-asc',
+ * `alphabetic-numeric-case-insensitive-desc',
  * `size-asc',
  * `size-desc',
  * `mod-time-asc',
@@ -329,8 +333,12 @@ to no effect on your usage of treemacs until you begin frequently refreshing
 treemacs views containing hundreds or even thousands of nodes."
   :type '(choice (const alphabetic-asc)
                  (const alphabetic-desc)
+                 (const alphabetic-numeric-asc)
+                 (const alphabetic-numeric-desc)
                  (const alphabetic-case-insensitive-asc)
                  (const alphabetic-case-insensitive-desc)
+                 (const alphabetic-numeric-case-insensitive-asc)
+                 (const alphabetic-numeric-case-insensitive-desc)
                  (const size-asc)
                  (const size-desc)
                  (const mod-time-asc)
