@@ -36,6 +36,16 @@ Using this face is incompatible with `treemacs-git-mode' (exept for the simple
 variant), so it will only be used if git-mode is disabled or set to simple."
   :group 'treemacs-faces)
 
+(defface treemacs-window-background-face
+  '((t :inherit default))
+  "Face used for the background of the treemacs window."
+  :group 'treemacs-faces)
+
+(defface treemacs-hl-line-face
+  '((t :inherit hl-line))
+  "Face used for the hl-line selection in the treemacs window."
+  :group 'treemacs-faces)
+
 (defface treemacs-file-face
   '((t :inherit default))
   "Face used by treemacs for files."

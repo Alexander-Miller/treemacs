@@ -779,12 +779,15 @@ A locked width means that changes it is only possible with the commands
   :group 'treemacs-window)
 
 (defcustom treemacs-window-background-color nil
-  "Custom background colours for the treemacs window.
-Value must be a cons cell consisting of two colours: first the background of the
-treemacs window proper, then a second colour for treemacs' `hl-line' overlay
-marking the selected line."
+  "This variable is obsolete and no longer in use.
+Instead you can modifiy `treemacs-window-background-face' and
+`treemacs-hl-line-face'."
   :type '(cons color color)
   :group 'treemacs-window)
+(make-obsolete-variable
+ 'treemacs-window-background-color
+ "`treemacs-window-background-face' & `treemacs-hl-line-face'"
+ "v3.2" 'set)
 
 (defcustom treemacs-width 35
   "Width of the treemacs window."

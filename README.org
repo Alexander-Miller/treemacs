@@ -1,4 +1,4 @@
-# -*- fill-column: 120 org-list-indent-offset: 1 toc-org-max-depth: 2 -*-
+# -*- fill-column: 120 org-list-indent-offset: 1 toc-org-max-depth: 2 org-hide-emphasis-markers: nil -*-
 #+STARTUP: noinlineimages
 
 [[https://gitter.im/treemacs/community][file:https://badges.gitter.im/Alexander-Miller/treemacs.png]]
@@ -626,7 +626,6 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-read-string-input               | 'from-child-frame                                | Indicates whether simple string input like project names should be read from a child frame or the minibuffer.                                                                                                                        |
 | treemacs-expand-added-projects           | t                                                | Indicates whether newly added projects should be expanded.                                                                                                                                                                           |
 | treemacs-imenu-scope                     | 'everything                                      | Determines which items treemacs' imenu function will collect.                                                                                                                                                                        |
-| treemacs-window-background-color         | nil                                              | Background color for the treemacs window.                                                                                                                                                                                            |
 | treemacs-litter-directories              | ("/node_modules" "/.venv" "/.cask")              | List of directories affected by ~treemacs-cleanup-litter~.                                                                                                                                                                           |
 | treemacs-width-is-initially-locked       | t                                                | Indicates whether the treemacs windows starts with a locked width or not.                                                                                                                                                            |
 | treemacs-select-when-already-in-treemacs | 'move-back                                       | Indicates how ~treemacs-select-window~ behaves when treemacs is already selected.                                                                                                                                                    |
@@ -660,6 +659,8 @@ Treemacs defines and uses the following faces:
 | treemacs-fringe-indicator-face         | cursor                                           | Face for the fringe indicator.                                               |
 | treemacs-header-button-face            | font-lock-keyword-face                           | Face for header buttons.                                                     |
 | treemacs-git-commit-diff-face          | font-lock-comment-face                           | Face used for ~treemacs-indicate-top-scroll-mode~ annotations.               |
+| treemacs-window-background-face        | default                                          | Face used for the background of the treemacs window.                         |
+| treemacs-hl-line-face                  | hl-line                                          | Face used for hl-line overlay inside the treemacs buffer.                    |
 
 ** Evil compatibility
 To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions

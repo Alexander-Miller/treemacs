@@ -3,6 +3,8 @@
 
 * Changelog
 ** current master
+- Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
+  ~treemacs-hl-line-face~
 ** v3.1
 - Added ~treemacs-create-workspace-from-project~ command
 - Added ~treemacs-project-follow-into-home~ option

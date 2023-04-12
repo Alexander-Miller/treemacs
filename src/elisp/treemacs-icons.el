@@ -29,6 +29,7 @@
 (require 'ht)
 (require 'treemacs-themes)
 (require 'treemacs-logging)
+(require 'treemacs-scope)
 
 (eval-when-compile
   (require 'cl-lib)
@@ -119,9 +120,11 @@ account."
   "Align icon backgrounds with current Emacs theme.
 Fetch the current Emacs theme's background & hl-line colours and inject them
 into the gui icons of every theme in `treemacs--themes'.
-Also called as advice after `load-theme', hence the ignored argument."
-  (let* ((default-background (treemacs--get-local-face-background 'default))
-         (hl-line-background (treemacs--get-local-face-background 'hl-line))
+Also called as advice after `enable-theme', hence the ignored argument."
+  (let* ((default-background (or (face-background 'treemacs-window-background-face)
+                                 (face-background 'default)))
+         (hl-line-background (or (face-background 'treemacs-hl-line-face)
+                                 (face-background 'hl-line)))
          (test-icon          (treemacs-get-icon-value 'dir-open))
          (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected test-icon) :background))
          (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected test-icon) :background)))
@@ -629,6 +632,21 @@ be assigned which treemacs icon, for example
       (ht-set! (treemacs-theme->gui-icons treemacs--current-theme)
                (substring extension 1)
                icon))))
+
+(defun treemacs-realign-icon-colors ()
+  "Make sure icons' colors fit in with current faces.
+
+You can call this when you notice that some icons' background color being
+different than the background of the treemacs buffer, or that the icon
+background does not fit in with the hl-line overlay.
+
+This function should only be necessary when you *manually* change either
+`treemacs-window-background-face' or `treemacs-hl-line-face' (e.g. using
+`set-face-background').  Loading of new themes if handled automatically."
+  (interactive)
+  (--when-let (treemacs-get-local-buffer)
+    (with-current-buffer it
+      (treemacs--setup-icon-background-colors))))
 
 (treemacs-only-during-init
   (treemacs-load-theme "Default"))
