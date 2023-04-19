@@ -246,7 +246,6 @@ Necessary since root icons are not rectangular."
   (when (and (consp extensions) (or (symbolp (car extensions))
                                     (stringp (car extensions))))
     (setf extensions `(quote (,@extensions))))
-  ;; (setf extensions (--map (if (stringp it) (downcase it) it) extensions))
   `(let* ((xs (--map (if (stringp it) (downcase it) it) ,extensions))
           (fallback   ,(if (equal fallback (quote 'same-as-icon))
                            icon
@@ -273,7 +272,12 @@ Necessary since root icons are not rectangular."
            (add-to-list 'treemacs--icon-symbols ext)
            (set symbol nil))))
      (--each xs
-       (ht-set! gui-icons it gui-icon)
+       ;; NOTE: Disable creation of GUI svg icons without getting in the way of the rest
+       ;; of the icon creation process. This is good enough a workaround for Emacs versions
+       ;; that don't support svg images for as long as svg icons are a minority.
+       (unless (and (not (image-type-available-p 'svg))
+                    (string= (treemacs--file-extension ,file) "svg"))
+         (ht-set! gui-icons it gui-icon))
        (ht-set! tui-icons it tui-icon))))
 
 (treemacs-create-theme "Default"
