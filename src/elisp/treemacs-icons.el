@@ -206,7 +206,8 @@ Necessary since root icons are not rectangular."
     (inline-quote
      (let ((tui-icon ,fallback)
            (gui-icon
-            (if (treemacs--is-image-creation-impossible?)
+            (if (or (treemacs--is-image-creation-impossible?)
+                    (not (image-type-available-p (intern (treemacs--file-extension ,file)))))
                 ,fallback
               (let* ((img-selected   (treemacs--create-image ,file))
                      (img-unselected (copy-sequence img-selected)))
