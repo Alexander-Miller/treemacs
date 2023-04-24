@@ -780,7 +780,7 @@ A locked width means that changes it is only possible with the commands
 
 (defcustom treemacs-window-background-color nil
   "This variable is obsolete and no longer in use.
-Instead you can modifiy `treemacs-window-background-face' and
+Instead you can modify `treemacs-window-background-face' and
 `treemacs-hl-line-face'."
   :type '(cons color color)
   :group 'treemacs-window)

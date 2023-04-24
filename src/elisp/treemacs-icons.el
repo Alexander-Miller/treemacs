@@ -638,9 +638,9 @@ be assigned which treemacs icon, for example
                icon))))
 
 (defun treemacs-realign-icon-colors ()
-  "Make sure icons' colors fit in with current faces.
+  "Make sure icons' colours fit in with current faces.
 
-You can call this when you notice that some icons' background color being
+You can call this when you notice that some icons' background colour being
 different than the background of the treemacs buffer, or that the icon
 background does not fit in with the hl-line overlay.
 
