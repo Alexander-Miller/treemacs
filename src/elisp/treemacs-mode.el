@@ -141,6 +141,7 @@ Will be set by `treemacs--post-command'.")
     (define-key map (kbd "r")        'treemacs-copy-relative-path-at-point)
     (define-key map (kbd "p")        'treemacs-copy-project-path-at-point)
     (define-key map (kbd "f")        'treemacs-copy-file)
+    (define-key map (kbd "v")        'treemacs-paste-dir-at-point-to-minibuffer)
     map)
   "Keymap for copy commands in `treemacs-mode'.")
 

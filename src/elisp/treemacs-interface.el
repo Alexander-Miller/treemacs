@@ -528,6 +528,24 @@ With a prefix ARG substract the increment value multiple times."
       (kill-new copied)
       (treemacs-pulse-on-success "Copied project path: %s" (propertize copied 'face 'font-lock-string-face))))))
 
+(defun treemacs-paste-dir-at-point-to-minibuffer ()
+  "Paste the directory at point into the minibuffer.
+This is used by the \"Paste here\" mouse menu button, which assumes that we are
+running `treemacs--copy-or-move', so that pasting this path into the minibuffer
+allows us to copy/move the previously-selected file into the path at point."
+  (interactive)
+  (treemacs-block
+   (treemacs-error-return-if (not (active-minibuffer-window))
+     "Minibuffer is not active")
+   (let* ((path-at-point (treemacs--prop-at-point :path))
+          (dir (if (file-directory-p path-at-point)
+                   path-at-point
+                 (file-name-directory path-at-point))))
+     (select-window (active-minibuffer-window))
+     (delete-region (minibuffer-prompt-end) (point-max))
+     (insert dir))
+   (message "Copied from treemacs")))
+
 (defun treemacs-delete-other-windows ()
   "Same as `delete-other-windows', but will not delete the treemacs window.
 If this command is run when the treemacs window is selected `next-window' will

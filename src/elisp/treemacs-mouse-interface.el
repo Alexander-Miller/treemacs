@@ -277,7 +277,7 @@ and ignore any prefix argument."
                (list (xref-item-buffer xref) (xref-item-position xref)))))
           ('issue-warning
            (treemacs-log-failure "Tag '%s' is located in a buffer that does not exist."
-                          (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
+             (propertize (treemacs-with-button-buffer btn (treemacs--get-label-of btn)) 'face 'treemacs-tags-face)))
           (_ (error "[Treemacs] '%s' is an invalid value for treemacs-goto-tag-strategy" treemacs-goto-tag-strategy)))))))
 
 ;;;###autoload
@@ -300,7 +300,10 @@ and ignore any prefix argument."
             (menu
              (easy-menu-create-menu
               nil
-              `(("New"
+              `(["Paste here"
+                 treemacs-paste-dir-at-point-to-minibuffer
+                 :visible ,(string-match-p "\\(\\(Move\\)\\|\\(Copy\\)\\) to: " (or (minibuffer-prompt) ""))]
+                ("New"
                  ["New File"      treemacs-create-file]
                  ["New Directory" treemacs-create-dir])
                 ["Open"   treemacs-visit-node-no-split :visible ,(check node)]
