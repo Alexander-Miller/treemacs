@@ -6,6 +6,7 @@
 - Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
   ~treemacs-hl-line-face~
 - Added ~treemacs-copy-absolute-path-at-point~
+- Made it possible to disbale workspace with a ~COMMENT~ directive
 ** v3.1
 - Added ~treemacs-create-workspace-from-project~ command
 - Added ~treemacs-project-follow-into-home~ option

@@ -76,9 +76,11 @@
                (:conc-name treemacs-workspace->)
                (:constructor treemacs-workspace->create!))
   name
-  projects)
+  projects
+  is-disabled?)
 
 (defvar treemacs--workspaces (list (treemacs-workspace->create! :name "Default")))
+(defvar treemacs--disabled-workspaces (list))
 
 (defvar treemacs--find-user-project-functions
   (list #'treemacs--current-builtin-project-function
@@ -122,6 +124,11 @@ To be called whenever a project or workspace changes."
   "Return the list of all workspaces in treemacs."
   (declare (side-effect-free t))
   (inline-quote treemacs--workspaces))
+
+(define-inline treemacs-disabled-workspaces ()
+  "Return the list of all workspaces in treemacs that are disabled."
+  (declare (side-effect-free t))
+  (inline-quote treemacs--disabled-workspaces))
 
 (defun treemacs-current-workspace ()
   "Get the current workspace.

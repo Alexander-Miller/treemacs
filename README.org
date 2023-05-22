@@ -170,9 +170,10 @@ interactively set the fallback workspace by calling ~treemacs-set-fallback-works
 
 This selection will happen when treemacs is first started (with a command like ~treemacs-select-window~) or when a
 function that requires the current workspace to be known is used (like adding or removing a project).
-*** Disabling projects
-It is possible to disable a project so it won't appear in treemacs, but still remains a part of your workspace, keeping
-it visible when you go edit your workspace layout. To do so simply start the project's name with "COMMENT":
+*** Disabling workspaces & projects
+It is possible to disable a workspace or project so it won't appear in treemacs, but still remains a part of your
+loadout, keeping it visible when you go edit your workspaces. To do so simply start the name of the workspace or project
+with "COMMENT":
 
 [[file:screenshots/disable-project.png]]
 

@@ -91,16 +91,24 @@ SELF: Treemacs-Iter struct."
 (defun treemacs--read-workspaces (iter)
   "Read a list of workspaces from the lines in ITER.
 
+Returns a list with 2 elements: the first one is a list of all enabled
+workspaces, the second is a list of all non-disabled workspaces.
+
 ITER: Treemacs-Iter Struct."
-  (let (workspaces)
+  (let ((workspaces)
+        (comment-prefix "COMMENT "))
     (while (s-matches? treemacs--persist-workspace-name-regex (treemacs-iter->peek iter))
-      (-let [workspace (treemacs-workspace->create!)]
-        (setf (treemacs-workspace->name workspace)
-              (substring (treemacs-iter->next! iter) 2)
-              (treemacs-workspace->projects workspace)
-              (treemacs--read-projects iter))
+      (let ((workspace (treemacs-workspace->create!))
+            (workspace-name (substring (treemacs-iter->next! iter) 2))
+            (workspace-projects (treemacs--read-projects iter)))
+        (when (s-starts-with? comment-prefix workspace-name)
+          (setf workspace-name (substring workspace-name (length comment-prefix))
+                (treemacs-workspace->is-disabled? workspace) t))
+        (setf (treemacs-workspace->name workspace) workspace-name
+              (treemacs-workspace->projects workspace) workspace-projects)
         (push workspace workspaces)))
-    (nreverse workspaces)))
+    (--separate (treemacs-workspace->is-disabled? it)
+                (nreverse workspaces))))
 
 (defun treemacs--read-projects (iter)
   "Read a list of projects from ITER until another section is found.
@@ -178,8 +186,12 @@ ITER: Treemacs-Iter Struct"
                   desktop-save-buffer nil))
           (with-current-buffer buffer
             (dolist (ws (--reject (null (treemacs-workspace->projects it))
-                                  (treemacs-workspaces)))
-              (push (format "* %s\n" (treemacs-workspace->name ws)) txt)
+                                  (append (treemacs-workspaces)
+                                          (treemacs-disabled-workspaces))))
+              (push (format "* %s%s\n"
+                            (if (treemacs-workspace->is-disabled? ws) "COMMENT " "")
+                            (treemacs-workspace->name ws))
+                    txt)
               (dolist (pr (treemacs-workspace->projects ws))
                 (push (format "** %s%s\n"
                               (if (treemacs-project->is-disabled? pr) "COMMENT " "")
@@ -205,7 +217,13 @@ Will read all lines, except those that start with # or contain only whitespace."
                           (s-starts-with? "#" it)))))
 
 (cl-defun treemacs--validate-persist-lines
-    (lines &optional (context :start) (prev nil) (paths nil) (proj-count 0))
+    (lines
+     &optional
+     (context :start)
+     (prev nil)
+     (paths nil)
+     (proj-count 0)
+     (ws-count 0))
   "Recursively verify the make-up of the given LINES, based on their CONTEXT.
 Lines must start with a workspace name, followed by a project name, followed by
 the project's path property, followed by either the next project or the next
@@ -220,7 +238,10 @@ These are used to make sure that no file path appears in the workspaces more
 than once.
 
 PROJ-COUNT counts the number of non-disabled projects in a workspace to make
-sure that there is at least of project that will be displayed.
+sure that there is at least one project that will be displayed.
+
+WS-COUNT counts the number of non-disabled workspaces to make sure that there is
+at least one workspace that will be used.
 
 A successful validation returns just the symbol \\='success, in case of an error
 a list of 3 items is returned: the symbol \\='error, the exact line where the
@@ -241,6 +262,8 @@ PROJ-COUNT: Int"
            (:property
             (treemacs-return-if (= 0 proj-count)
               `(error ,prev ,(as-warning "Workspace must contain at least 1 project that is not disabled.")))
+            (treemacs-return-if (= 0 ws-count)
+              `(error ,prev ,(as-warning "There must be at least 1 worspace that is not disabled.")))
             (treemacs-return
              'success))
            (:start
@@ -253,13 +276,15 @@ PROJ-COUNT: Int"
          (:start
           (treemacs-return-if (not (s-matches? treemacs--persist-workspace-name-regex line))
             `(error ,line ,(as-warning "First item must be a workspace name")))
-          (treemacs--validate-persist-lines (cdr lines) :workspace line nil 0))
+          (-let [ws-is-disabled? (s-starts-with? "* COMMENT" line)]
+            (unless ws-is-disabled? (cl-incf ws-count)))
+          (treemacs--validate-persist-lines (cdr lines) :workspace line nil 0 ws-count))
          (:workspace
           (treemacs-return-if (not (s-matches? treemacs--persist-project-name-regex line))
             `(error ,line ,(as-warning "Workspace name must be followed by project name")))
           (-let [proj-is-disabled? (s-starts-with? "** COMMENT" line)]
             (unless proj-is-disabled? (cl-incf proj-count))
-            (treemacs--validate-persist-lines (cdr lines) :project line nil proj-count)))
+            (treemacs--validate-persist-lines (cdr lines) :project line nil proj-count ws-count)))
          (:project
           (treemacs-return-if (not (s-matches? treemacs--persist-kv-regex line))
             `(error ,prev ,(as-warning "Project name must be followed by path declaration")))
@@ -276,7 +301,7 @@ PROJ-COUNT: Int"
                                     (--any (treemacs-is-path it :in path) paths))
               `(error ,line ,(format (as-warning "Path '%s' appears in the workspace more than once.")
                                      (propertize path 'face 'font-lock-string-face))))
-            (treemacs--validate-persist-lines (cdr lines) :property line (cons path paths) proj-count)))
+            (treemacs--validate-persist-lines (cdr lines) :property line (cons path paths) proj-count ws-count)))
          (:property
           (let ((line-is-workspace-name (s-matches? treemacs--persist-workspace-name-regex line))
                 (line-is-project-name   (s-matches? treemacs--persist-project-name-regex line)))
@@ -284,11 +309,13 @@ PROJ-COUNT: Int"
              (line-is-workspace-name
               (treemacs-return-if (= 0 proj-count)
                 `(error ,prev ,(as-warning "Workspace must contain at least 1 project that is not disabled.")))
-              (treemacs--validate-persist-lines (cdr lines) :workspace line nil 0))
+              (-let [ws-is-disabled? (s-starts-with? "* COMMENT" line)]
+                (unless ws-is-disabled? (cl-incf ws-count)))
+              (treemacs--validate-persist-lines (cdr lines) :workspace line nil 0 ws-count))
              (line-is-project-name
               (-let [proj-is-disabled? (s-starts-with? "** COMMENT" line)]
-                (unless proj-is-disabled? (cl-incf proj-count))
-                (treemacs--validate-persist-lines (cdr lines) :project line paths proj-count)))
+                (unless proj-is-disabled? (cl-incf proj-count)))
+                (treemacs--validate-persist-lines (cdr lines) :project line paths proj-count ws-count))
              (t
               (treemacs-return-if (-none? #'identity (list line-is-workspace-name line-is-project-name))
                 `(error ,prev ,(as-warning "Path property must be followed by the next workspace or project"))))))))))))
@@ -309,7 +336,9 @@ PROJ-COUNT: Int"
           (condition-case e
               (pcase (treemacs--validate-persist-lines lines)
                 ('success
-                 (setf treemacs--workspaces (treemacs--read-workspaces (treemacs-iter->create! :list lines))))
+                 (let* ((ws-lists (treemacs--read-workspaces (treemacs-iter->create! :list lines))))
+                   (setf treemacs--disabled-workspaces (car ws-lists))
+                   (setf treemacs--workspaces (cadr ws-lists))))
                 (`(error ,line ,error-msg)
                  (treemacs--write-error-persist-state lines (format "'%s' in line '%s'" error-msg line))
                  (treemacs-log-err "Could not restore saved state, %s:\n%s\n%s"
