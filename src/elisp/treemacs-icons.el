@@ -275,7 +275,8 @@ Necessary since root icons are not rectangular."
        ;; NOTE: Disable creation of GUI svg icons without getting in the way of the rest
        ;; of the icon creation process. This is good enough a workaround for Emacs versions
        ;; that don't support svg images for as long as svg icons are a minority.
-       (unless (and (not (image-type-available-p 'svg))
+       (unless (and ,file
+                    (not (image-type-available-p 'svg))
                     (string= (treemacs--file-extension ,file) "svg"))
          (ht-set! gui-icons it gui-icon))
        (ht-set! tui-icons it tui-icon))))
