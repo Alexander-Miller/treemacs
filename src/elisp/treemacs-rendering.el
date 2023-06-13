@@ -475,7 +475,7 @@ set to PARENT."
                (-let [result nil]
                  (while dir-strings
                    (let* ((prefix (car dir-strings))
-                          (icon (cadr file-strings))
+                          (icon (cadr dir-strings))
                           (dirname (caddr dir-strings))
                           (dirpath (concat ,root "/" dirname)))
                      (unless (--any? (funcall it dirpath git-info) treemacs-pre-file-insert-predicates)
