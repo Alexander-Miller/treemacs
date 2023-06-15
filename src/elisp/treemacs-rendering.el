@@ -1201,7 +1201,7 @@ GIT-INFO is passed through from the previous branch build."
     ('file-node-closed (treemacs--expand-file-node btn))
     ('tag-node-closed  (treemacs--expand-tag-node btn))
     ('root-node-closed (treemacs--expand-root-node btn))
-    (other             (funcall (alist-get other treemacs-TAB-actions-config) btn))))
+    (other             (funcall (alist-get other treemacs-TAB-actions-config)))))
 
 (defun treemacs--show-single-project (path name)
   "Show only a project for the given PATH and NAME in the current workspace."
