@@ -109,6 +109,7 @@
             "unmark"
             "untracked"
             "variadic"
+            "wayland"
             "whitespace"
             "workspace"
             "workspaces")))
