@@ -131,7 +131,8 @@ happen automatically when needed."
   :type 'list
   :group 'treemacs)
 
-(defcustom treemacs-read-string-input 'from-child-frame
+(defcustom treemacs-read-string-input
+  (if (getenv "WAYLAND_DISPLAY") 'from-minibuffer 'from-child-frame)
   "The function treemacs uses to read user input.
 Only applies to plaintext input, like when renaming a project, file or
 workspace.
@@ -141,7 +142,10 @@ There are 2 options:
    child frame pop-up.  Only available in GUI frames, otherwise the default
    minibuffer input is used.
  - `from-minibuffer': will read input from the minibuffer, same as baseline
-   Emacs."
+   Emacs.
+
+Note: there seem to be issues with focusing child frames on wayland, therefore
+treemacs will use the minibuffer if it thinks you are running wayland."
   :type '(choice (const :tag "With Child Frame Popup" from-child-frame)
                  (const :tag "From the Minibuffer (Emacs Default)" from-minibuffer))
   :group 'treemacs)
