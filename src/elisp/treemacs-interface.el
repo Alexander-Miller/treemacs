@@ -1328,7 +1328,7 @@ With a prefix ARG switch to the previous workspace instead."
           (new-idx (% (+ ws-count (if arg (1- idx) (1+ idx))) ws-count))
           (new-ws (nth new-idx treemacs--workspaces)))
      (treemacs-do-switch-workspace new-ws)
-     (treemacs-pulse-on-success "Switched to workdpace '%s'"
+     (treemacs-pulse-on-success "Switched to workspace '%s'"
        (propertize (treemacs-workspace->name new-ws)
                    'face 'font-lock-string-face)))))
 
