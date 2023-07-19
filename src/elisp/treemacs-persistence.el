@@ -197,7 +197,13 @@ ITER: Treemacs-Iter Struct"
                               (if (treemacs-project->is-disabled? pr) "COMMENT " "")
                               (treemacs-project->name pr))
                       txt)
-                (push (format " - path :: %s\n" (abbreviate-file-name (treemacs-project->path pr))) txt)))
+                (push (format
+                       " - path :: %s\n"
+                       (-let [path (treemacs-project->path pr)]
+                         (if (string-prefix-p "/ssh:" path)
+                             path
+                           (abbreviate-file-name path))))
+                      txt)))
             (delete-region (point-min) (point-max))
             (insert (apply #'concat (nreverse txt)))
             (-let [inhibit-message t] (save-buffer))
