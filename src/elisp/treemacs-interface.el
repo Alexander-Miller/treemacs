@@ -560,7 +560,7 @@ also not be deleted."
       ;; that we shouldn't prevent from running, so we just restore treemacs instead of preventing
       ;; it from being deleted
       ;; 'no-delete-other-windows could be used instead, but it's only available for emacs 26
-      (when w
+      (when (and w (not (equal 'visible (treemacs-current-visibility))))
         (treemacs--select-not-visible-window)))))
 
 (defun treemacs-temp-resort-root (&optional sort-method)
