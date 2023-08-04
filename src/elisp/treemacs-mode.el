@@ -226,9 +226,12 @@ Will be set by `treemacs--post-command'.")
               ((memq 'moody-mode-line-buffer-identification
                      (default-value 'mode-line-format))
                '(:eval (moody-tab " Treemacs " 10 'down)))
-              ((and (fboundp 'doom-modeline)
-                    (fboundp 'doom-modeline-def-modeline))
-               (doom-modeline-def-modeline 'treemacs '(bar " " major-mode))
+              ((fboundp 'doom-modeline)
+               (with-no-warnings
+                 (doom-modeline-def-segment treemacs
+                   "Display treemacs."
+                   (propertize (format " %s " (treemacs-workspace->name (treemacs-current-workspace)) )
+                               'face (doom-modeline-face 'doom-modeline-buffer-minor-mode))))
                (doom-modeline 'treemacs))
               (t
                '(:eval (format " Treemacs: %s"
