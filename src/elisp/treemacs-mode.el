@@ -230,9 +230,10 @@ Will be set by `treemacs--post-command'.")
                (with-no-warnings
                  (doom-modeline-def-segment treemacs
                    "Display treemacs."
-                   (propertize (format " %s " (treemacs-workspace->name (treemacs-current-workspace)) )
-                               'face (doom-modeline-face 'doom-modeline-buffer-minor-mode))))
-               (doom-modeline 'treemacs))
+                   (propertize (format " %s " (treemacs-workspace->name (treemacs-current-workspace)))
+                               'face (doom-modeline-face 'doom-modeline-buffer-minor-mode)))
+                 (doom-modeline-def-modeline 'treemacs '(bar " " major-mode) '(treemacs))
+                 (doom-modeline 'treemacs)))
               (t
                '(:eval (format " Treemacs: %s"
                                (treemacs-workspace->name (treemacs-current-workspace))))))))
