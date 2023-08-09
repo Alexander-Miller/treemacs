@@ -332,10 +332,10 @@ Necessary since root icons are not rectangular."
      :file "vsc/dir-temp-open.svg" :extensions ("temp-open" "tmp-open")
      :fallback (propertize "- " 'face 'treemacs-term-node-face))
     (treemacs-create-icon
-     :file "vsc/dir-docs-closed.svg" :extensions ("readme-closed" "docs-closed")
+     :file "svgrepo/dir-docs-closed.svg" :extensions ("readme-closed" "docs-closed")
      :fallback (propertize "+ " 'face 'treemacs-term-node-face))
     (treemacs-create-icon
-     :file "vsc/dir-docs-open.svg" :extensions ("readme-open" "docs-open")
+     :file "svgrepo/dir-docs-open.svg" :extensions ("readme-open" "docs-open")
      :fallback (propertize "- " 'face 'treemacs-term-node-face))
     (treemacs-create-icon
      :file "vsc/dir-images-closed.svg" :extensions ("screenshots-closed" "icons-closed")
