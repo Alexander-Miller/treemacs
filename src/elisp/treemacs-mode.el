@@ -226,8 +226,9 @@ Will be set by `treemacs--post-command'.")
               ((memq 'moody-mode-line-buffer-identification
                      (default-value 'mode-line-format))
                '(:eval (moody-tab " Treemacs " 10 'down)))
-              ((eval-and-compile (require 'doom-modeline nil 'noerror))
+              ((featurep 'doom-modeline)
                (with-no-warnings
+                 (eval-and-compile (require 'doom-modeline nil 'noerror))
                  (doom-modeline-def-segment treemacs-workspace-name
                    "Display treemacs."
                    (propertize (format " %s " (treemacs-workspace->name (treemacs-current-workspace)))
