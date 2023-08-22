@@ -32,6 +32,13 @@
   treemacs-common-helpful-hydra
   treemacs-advanced-helpful-hydra)
 
+(treemacs-import-functions-from "treemacs-mouse-interface"
+  treemacs-dragleftclick-action
+  treemacs-leftclick-action)
+
+(treemacs-import-functions-from "treemacs-mouse-interface"
+  treemacs-copy-file)
+
 (declare-function treemacs-add-bookmark "treemacs-bookmarks.el")
 
 (declare-function treemacs-git-commit-diff-mode "treemacs-commit-diff-mode.el")
