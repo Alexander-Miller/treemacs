@@ -147,6 +147,12 @@ width of the new window when the treemacs window is visible."
   (when (and (boundp 'evil-escape-excluded-major-modes) (not (boundp 'evil-escape-version)))
     (add-to-list 'evil-escape-excluded-major-modes 'treemacs-mode)))
 
+(when (fboundp 'context-menu-mode)
+  (defun treemacs--disable-context-menu-mode ()
+    (treemacs-run-in-all-derived-buffers
+     (setq-local context-menu-functions nil)))
+  (add-hook 'context-menu-mode-hook 'treemacs--disable-context-menu-mode))
+
 (defun treemacs-load-all-the-icons-with-workaround-font (font)
   "Load the `treemacs-all-the-icons' package using a workaround FONT for tabs.
 Use this if you experience the issue of icons jumping around when they are
