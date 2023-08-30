@@ -150,7 +150,8 @@ width of the new window when the treemacs window is visible."
 (when (fboundp 'context-menu-mode)
   (defun treemacs--disable-context-menu-mode ()
     (treemacs-run-in-all-derived-buffers
-     (setq-local context-menu-functions nil)))
+     (with-no-warnings
+       (setq-local context-menu-functions nil))))
   (add-hook 'context-menu-mode-hook 'treemacs--disable-context-menu-mode))
 
 (defun treemacs-load-all-the-icons-with-workaround-font (font)

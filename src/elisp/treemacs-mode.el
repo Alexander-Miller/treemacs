@@ -344,7 +344,8 @@ Will simply return `treemacs--eldoc-msg'."
   (setq-local eldoc-documentation-function #'treemacs--eldoc-function)
   (setq-local eldoc-message-commands treemacs--eldoc-obarray)
   (setq-local imenu-create-index-function #'treemacs--create-imenu-index-function)
-  (setq-local context-menu-functions nil)
+  (when (boundp 'context-menu-functions)
+    (setq-local context-menu-functions nil))
 
   ;; integrate with bookmark.el
   (setq-local bookmark-make-record-function #'treemacs--make-bookmark-record)
