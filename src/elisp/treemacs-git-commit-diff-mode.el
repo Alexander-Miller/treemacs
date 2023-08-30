@@ -56,7 +56,7 @@ Look for the PROJECT either in BUFFER or the local treemacs buffer."
         :on-success
         (when (buffer-live-p buffer)
           (-let [out (-> (pfuture-callback-output)
-                         (string-trim-right)
+                         (treemacs-string-trim-right)
                          (read))]
             (with-current-buffer buffer
               (if out

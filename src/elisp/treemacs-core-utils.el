@@ -154,6 +154,16 @@ Used in `treemacs-is-node-expanded?'")
          (substring ,path 0 -1)
        ,path))))
 
+(define-inline treemacs-string-trim-right (string)
+  "Trim STRING of trailing string matching REGEXP.
+
+Same as the builtin `string-trim-right', but re-implemented here for Emacs 27."
+  (declare (side-effect-free t))
+  (inline-letevals (string)
+    (inline-quote
+     (let ((i (string-match-p "\\(?:[ \t\n\r]+\\)\\'" ,string)))
+       (if i (substring ,string 0 i) ,string)))))
+
 (define-inline treemacs--prefix-arg-to-recurse-depth (arg)
   "Translates prefix ARG into a number.
 Used for depth-based expansion of nodes - a numeric prefix will translate to

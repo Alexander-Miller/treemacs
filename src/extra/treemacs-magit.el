@@ -181,7 +181,7 @@ Relevant for integrating with `treemacs-git-commit-diff-mode'.")
             :directory path
             :on-success
             (-let [out (-> (pfuture-callback-output)
-                           (string-trim-right)
+                           (treemacs-string-trim-right)
                            (read))]
               (treemacs-run-in-every-buffer
                (-when-let* ((project (treemacs--find-project-for-path path))
