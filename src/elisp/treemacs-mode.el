@@ -228,13 +228,15 @@ Will be set by `treemacs--post-command'.")
                '(:eval (moody-tab " Treemacs " 10 'down)))
               ((featurep 'doom-modeline)
                (with-no-warnings
-                 (eval-and-compile (require 'doom-modeline nil 'noerror))
-                 (doom-modeline-def-segment treemacs-workspace-name
-                   "Display treemacs."
-                   (propertize (format " %s " (treemacs-workspace->name (treemacs-current-workspace)))
-                               'face (doom-modeline-face 'doom-modeline-buffer-minor-mode)))
-                 (doom-modeline-def-modeline 'treemacs '(bar " " major-mode) '(treemacs-workspace-name))
-                 (doom-modeline 'treemacs)))
+                 (eval
+                  '(progn
+                     (require 'doom-modeline)
+                     (doom-modeline-def-segment treemacs-workspace-name
+                       "Display treemacs."
+                       (propertize (format " %s " (treemacs-workspace->name (treemacs-current-workspace)))
+                                   'face (doom-modeline-face 'doom-modeline-buffer-minor-mode)))
+                     (doom-modeline-def-modeline 'treemacs '(bar " " major-mode) '(treemacs-workspace-name))
+                     (doom-modeline 'treemacs)))))
               (t
                '(:eval (format " Treemacs: %s"
                                (treemacs-workspace->name (treemacs-current-workspace))))))))
