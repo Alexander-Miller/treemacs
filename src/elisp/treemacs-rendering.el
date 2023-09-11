@@ -1054,13 +1054,12 @@ DEPTH: Int"
         (let* ((strs)
                (face))
           (if (file-directory-p ,path)
-              (setf strs (treemacs--create-dir-button-strings
-                          ,path
-                          (concat prefix treemacs-icon-dir-closed)
-                          ,parent
-                          ,depth)
-                    face 'treemacs-directory-face)
-            (setf strs (treemacs--create-file-button-strings ,path prefix ,parent ,depth)
+              (setf
+               strs (treemacs--create-dir-button-strings
+                     ,path prefix ,parent ,depth)
+               face 'treemacs-directory-face)
+            (setf strs (treemacs--create-file-button-strings
+                        ,path prefix ,parent ,depth)
                   face 'treemacs-file-face))
           (-let [last (-last-item strs)]
             (put-text-property 0 (length last) 'face face last))
