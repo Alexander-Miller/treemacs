@@ -230,14 +230,13 @@ the height of treemacs' icons must be taken into account."
 PREFIX is a string inserted as indentation.
 PARENT is the (optional) button under which this one is inserted.
 DEPTH indicates how deep in the filetree the current button is."
-  ;; for directories the icon is included in the prefix since it's always known
   (inline-letevals (path prefix parent depth)
     (inline-quote
-     (let ((path (file-name-nondirectory ,path)))
+     (let ((dir-name (file-name-nondirectory ,path)))
        (list
         ,prefix
-        (treemacs-icon-for-dir path 'closed)
-        (propertize (->> path (funcall treemacs-directory-name-transformer))
+        (treemacs-icon-for-dir dir-name 'closed)
+        (propertize (->> dir-name (funcall treemacs-directory-name-transformer))
                     'button '(t)
                     'category 'default-button
                     'help-echo nil
@@ -543,7 +542,8 @@ set to PARENT."
          (save-excursion
            (treemacs--flatten-dirs (treemacs--parse-collapsed-dirs ,collapse-process))
            (treemacs--reentry ,root ,git-future))
-         (line-end-position))))))
+         (with-no-warnings
+           (line-end-position)))))))
 
 (cl-defmacro treemacs--button-close (&key button new-icon new-state post-close-action)
   "Close node given by BUTTON, use NEW-ICON and BUTTON's state to NEW-STATE.
