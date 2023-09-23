@@ -685,6 +685,8 @@ nothing but calls to ~treemacs-create-icon~:
       (treemacs-create-icon :file "root-closed.png" :fallback ""       :extensions (root-closed))
       (treemacs-create-icon :file "emacs.png"       :fallback "🗏 "     :extensions ("el" "elc"))
       (treemacs-create-icon :file "readme.png"      :fallback "🗏 "     :extensions ("readme.md"))
+      (treemacs-create-icon :file "src-closed.png"  :fallback "📁 "     :extensions ("src-closed"))
+      (treemacs-create-icon :file "src-open.png"    :fallback "📂 "     :extensions ("src-open"))
       (treemacs-create-icon :icon (all-the-icons-icon-for-file "yaml") :extensions ("yml" "yaml"))))
 #+END_SRC
 
@@ -697,6 +699,9 @@ For treemacs an extension is either the entire file name or the text after the l
 ~treemacs-file-extension-regex~ is customized). This means it can match normal file names like "init.el", extensionless
 file names like "Makefile". Because the full name is checked first it is possible to give special files their own icon,
 for example "Readme.md" can use a different icon than normal markdown files.
+
+Directories can likewise have their own icons. In that case you just need to give the directory's name and the suffix
+"-open" or "-closed", like the "src" directory in the example above.
 
 Instead of a string extension a symbol can also be used. In this case treemacs will also create a variable for that icon
 named ~treemacs-icon-$symbol~. Treemacs uses several such icon variables and any new theme should define their own
