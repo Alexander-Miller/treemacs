@@ -105,6 +105,11 @@ DEFAULT: Face"
   "Saves the specific version of git-mode that is active.
 Values are either `simple', `extended', `deferred' or nil.")
 
+(defun treemacs--non-simple-git-mode-enabled ()
+  "Indicate whether a version of git-mode is enabled that affects directories."
+  (declare (side-effect-free t))
+  (memq treemacs--git-mode '(deferred extended)))
+
 (defun treemacs--resize-git-cache ()
   "Cuts `treemacs--git-cache' back down to size.
 Specifically its size will be reduced to half of `treemacs--git-cache-max-size'."

@@ -32,6 +32,7 @@
 (require 'treemacs-logging)
 (require 'treemacs-rendering)
 (require 'treemacs-annotations)
+(require 'treemacs-async)
 
 (eval-when-compile
   (require 'inline)
@@ -540,9 +541,13 @@ IS-FILE?: Bool"
          ;; update only the part that changed to keep things smooth
          ;; for files that's just their parent, for directories we have to take
          ;; flattening into account
-         (if (treemacs-button-get created-under-btn :collapsed)
-             (treemacs-update-node (treemacs-button-get (treemacs-button-get created-under-btn :parent) :path))
-           (treemacs-update-node (treemacs-button-get created-under-btn :path))))
+         (-let [path-to-update
+                (if (treemacs-button-get created-under-btn :collapsed)
+                    (treemacs-button-get (treemacs-button-get created-under-btn :parent) :path)
+                  (treemacs-button-get created-under-btn :path))]
+           (treemacs-update-node path-to-update)
+           (when (treemacs--non-simple-git-mode-enabled)
+             (treemacs-update-single-file-git-state path-to-update))))
        (treemacs-goto-file-node path-to-create project)
        (recenter))
      (treemacs-pulse-on-success

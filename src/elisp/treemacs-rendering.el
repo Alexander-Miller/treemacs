@@ -375,7 +375,7 @@ DIRS: List of Collapse Paths.  Each Collapse Path is a list of
               (-let [beg (point)]
                 (insert label-to-add)
                 (add-text-properties beg (point) props)
-                (unless (memq treemacs--git-mode '(deferred extended))
+                (unless (treemacs--non-simple-git-mode-enabled)
                   (add-text-properties
                    beg (point)
                    '(face treemacs-directory-collapsed-face)))))))))))

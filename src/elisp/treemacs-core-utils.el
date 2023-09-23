@@ -90,6 +90,8 @@
 
 (treemacs-import-functions-from "treemacs-async"
   treemacs--git-status-process
+  treemacs--non-simple-git-mode-enabled
+  treemacs-update-single-file-git-state
   treemacs--collapsed-dirs-process)
 
 (treemacs-import-functions-from "treemacs-dom"
@@ -475,7 +477,9 @@ being edited to trigger."
        ;; filewatch mode needs the node's information to be in the dom
        (unless (with-no-warnings treemacs-filewatch-mode)
          (treemacs-run-in-every-buffer
-          (treemacs-on-collapse ,path t)))))))
+          (treemacs-on-collapse ,path t)))
+       (when (treemacs--non-simple-git-mode-enabled)
+         (treemacs-update-single-file-git-state (treemacs--parent-dir ,path)))))))
 
 (define-inline treemacs--refresh-dir (path &optional project)
   "Local refresh for button at PATH and PROJECT.
