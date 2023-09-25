@@ -186,41 +186,37 @@ Necessary since root icons are not rectangular."
          (h (round (* ,height 1.1818))))
      (setq ,width w ,height h)))
 
-(define-inline treemacs--create-image (file-path)
+(defun treemacs--create-image (file-path)
   "Load image from FILE-PATH and size it based on `treemacs--icon-size'."
-  (inline-letevals (file-path)
-    (inline-quote
-     (let ((height treemacs--icon-size)
-           (width treemacs--icon-size))
-       (when (and (integerp treemacs--icon-size)
-                  (s-starts-with? "root-" ,file-path))
-         (treemacs--root-icon-size-adjust width height))
-       (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
-           (create-image ,file-path 'imagemagick nil :ascent 'center :width width :height height)
-         (create-image
-          ,file-path
-          (intern (treemacs--file-extension (treemacs--filename ,file-path)))
-          nil
-          :ascent 'center :width width :height height))))))
+  (let ((height treemacs--icon-size)
+        (width treemacs--icon-size))
+    (when (and (integerp treemacs--icon-size)
+               (s-starts-with? "root-" file-path))
+      (treemacs--root-icon-size-adjust width height))
+    (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
+        (create-image file-path 'imagemagick nil :ascent 'center :width width :height height)
+      (create-image
+       file-path
+       (intern (treemacs--file-extension (treemacs--filename file-path)))
+       nil
+       :ascent 'center :width width :height height))))
 
-(define-inline treemacs--create-icon-strings (file fallback)
+(defun treemacs--create-icon-strings (file fallback)
   "Create propertized icon strings for a given FILE image and TUI FALLBACK."
-  (inline-letevals (file fallback)
-    (inline-quote
-     (let ((tui-icon ,fallback)
-           (gui-icon
-            (if (treemacs--is-image-creation-impossible?)
-                ,fallback
-              (let* ((img-selected   (treemacs--create-image ,file))
-                     (img-unselected (copy-sequence img-selected)))
-                (nconc img-selected   `(:background ,treemacs--selected-icon-background))
-                (nconc img-unselected `(:background ,treemacs--not-selected-icon-background))
-                (concat (propertize " "
-                                    'display img-unselected
-                                    'img-selected img-selected
-                                    'img-unselected img-unselected)
-                        " ")))))
-       (cons gui-icon tui-icon)))))
+  (let ((tui-icon fallback)
+        (gui-icon
+         (if (treemacs--is-image-creation-impossible?)
+             fallback
+           (let* ((img-selected   (treemacs--create-image file))
+                  (img-unselected (copy-sequence img-selected)))
+             (nconc img-selected   `(:background treemacs--selected-icon-background))
+             (nconc img-unselected `(:background treemacs--not-selected-icon-background))
+             (concat (propertize " "
+                                 'display img-unselected
+                                 'img-selected img-selected
+                                 'img-unselected img-unselected)
+                     " ")))))
+    (cons gui-icon tui-icon)))
 
 (defmacro treemacs--splice-icon (icon)
   "Splice the given ICON data depending on whether it is a value or an sexp."
