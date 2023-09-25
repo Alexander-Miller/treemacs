@@ -197,8 +197,11 @@ Necessary since root icons are not rectangular."
          (treemacs--root-icon-size-adjust width height))
        (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
            (create-image ,file-path 'imagemagick nil :ascent 'center :width width :height height)
-         (create-image ,file-path (intern (treemacs--file-extension ,file-path)) nil
-                       :ascent 'center :width width :height height))))))
+         (create-image
+          ,file-path
+          (intern (treemacs--file-extension (treemacs--filename ,file-path)))
+          nil
+          :ascent 'center :width width :height height))))))
 
 (define-inline treemacs--create-icon-strings (file fallback)
   "Create propertized icon strings for a given FILE image and TUI FALLBACK."
