@@ -6,5 +6,5 @@ exemptLabels:
 staleLabel: stale
 markComment: >
   This issue has been automatically marked as stale because it has not had
-  recent activity.
+  recent activity (this bot only works as a reminder, it will not close issues).
 closeComment: false
