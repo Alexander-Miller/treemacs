@@ -112,6 +112,9 @@ Finally ~:children~ is special in that it has access to 2 parameters:
 - The ~btn~ for the node at point, as returned by ~treemacs-current-button~
   (the value is a text-properties button as it would be created by the builtin button.el library, hence the name)
 
+~:on-expand~ and ~on-collapse~ are optional callbacks that are called at the end of the expand/collapse cycle. They too are
+called with ~btn~ as their parameter.
+
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-expandable-node-type showcase-buffer-group
     :closed-icon "+ "
@@ -120,7 +123,9 @@ Finally ~:children~ is special in that it has access to 2 parameters:
     :key item
     :children (treemacs-showcase--buffers-by-mode (treemacs-button-get btn :major-mode))
     :child-type 'showcase-buffer-leaf
-    :more-properties `(:major-mode ,item))
+    :more-properties `(:major-mode ,item)
+    :on-expand (message "Expanding node with key %s" (treemacs-button-get btn :key))
+    :on-collapse (message "Collapsing node with key %s" (treemacs-button-get btn :key)))
 #+END_SRC
 
 Finally all that's left is to define the leaves of our tree - the nodes for the individual buffers.

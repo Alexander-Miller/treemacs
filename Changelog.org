@@ -8,6 +8,7 @@
 - Added ~treemacs-copy-absolute-path-at-point~
 - Made it possible to disbale workspace with a ~COMMENT~ directive
 - Added option to sort alphabetic-numerically (as with ~string-version-lessp~)
+- Added ~:on-expand~ and ~:on-collapse~ options to treelib nodes
 ** v3.1
 - Added ~treemacs-create-workspace-from-project~ command
 - Added ~treemacs-project-follow-into-home~ option

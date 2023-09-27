@@ -86,7 +86,13 @@ Set by `treemacs--async-update-part-complete'.")
   async?
 
   ;; used as a check when the extension is enabled
-  entry-point?)
+  entry-point?
+
+  ;; callback to run when a node is expanded
+  on-expand
+
+  ;; callback to run when a node is collapsed
+  on-collapse)
 
 (define-inline treemacs--ext-symbol-to-instance (symbol)
   "Derive an extension instance from the given SYMBOL."
@@ -251,7 +257,9 @@ Also pass additional DATA to predicate function.")
           no-tab?
           variadic?
           async?
-          entry-point?)
+          entry-point?
+          on-expand
+          on-collapse)
 
   "Base building block for extension node setup.
 Not meant for direct use.  Instead one of the following macros should be
@@ -270,7 +278,7 @@ CHILDREN is a form to query a list of items to be rendered as children when a
 node is expanded.  The node being expanded is available as a variable under the
 name `btn'.  It is a `button' in the sense of the built-in button.el library
 \(really just a marker to a buffer position), so its text-properties can be
-extracted via `(treemacs-button-get node :property)' (see also MORE-PROPERTIES).
+extracted via `(treemacs-button-get btn :property)' (see also MORE-PROPERTIES).
 In addition the item (as produced by the form passed here) that was used to
 create the node will also be available under the name `item'.
 
@@ -321,7 +329,11 @@ cleanup and logging the error.
 
 ENTRY-POINT indicates that the node type defined here is an entry-point for an
 extension, it will be used as a type-check when enabling an extension with e.g.
-`treemacs-enable-top-level-extension'."
+`treemacs-enable-top-level-extension'.
+
+ON-EXPAND and ON-COLLAPSE are forms to be invoked at the very end of the
+expand/collapse process.  They are invoked with the current `btn' as their sole
+argument."
 
   (declare (indent 1))
 
@@ -348,7 +360,9 @@ extension, it will be used as a type-check when enabling an extension with e.g.
           :more-properties (lambda (&optional btn item) "" (ignore item) (ignore btn) ,more-properties)
           :child-type      (lambda ()                   "" (symbol-value ',child-name))
           :open-state      (lambda ()                   "" ',open-state)
-          :closed-state    (lambda ()                   "" ',closed-state)))
+          :closed-state    (lambda ()                   "" ',closed-state)
+          :on-expand       (lambda (&optional btn )     "" (ignore btn) ,on-expand)
+          :on-collapse     (lambda (&optional btn )     "" (ignore btn) ,on-collapse)))
 
        (treemacs-define-TAB-action
         ',closed-state
@@ -412,13 +426,15 @@ For a detailed description of all arguments see
           child-type
           more-properties
           ret-action
+          on-expand
+          on-collapse
           async?)
 
   "Define a general-purpose expandable node-type.
 The NAME, CLOSED-ICON, OPEN-ICON LABEL, KEY, CHILDREN and CHILD-TYPE arguments
 are mandatory.
 
-MORE-PROPERTIES, RET-ACTION and ASYNC are optional.
+MORE-PROPERTIES, RET-ACTION, ON-EXPAND, ON-COLLAPSE and ASYNC are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -441,7 +457,9 @@ For a detailed description of all arguments see
      :child-type ,child-type
      :more-properties ,more-properties
      :ret-action ,ret-action
-     :async? ,async?))
+     :async? ,async?
+     :on-expand ,on-expand
+     :on-collapse ,on-collapse))
 
 (cl-defmacro treemacs-define-entry-node-type
     (name &key
@@ -453,6 +471,8 @@ For a detailed description of all arguments see
           child-type
           more-properties
           ret-action
+          on-expand
+          on-collapse
           async?)
 
   "Define a node type with NAME that serves as an entry-point for an extension.
@@ -460,7 +480,7 @@ For a detailed description of all arguments see
 The KEY, LABEL, OPEN-ICON CLOSED-ICON, CHILDREN and CHILD-TYPE arguments are
 mandatory.
 
-MORE-PROPERTIES, RET-ACTION and ASYNC are optional.
+MORE-PROPERTIES, RET-ACTION, ON-EXPAND, ON-COLLAPSE and ASYNC are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -484,6 +504,8 @@ For a detailed description of all arguments see
      :more-properties ,more-properties
      :async? ,async?
      :ret-action ,ret-action
+     :on-expand ,on-expand
+     :on-collapse ,on-collapse
      :entry-point? t))
 
 (cl-defmacro treemacs-define-variadic-entry-node-type
@@ -746,7 +768,8 @@ If a prefix ARG is provided expand recursively."
           ((treemacs-extension->async? ext)
            (treemacs--do-expand-async-extension-node btn ext arg))
           (t
-           (treemacs--do-expand-extension-node btn ext nil arg))))))))
+           (treemacs--do-expand-extension-node btn ext nil arg)))
+         (treemacs-extension->get ext :on-expand btn))))))
 
 (defun treemacs-collapse-extension-node (&optional arg)
   "Collapse a node created with the extension api.
@@ -757,7 +780,8 @@ If a prefix ARG is provided expand recursively."
          (ext (alist-get state treemacs--extension-registry)))
     (when (null ext)
       (error "No extension is registered for state '%s'" state))
-    (treemacs--do-collapse-extension-node btn ext arg)))
+    (treemacs--do-collapse-extension-node btn ext arg)
+    (treemacs-extension->get ext :on-collapse btn)))
 
 (defun treemacs--do-expand-async-extension-node (btn ext &optional arg)
   "Expand an async extension node BTN for the given extension EXT.
