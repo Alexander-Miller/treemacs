@@ -38,12 +38,11 @@
    `(left-fringe ,treemacs--fringe-indicator-bitmap treemacs-fringe-indicator-face))
   "The `before-string' property value used by the fringe indicator overlay.")
 
-(define-inline treemacs--move-fringe-indicator-to-point ()
+(defun treemacs--move-fringe-indicator-to-point ()
   "Move the fringe indicator to the position of point."
-  (inline-quote
-   (when treemacs--fringe-indicator-overlay
-     (-let [pabol (line-beginning-position)]
-       (move-overlay treemacs--fringe-indicator-overlay pabol  (1+ pabol))))))
+  (when treemacs--fringe-indicator-overlay
+    (-let [pabol (line-beginning-position)]
+      (move-overlay treemacs--fringe-indicator-overlay pabol (1+ pabol)))))
 
 (defun treemacs--enable-fringe-indicator ()
   "Enabled the fringe indicator in the current buffer."
@@ -78,6 +77,7 @@ WINDOW is the treemacs window that has just been focused or unfocused."
   "Tear down `treemacs-fringe-indicator-mode'."
   (treemacs-run-in-all-derived-buffers
    (treemacs--disable-fringe-indicator)
+   (advice-remove #'hl-line-highlight #'treemacs--move-fringe-indicator-to-point)
    (remove-hook 'window-selection-change-functions
                 #'treemacs--show-fringe-indicator-only-when-focused
                 :local)))
@@ -120,6 +120,7 @@ fringe indicator when the treemacs window is selected."
   (setf treemacs-fringe-indicator-mode arg)
   (treemacs-run-in-all-derived-buffers
    (treemacs--enable-fringe-indicator)
+   (advice-add #'hl-line-highlight :after #'treemacs--move-fringe-indicator-to-point)
    (when (memq arg '(t only-when-focused))
      (add-hook 'window-selection-change-functions
                #'treemacs--show-fringe-indicator-only-when-focused

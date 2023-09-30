@@ -36,42 +36,6 @@
   (require 'inline)
   (require 'treemacs-macros))
 
-;; An explanation for the what and why of the icon highlighting code below:
-;; Using png images in treemacs has one annoying visual flaw: they overwrite the overlay
-;; used by hl-line, such that the line marked by hl-line will always show a 22x22 pixel
-;; gap wherever treemacs places an icon, regardess of transparency.
-;; Using xpm instead of png images is one way to work around this, but it degrades icon
-;; quality to an unacceptable degree. Another way is to directly change images' :background
-;; property. The backgrounds colours are derived from the current theme with `treemacs--setup-icon-highlight'
-;; and saved in `treemacs--selected-icon-background' and `treemacs--not-selected-icon-background'.
-;; Every icon string stores two images with the proper :background values in its properties
-;; 'img-selected and 'img-unselected. The 'display property of the icon in the current line
-;; is then highlighted, and the previously highlighted icon unhighlighted, by advising
-;; `hl-line-highlight'. The last displayed icon is saved as a button marker in `treemacs--last-highlight'.
-;; Since it is a marker in the treemacs buffer it is important for it to be reset whenever it might
-;; become invalid.
-
-(eval-and-compile
-  (defvar treemacs--not-selected-icon-background
-    (pcase (face-attribute 'default :background nil t)
-      ((or 'unspecified 'unspecified-bg "unspecified" "unspecified-bg")
-       (unless (or noninteractive (boundp 'treemacs-no-load-time-warnings))
-         (message "[Treemacs] Warning: coudn't find default background colour for icons, falling back on #2d2d31."))
-       "#2d2d31" )
-      (other other)))
-  "Background for non-selected icons.")
-
-(eval-and-compile
-  (defvar treemacs--selected-icon-background
-    (-let [bg (face-attribute 'hl-line :background nil t)]
-      (if (member bg '(unspecified unspecified-b "unspecified" "unspecified-bg"))
-          (prog1 treemacs--not-selected-icon-background
-            (unless (or noninteractive (boundp 'treemacs-no-load-time-warnings))
-              (message "[Treemacs] Warning: couldn't find hl-line-mode's background color for icons, falling back on %s."
-                       treemacs--not-selected-icon-background)))
-        bg)))
-  "Background for selected icons.")
-
 (define-inline treemacs--set-img-property (image property value)
   "Set IMAGE's PROPERTY to VALUE."
   ;; the emacs26 code where this is copied from says it's for internal
@@ -115,35 +79,6 @@ account."
      (--if-let (car (alist-get ,face face-remapping-alist))
          (plist-get it :background)
        (face-attribute ,face :background nil t)))))
-
-(defun treemacs--setup-icon-background-colors (&rest _)
-  "Align icon backgrounds with current Emacs theme.
-Fetch the current Emacs theme's background & hl-line colours and inject them
-into the gui icons of every theme in `treemacs--themes'.
-Also called as advice after `enable-theme', hence the ignored argument."
-  (let* ((default-background (or (face-background 'treemacs-window-background-face)
-                                 (face-background 'default)))
-         (hl-line-background (or (face-background 'treemacs-hl-line-face)
-                                 (face-background 'hl-line)))
-         (test-icon          (treemacs-get-icon-value 'dir-open))
-         (icon-background    (treemacs--get-img-property (get-text-property 0 'img-unselected test-icon) :background))
-         (icon-hl-background (treemacs--get-img-property (get-text-property 0 'img-selected test-icon) :background)))
-    (when (memq default-background '(unspecified-bg unspecified))
-      (treemacs-log-failure "Current theme fails to specify default background color, falling back on #2d2d31")
-      (setq default-background "#2d2d31"))
-    ;; make sure we only change all the icons' colors when we have to
-    (unless (and (string= default-background icon-background)
-                 (string= hl-line-background icon-hl-background))
-      (setf treemacs--selected-icon-background hl-line-background
-            treemacs--not-selected-icon-background default-background)
-      (dolist (theme treemacs--themes)
-        (treemacs--maphash (treemacs-theme->gui-icons theme) (_ icon)
-          (treemacs--set-img-property
-           (get-text-property 0 'img-selected icon)
-           :background treemacs--selected-icon-background)
-          (treemacs--set-img-property
-           (get-text-property 0 'img-unselected icon)
-           :background treemacs--not-selected-icon-background))))))
 
 (define-inline treemacs--is-image-creation-impossible? ()
   "Will return non-nil when Emacs is unable to create images.
@@ -194,12 +129,20 @@ Necessary since root icons are not rectangular."
                (s-starts-with? "root-" file-path))
       (treemacs--root-icon-size-adjust width height))
     (if (and (integerp treemacs--icon-size) (image-type-available-p 'imagemagick))
-        (create-image file-path 'imagemagick nil :ascent 'center :width width :height height)
+        (create-image
+         file-path 'imagemagick nil
+         :ascent 'center
+         :width width
+         :height height
+         :mask 'heuristic)
       (create-image
        file-path
        (intern (treemacs--file-extension (treemacs--filename file-path)))
        nil
-       :ascent 'center :width width :height height))))
+       :ascent 'center
+       :width width
+       :height height
+       :mask 'heuristic))))
 
 (defun treemacs--create-icon-strings (file fallback)
   "Create propertized icon strings for a given FILE image and TUI FALLBACK."
@@ -207,15 +150,10 @@ Necessary since root icons are not rectangular."
         (gui-icon
          (if (treemacs--is-image-creation-impossible?)
              fallback
-           (let* ((img-selected   (treemacs--create-image file))
-                  (img-unselected (copy-sequence img-selected)))
-             (nconc img-selected   `(:background treemacs--selected-icon-background))
-             (nconc img-unselected `(:background treemacs--not-selected-icon-background))
-             (concat (propertize " "
-                                 'display img-unselected
-                                 'img-selected img-selected
-                                 'img-unselected img-unselected)
-                     " ")))))
+           (concat (propertize
+                    " "
+                    'display (treemacs--create-image file))
+                   " "))))
     (cons gui-icon tui-icon)))
 
 (defmacro treemacs--splice-icon (icon)
@@ -551,17 +489,14 @@ png are changed."
       (treemacs-log-failure "Icons cannot be resized without image transforms or imagemagick support.")
     (setq treemacs--icon-size size)
     (treemacs--maphash (treemacs-theme->gui-icons treemacs--current-theme) (_ icon)
-      (let ((display        (get-text-property 0 'display icon))
-            (img-selected   (get-text-property 0 'img-selected icon))
-            (img-unselected (get-text-property 0 'img-unselected icon))
-            (width          treemacs--icon-size)
-            (height         treemacs--icon-size))
+      (let ((display (get-text-property 0 'display icon))
+            (width   treemacs--icon-size)
+            (height  treemacs--icon-size))
         (when (eq 'image (car-safe display))
           (when (s-ends-with? "root.png" (plist-get (cdr display) :file))
             (treemacs--root-icon-size-adjust width height))
-          (dolist (property (list display img-selected img-unselected))
-            (plist-put (cdr property) :height height)
-            (plist-put (cdr property) :width width)))))))
+          (plist-put (cdr display) :height height)
+          (plist-put (cdr display) :width width))))))
 
 (defun treemacs--select-icon-set ()
   "Select the right set of icons for the current buffer.
@@ -636,21 +571,6 @@ be assigned which treemacs icon, for example
       (ht-set! (treemacs-theme->gui-icons treemacs--current-theme)
                (substring extension 1)
                icon))))
-
-(defun treemacs-realign-icon-colors ()
-  "Make sure icons' colours fit in with current faces.
-
-You can call this when you notice that some icons' background colour being
-different than the background of the treemacs buffer, or that the icon
-background does not fit in with the hl-line overlay.
-
-This function should only be necessary when you *manually* change either
-`treemacs-window-background-face' or `treemacs-hl-line-face' (e.g. using
-`set-face-background').  Loading of new themes if handled automatically."
-  (interactive)
-  (--when-let (treemacs-get-local-buffer)
-    (with-current-buffer it
-      (treemacs--setup-icon-background-colors))))
 
 (treemacs-only-during-init
   (treemacs-load-theme "Default"))

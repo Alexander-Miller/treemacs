@@ -84,9 +84,7 @@
 
 (treemacs-import-functions-from "treemacs-visuals"
   treemacs-pulse-on-success
-  treemacs--tear-down-icon-highlight
-  treemacs--forget-previously-follow-tag-btn
-  treemacs--forget-last-highlight)
+  treemacs--forget-previously-follow-tag-btn)
 
 (treemacs-import-functions-from "treemacs-async"
   treemacs--git-status-process
@@ -1083,7 +1081,6 @@ Will be added to `treemacs-ignored-file-predicates' on Macs."
         (treemacs--popup-window)
         (with-current-buffer lv-buffer (setf window-size-fixed t)))
     (treemacs--popup-window))
-  (treemacs--forget-last-highlight)
   (setq-local treemacs--in-this-buffer t))
 
 (define-inline treemacs--parent (path)

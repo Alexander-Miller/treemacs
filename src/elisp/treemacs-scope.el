@@ -45,9 +45,6 @@
 (treemacs-import-functions-from "treemacs-filewatch-mode"
   treemacs--stop-filewatch-for-current-buffer)
 
-(treemacs-import-functions-from "treemacs-visuals"
-  treemacs--tear-down-icon-highlight)
-
 (treemacs-import-functions-from "treemacs-interface"
   treemacs-quit
   treemacs-select-window)
@@ -180,7 +177,6 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
 
 (defun treemacs--on-buffer-kill ()
   "Cleanup to run when a treemacs buffer is killed."
-  (treemacs--tear-down-icon-highlight)
   (when (eq t treemacs--in-this-buffer)
     ;; stop watch must come first since we need a reference to the killed buffer
     ;; to remove it from the filewatch list

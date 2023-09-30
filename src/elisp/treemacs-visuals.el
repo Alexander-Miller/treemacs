@@ -39,9 +39,6 @@
 (treemacs-import-functions-from "treemacs-icons"
   treemacs-get-icon-value)
 
-(defvar-local treemacs--last-highlight nil
-  "The last button treemacs has highlighted.")
-
 (defvar-local treemacs--indentation-string-cache-key nil
   "Cache key for `treemacs--indentation-string-cache.")
 (defvar-local treemacs--indentation-string-cache (vector)
@@ -54,71 +51,10 @@
 Used to save the values of `treemacs-indentation' and
 `treemacs-indentation-string'.")
 
-(define-inline treemacs--forget-last-highlight ()
-  "Set `treemacs--last-highlight' to nil."
-  (inline-quote (setq treemacs--last-highlight nil)))
-
-(defun treemacs--setup-icon-highlight ()
-  "Make sure treemacs icons background aligns with hi-line's."
-  (advice-add #'hl-line-highlight :after #'treemacs--update-icon-selection)
-  (advice-add #'enable-theme      :after #'treemacs--setup-icon-background-colors)
-  (advice-add #'disable-theme     :after #'treemacs--setup-icon-background-colors))
-
-(defun treemacs--tear-down-icon-highlight ()
-  "Tear down highlighting advice when no treemacs buffer exists anymore."
-  (treemacs--forget-last-highlight)
-  (unless (or treemacs--scope-storage
-              (--any (buffer-local-value 'treemacs--in-this-buffer it)
-                     (buffer-list)))
-    (advice-remove #'hl-line-highlight #'treemacs--update-icon-selection)
-    (advice-remove #'enable-theme      #'treemacs--setup-icon-background-colors)
-    (advice-remove #'disable-theme     #'treemacs--setup-icon-background-colors)))
-
-(defun treemacs--update-icon-selection ()
-  "Highlight current icon, un-highlight `treemacs--last-highlight'."
-  (when treemacs--in-this-buffer
-    (condition-case e
-        (progn
-          (when treemacs-fringe-indicator-mode
-            (treemacs--move-fringe-indicator-to-point))
-          (-when-let (btn (treemacs-current-button))
-            (let* ((pos (max (line-beginning-position) (- (treemacs-button-start btn) 2)))
-                   (img-selected (get-text-property pos 'img-selected)))
-              (treemacs-with-writable-buffer
-               (when (and treemacs--last-highlight
-                          (> (point-max) treemacs--last-highlight))
-                 (let* ((last-pos (- (treemacs-button-start treemacs--last-highlight) 2))
-                        (img-unselected (get-text-property last-pos 'img-unselected)))
-                   (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
-               (when img-selected
-                 (put-text-property pos (1+ pos) 'display img-selected)
-                 (setq treemacs--last-highlight btn))))))
-      (error
-       (treemacs-log-err "Error on highlight, this shouldn't happen: %s" e)))))
-
-(defun treemacs--pulse-png-advice (&rest _)
-  "Make sure icons' background are pulsed alongside the entire line."
-  (when (eq 'treemacs-mode major-mode)
-    (treemacs-with-writable-buffer
-     (-when-let (btn (treemacs-current-button))
-       (let* ((start (max (line-beginning-position) (- (treemacs-button-start btn) 2)))
-              (end (1+ start))
-              (img (get-text-property start 'display))
-              (cp (copy-sequence img)))
-         ;; Icons may not always be images, as extensions may use text and e.g.
-         ;; all-the-icons font icons as the icon.
-         (when (eq (car-safe cp) 'image)
-           (treemacs--set-img-property cp :background
-                                       (face-attribute
-                                        (overlay-get pulse-momentary-overlay 'face)
-                                        :background nil t))
-           (put-text-property start end 'display cp)))))))
-
 (defun treemacs--do-pulse (face)
   "Visually pulse current line using FACE."
   (pulse-momentary-highlight-one-line (point) face)
-  (advice-add 'pulse-momentary-unhighlight :after #'hl-line-highlight)
-  (advice-add 'pulse-lighten-highlight :after #'treemacs--pulse-png-advice))
+  (advice-add 'pulse-momentary-unhighlight :after #'hl-line-highlight))
 
 (defsubst treemacs-pulse-on-success (&rest log-args)
   "Pulse current line with `treemacs-on-success-pulse-face'.

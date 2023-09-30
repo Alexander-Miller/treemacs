@@ -96,36 +96,6 @@ Will remove the killed subdir from `treemacs-icons-dired--covered-subdirs'."
   (setq-local treemacs-icons-dired--covered-subdirs nil)
   (setq-local treemacs-icons-dired-displayed nil))
 
-(defun treemacs-icons-dired--update-icon-selection ()
-  "Highlight current icon, un-highlight `treemacs--last-highlight'.
-This will make sure the icons' background colours will align with hl-line mode."
-  (when (or treemacs-icons-dired--ranger-adjust
-            (and (or hl-line-mode global-hl-line-mode) (eq major-mode 'dired-mode)))
-    (condition-case e
-        (progn
-          (treemacs--evade-image)
-          (unless (region-active-p)
-            (let* ((last-pos treemacs--last-highlight)
-                   (curr-pos (next-single-char-property-change (line-beginning-position) 'img-selected nil (line-end-position)))
-                   (img-selected (get-text-property curr-pos 'img-selected)))
-              (treemacs-with-writable-buffer
-               (when (and last-pos (< last-pos (point-max)))
-                 (let ((img-unselected (get-text-property last-pos 'img-unselected)))
-                   (put-text-property last-pos (1+ last-pos) 'display img-unselected)))
-               (when (and img-selected (< curr-pos (point-max)))
-                 (put-text-property curr-pos (1+ curr-pos) 'display img-selected)
-                 (setq treemacs--last-highlight (copy-marker curr-pos)))))))
-      (error
-       (treemacs-log "Error on highlight, this shouldn't happen: %s" e)))))
-
-(defun treemacs-icons-dired--enable-highlight-correction ()
-  "Locally add `treemacs-icons-dired--update-icon-selection'."
-  (add-hook 'post-command-hook #'treemacs-icons-dired--update-icon-selection nil :local))
-
-(defun treemacs-icons-dired--disable-highlight-correction ()
-  "Locally remove `treemacs-icons-dired--update-icon-selection'."
-  (remove-hook 'post-command-hook #'treemacs-icons-dired--update-icon-selection :local))
-
 (defun treemacs-icons-dired--add-icon-for-new-entry (file &rest _)
   "Add an icon for a new single FILE added by Dired."
   (let (buffer-read-only)
@@ -140,37 +110,30 @@ Necessary for the all-the-icons based themes."
 
 (defun treemacs-icons-dired--setup ()
   "Setup for the minor-mode."
-  (treemacs--setup-icon-background-colors)
   (add-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
   (add-hook 'dired-mode-hook #'treemacs--select-icon-set)
-  (add-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
   (add-hook 'dired-mode-hook #'treemacs-icons-dired--set-tab-width)
   (advice-add 'dired-revert :before #'treemacs-icons-dired--reset)
   (advice-add 'ranger-setup :before #'treemacs--select-icon-set)
-  (advice-add 'ranger-setup :before #'treemacs-icons-dired--enable-highlight-correction)
   (advice-add 'dired-add-entry :after #'treemacs-icons-dired--add-icon-for-new-entry)
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
       (when (derived-mode-p 'dired-mode)
         (treemacs-icons-dired--set-tab-width)
         (treemacs--select-icon-set)
-        (treemacs-icons-dired--enable-highlight-correction)
         (treemacs-icons-dired--display)))))
 
 (defun treemacs-icons-dired--teardown ()
   "Tear-down for the minor-mode."
   (remove-hook 'dired-after-readin-hook #'treemacs-icons-dired--display)
   (remove-hook 'dired-mode-hook #'treemacs--select-icon-set)
-  (remove-hook 'dired-mode-hook #'treemacs-icons-dired--enable-highlight-correction)
   (remove-hook 'dired-mode-hook #'treemacs-icons-dired--set-tab-width)
   (advice-remove 'dired-revert #'treemacs-icons-dired--reset)
   (advice-remove 'ranger-setup #'treemacs--select-icon-set)
-  (advice-remove 'ranger-setup #'treemacs-icons-dired--enable-highlight-correction)
   (advice-remove 'dired-add-entry #'treemacs-icons-dired--add-icon-for-new-entry)
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
       (when (derived-mode-p 'dired-mode)
-        (treemacs-icons-dired--disable-highlight-correction)
         (dired-revert)))))
 
 ;;;###autoload

@@ -727,7 +727,6 @@ For slower scrolling see `treemacs-previous-line-other-window'"
            (treemacs-return-if (string-equal old-name new-name)
              (treemacs-pulse-on-failure "The new name is the same as the old name."))
            (setf (treemacs-project->name project) new-name)
-           (treemacs--forget-last-highlight)
            ;; after renaming, delete and redisplay the project
            (goto-char (treemacs-button-end project-btn))
            (delete-region (line-beginning-position) (line-end-position))
@@ -907,7 +906,6 @@ With a prefix ARG also forget about all the nodes opened in the project."
       (treemacs-pulse-on-failure "There is nothing to close here.")
     (-let [btn (treemacs-project->position project)]
       (when (treemacs-is-node-expanded? btn)
-        (treemacs--forget-last-highlight)
         (goto-char btn)
         (treemacs--collapse-root-node btn arg)
         (treemacs--maybe-recenter 'on-distance)))
@@ -920,7 +918,6 @@ With a prefix ARG remember which nodes were expanded."
   (-when-let (buffer (treemacs-get-local-buffer))
     (with-current-buffer buffer
       (save-excursion
-        (treemacs--forget-last-highlight)
         (dolist (project (treemacs-workspace->projects (treemacs-current-workspace)))
           (-when-let (pos (treemacs-project->position project))
             (when (eq 'root-node-open (treemacs-button-get pos :state))
@@ -1123,7 +1120,6 @@ Prefix ARG will be passed on to the closing function
   (-if-let* ((btn (treemacs-current-button))
              (parent (button-get btn :parent)))
       (progn
-        (treemacs--forget-last-highlight)
         (goto-char parent)
         (treemacs-toggle-node arg)
         (treemacs--evade-image))

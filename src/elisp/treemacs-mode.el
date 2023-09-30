@@ -387,8 +387,6 @@ Will simply return `treemacs--eldoc-msg'."
 
   (treemacs--build-indentation-cache 6)
   (treemacs--select-icon-set)
-  (treemacs--setup-icon-highlight)
-  (treemacs--setup-icon-background-colors)
   (treemacs--setup-mode-line)
   (treemacs--reset-dom))
 

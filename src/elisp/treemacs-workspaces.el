@@ -58,7 +58,6 @@
   treemacs--maybe-load-workspaces)
 
 (treemacs-import-functions-from "treemacs-visuals"
-  treemacs--forget-last-highlight
   treemacs-pulse-on-failure)
 
 (treemacs-import-functions-from "treemacs-async"
@@ -288,7 +287,6 @@ Does not preserve the current position in the buffer."
   (when (treemacs-project->is-expanded? self)
     (let ((root-btn (treemacs-project->position self)))
       (goto-char root-btn)
-      (treemacs--forget-last-highlight)
       (funcall (alist-get (treemacs-button-get root-btn :state)
                           treemacs-TAB-actions-config))
       (unless (treemacs-project->is-unreadable? self)
@@ -610,7 +608,6 @@ Return values may be as follows:
        (if (equal (point-min) prev-project-pos)
            (goto-char next-project-pos)
          (goto-char prev-project-pos)))
-     (treemacs--forget-last-highlight)
      (treemacs--invalidate-buffer-project-cache)
      (--when-let (treemacs-get-local-window)
        (with-selected-window it
@@ -765,7 +762,6 @@ PROJECT: Project Struct"
          (ht-remove! treemacs-dom (treemacs-project->path project-in-buffer))
          (setf projects-in-buffer (delete project-in-buffer projects-in-buffer))))
      (treemacs-with-writable-buffer
-      (treemacs--forget-last-highlight)
       (treemacs--reset-dom)
       ;; delete everything's that's visible and render it again - the order of projects could
       ;; have been changed
