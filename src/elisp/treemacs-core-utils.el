@@ -477,7 +477,8 @@ being edited to trigger."
          (treemacs-run-in-every-buffer
           (treemacs-on-collapse ,path t)))
        (when (treemacs--non-simple-git-mode-enabled)
-         (treemacs-update-single-file-git-state (treemacs--parent-dir ,path)))))))
+         (treemacs-run-in-every-buffer
+          (treemacs-update-single-file-git-state (treemacs--parent-dir ,path))))))))
 
 (define-inline treemacs--refresh-dir (path &optional project)
   "Local refresh for button at PATH and PROJECT.
