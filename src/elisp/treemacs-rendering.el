@@ -378,7 +378,15 @@ DIRS: List of Collapse Paths.  Each Collapse Path is a list of
                 (unless (treemacs--non-simple-git-mode-enabled)
                   (add-text-properties
                    beg (point)
-                   '(face treemacs-directory-collapsed-face)))))))))))
+                   '(face treemacs-directory-collapsed-face)))
+                (-when-let* ((ann (treemacs-get-annotation new-path))
+                             (git-cache
+                              (->> original-path
+                                   (treemacs--parent-dir)
+                                   (ht-get treemacs--git-cache))))
+                  (treemacs-button-put
+                   b 'face
+                   (treemacs-annotation->face-value ann)))))))))))
 
 (defmacro treemacs--inplace-map-when-unrolled (items interval &rest mapper)
   "Unrolled in-place mapping operation.
