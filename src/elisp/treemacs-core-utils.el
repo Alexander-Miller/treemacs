@@ -408,18 +408,16 @@ FILE here is a list consisting of an absolute path and file attributes."
        (and (not (s-matches? treemacs-dotfiles-regex filename))
             (--none? (funcall it filename ,file) treemacs-ignored-file-predicates))))))
 
-(define-inline treemacs--file-extension (filename)
+(defun treemacs--file-extension (filename)
   "Same as `file-name-extension', but also works with leading periods.
 
 This is something a of workaround to easily allow assigning icons to a FILENAME
 with a name like '.gitignore' without always having to check for both filename
 extensions and special names like this."
   (declare (side-effect-free t))
-  (inline-letevals (filename)
-    (inline-quote
-     (if (string-match treemacs-file-extension-regex ,filename)
-         (substring ,filename (1+ (match-beginning 0)))
-       ,filename))))
+  (if (string-match treemacs-file-extension-regex filename)
+      (substring filename (1+ (match-beginning 0)))
+    filename))
 
 (define-inline treemacs-is-treemacs-window? (window)
   "Return t when WINDOW is showing a treemacs buffer."
