@@ -579,7 +579,7 @@ EXT: `treemacs-extension' instance"
      (insert (propertize
               label
               'button '(t)
-              'category 'default-button
+              'category t
               :custom t
               :key key
               :path key
@@ -614,7 +614,7 @@ EXPAND-DEPTH: Int"
        (treemacs-dom-node->insert-into-dom! dom-node)
        (insert (propertize "Hidden node"
                            'button '(t)
-                           'category 'default-button
+                           'category t
                            'invisible t
                            'skip t
                            :custom t
@@ -665,7 +665,7 @@ LABEL: String"
              (apply
               #'propertize ,label
               'button '(t)
-              'category 'default-button
+              'category t
               'help-echo nil
               :custom t
               :state ,state
@@ -699,7 +699,7 @@ PARENT: Button"
      (treemacs-extension->get ext :closed-icon)
      (propertize (treemacs-extension->get ext :label)
                  'button '(t)
-                 'category 'default-button
+                 'category t
                  :custom t
                  :key key
                  :path path
