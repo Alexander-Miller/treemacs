@@ -324,7 +324,9 @@ not work keep it on the same line."
            (error (ignore)))))
       (treemacs--evade-image)
       (when (get-text-property (point) 'invisible)
-        (goto-char (next-single-property-change (point) 'invisible)))
+        (goto-char (or
+                    (next-single-property-change (point) 'invisible)
+                    (point-min))))
       (when curr-win-line
         (-let [buffer-point (point)]
           (with-selected-window curr-window
