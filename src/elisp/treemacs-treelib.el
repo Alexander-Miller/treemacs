@@ -666,7 +666,6 @@ LABEL: String"
               #'propertize ,label
               'button '(t)
               'category t
-              'help-echo nil
               :custom t
               :state ,state
               :parent ,parent
