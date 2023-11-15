@@ -1,6 +1,6 @@
 ;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
-;; Copyright (C) 2020 Alexander Miller
+;; Copyright (C) 2023 Alexander Miller
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -254,6 +254,7 @@ Also pass additional DATA to predicate function.")
           child-type
           ;; visit-action
           ret-action
+          double-click-action
           no-tab?
           variadic?
           async?
@@ -308,9 +309,14 @@ determines the behaviours (LABEL etc.) used to create the children of the node
 type being defined here.
 
 RET-ACTION is the function that is called when RET is pressed on a node of this
-be able to handle both a closed and open state.  If no explicit RET-ACTION type.
-The function is called with a single argument - the prefix arg - and must
-argument is given RET will do the same as TAB.
+be able to handle both a closed and open state.  If no explicit RET-ACTION type
+argument is given RET will do the same as TAB.  The function is called with a
+single argument - the prefix arg - and must be able to handle both a closed and
+and expanded node state.
+
+DOUBLE-CLICK-ACTION is similar to RET-ACTION, but will be called without any
+arguments.  There is no default click behaviour, if no DOUBLE-CLICK-ACTION is
+given then treemacs will do nothing for double-clicks.
 
 NO-TAB indicates that pressing TAB on this node type should do nothing.  It will
 be set by `treemacs-define-leaf-node'.
@@ -364,6 +370,9 @@ argument."
           :on-expand       (lambda (&optional btn )     "" (ignore btn) ,on-expand)
           :on-collapse     (lambda (&optional btn )     "" (ignore btn) ,on-collapse)))
 
+       (treemacs-define-doubleclick-action ',closed-state ,(or double-click-action '#'ignore))
+       (treemacs-define-doubleclick-action ',open-state ,(or double-click-action '#'ignore))
+
        (treemacs-define-TAB-action
         ',closed-state
         ,(cond
@@ -390,12 +399,13 @@ argument."
           label
           key
           more-properties
-          ret-action)
+          ret-action
+          double-click-action)
 
   "Define a type of node that is a leaf and cannot be further expanded.
 The NAME, ICON, LABEL and KEY arguments are mandatory.
 
-MORE-PROPERTIES and RET-ACTION are optional.
+MORE-PROPERTIES, RET-ACTION and DOUBLE-CLICK-ACTION  are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -412,6 +422,7 @@ For a detailed description of all arguments see
      :more-properties (nconc '(:leaf t) ,more-properties)
      :closed-icon ,icon
      :ret-action ,ret-action
+     :double-click-action ,double-click-action
      :no-tab? t
      :children (lambda () (error "Called :children of leaf node"))
      :child-type (lambda () (error "Called :child-type of leaf node"))))
@@ -426,6 +437,7 @@ For a detailed description of all arguments see
           child-type
           more-properties
           ret-action
+          double-click-action
           on-expand
           on-collapse
           async?)
@@ -434,7 +446,8 @@ For a detailed description of all arguments see
 The NAME, CLOSED-ICON, OPEN-ICON LABEL, KEY, CHILDREN and CHILD-TYPE arguments
 are mandatory.
 
-MORE-PROPERTIES, RET-ACTION, ON-EXPAND, ON-COLLAPSE and ASYNC are optional.
+MORE-PROPERTIES, RET-ACTION, DOUBLE-CLICK-ACTION, ON-EXPAND, ON-COLLAPSE and
+ASYNC are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -457,6 +470,7 @@ For a detailed description of all arguments see
      :child-type ,child-type
      :more-properties ,more-properties
      :ret-action ,ret-action
+     :double-click-action ,double-click-action
      :async? ,async?
      :on-expand ,on-expand
      :on-collapse ,on-collapse))
@@ -471,6 +485,7 @@ For a detailed description of all arguments see
           child-type
           more-properties
           ret-action
+          double-click-action
           on-expand
           on-collapse
           async?)
@@ -480,7 +495,8 @@ For a detailed description of all arguments see
 The KEY, LABEL, OPEN-ICON CLOSED-ICON, CHILDREN and CHILD-TYPE arguments are
 mandatory.
 
-MORE-PROPERTIES, RET-ACTION, ON-EXPAND, ON-COLLAPSE and ASYNC are optional.
+MORE-PROPERTIES, RET-ACTION, DOUBLE-CLICK-ACTION, ON-EXPAND, ON-COLLAPSE and
+ASYNC are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -504,6 +520,7 @@ For a detailed description of all arguments see
      :more-properties ,more-properties
      :async? ,async?
      :ret-action ,ret-action
+     :double-click-action ,double-click-action
      :on-expand ,on-expand
      :on-collapse ,on-collapse
      :entry-point? t))
