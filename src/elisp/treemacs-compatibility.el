@@ -142,11 +142,6 @@ width of the new window when the treemacs window is visible."
         (org-link-set-parameters "treemacs" :store #'treemacs-store-org-link)
       (add-hook 'org-store-link-functions #'treemacs-store-org-link))))
 
-(with-eval-after-load 'evil-escape
-  ;; Disable old versions of evil-escape but keep newer versions active
-  (when (and (boundp 'evil-escape-excluded-major-modes) (not (boundp 'evil-escape-version)))
-    (add-to-list 'evil-escape-excluded-major-modes 'treemacs-mode)))
-
 (when (fboundp 'context-menu-mode)
   (defun treemacs--disable-context-menu-mode ()
     (treemacs-run-in-all-derived-buffers
