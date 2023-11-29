@@ -370,8 +370,9 @@ argument."
           :on-expand       (lambda (&optional btn )     "" (ignore btn) ,on-expand)
           :on-collapse     (lambda (&optional btn )     "" (ignore btn) ,on-collapse)))
 
-       (treemacs-define-doubleclick-action ',closed-state ,(or double-click-action '#'ignore))
-       (treemacs-define-doubleclick-action ',open-state ,(or double-click-action '#'ignore))
+       (with-eval-after-load 'treemacs-mouse-interface
+         (treemacs-define-doubleclick-action ',closed-state ,(or double-click-action '#'ignore))
+         (treemacs-define-doubleclick-action ',open-state ,(or double-click-action '#'ignore)))
 
        (treemacs-define-TAB-action
         ',closed-state
