@@ -69,6 +69,7 @@ def main():
         # reduce the state to a single-letter-string
         state = state[0:1]
 
+        filename = filename.strip()
         # sometimes git outputs quoted filesnames
         if filename.startswith(b'"'):
             filename = filename[1:-1]
