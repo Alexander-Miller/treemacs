@@ -82,6 +82,10 @@ purged."
             (delete current-buffer treemacs--peeked-buffers))
       (treemacs-peek-mode -1))))
 
+(defun treemacs--disable-peek-mode ()
+  "Hook function for `treemacs-quit-hook'."
+  (treemacs-peek-mode -1))
+
 (defun treemacs--setup-peek-mode ()
   "Set up faces, timers, and hooks etc."
   (when treemacs--fringe-indicator-overlay
@@ -92,7 +96,8 @@ purged."
         (run-with-idle-timer 0.5 :repeat #'treemacs--do-peek))
   (add-hook
    'window-selection-change-functions #'treemacs--finish-peek-on-window-leave
-   nil :local))
+   nil :local)
+  (add-hook 'treemacs-quit-hook #'treemacs--disable-peek-mode))
 
 (defun treemacs--tear-down-peek-mode (&optional restore-window)
   "Tear down faces, timers.
@@ -114,7 +119,8 @@ kept."
       (-let [(window buffer) treemacs--pre-peek-state]
         (with-selected-window window
           (switch-to-buffer buffer))))
-    (setf treemacs--pre-peek-state nil)))
+    (setf treemacs--pre-peek-state nil))
+  (remove-hook 'treemacs-quit-hook #'treemacs--disable-peek-mode))
 
 ;;;###autoload
 (define-minor-mode treemacs-peek-mode
