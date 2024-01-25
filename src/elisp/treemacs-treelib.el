@@ -252,8 +252,8 @@ Also pass additional DATA to predicate function.")
           open-icon
           closed-icon
           child-type
-          ;; visit-action
           ret-action
+          visit-action
           double-click-action
           no-tab?
           variadic?
@@ -313,6 +313,13 @@ be able to handle both a closed and open state.  If no explicit RET-ACTION type
 argument is given RET will do the same as TAB.  The function is called with a
 single argument - the prefix arg - and must be able to handle both a closed and
 and expanded node state.
+
+VISIT-ACTION is a function that is called when a node is to be opened with a
+command like `treemacs-visit-node-ace'.  It is called with the current `btn' and
+must be able to handle both an open and a closed state.  It will most likely be
+called in a window that is not the one where the button resides, so if you need
+to extract text properties from the button you to must use
+`treemacs-safe-button-get', e.g.  \(treemacs-safe-button-get btn :path\).
 
 DOUBLE-CLICK-ACTION is similar to RET-ACTION, but will be called without any
 arguments.  There is no default click behaviour, if no DOUBLE-CLICK-ACTION is
@@ -384,6 +391,10 @@ argument."
        (treemacs-define-RET-action ',closed-state ,(or ret-action (if no-tab? '#'ignore '#'treemacs-expand-extension-node)))
        (treemacs-define-RET-action ',open-state   ,(or ret-action (if no-tab? '#'ignore '#'treemacs-collapse-extension-node)))
 
+       (when ,visit-action
+         (put ',open-state   :treemacs-visit-action ,visit-action)
+         (put ',closed-state :treemacs-visit-action ,visit-action))
+
        (add-to-list 'treemacs--extension-registry (cons ',closed-state ,struct-name))
        (add-to-list 'treemacs--extension-registry (cons ',open-state   ,struct-name))
 
@@ -401,12 +412,13 @@ argument."
           key
           more-properties
           ret-action
+          visit-action
           double-click-action)
 
   "Define a type of node that is a leaf and cannot be further expanded.
 The NAME, ICON, LABEL and KEY arguments are mandatory.
 
-MORE-PROPERTIES, RET-ACTION and DOUBLE-CLICK-ACTION  are optional.
+MORE-PROPERTIES, RET-ACTION, VISIT-ACTION and DOUBLE-CLICK-ACTION are optional.
 
 For a detailed description of all arguments see
 `treemacs-do-define-extension-type'."
@@ -420,9 +432,10 @@ For a detailed description of all arguments see
   `(treemacs-do-define-extension-type ,name
      :key ,key
      :label ,label
-     :more-properties (nconc '(:leaf t) ,more-properties)
+     :more-properties (append '(:leaf t) ,more-properties)
      :closed-icon ,icon
      :ret-action ,ret-action
+     :visit-action ,visit-action
      :double-click-action ,double-click-action
      :no-tab? t
      :children (lambda () (error "Called :children of leaf node"))
@@ -900,7 +913,7 @@ ITEMS: List<Any>"
         :parent btn
         :parent-path parent-path
         :parent-dom-node parent-dom-node
-        :more-properties (nconc `(:item ,item) (funcall properties-fn btn item))
+        :more-properties (append `(:item ,item) (funcall properties-fn btn item))
         :icon (funcall closed-icon-fn btn item)
         :state child-state
         :key (funcall key-fn btn item)
@@ -966,7 +979,7 @@ EXPAND-DEPTH: Int"
        :parent-path parent-path
        :parent-dom-node parent-dom-node
        :more-properties
-       (nconc `(:item ,item)
+       (append `(:item ,item)
               `(:project ,(treemacs-project->create!
                            :name (funcall label-fn btn item)
                            :path path

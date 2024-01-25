@@ -9,6 +9,7 @@
 - Made it possible to disbale workspace with a ~COMMENT~ directive
 - Added option to sort alphabetic-numerically (as with ~string-version-lessp~)
 - Added ~:on-expand~ and ~:on-collapse~ options to treelib nodes
+- Added options to define visit-actions in extensions api.
 ** v3.1
 - Added ~treemacs-create-workspace-from-project~ command
 - Added ~treemacs-project-follow-into-home~ option
