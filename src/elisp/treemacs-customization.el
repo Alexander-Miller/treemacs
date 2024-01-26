@@ -234,8 +234,7 @@ of how this config works and how to modify it."
   :type '(alist :key-type symbol :value-type treemacs-mouse-action)
   :group 'treemacs)
 
-(defcustom treemacs-default-visit-action
-  'treemacs-visit-node-no-split
+(defcustom treemacs-default-visit-action 'treemacs-visit-node-no-split
   "Defines the behaviour of `treemacs-visit-node-default'."
   :type 'treemacs-default-action
   :group 'treemacs)
@@ -1093,6 +1092,13 @@ not general window selection commands like `other-window'."
   "Hooks that run when treemacs finds a workspace for the first time.
 Hooks are expected to take 2 arguments: the workspace that was found and the
 current scope (frame or perspective) it was found for."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-after-visit-functions nil
+  "Hooks that run after treemacs executes a `treemacs-visit-node-***' command.
+Does not apply to `treemacs-visit-node-in-external-application'.  Hooks are
+expected to take 1 argument, which is the buffer where the node is visited in."
   :type 'hook
   :group 'treemacs-hooks)
 

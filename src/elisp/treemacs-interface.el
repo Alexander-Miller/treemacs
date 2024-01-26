@@ -140,17 +140,19 @@ conditions:
 
 The prefix argument ARG is treated the same way as with `treemacs-toggle-node'."
   (interactive)
-  (treemacs-do-for-button-state
-   :on-root-node-open   (treemacs--collapse-root-node btn arg)
-   :on-root-node-closed (treemacs--expand-root-node btn)
-   :on-dir-node-open    (treemacs--collapse-dir-node btn arg)
-   :on-dir-node-closed  (treemacs--expand-dir-node btn :recursive arg)
-   :on-file-node-open   (treemacs--collapse-file-node btn arg)
-   :on-file-node-closed (treemacs--expand-file-node btn arg)
-   :on-tag-node-open    (treemacs--visit-or-expand/collapse-tag-node btn arg t)
-   :on-tag-node-closed  (treemacs--visit-or-expand/collapse-tag-node btn arg t)
-   :on-tag-node-leaf    (progn (other-window 1) (treemacs--goto-tag btn))
-   :on-nil              (treemacs-pulse-on-failure "There is nothing to do here.")))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs-do-for-button-state
+    :on-root-node-open   (treemacs--collapse-root-node btn arg)
+    :on-root-node-closed (treemacs--expand-root-node btn)
+    :on-dir-node-open    (treemacs--collapse-dir-node btn arg)
+    :on-dir-node-closed  (treemacs--expand-dir-node btn :recursive arg)
+    :on-file-node-open   (treemacs--collapse-file-node btn arg)
+    :on-file-node-closed (treemacs--expand-file-node btn arg)
+    :on-tag-node-open    (treemacs--visit-or-expand/collapse-tag-node btn arg t)
+    :on-tag-node-closed  (treemacs--visit-or-expand/collapse-tag-node btn arg t)
+    :on-tag-node-leaf    (progn (other-window 1) (treemacs--goto-tag btn))
+    :on-nil              (treemacs-pulse-on-failure "There is nothing to do here."))))
 
 (defun treemacs-TAB-action (&optional arg)
   "Run the appropriate TAB action for the current node.
@@ -199,28 +201,32 @@ ARG is optional and only available so this function can be used as an action."
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
-  (treemacs--execute-button-action
-   :split-function #'split-window-vertically
-   :file-action (find-file (treemacs-safe-button-get btn :path))
-   :dir-action (dired (treemacs-safe-button-get btn :path))
-   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
-   :tag-action (treemacs--goto-tag btn)
-   :window-arg arg
-   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs--execute-button-action
+    :split-function #'split-window-vertically
+    :file-action (find-file (treemacs-safe-button-get btn :path))
+    :dir-action (dired (treemacs-safe-button-get btn :path))
+    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+    :tag-action (treemacs--goto-tag btn)
+    :window-arg arg
+    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-horizontal-split (&optional arg)
   "Open current file or tag by horizontally splitting `next-window'.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
-  (treemacs--execute-button-action
-   :split-function #'split-window-horizontally
-   :file-action (find-file (treemacs-safe-button-get btn :path))
-   :dir-action (dired (treemacs-safe-button-get btn :path))
-   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
-   :tag-action (treemacs--goto-tag btn)
-   :window-arg arg
-   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs--execute-button-action
+    :split-function #'split-window-horizontally
+    :file-action (find-file (treemacs-safe-button-get btn :path))
+    :dir-action (dired (treemacs-safe-button-get btn :path))
+    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+    :tag-action (treemacs--goto-tag btn)
+    :window-arg arg
+    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-close-treemacs (&optional _)
   "Open current node without and close treemacs.
@@ -237,75 +243,85 @@ window then that window will be selected instead.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
-  (treemacs--execute-button-action
-   :file-action (find-file (treemacs-safe-button-get btn :path))
-   :dir-action (dired (treemacs-safe-button-get btn :path))
-   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
-   :tag-action (treemacs--goto-tag btn)
-   :window-arg arg
-   :ensure-window-split t
-   :window  (-some-> btn (treemacs--nearest-path) (get-file-buffer) (get-buffer-window))
-   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs--execute-button-action
+    :file-action (find-file (treemacs-safe-button-get btn :path))
+    :dir-action (dired (treemacs-safe-button-get btn :path))
+    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+    :tag-action (treemacs--goto-tag btn)
+    :window-arg arg
+    :ensure-window-split t
+    :window  (-some-> btn (treemacs--nearest-path) (get-file-buffer) (get-buffer-window))
+    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-ace (&optional arg)
   "Open current file or tag in window selected by `ace-window'.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
-  (treemacs--execute-button-action
-   :window (ace-select-window)
-   :file-action (find-file (treemacs-safe-button-get btn :path))
-   :dir-action (dired (treemacs-safe-button-get btn :path))
-   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
-   :tag-action (treemacs--goto-tag btn)
-   :window-arg arg
-   :ensure-window-split t
-   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs--execute-button-action
+    :window (ace-select-window)
+    :file-action (find-file (treemacs-safe-button-get btn :path))
+    :dir-action (dired (treemacs-safe-button-get btn :path))
+    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+    :tag-action (treemacs--goto-tag btn)
+    :window-arg arg
+    :ensure-window-split t
+    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-in-most-recently-used-window (&optional arg)
   "Open current file or tag in window selected by `get-mru-window'.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
-  (treemacs--execute-button-action
-   :window (get-mru-window (selected-frame) nil :not-selected)
-   :file-action (find-file (treemacs-safe-button-get btn :path))
-   :dir-action (dired (treemacs-safe-button-get btn :path))
-   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
-   :tag-action (treemacs--goto-tag btn)
-   :window-arg arg
-   :ensure-window-split t
-   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs--execute-button-action
+    :window (get-mru-window (selected-frame) nil :not-selected)
+    :file-action (find-file (treemacs-safe-button-get btn :path))
+    :dir-action (dired (treemacs-safe-button-get btn :path))
+    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+    :tag-action (treemacs--goto-tag btn)
+    :window-arg arg
+    :ensure-window-split t
+    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-ace-horizontal-split (&optional arg)
   "Open current file by horizontally splitting window selected by `ace-window'.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
-  (treemacs--execute-button-action
-   :split-function #'split-window-horizontally
-   :window (ace-select-window)
-   :file-action (find-file (treemacs-safe-button-get btn :path))
-   :dir-action (dired (treemacs-safe-button-get btn :path))
-   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
-   :tag-action (treemacs--goto-tag btn)
-   :window-arg arg
-   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs--execute-button-action
+    :split-function #'split-window-horizontally
+    :window (ace-select-window)
+    :file-action (find-file (treemacs-safe-button-get btn :path))
+    :dir-action (dired (treemacs-safe-button-get btn :path))
+    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+    :tag-action (treemacs--goto-tag btn)
+    :window-arg arg
+    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-ace-vertical-split (&optional arg)
   "Open current file by vertically splitting window selected by `ace-window'.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
-  (treemacs--execute-button-action
-   :split-function #'split-window-vertically
-   :window (ace-select-window)
-   :file-action (find-file (treemacs-safe-button-get btn :path))
-   :dir-action (dired (treemacs-safe-button-get btn :path))
-   :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
-   :tag-action (treemacs--goto-tag btn)
-   :window-arg arg
-   :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here."))
+  (run-hook-with-args
+   'treemacs-after-visit-functions
+   (treemacs--execute-button-action
+    :split-function #'split-window-vertically
+    :window (ace-select-window)
+    :file-action (find-file (treemacs-safe-button-get btn :path))
+    :dir-action (dired (treemacs-safe-button-get btn :path))
+    :tag-section-action (treemacs--visit-or-expand/collapse-tag-node btn arg nil)
+    :tag-action (treemacs--goto-tag btn)
+    :window-arg arg
+    :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-default (&optional arg)
   "Run `treemacs-default-visit-action' for the current button.
