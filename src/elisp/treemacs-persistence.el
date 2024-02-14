@@ -300,6 +300,7 @@ PROJ-COUNT: Int"
             ;; `treemacs-missing-project-action'. Remote files are skipped to avoid opening
             ;; Tramp connections.
             (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
+                                     (not (s-starts-with? "** COMMENT" prev))
                                      (not (file-remote-p path))
                                      (not (file-exists-p path)))
               `(error ,line ,(format (as-warning "File '%s' does not exist") (propertize path 'face 'font-lock-string-face))))

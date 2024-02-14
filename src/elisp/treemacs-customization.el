@@ -607,7 +607,12 @@ Can be set to nil to disable workspace persistence."
   "Action to perform when a persisted project is not found on the disk.
 If the project is not found, the project can either be kept in the project list,
 or removed from it.  If the project is removed, when projects are persisted, the
-missing project will not appear in the project list next time Emacs is started."
+missing project will not appear in the project list next time Emacs is started.
+
+Possible values are:
+ - `ask'
+ - `remove'
+ - `keep'"
   :type '(choice (const :tag "Ask whether to remove" ask)
                  (const :tag "Remove without asking" remove)
                  (const :tag "Keep without asking" keep))
