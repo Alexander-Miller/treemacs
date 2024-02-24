@@ -397,7 +397,7 @@ run because the git cache has yet to be filled."
           (unless cache
             (setf cache (make-hash-table :size 20 :test 'equal))
             (ht-set! treemacs--git-cache root cache))
-          (ht-set! cache file "!")
+          (ht-set! cache file 'treemacs-git-ignored-face)
           (push file ignored-files)))
       (treemacs-run-in-every-buffer
        (treemacs-save-position
