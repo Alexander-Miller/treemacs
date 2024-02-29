@@ -654,12 +654,12 @@ RECURSIVE: Bool"
                            (or git-future (treemacs--git-status-process path project))))
              (collapse-future (treemacs--collapsed-dirs-process path project))
              (recursive (treemacs--prefix-arg-to-recurse-depth recursive))
-             (dir-name (treemacs--filename path)))
+             (base-dir-name (treemacs--filename (treemacs-button-get btn :key))))
         (treemacs--button-open
          :immediate-insert nil
          :button btn
          :new-state 'dir-node-open
-         :new-icon (treemacs-icon-for-dir dir-name 'open)
+         :new-icon (treemacs-icon-for-dir base-dir-name 'open)
          :open-action
          (progn
            ;; do on-expand first so buttons that need collapsing can quickly find their parent
@@ -680,11 +680,12 @@ RECURSIVE: Bool"
 (defun treemacs--collapse-dir-node (btn &optional recursive)
   "Close node given by BTN.
 Remove all open dir and tag entries under BTN when RECURSIVE."
-  (-let [path (treemacs-button-get btn :path)]
+  (let ((path (treemacs-button-get btn :path))
+        (base-dir-name (treemacs--filename (treemacs-button-get btn :key))))
     (treemacs--button-close
      :button btn
      :new-state 'dir-node-closed
-     :new-icon (treemacs-icon-for-dir (treemacs--filename path) 'closed)
+     :new-icon (treemacs-icon-for-dir base-dir-name 'closed)
      :post-close-action
      (progn
        (treemacs--stop-watching path)
