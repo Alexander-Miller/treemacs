@@ -1,6 +1,6 @@
 ;;; treemacs-mu4e.el --- mu4e integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2023 Alexander Miller
+;; Copyright (C) 2024 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; Package-Requires: ((emacs "26.1") (treemacs "0.0") (pfuture "1.7") (dash "2.11.0") (s "1.10.0") (ht "2.2"))

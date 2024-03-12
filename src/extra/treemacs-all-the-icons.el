@@ -1,6 +1,6 @@
 ;;; treemacs-all-the-icons.el --- all-the-icons integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2023 Alexander Miller
+;; Copyright (C) 2024 Alexander Miller
 
 ;; Author: Eric Dallo <ercdll1337@gmail.com>
 ;; Package-Requires: ((emacs "27.1") (all-the-icons "6.0.0") (treemacs "0.0"))

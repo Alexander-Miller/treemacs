@@ -1,6 +1,6 @@
 ;;; treemacs-tab-bar.el --- Tab bar integration for treemacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2023 Alexander Miller
+;; Copyright (C) 2024 Alexander Miller
 
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;;   Jason Dufair <jase@dufair.org>

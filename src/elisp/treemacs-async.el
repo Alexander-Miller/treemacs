@@ -1,6 +1,6 @@
 ;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
-;; Copyright (C) 2023 Alexander Miller
+;; Copyright (C) 2024 Alexander Miller
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -397,7 +397,7 @@ run because the git cache has yet to be filled."
           (unless cache
             (setf cache (make-hash-table :size 20 :test 'equal))
             (ht-set! treemacs--git-cache root cache))
-          (ht-set! cache file "!")
+          (ht-set! cache file 'treemacs-git-ignored-face)
           (push file ignored-files)))
       (treemacs-run-in-every-buffer
        (treemacs-save-position

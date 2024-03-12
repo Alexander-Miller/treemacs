@@ -65,6 +65,15 @@ We will also define a command to open a buffer using RET:
         (pop-to-buffer buffer))))
 #+END_SRC
 
+And another command to visit buffers via the ~treemacs-visit-node-***~ family of commands:
+
+#+BEGIN_SRC emacs-lisp
+  (defun treemacs-showcase-visit-buffer-action (btn)
+    (let ((buffer (treemacs-safe-button-get btn :buffer)))
+      (when (buffer-live-p buffer)
+        (pop-to-buffer buffer))))
+#+END_SRC
+
 ** Defining Node Types
 
 Now comes the interesting part, we will use treemacs' api to tell it how we want our new trees to look, how they should
@@ -130,8 +139,8 @@ called with ~btn~ as their parameter.
 
 Finally all that's left is to define the leaves of our tree - the nodes for the individual buffers.
 
-Nothing new is happening here, we merely save the buffers in a text property so the command to open them that we have
-defined above can use that information.
+Nothing new is happening here, we merely save the buffers in a text property so the commands to open and visit them that
+we have defined above can use that information.
 
 #+BEGIN_SRC emacs-lisp
   (treemacs-define-leaf-node-type showcase-buffer-leaf
@@ -140,6 +149,7 @@ defined above can use that information.
                        'face 'font-lock-string-face)
     :key item
     :more-properties `(:buffer ,item)
+    :visit-action #'treemacs-showcase-visit-buffer-action
     :ret-action #'treemacs-showcase-RET-buffer-action)
 #+END_SRC
 

@@ -1,6 +1,6 @@
 ;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
-;; Copyright (C) 2023 Alexander Miller
+;; Copyright (C) 2024 Alexander Miller
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -234,8 +234,7 @@ of how this config works and how to modify it."
   :type '(alist :key-type symbol :value-type treemacs-mouse-action)
   :group 'treemacs)
 
-(defcustom treemacs-default-visit-action
-  'treemacs-visit-node-no-split
+(defcustom treemacs-default-visit-action 'treemacs-visit-node-no-split
   "Defines the behaviour of `treemacs-visit-node-default'."
   :type 'treemacs-default-action
   :group 'treemacs)
@@ -608,7 +607,12 @@ Can be set to nil to disable workspace persistence."
   "Action to perform when a persisted project is not found on the disk.
 If the project is not found, the project can either be kept in the project list,
 or removed from it.  If the project is removed, when projects are persisted, the
-missing project will not appear in the project list next time Emacs is started."
+missing project will not appear in the project list next time Emacs is started.
+
+Possible values are:
+ - `ask'
+ - `remove'
+ - `keep'"
   :type '(choice (const :tag "Ask whether to remove" ask)
                  (const :tag "Remove without asking" remove)
                  (const :tag "Keep without asking" keep))
@@ -1093,6 +1097,13 @@ not general window selection commands like `other-window'."
   "Hooks that run when treemacs finds a workspace for the first time.
 Hooks are expected to take 2 arguments: the workspace that was found and the
 current scope (frame or perspective) it was found for."
+  :type 'hook
+  :group 'treemacs-hooks)
+
+(defcustom treemacs-after-visit-functions nil
+  "Hooks that run after treemacs executes a `treemacs-visit-node-***' command.
+Does not apply to `treemacs-visit-node-in-external-application'.  Hooks are
+expected to take 1 argument, which is the buffer where the node is visited in."
   :type 'hook
   :group 'treemacs-hooks)
 

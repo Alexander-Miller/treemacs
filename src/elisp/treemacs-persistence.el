@@ -1,6 +1,6 @@
 ;;; treemacs.el --- A tree style file viewer package -*- lexical-binding: t -*-
 
-;; Copyright (C) 2023 Alexander Miller
+;; Copyright (C) 2024 Alexander Miller
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -300,6 +300,7 @@ PROJ-COUNT: Int"
             ;; `treemacs-missing-project-action'. Remote files are skipped to avoid opening
             ;; Tramp connections.
             (treemacs-return-if (and (string= treemacs--org-edit-buffer-name (buffer-name))
+                                     (not (s-starts-with? "** COMMENT" prev))
                                      (not (file-remote-p path))
                                      (not (file-exists-p path)))
               `(error ,line ,(format (as-warning "File '%s' does not exist") (propertize path 'face 'font-lock-string-face))))
