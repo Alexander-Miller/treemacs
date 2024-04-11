@@ -1186,35 +1186,9 @@
       (dolist (status '(local-unreadable remote-readable remote-unreadable remote-disconnected extension))
         (expect (-> treemacs-dir
                     (treemacs-join-path "test")
-                    (treemacs--collapsed-dirs-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status status)))
+                    (treemacs--flattened-dirs-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status status)))
                 :to-equal
                 nil)))))
-
-(describe "treemacs--parse-collapsed-dirs"
-
-  (it "Finds dirs to flatten in test directory"
-    (-let [treemacs-collapse-dirs 3]
-      (expect (-> treemacs-dir
-                  (treemacs-join-path "test")
-                  (treemacs--collapsed-dirs-process
-                   (treemacs-project->create!
-                    :name "P"
-                    :path treemacs-dir
-                    :path-status 'local-readable))
-                  (treemacs--parse-collapsed-dirs))
-              :to-equal
-              `(("/testdir2/testdir3"
-                 ,(treemacs-join-path treemacs-dir "test/testdir1")
-                 ,(treemacs-join-path treemacs-dir "test/testdir1/testdir2")
-                 ,(treemacs-join-path treemacs-dir "test/testdir1/testdir2/testdir3"))))))
-
-  (it "Returns nil when there is nothing to flatten"
-    (-let [treemacs-collapse-dirs 3]
-      (expect (-> treemacs-dir
-                  (treemacs-join-path "test/testdir1/testdir2")
-                  (treemacs--collapsed-dirs-process (treemacs-project->create! :name "P" :path treemacs-dir :path-status 'local-readable))
-                  (treemacs--parse-collapsed-dirs))
-              :to-be nil))))
 
 (describe "treemacs--remove-trailing-newline"
 

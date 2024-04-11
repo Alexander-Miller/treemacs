@@ -12,6 +12,7 @@
 - Added options to define visit-actions in extensions api.
 - Added ~treemacs-after-visit-functions~.
 - Added option to disable moving files by dragging with your mouse.
+- Better performance when ~treemacs-collapse-dirs~ is used for many sub-directories.
 ** v3.1
 - Added ~treemacs-create-workspace-from-project~ command
 - Added ~treemacs-project-follow-into-home~ option

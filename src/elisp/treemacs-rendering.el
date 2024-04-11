@@ -406,13 +406,13 @@ Maps ITEMS at given index INTERVAL using MAPPER function."
             (pop ,l)))
        ,items)))
 
-(define-inline treemacs--create-branch (root depth git-future collapse-process &optional parent)
+(define-inline treemacs--create-branch (root depth git-future flatten-future &optional parent)
   "Create a new treemacs branch under ROOT.
 The branch is indented at DEPTH and uses the eventual outputs of
-GIT-FUTURE to decide on file buttons' faces and COLLAPSE-PROCESS to determine
+GIT-FUTURE to decide on file buttons' faces and FLATTEN-FUTURE to determine
 which directories should be displayed as one.  The buttons' parent property is
 set to PARENT."
-  (inline-letevals (root depth git-future collapse-process parent)
+  (inline-letevals (root depth git-future flatten-future parent)
     (inline-quote
      (save-excursion
        (let* ((dirs-and-files (treemacs--get-dir-content ,root))
@@ -548,8 +548,9 @@ set to PARENT."
          (insert (apply #'concat file-strings))
 
          (save-excursion
-           (treemacs--flatten-dirs (treemacs--parse-collapsed-dirs ,collapse-process))
-           (treemacs--reentry ,root ,git-future))
+           (treemacs--flatten-dirs
+            (treemacs--parse-flattened-dirs ,root ,flatten-future))
+           (treemacs--reentry ,root ,git-future ,flatten-future))
          (with-no-warnings
            (line-end-position)))))))
 
@@ -595,7 +596,7 @@ RECURSIVE: Bool"
       (let* ((path (treemacs-button-get btn :path))
              (git-path (if (treemacs-button-get btn :symlink) (file-truename path) path))
              (git-future (treemacs--git-status-process git-path project))
-             (collapse-future (treemacs--collapsed-dirs-process path project))
+             (flatten-future (treemacs--flattened-dirs-process path project))
              (recursive (treemacs--prefix-arg-to-recurse-depth recursive)) )
         (treemacs--maybe-recenter treemacs-recenter-after-project-expand
           (treemacs--button-open
@@ -613,7 +614,12 @@ RECURSIVE: Bool"
              (when (fboundp 'treemacs--apply-project-bottom-extensions)
                (save-excursion
                  (treemacs--apply-project-bottom-extensions btn project)))
-             (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn)
+             (treemacs--create-branch
+              path
+              (1+ (treemacs-button-get btn :depth))
+              git-future
+              flatten-future
+              btn)
              (treemacs--start-watching path)
              ;; Performing FS ops on a disconnected Tramp project
              ;; might have changed the state to connected.
@@ -638,21 +644,28 @@ Remove all open entries below BTN when RECURSIVE is non-nil."
      (treemacs--stop-watching path)
      (treemacs-on-collapse path recursive))))
 
-(cl-defun treemacs--expand-dir-node (btn &key git-future recursive)
+(cl-defun treemacs--expand-dir-node
+    (btn
+     &key
+     git-future
+     flatten-future
+     recursive)
   "Open the node given by BTN.
 
 BTN: Button
 GIT-FUTURE: Pfuture|HashMap
+FLATTEN-FUTURE: Pfuture|HashMap
 RECURSIVE: Bool"
   (-let [path (treemacs-button-get btn :path)]
     (if (not (file-readable-p path))
-        (treemacs-pulse-on-failure
-            "Directory %s is not readable." (propertize path 'face 'font-lock-string-face))
+        (treemacs-pulse-on-failure "Directory %s is not readable."
+          (propertize path 'face 'font-lock-string-face))
       (let* ((project (treemacs-project-of-node btn))
              (git-future (if (treemacs-button-get btn :symlink)
                              (treemacs--git-status-process (file-truename path) project)
                            (or git-future (treemacs--git-status-process path project))))
-             (collapse-future (treemacs--collapsed-dirs-process path project))
+             (flatten-future (or flatten-future
+                                 (treemacs--flattened-dirs-process path project)))
              (recursive (treemacs--prefix-arg-to-recurse-depth recursive))
              (base-dir-name (treemacs--filename (treemacs-button-get btn :key))))
         (treemacs--button-open
@@ -666,7 +679,10 @@ RECURSIVE: Bool"
            (treemacs-on-expand path btn)
            (when (fboundp 'treemacs--apply-directory-top-extensions)
              (treemacs--apply-directory-top-extensions btn path))
-           (goto-char (treemacs--create-branch path (1+ (treemacs-button-get btn :depth)) git-future collapse-future btn))
+           (goto-char
+            (treemacs--create-branch
+             path (1+ (treemacs-button-get btn :depth))
+             git-future flatten-future btn))
            (when (fboundp 'treemacs--apply-directory-bottom-extensions)
              (treemacs--apply-directory-bottom-extensions btn path))
            (treemacs--start-watching path)
@@ -1177,9 +1193,9 @@ PATH: Node Path"
                                 (treemacs--filename path))))
          t)))))
 
-(defun treemacs--reentry (path &optional git-info)
+(defun treemacs--reentry (path &optional git-future flatten-future)
   "Reopen dirs below PATH.
-GIT-INFO is passed through from the previous branch build.
+GIT-FUTURE and FLATTEN-FUTURE are passed through from the previous branch build.
 
 PATH: Node Path
 GIT-INFO: Pfuture | Map<String, String>"
@@ -1199,13 +1215,19 @@ GIT-INFO: Pfuture | Map<String, String>"
           ;; so the process can continue
           (setf (treemacs-dom-node->reentry-nodes actual-dom-node)
                 (treemacs-dom-node->reentry-nodes to-reopen-dom-node))
-          (treemacs--reopen-node (treemacs-goto-node reopen-path) git-info))))))
+          (treemacs--reopen-node
+           (treemacs-goto-node reopen-path)
+           git-future
+           flatten-future))))))
 
-(defun treemacs--reopen-node (btn &optional git-info)
+(defun treemacs--reopen-node (btn &optional git-future flatten-future)
   "Reopen file BTN.
-GIT-INFO is passed through from the previous branch build."
+GIT-FUTURE and FLATTEN-FUTURE are passed through from the previous branch build."
   (pcase (treemacs-button-get btn :state)
-    ('dir-node-closed  (treemacs--expand-dir-node btn :git-future git-info))
+    ('dir-node-closed  (treemacs--expand-dir-node
+                        btn
+                        :git-future git-future
+                        :flatten-future flatten-future))
     ('file-node-closed (treemacs--expand-file-node btn))
     ('tag-node-closed  (treemacs--expand-tag-node btn))
     ('root-node-closed (treemacs--expand-root-node btn))

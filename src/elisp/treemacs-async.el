@@ -330,7 +330,7 @@ Used when asynchronous processes report back git changes."
        (when btn
          (treemacs--do-apply-annotation btn ,git-face))))))
 
-(defun treemacs--collapsed-dirs-process (path project)
+(defun treemacs--flattened-dirs-process (path project)
   "Start a new process to determine directories to collapse under PATH.
 Only starts the process if PROJECT is locally accessible (i.e. exists, and
 is not remote.)
@@ -349,24 +349,32 @@ Every string list consists of the following elements:
   (when (and (> treemacs-collapse-dirs 0)
              treemacs-python-executable
              (treemacs-project->is-local-and-readable? project))
-    ;; needs to be set or we'll run into trouble when deleting
-    ;; haven't taken the time to figure out why, so let's just leave it at that
-    (-let [default-directory path]
-      (pfuture-new treemacs-python-executable
-                   "-O"
-                   treemacs--dirs-to-collapse.py
-                   path
-                   (number-to-string treemacs-collapse-dirs)
-                   (if treemacs-show-hidden-files "t" "x")))))
+    (let (;; needs to be set or we'll run into trouble when deleting
+          ;; haven't taken the time to figure out why, so let's just leave it at that
+          (default-directory path)
+          (search-paths nil))
+      (treemacs-walk-reentry-dom (treemacs-find-in-dom path)
+        (lambda (node) (push (treemacs-dom-node->key node) search-paths)))
+      (-let [command
+             `(,treemacs-python-executable
+               "-O"
+               ,treemacs--dirs-to-collapse.py
+               ,(number-to-string treemacs-collapse-dirs)
+               ,(if treemacs-show-hidden-files "t" "x")
+               ,@search-paths)]
+        (apply #'pfuture-new command)))))
 
-(defun treemacs--parse-collapsed-dirs (future)
-  "Parse the output of collapsed dirs FUTURE.
-Splits the output on newlines, splits every line on // and swallows the first
-newline."
+(defun treemacs--parse-flattened-dirs (path future)
+  "Parse the output of flattened dirs in PATH with FUTURE."
   (when future
-    (-let [output (pfuture-await-to-finish future)]
-      (when (= 0 (process-exit-status future))
-        (read output)))))
+    (-if-let (output (process-get future 'output))
+        (ht-get output path)
+      (let* ((stdout (pfuture-await-to-finish future))
+             (output (if (= 0 (process-exit-status future))
+                         (read stdout)
+                       (ht))))
+        (process-put future 'output output)
+        (ht-get output path)))))
 
 (defun treemacs--prefetch-gitignore-cache (path)
   "Pre-load all the git-ignored files in the given PATH.

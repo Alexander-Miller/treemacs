@@ -4,9 +4,10 @@ from posixpath import join
 import sys
 import os
 
-ROOT     = sys.argv[1]
-LIMIT    = int(sys.argv[2])
-SHOW_ALL = sys.argv[3] == 't'
+LIMIT    = int(sys.argv[1])
+SHOW_ALL = sys.argv[2] == 't'
+ROOTS    = sys.argv[3:]
+STDOUT   = sys.stdout
 
 # special workaround for windows platforms
 # the default `join' implementation cannot quite deal with windows
@@ -53,29 +54,37 @@ def dir_content(path):
     return ret
 
 def main():
-    out  = sys.stdout
-    dirs = [d for d in dir_content(ROOT) if isdir(d)]
-    out.write("(")
-    for current_dir in dirs:
-        content   = dir_content(current_dir)
-        collapsed = current_dir
-        steps     = []
-        depth     = 0
-        while True:
-            if len(content) == 1 and isdir(content[0]):
-                single_path = content[0]
-                collapsed   = join_dirs(collapsed, single_path, True)
-                content     = dir_content(collapsed)
-                depth      += 1
-                steps.append(single_path)
-                if depth >= LIMIT:
+    STDOUT.write("#s(hash-table size 10 test equal rehash-size 1.5 rehash-threshold 0.8125 data (")
+
+    for root in ROOTS:
+        STDOUT.write(f'"{root}"')
+
+        dirs = [d for d in dir_content(root) if isdir(d)]
+        STDOUT.write("(")
+        for current_dir in dirs:
+            content   = dir_content(current_dir)
+            collapsed = current_dir
+            steps     = []
+            depth     = 0
+            while True:
+                if len(content) == 1 and isdir(content[0]):
+                    single_path = content[0]
+                    collapsed   = join_dirs(collapsed, single_path, True)
+                    content     = dir_content(collapsed)
+                    depth      += 1
+                    steps.append(single_path)
+                    if depth >= LIMIT:
+                        break
+                else:
                     break
-            else:
-                break
-        if depth > 0 and not ('"' in collapsed or '\\' in collapsed):
-            final_dir      = steps[-1]
-            display_suffix = final_dir[len(current_dir):]
-            out.write("(" + '"' + display_suffix + '" ' + '"' + current_dir + '" ' + '"' + '" "'.join(steps) + '")')
-    out.write(")")
+            if depth > 0 and not ('"' in collapsed or '\\' in collapsed):
+                final_dir      = steps[-1]
+                display_suffix = final_dir[len(current_dir):]
+                STDOUT.write("(" + '"' + display_suffix + '" ' + '"' + current_dir + '" ' + '"' + '" "'.join(steps) + '")')
+                nothing_to_flatten = False
+        STDOUT.write(")")
+
+    # close hash table again
+    STDOUT.write("))")
 
 main()

@@ -90,7 +90,7 @@
   treemacs--git-status-process
   treemacs--non-simple-git-mode-enabled
   treemacs-update-single-file-git-state
-  treemacs--collapsed-dirs-process)
+  treemacs--flattened-dirs-process)
 
 (treemacs-import-functions-from "treemacs-dom"
   treemacs-on-collapse
