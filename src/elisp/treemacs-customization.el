@@ -104,6 +104,12 @@
   :prefix "treemacs-"
   :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
 
+(defgroup treemacs-mouse nil
+  "Customisations for treemacs' mouse integration."
+  :group 'treemacs
+  :prefix "treemacs-"
+  :link '(url-link :tag "Repository" "https://github.com/Alexander-Miller/treemacs"))
+
 (defgroup treemacs-window nil
   "Customisations for the behaviour of the treemacs window."
   :group 'treemacs
@@ -739,6 +745,11 @@ current project.  Setting this to non-nil will open up $HOME to being the final
 fallback."
   :type 'boolean
   :group 'treemacs-follow)
+
+(defcustom treemacs-move-files-by-mouse-dragging t
+  "When non-nil treemacs will move files by dragging with the mouse."
+  :group 'treemacs-mouse
+  :type 'boolean)
 
 (defcustom treemacs-deferred-git-apply-delay 0.5
   "Delay in seconds of idle time before git fontification is applied.

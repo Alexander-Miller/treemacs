@@ -178,7 +178,8 @@ TARGET-POS: End position of the mouse drag."
                             (treemacs--parent-dir target-key))))
          (target-file (and source-key target-key
                            (treemacs-join-path target-dir (treemacs--filename source-key)))))
-    (when (and source-key target-key
+    (when (and treemacs-move-files-by-mouse-dragging
+               source-key target-key
                (not (string= source-key target-key))
                (not (treemacs-is-path source-key :directly-in target-dir)))
       (treemacs-do-delete-single-node source-key)
