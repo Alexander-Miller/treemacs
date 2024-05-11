@@ -430,6 +430,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "vsc/vim.png"       :extensions ("vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc"))
     (treemacs-create-icon :file "vsc/deps.png"      :extensions ("cask"))
     (treemacs-create-icon :file "vsc/r.png"         :extensions ("r"))
+    (treemacs-create-icon :file "vsc/terraform.png" :extensions ("tf" "terraform"))
     (treemacs-create-icon :file "vsc/reason.png"    :extensions ("re" "rei"))))
 
 (define-inline treemacs-icon-for-file (file)
