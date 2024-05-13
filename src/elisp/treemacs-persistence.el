@@ -144,7 +144,8 @@ ITER: Treemacs-Iter Struct"
                         (treemacs--get-path-status)))
               (setq action
                     (cond
-                     ((not (treemacs-project->is-unreadable? project))
+                     ((or (treemacs-project->is-disabled? project)
+                          (not (treemacs-project->is-unreadable? project)))
                       'keep)
                      ((eq treemacs-missing-project-action 'ask)
                       (let ((completions
