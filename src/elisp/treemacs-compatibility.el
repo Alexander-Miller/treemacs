@@ -28,6 +28,7 @@
 (require 'treemacs-scope)
 (require 'treemacs-core-utils)
 (require 'treemacs-interface)
+(require 'treemacs-persistence)
 
 (eval-when-compile
   (require 'treemacs-macros))
@@ -38,10 +39,13 @@
  (push '(treemacs-workspace . :never) frameset-filter-alist))
 
 (with-eval-after-load 'tramp
-  (setf treemacs--file-name-handler-alist
-        (with-no-warnings
-          (list
-           (cons tramp-file-name-regexp #'tramp-file-name-handler)))))
+  (setf
+   treemacs--no-abbr-on-persist-prefixes
+   (--map (format "/%s:" (car it)) (with-no-warnings tramp-methods))
+   treemacs--file-name-handler-alist
+   (with-no-warnings
+     (list
+      (cons tramp-file-name-regexp #'tramp-file-name-handler)))))
 
 (with-eval-after-load 'recentf
   (with-no-warnings
