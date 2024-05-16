@@ -63,8 +63,8 @@
   list)
 
 (defvar treemacs--no-abbr-on-persist-prefixes nil
-  "Prefixes for paths that should be saved as is, without `abbreviate-file-name'.
-Set the all the `tramp-methods', after it has been loaded.'")
+  "Prefixes for paths to be saved as is, without using `abbreviate-file-name'.
+Will be set to all the `tramp-methods', after tramp has been loaded.")
 
 (define-inline treemacs-iter->next! (self)
   "Get the next element of iterator SELF.
