@@ -75,6 +75,8 @@ WINDOW is the treemacs window that has just been focused or unfocused."
 
 (defun treemacs--tear-down-fringe-indicator-mode ()
   "Tear down `treemacs-fringe-indicator-mode'."
+  (remove-hook 'treemacs-mode-hook
+               #'treemacs--enable-fringe-indicator-in-current-buffer)
   (treemacs-run-in-all-derived-buffers
    (treemacs--disable-fringe-indicator)
    (advice-remove #'hl-line-highlight #'treemacs--move-fringe-indicator-to-point)
@@ -118,13 +120,20 @@ fringe indicator when the treemacs window is selected."
                           (s-join "-")
                           (intern))))
   (setf treemacs-fringe-indicator-mode arg)
+  (add-hook 'treemacs-mode-hook
+            #'treemacs--enable-fringe-indicator-in-current-buffer)
   (treemacs-run-in-all-derived-buffers
-   (treemacs--enable-fringe-indicator)
-   (advice-add #'hl-line-highlight :after #'treemacs--move-fringe-indicator-to-point)
-   (when (memq arg '(t only-when-focused))
-     (add-hook 'window-selection-change-functions
-               #'treemacs--show-fringe-indicator-only-when-focused
-               nil :local))))
+   (treemacs--enable-fringe-indicator-in-current-buffer)))
+
+(defun treemacs--enable-fringe-indicator-in-current-buffer ()
+  "Set up fringe-indicator-mode for the current buffer."
+  (treemacs--enable-fringe-indicator)
+  (advice-add #'hl-line-highlight
+              :after #'treemacs--move-fringe-indicator-to-point)
+  (when (memq treemacs-fringe-indicator-mode '(t only-when-focused))
+    (add-hook 'window-selection-change-functions
+              #'treemacs--show-fringe-indicator-only-when-focused
+              nil :local)))
 
 (treemacs-only-during-init (treemacs-fringe-indicator-mode))
 
