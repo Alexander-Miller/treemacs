@@ -354,7 +354,9 @@ Every string list consists of the following elements:
           (default-directory path)
           (search-paths nil))
       (treemacs-walk-reentry-dom (treemacs-find-in-dom path)
-        (lambda (node) (push (treemacs-dom-node->key node) search-paths)))
+        (lambda (node)
+          (-let [key (treemacs-dom-node->key node)]
+            (when (stringp key) (push key search-paths)))))
       (-let [command
              `(,treemacs-python-executable
                "-O"
