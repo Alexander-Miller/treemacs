@@ -337,7 +337,7 @@ Will simply return `treemacs--eldoc-msg'."
       (setq evil-treemacs-state-cursor
             (if treemacs-show-cursor
                 evil-motion-state-cursor
-              '(bar . 0)))))
+              (lambda () (setq cursor-type nil))))))
 
   ;; higher fuzz value makes it less likely to start a mouse drag
   ;; and make a switch to visual state
