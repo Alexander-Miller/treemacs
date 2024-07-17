@@ -6,6 +6,7 @@
 - Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
   ~treemacs-hl-line-face~
 - Added ~treemacs-copy-absolute-path-at-point~
+- Added ~treemacs-start-on-boot~
 - Made it possible to disable workspace with a ~COMMENT~ directive
 - Added option to sort alphabetic-numerically (as with ~string-version-lessp~)
 - Added ~:on-expand~ and ~:on-collapse~ options to treelib nodes

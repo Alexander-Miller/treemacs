@@ -172,6 +172,20 @@ visiting a file or Emacs cannot find any tags for the current file."
      (treemacs--do-follow-tag index treemacs-window buffer-file project))))
 
 ;;;###autoload
+(defun treemacs-start-on-boot (&optional focus-treemacs)
+  "Initializer specifically to start treemacs as part of your init file.
+
+Ensures that all visual elements are present which might otherwise be missing
+because their setup requires an interactive command or a post-command hook.
+
+FOCUS-TREEMACS indicates whether the treemacs window should be selected."
+  (-let [initial-window (selected-window)]
+    (treemacs)
+    (hl-line-highlight)
+    (redisplay)
+    (unless focus-treemacs (select-window initial-window))))
+
+;;;###autoload
 (defun treemacs-select-window (&optional arg)
   "Select the treemacs window if it is visible.
 Bring it to the foreground if it is not visible.
