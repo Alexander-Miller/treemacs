@@ -59,6 +59,8 @@
             "hoc"
             "ImageMagick"
             "imenu"
+            "init"
+            "initialiser"
             "inlined"
             "iter"
             "keybind"

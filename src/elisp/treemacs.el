@@ -173,7 +173,7 @@ visiting a file or Emacs cannot find any tags for the current file."
 
 ;;;###autoload
 (defun treemacs-start-on-boot (&optional focus-treemacs)
-  "Initializer specifically to start treemacs as part of your init file.
+  "Initialiser specifically to start treemacs as part of your init file.
 
 Ensures that all visual elements are present which might otherwise be missing
 because their setup requires an interactive command or a post-command hook.
