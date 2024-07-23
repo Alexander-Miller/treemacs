@@ -1032,7 +1032,7 @@ Will return t when FILE
      (let ((last (aref ,file (1- (length ,file)))))
        (or (string-prefix-p ".#" ,file)
            (and (eq ?# last) (eq ?# (aref ,file 0)))
-           (eq ?~ last)
+           (backup-file-name-p ,file)
            (string-equal ,file ".")
            (string-equal ,file "..")
            (and treemacs-hide-dot-git-directory
