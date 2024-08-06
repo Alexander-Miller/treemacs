@@ -208,7 +208,7 @@ node for quick retrieval later."
            ,icon
            (propertize ,label-form
                        'button '(t)
-                       'category t
+                       'category 'treemacs-button
                        ,@(when face `((quote face) ,face))
                        :custom t
                        :state ,state
@@ -445,7 +445,7 @@ additional keys."
                 ,(if icon-closed closed-icon-name icon-closed-form)
                 (propertize ,root-label
                             'button '(t)
-                            'category t
+                            'category 'treemacs-button
                             'face ,root-face
                             :custom t
                             :key ,root-key-form
@@ -480,7 +480,7 @@ additional keys."
                               (treemacs-dom-node->insert-into-dom! dom-node)
                               (insert (propertize "Hidden Node\n"
                                                   'button '(t)
-                                                  'category t
+                                                  'category 'treemacs-button
                                                   'invisible t
                                                   'skip t
                                                   :custom t
@@ -503,7 +503,7 @@ additional keys."
                           (insert ,(if icon-closed closed-icon-name icon-closed-form))
                           (insert (propertize ,root-label
                                               'button '(t)
-                                              'category t
+                                              'category 'treemacs-button
                                               'face ,root-face
                                               :custom t
                                               :key ,root-key-form

@@ -145,7 +145,7 @@ DEPTH: Int"
       ,prefix
       (propertize (car ,item)
                   'button '(t)
-                  'category t
+                  'category 'treemacs-button
                   'face 'treemacs-tags-face
                   'help-echo nil
                   :path ,path
@@ -171,7 +171,7 @@ DEPTH: Int"
       ,prefix
       (propertize (car ,node)
                   'button '(t)
-                  'category t
+                  'category 'treemacs-button
                   'face 'treemacs-tags-face
                   'help-echo nil
                   :path ,path

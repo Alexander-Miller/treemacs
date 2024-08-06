@@ -58,6 +58,9 @@
   treemacs--expand-file-node
   treemacs--expand-tag-node)
 
+;; Ensure mouse cursor turns into a hand over treemacs' buttons
+(put 'treemacs-button 'mouse-face 'highlight)
+
 (defvar-local treemacs--projects-end nil
   "Marker pointing to position at the end of the last project.
 
@@ -238,7 +241,7 @@ DEPTH indicates how deep in the filetree the current button is."
         (treemacs-icon-for-dir dir-name 'closed)
         (propertize (->> dir-name (funcall treemacs-directory-name-transformer))
                     'button '(t)
-                    'category t
+                    'category 'treemacs-button
                     'help-echo nil
                     'keymap nil
                     :default-face 'treemacs-directory-face
@@ -261,7 +264,7 @@ DEPTH indicates how deep in the filetree the current button is."
       (treemacs-icon-for-file ,path)
       (propertize (->> ,path file-name-nondirectory (funcall treemacs-file-name-transformer))
                   'button '(t)
-                  'category t
+                  'category 'treemacs-button
                   'help-echo nil
                   'keymap nil
                   :default-face 'treemacs-git-unmodified-face
@@ -728,7 +731,7 @@ PROJECT: Project Struct"
     (insert
      (propertize (treemacs-project->name project)
                  'button '(t)
-                 'category t
+                 'category 'treemacs-button
                  'face (treemacs--root-face project)
                  :project project
                  :default-face 'treemacs-root-face
