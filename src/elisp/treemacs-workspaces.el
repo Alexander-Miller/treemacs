@@ -648,7 +648,10 @@ Return values may be as follows:
        (let* ((workspaces (->> treemacs--workspaces
                                (--reject (eq it (treemacs-current-workspace)))
                                (--map (cons (treemacs-workspace->name it) it))))
-              (name (completing-read "Switch to: " workspaces nil :require-match)))
+              (name (completing-read
+                     "Switch to: "
+                     (treemacs--pre-sorted-list workspaces)
+                     nil :require-match)))
          (setf new-workspace (cdr (--first (string= (car it) name) workspaces))))))
      (setf (treemacs-current-workspace) new-workspace)
      (treemacs--invalidate-buffer-project-cache)

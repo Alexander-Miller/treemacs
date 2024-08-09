@@ -1258,6 +1258,14 @@ treemacs window."
         (unless (eq next-window current-window)
           (select-window next-window))))))
 
+(defun treemacs--pre-sorted-list (items)
+  "Return a lambda that includes sorting metadata for `completing-read'.
+Ensures that the order of ITEMS is not changed during completion."
+  (lambda (string pred action)
+    (pcase action
+      ('metadata `(metadata (display-sort-function . ,#'identity)))
+      (_ (complete-with-action action items string pred)))))
+
 (provide 'treemacs-core-utils)
 
 ;;; treemacs-core-utils.el ends here
