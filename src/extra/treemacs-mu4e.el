@@ -204,7 +204,7 @@ Label and weight metadata will be sourced from possibly pre-filled
   :open-icon
   (cond
    ((null (treemacs-maildir->parent item))
-    (treemacs-get-icon-value 'root-open))
+    (treemacs-get-icon-value 'inbox))
    ((treemacs-maildir->children item)
     (treemacs-get-icon-value 'mail-plus))
    (t
@@ -212,7 +212,7 @@ Label and weight metadata will be sourced from possibly pre-filled
   :closed-icon
   (cond
    ((null (treemacs-maildir->parent item))
-    (treemacs-get-icon-value 'root-closed))
+    (treemacs-get-icon-value 'mail-inbox))
    ((treemacs-maildir->children item)
     (treemacs-get-icon-value 'mail-plus))
    (t

@@ -244,6 +244,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "svgrepo/briefcase.png" :extensions (briefcase)   :fallback " ")
     (treemacs-create-icon :file "svgrepo/mail.png"      :extensions (mail)        :fallback " ")
     (treemacs-create-icon :file "svgrepo/mail-plus.png" :extensions (mail-plus)   :fallback " ")
+    (treemacs-create-icon :file "svgrepo/inbox.png"     :extensions (inbox)       :fallback " ")
 
     ;; custom dir icons
     (treemacs-create-icon :file "svgrepo/dir-src-closed.png"    :extensions ("src-closed")     :fallback (propertize "+ " 'face 'treemacs-term-node-face))
