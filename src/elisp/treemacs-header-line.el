@@ -26,6 +26,7 @@
 (require 'treemacs-interface)
 
 (eval-when-compile
+  (require 'treemacs-macros)
   (require 'cl-lib))
 
 (cl-macrolet
