@@ -9,12 +9,12 @@ jobs:
       fail-fast: false
       matrix:
         emacs_version:
-        - 27.1
-        - 27.2
         - 28.1
         - 28.2
         - 29.1
         - 29.2
+        - 29.3
+        - 29.4
         # - snapshot FIXME disabled due to bytecode overflow errors during compilation
     steps:
     - name: Install Emacs
