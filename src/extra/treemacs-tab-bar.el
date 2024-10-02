@@ -41,8 +41,8 @@
 (cl-defmethod treemacs-scope->current-scope ((_ (subclass treemacs-tab-bar-scope)))
   "Get the current tab as scope.
 Return symbol `none' unless variable `tab-bar-mode' is non-nil."
-(if tab-bar-mode
-      (cdr (assq 'name (tab-bar-get-buffer-tab nil)))
+  (if tab-bar-mode
+      (cdr (assq 'name (tab-bar--current-tab)))
     'none))
 
 (cl-defmethod treemacs-scope->current-scope-name ((_ (subclass treemacs-tab-bar-scope)) tab)
