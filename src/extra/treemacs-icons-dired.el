@@ -69,7 +69,8 @@
                              (treemacs-icon-for-file file))))
                 (insert icon))
             (treemacs-return nil))
-          (forward-line 1) ))))))
+          (forward-line 1))))
+     (set-buffer-modified-p nil))))
 
 (defun treemacs-icons-dired--insert-subdir-advice (&rest args)
   "Advice to Dired & Dired+ insert-subdir commands.
