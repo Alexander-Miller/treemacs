@@ -65,6 +65,22 @@
 
   (add-hook 'eyebrowse-post-window-switch-hook #'treemacs--follow-after-eyebrowse-switch))
 
+(with-eval-after-load 'windmove
+  (defun treemacs--windmove-swap-state-advice (original-fn &rest args)
+    "Advice for windmove-swap-state-* functions to ignore treemacs.
+These commands do not seem to be compatible with side windows (and thus treemacs
+in its default configuration), so this advice changes them to do nothing when
+the `selected-window' is treemacs.
+
+For all other cases ORIGINAL-FN is called with original ARGS."
+    (unless (and treemacs-display-in-side-window
+                 (treemacs-is-treemacs-window-selected?))
+      (apply original-fn args)))
+
+  (with-no-warnings
+    (advice-add 'windmove-swap-states-in-direction
+                :around #'treemacs--windmove-swap-state-advice)))
+
 (with-eval-after-load 'winum
   (when (boundp 'winum-ignored-buffers-regexp)
     (add-to-list 'winum-ignored-buffers-regexp (regexp-quote (format "%sScoped-Buffer-" treemacs--buffer-name-prefix)))))
