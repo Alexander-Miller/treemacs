@@ -304,7 +304,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "clojure.png"       :extensions ("clj" "cljs" "cljc" "edn"))
     (treemacs-create-icon :file "ts.png"            :extensions ("ts" "tsx"))
     (treemacs-create-icon :file "vue.png"           :extensions ("vue"))
-    (treemacs-create-icon :file "css.png"           :extensions ("css"))
+    (treemacs-create-icon :file "css.png"           :extensions ("css" "rasi"))
     (treemacs-create-icon :file "conf.png"          :extensions ("properties" "conf" "config" "cfg" "ini" "xdefaults" "xresources" "terminalrc" "ledgerrc"))
     (treemacs-create-icon :file "html.png"          :extensions ("html" "htm"))
     (treemacs-create-icon :file "git.png"           :extensions ("git" "gitignore" "gitconfig" "gitmodules" "gitattributes"))
