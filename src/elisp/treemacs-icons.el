@@ -312,7 +312,7 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "jar.png"           :extensions ("jar"))
     (treemacs-create-icon :file "kotlin.png"        :extensions ("kt"))
     (treemacs-create-icon :file "scala.png"         :extensions ("scala"))
-    (treemacs-create-icon :file "gradle.png"        :extensions ("gradle"))
+    (treemacs-create-icon :file "gradle.png"        :extensions ("gradle" "kts" "build.gradle.kts" "settings.gradle.kts"))
     (treemacs-create-icon :file "sbt.png"           :extensions ("sbt"))
     (treemacs-create-icon :file "go.png"            :extensions ("go"))
     (treemacs-create-icon :file "systemd.png"       :extensions ("service" "timer"))
