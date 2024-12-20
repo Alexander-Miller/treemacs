@@ -110,6 +110,7 @@ Then call ORIG-FUN with its ARGS and reopen treemacs if it was open before."
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yp")     #'treemacs-copy-project-path-at-point)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "ya")     #'treemacs-copy-absolute-path-at-point)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yr")     #'treemacs-copy-relative-path-at-point)
+(evil-define-key 'treemacs treemacs-mode-map (kbd "yn")     #'treemacs-copy-filename-at-point)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yf")     #'treemacs-copy-file)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "yv")     #'treemacs-paste-dir-at-point-to-minibuffer)
 (evil-define-key 'treemacs treemacs-mode-map (kbd "gr")     #'treemacs-refresh)

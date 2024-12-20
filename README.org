@@ -898,6 +898,7 @@ Treemacs' keybindings are distributed to several keymaps, based on common keybin
 | ya  | treemacs-copy-absolute-path-at-point | Copy the absolute path of the node at point.                      |
 | yr  | treemacs-copy-relative-path-at-point | Copy the path of the node at point relative to the project root.  |
 | yp  | treemacs-copy-project-path-at-point  | Copy the absolute path of the project root for the node at point. |
+| yn  | treemacs-copy-filename-at-point      | Copy the filename for the node at point.                          |
 | yf  | treemacs-copy-file                   | Copy the file at point.                                           |
 
 *** General Keybinds

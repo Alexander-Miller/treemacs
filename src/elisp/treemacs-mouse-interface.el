@@ -327,7 +327,8 @@ and ignore any prefix argument."
                  ["Copy File"          treemacs-copy-file                   :visible ,(check node)]
                  ["Copy Absolute Path" treemacs-copy-absolute-path-at-point :visible ,(check node)]
                  ["Copy Relative Path" treemacs-copy-relative-path-at-point :visible ,(check node)]
-                 ["Copy Project Path"  treemacs-copy-project-path-at-point  :visible ,(check node)])
+                 ["Copy Project Path"  treemacs-copy-project-path-at-point  :visible ,(check node)]
+                 ["Copy Filename"      treemacs-copy-filename-at-point      :visible ,(check node)])
 
                 ["--" #'ignore t]
                 ("Projects"
