@@ -544,6 +544,19 @@ With a prefix ARG substract the increment value multiple times."
       (kill-new copied)
       (treemacs-pulse-on-success "Copied project path: %s" (propertize copied 'face 'font-lock-string-face))))))
 
+(defun treemacs-copy-filename-at-point ()
+  "Copy the filename of the node at point."
+  (interactive)
+  (treemacs-block
+   (-let [path (treemacs--prop-at-point :path)]
+     (treemacs-error-return-if (null path)
+       "There is nothing to copy here")
+     (treemacs-error-return-if (not (stringp path))
+       "Path at point is not a file.")
+     (let ((filename (file-name-nondirectory path)))
+       (kill-new filename)
+       (treemacs-pulse-on-success "Copied filename: %s" (propertize filename 'face 'font-lock-string-face))))))
+
 (defun treemacs-paste-dir-at-point-to-minibuffer ()
   "Paste the directory at point into the minibuffer.
 This is used by the \"Paste here\" mouse menu button, which assumes that we are
