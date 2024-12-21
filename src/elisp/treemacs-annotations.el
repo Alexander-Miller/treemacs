@@ -258,8 +258,18 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
             (ann (treemacs-get-annotation path))
             (btn-start (treemacs-button-start ,btn))
             (btn-end (treemacs-button-end ,btn)))
-       (if (null ann)
 
+       ;; delete current suffix if present
+       (goto-char ,btn)
+       (goto-char (or (next-single-property-change
+                       ,btn
+                       'treemacs-suffix-annotation
+                       (current-buffer)
+                       (line-end-position))
+                      btn-end))
+       (delete-region (point) (line-end-position))
+
+       (if (null ann)
            ;; No annotation - just put git face
            (when ,git-face
              (put-text-property btn-start btn-end 'face ,git-face)
@@ -271,6 +281,7 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
                :git-face ,git-face
                :face-value ,git-face)))
 
+         ;; annotation present, apply everything
          (let ((face-value (treemacs-annotation->face-value ann))
                (suffix-value (treemacs-annotation->suffix-value ann))
                (faces (treemacs-annotation->face ann))
@@ -298,14 +309,6 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
               new-face-value))
 
            ;; Suffix
-           (goto-char ,btn)
-           (goto-char (or (next-single-property-change
-                           ,btn
-                           'treemacs-suffix-annotation
-                           (current-buffer)
-                           (line-end-position))
-                          btn-end))
-           (delete-region (point) (line-end-position))
            (when suffix-value (insert suffix-value))))))))
 
 (defun treemacs-apply-single-annotation (path)
