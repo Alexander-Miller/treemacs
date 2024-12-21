@@ -282,6 +282,22 @@ Necessary since root icons are not rectangular."
      :file "vsc/dir-images-open.png" :extensions ("screenshots-open" "icons-open")
      :fallback (propertize "- " 'face 'treemacs-term-node-face))
 
+    ;; mode icons
+    (treemacs-create-icon :file "emacs.png"          :extensions (emacs-lisp-mode))
+    (treemacs-create-icon :file "git.png"            :extensions (gitignore-mode))
+    (treemacs-create-icon :file "python.png"         :extensions (python-mode))
+    (treemacs-create-icon :file "vsc/make.png"       :extensions (makefile-gmake-mode))
+    (treemacs-create-icon :file "vsc/dir-closed.png" :extensions (dired-mode))
+    (treemacs-create-icon :file "ledger.png"         :extensions (ledger-mode))
+    (treemacs-create-icon :file "vsc/org.png"        :extensions (org-mode org-agenda-mode))
+    (treemacs-create-icon :file "vsc/vim.png"        :extensions (tridactylrc-mode))
+    (treemacs-create-icon :file "conf.png"           :extensions (conf-mode i3wm-config-mode))
+    (treemacs-create-icon :file "conf.png"           :extensions (conf-mode i3wm-config-mode))
+    (treemacs-create-icon :file "shell.png"          :extensions (fish-mode))
+    (treemacs-create-icon :file "svgrepo/list.png"   :extensions (elfeed-search-mode))
+    (treemacs-create-icon :file "vsc/deps.png"       :extensions (cask-mode))
+    (treemacs-create-icon :file "yaml.png"           :extensions (yaml-mode))
+
     ;; file icons
     (treemacs-create-icon :file "txt.png"           :extensions (fallback))
     (treemacs-create-icon :file "emacs.png"         :extensions ("el" "elc" "eln"))
@@ -446,6 +462,14 @@ Uses `treemacs-icon-fallback' as fallback."
            (ht-get treemacs-icons
                    (treemacs--file-extension file-downcased)
                    (with-no-warnings treemacs-icon-fallback)))))))
+
+(define-inline treemacs-icon-for-mode (mode)
+  "Retrieve an icon for major MODE from `treemacs-icons'.
+Uses `treemacs-icon-fallback' as fallback."
+  (declare (side-effect-free t))
+  (inline-letevals (mode)
+    (inline-quote
+     (ht-get treemacs-icons ,mode (with-no-warnings treemacs-icon-fallback)))))
 
 (define-inline treemacs-icon-for-dir (dir state)
   "Retrieve an icon for DIR from `treemacs-icons' in given STATE.
