@@ -53,8 +53,7 @@ Used to save the values of `treemacs-indentation' and
 
 (defun treemacs--do-pulse (face)
   "Visually pulse current line using FACE."
-  (pulse-momentary-highlight-one-line (point) face)
-  (advice-add 'pulse-momentary-unhighlight :after #'hl-line-highlight))
+  (pulse-momentary-highlight-one-line (point) face))
 
 (defsubst treemacs-pulse-on-success (&rest log-args)
   "Pulse current line with `treemacs-on-success-pulse-face'.
