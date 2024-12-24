@@ -100,6 +100,7 @@
   treemacs-dom-node->position)
 
 (treemacs-import-functions-from "treemacs-workspaces"
+  treemacs--next-project-pos
   treemacs--find-workspace
   treemacs-current-workspace
   treemacs-workspace->projects
@@ -375,6 +376,16 @@ EXCLUDE-PREFIX: File Path"
       (setq node (treemacs-button-get node :parent)
             project (treemacs-button-get node :project)))
     project))
+
+(defun treemacs-last-node-of-project (project)
+  "Find the last node in given PROJECT.
+Returns nil if the project is not expanded."
+  (declare (side-effect-free t))
+  (let ((node (treemacs-project->position project)))
+    (when (treemacs-is-node-expanded? node)
+      (save-excursion
+        (goto-char node)
+        (previous-button (treemacs--next-project-pos))))))
 
 (define-inline treemacs--prop-at-point (prop)
   "Grab property PROP of the button at point.
