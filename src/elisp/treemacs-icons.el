@@ -297,6 +297,8 @@ Necessary since root icons are not rectangular."
     (treemacs-create-icon :file "svgrepo/list.png"   :extensions (elfeed-search-mode))
     (treemacs-create-icon :file "vsc/deps.png"       :extensions (cask-mode))
     (treemacs-create-icon :file "yaml.png"           :extensions (yaml-mode))
+    (treemacs-create-icon :file "css.png"            :extensions (css-mode))
+    (treemacs-create-icon :file "markdown.png"       :extensions (markdown-mode))
 
     ;; file icons
     (treemacs-create-icon :file "txt.png"           :extensions (fallback))
