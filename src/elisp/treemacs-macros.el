@@ -318,10 +318,18 @@ not work keep it on the same line."
          (goto-char curr-point))
         (_
          ;; point is on a custom node
-         ;; TODO(2018/10/30): custom node exists predicate?
-         (condition-case _
-             (treemacs-goto-node curr-node-path)
-           (error (ignore)))))
+         (cond
+          ((treemacs-is-path-visible? curr-node-path)
+           (treemacs-goto-extension-node curr-node-path))
+          ((and next-path (treemacs-is-path-visible? next-path))
+           (treemacs-goto-extension-node next-path))
+          ((and prev-path (treemacs-is-path-visible? prev-path))
+           (treemacs-goto-extension-node prev-path))
+          (t
+           (-let [detour (treemacs--parent curr-file)]
+             (while (not (treemacs-is-path-visible? detour))
+               (setf detour (treemacs--parent detour)))
+             (treemacs-goto-extension-node detour))))))
       (treemacs--evade-image)
       (when (get-text-property (point) 'invisible)
         (goto-char (or
