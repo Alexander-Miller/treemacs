@@ -2,7 +2,8 @@ from subprocess import Popen, PIPE
 from os.path import exists
 import sys
 
-GIT_CMD = "git clean -ndX"
+GIT_BIN = sys.argv[1]
+GIT_CMD = "{} clean -ndX".format(GIT_BIN)
 STDOUT  = sys.stdout.buffer
 
 def quote(string):
@@ -31,7 +32,7 @@ def process_git_output(root, proc):
             break
 
 def main():
-    roots  = sys.argv[1:]
+    roots  = sys.argv[2:]
     procs  = []
 
     for root in roots:

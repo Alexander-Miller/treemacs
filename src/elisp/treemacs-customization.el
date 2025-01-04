@@ -777,6 +777,11 @@ the python3 binary."
   :type 'string
   :group 'treemacs-git)
 
+(defcustom treemacs-git-executable "git"
+  "The git executable used by treemacs."
+  :type 'string
+  :group 'treemacs-git)
+
 (defcustom treemacs-git-command-pipe ""
   "Text to be appended to treemacs' git command.
 With `treemacs-git-mode' the command

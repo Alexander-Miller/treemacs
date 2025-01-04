@@ -51,7 +51,11 @@ Look for the PROJECT either in BUFFER or the local treemacs buffer."
       :no-match-action
       (ignore)
       :file-action
-      (pfuture-callback `(,treemacs-python-executable "-O" ,treemacs--git-commit-diff.py ,path)
+      (pfuture-callback `(,treemacs-python-executable
+                          "-O"
+                          ,treemacs--git-commit-diff.py
+                          ,treemacs-git-executable
+                          ,path)
         :directory path
         :on-success
         (when (buffer-live-p buffer)

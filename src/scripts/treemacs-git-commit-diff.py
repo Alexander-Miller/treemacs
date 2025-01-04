@@ -1,7 +1,8 @@
 from subprocess import Popen, PIPE
 import sys
 
-STATUS_CMD = "git status -sb"
+GIT_BIN = sys.argv[1]
+STATUS_CMD = "{} status -sb".format(GIT_BIN)
 
 def main():
     proc = Popen(STATUS_CMD, shell=True, stdout=PIPE, bufsize=100)

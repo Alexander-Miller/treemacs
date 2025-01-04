@@ -14,11 +14,12 @@ import sys
 #    this list is turned into a set since it is possible that it contains duplicates
 #    when called for magit, see also `treemacs-magit--extended-git-mode-update`
 
-GIT_ROOT     = str.encode(sys.argv[1])
-LIMIT        = int(sys.argv[2])
-GIT_CMD      = "git status --porcelain --ignored=matching . " + sys.argv[3]
+GIT_BIN      = sys.argv[1]
+GIT_ROOT     = str.encode(sys.argv[2])
+LIMIT        = int(sys.argv[3])
+GIT_CMD      = "{} status --porcelain --ignored=matching . ".format(GIT_BIN) + sys.argv[4]
 STDOUT       = sys.stdout.buffer
-RECURSE_DIRS = set([str.encode(it[(len(GIT_ROOT)):]) + b"/" for it in sys.argv[4:]]) if len(sys.argv) > 4 else []
+RECURSE_DIRS = set([str.encode(it[(len(GIT_ROOT)):]) + b"/" for it in sys.argv[5:]]) if len(sys.argv) > 5 else []
 QUOTE        = b'"'
 output       = []
 ht_size      = 0

@@ -7,14 +7,15 @@ import os
 # 2) the file's previous state, to check if things changed at all
 # 3) the file's parents that need to be updated as well
 
-FILE = sys.argv[1]
-OLD_FACE = sys.argv[2]
-PARENTS = [p for p in sys.argv[3:]]
+GIT_BIN = sys.argv[1]
+FILE = sys.argv[2]
+OLD_FACE = sys.argv[3]
+PARENTS = [p for p in sys.argv[4:]]
 
-FILE_STATE_CMD = "git status --porcelain --ignored=matching "
-IS_IGNORED_CMD = "git check-ignore "
-IS_TRACKED_CMD = "git ls-files --error-unmatch "
-IS_CHANGED_CMD = "git ls-files --modified --others --exclude-standard "
+FILE_STATE_CMD = "{} status --porcelain --ignored=matching ".format(GIT_BIN)
+IS_IGNORED_CMD = "{} check-ignore ".format(GIT_BIN)
+IS_TRACKED_CMD = "{} ls-files --error-unmatch ".format(GIT_BIN)
+IS_CHANGED_CMD = "{} ls-files --modified --others --exclude-standard ".format(GIT_BIN)
 
 def face_for_status(path, status):
     if status == "M":
