@@ -397,7 +397,7 @@ run because the git cache has yet to be filled."
   (pfuture-callback `(,treemacs-python-executable
                       "-O"
                       ,treemacs--find-ignored-files.py
-                      treemacs-git-executable
+                      ,treemacs-git-executable
                       ,@path)
     :on-error (ignore)
     :on-success
