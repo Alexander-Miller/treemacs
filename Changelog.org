@@ -3,6 +3,7 @@
 
 * Changelog
 ** current master
+** v3.1
 - Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
   ~treemacs-hl-line-face~
 - Added ~treemacs-copy-absolute-path-at-point~
