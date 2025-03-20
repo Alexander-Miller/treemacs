@@ -128,7 +128,7 @@ the current dir."
       (puthash projectile-root
                (cons relative-path (gethash projectile-root projectile-projects-cache))
                projectile-projects-cache)
-      (projectile-serialize-cache))))
+      (projectile-serialize nil (projectile-project-cache-file path)))))
 
 (defun treemacs-projectile--rename-cache-entry (old-path new-path)
   "Exchange OLD-PATH for NEW-PATH in projectile's cache."
