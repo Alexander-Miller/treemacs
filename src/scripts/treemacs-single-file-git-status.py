@@ -40,10 +40,9 @@ def main():
         sys.exit(2)
 
     new_state = determine_file_git_state()
-    old_state = face_for_status(FILE, OLD_FACE)
 
     # nothing to do
-    if old_state == new_state:
+    if OLD_FACE == face_for_status(FILE, new_state):
         sys.exit(2)
 
     proc_list = []
@@ -74,7 +73,7 @@ def main():
             propagate_state = "?"
             result_list.append((path, propagate_state))
             break
-        elif changed_proc.communicate() != b'' and changed_proc.returncode == 0:
+        elif changed_proc.communicate()[0] != b'' and changed_proc.returncode == 0:
             result_list.append((path, "M"))
         else:
             result_list.append((path, "0"))
@@ -98,8 +97,8 @@ def add_git_processes(status_listings, path):
     status_listings.append((path, ignored_proc, tracked_proc, changed_proc))
 
 def determine_file_git_state():
-    proc  = Popen(FILE_STATE_CMD + FILE, shell=True, stdout=PIPE, stderr=DEVNULL)
-    line  = proc.stdout.readline()
+    proc = Popen(FILE_STATE_CMD + FILE, shell=True, stdout=PIPE, stderr=DEVNULL)
+    line = proc.stdout.readline()
     if line:
         state = line.lstrip().split(b" ")[0]
         return state.decode('utf-8').strip()[0]
