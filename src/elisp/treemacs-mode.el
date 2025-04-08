@@ -374,7 +374,8 @@ Will simply return `treemacs--eldoc-msg'."
     (treemacs--on-window-config-change))
   ;; set the parameter immediately so it can take effect when `treemacs' is called programatically
   ;; alongside other window layout chaning commands that might delete it again
-  (set-window-parameter (selected-window) 'no-delete-other-windows treemacs-no-delete-other-windows)
+  (if (get-buffer-window (current-buffer))
+      (set-window-parameter (selected-window) 'no-delete-other-windows treemacs-no-delete-other-windows))
 
   (face-remap-add-relative 'default 'treemacs-window-background-face)
   (face-remap-add-relative 'fringe  'treemacs-window-background-face)
