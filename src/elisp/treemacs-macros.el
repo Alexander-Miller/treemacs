@@ -308,7 +308,7 @@ not work keep it on the same line."
               ((and prev-path (can-move-to prev-path))
                (treemacs-goto-file-node prev-path))
               (t
-               (-let [detour (treemacs--parent curr-file)]
+               (-when-let (detour (treemacs--parent curr-file))
                  (while (not (can-move-to detour))
                    (setf detour (treemacs--parent detour)))
                  (treemacs-goto-file-node detour)))))))
@@ -326,7 +326,7 @@ not work keep it on the same line."
           ((and prev-path (treemacs-is-path-visible? prev-path))
            (treemacs-goto-extension-node prev-path))
           (t
-           (-let [detour (treemacs--parent curr-file)]
+           (-when-let (detour (treemacs--parent curr-file))
              (while (not (treemacs-is-path-visible? detour))
                (setf detour (treemacs--parent detour)))
              (treemacs-goto-extension-node detour))))))
