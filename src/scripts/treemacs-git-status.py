@@ -1,5 +1,5 @@
 from subprocess import Popen, PIPE
-from os import listdir, environ
+from os import listdir
 from os.path import isdir, islink
 from posixpath import join
 import sys
@@ -54,8 +54,7 @@ def find_recursive_entries(path, state):
 def main():
     global output, ht_size
     # Don't lock Git when updating status.
-    environ["GIT_OPTIONAL_LOCKS"] = "0"
-    proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100)
+    proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100, env={"LC_ALL": "C", "GIT_OPTIONAL_LOCKS": "0"})
     dirs_added = {}
 
     for item in proc.stdout:
