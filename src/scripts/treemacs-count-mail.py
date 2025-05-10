@@ -32,7 +32,8 @@ def main():
                        shell=True,
                        stdout=PIPE,
                        bufsize=100,
-                       encoding='utf-8'
+                       encoding='utf-8',
+                       env={"LC_ALL": "C"}
                     ).communicate()[0][:-1]
 
         if unread == "0":
