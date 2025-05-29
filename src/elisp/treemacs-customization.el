@@ -24,6 +24,10 @@
 (require 's)
 (require 'widget)
 (require 'dash)
+(require 'treemacs-macros)
+
+(treemacs-import-functions-from "treemacs-scope"
+  treemacs-default-buffer-name)
 
 (eval-when-compile
   (require 'cl-lib))
@@ -125,6 +129,20 @@ indentation will be a space INTEGER pixels wide."
                  (list :tag "Pixels"
                        (integer :tag "Pixels" :value 16)
                        (const :tag "" px)))
+  :group 'treemacs)
+
+(defcustom treemacs-buffer-name-function #'treemacs-default-buffer-name
+  "The function used to create the name of a treemacs buffer.
+
+Value must be a function which takes a single argument - the current scope - and
+returns the buffer name as a string.  By default the scope is going to be the
+current frame, however with packages like `treemacs-persp' it is also possible
+for it to be the current perspective.
+
+In addition, the buffer name will *always* be prefixed with
+`treemacs--buffer-name-prefix', which is necessary to properly recognize
+treemacs buffers and maintain compatibility with some packages like winum."
+  :type 'function
   :group 'treemacs)
 
 (defcustom treemacs-litter-directories '("/node_modules" "/.venv" "/.cask")

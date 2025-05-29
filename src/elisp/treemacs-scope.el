@@ -32,6 +32,7 @@
 (require 'dash)
 (require 'eieio)
 (require 'treemacs-core-utils)
+(require 'treemacs-customization)
 (require 's)
 (require 'inline)
 
@@ -199,12 +200,20 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
       (push (cons scope shelf) treemacs--scope-storage)
       (treemacs--find-workspace (buffer-file-name)))
     (treemacs-scope-shelf->kill-buffer shelf)
-    (let* ((name-suffix (or (treemacs-scope->current-scope-name treemacs--current-scope-type scope)
-                            (prin1-to-string scope)))
-           (name (format "%sScoped-Buffer-%s*" treemacs--buffer-name-prefix name-suffix))
+    (let* ((name (format "%s%s"
+                         treemacs--buffer-name-prefix
+                         (or (funcall treemacs-buffer-name-function scope)
+                             (treemacs-default-buffer-name scope))))
            (buffer (get-buffer-create name)))
       (setf (treemacs-scope-shelf->buffer shelf) buffer)
       buffer)))
+
+(defun treemacs-default-buffer-name (scope)
+  "Default buffer name implementation for a given SCOPE.
+Appends the name of the given scope to the mandatory
+`treemacs--buffer-name-prefix'."
+  (or (treemacs-scope->current-scope-name treemacs--current-scope-type scope)
+      (prin1-to-string scope)))
 
 (defun treemacs--change-buffer-on-scope-change (&rest _)
   "Switch the treemacs buffer after the current scope was changed."
