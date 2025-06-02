@@ -140,7 +140,7 @@ current frame, however with packages like `treemacs-persp' it is also possible
 for it to be the current perspective.
 
 In addition, the buffer name will *always* be prefixed with
-`treemacs--buffer-name-prefix', which is necessary to properly recognize
+`treemacs--buffer-name-prefix', which is necessary to properly recognise
 treemacs buffers and maintain compatibility with some packages like winum."
   :type 'function
   :group 'treemacs)

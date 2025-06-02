@@ -113,6 +113,7 @@
             "variadic"
             "wayland"
             "whitespace"
+            "winum"
             "workspace"
             "workspaces")))
 
