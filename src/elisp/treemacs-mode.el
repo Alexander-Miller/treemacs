@@ -373,8 +373,11 @@ Will simply return `treemacs--eldoc-msg'."
   (unless (member #'treemacs--on-window-config-change (default-value 'window-configuration-change-hook))
     (treemacs--on-window-config-change))
   ;; set the parameter immediately so it can take effect when `treemacs' is called programatically
-  ;; alongside other window layout chaning commands that might delete it again
-  (set-window-parameter (selected-window) 'no-delete-other-windows treemacs-no-delete-other-windows)
+  ;; alongside other window layout chaning commands that might delete it again.
+  ;; also check that the buffer has a window as other packages might call `treemacs-mode' on buffers
+  ;; that have no window yet
+  (when (get-buffer-window (current-buffer))
+    (set-window-parameter (selected-window) 'no-delete-other-windows treemacs-no-delete-other-windows))
 
   (face-remap-add-relative 'default 'treemacs-window-background-face)
   (face-remap-add-relative 'fringe  'treemacs-window-background-face)
