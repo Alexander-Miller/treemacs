@@ -4,6 +4,7 @@
 * Changelog
 ** current master
 *** Added ~treemacs-buffer-name-function~
+*** Added ~treemacs-file-follow-ignore-functions~
 ** v3.1
 - Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
   ~treemacs-hl-line-face~

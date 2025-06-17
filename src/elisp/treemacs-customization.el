@@ -764,6 +764,15 @@ fallback."
   :type 'boolean
   :group 'treemacs-follow)
 
+(defcustom treemacs-file-follow-ignore-functions nil
+  "Functions which determine if a file should not be followed.
+
+Content should be a list of functions which take one argument - the path of the
+file that might be followed - and return non-nil if the file should *not* be
+followed."
+  :type '(list function)
+  :group 'treemacs-follow)
+
 (defcustom treemacs-move-files-by-mouse-dragging t
   "When non-nil treemacs will move files by dragging with the mouse."
   :group 'treemacs-mouse
