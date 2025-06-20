@@ -21,7 +21,6 @@ ELS += $(SRC_DIR)/treemacs-bookmarks.el
 ELS += $(SRC_DIR)/treemacs-compatibility.el
 ELS += $(SRC_DIR)/treemacs-core-utils.el
 ELS += $(SRC_DIR)/treemacs-customization.el
-ELS += $(SRC_DIR)/treemacs-diagnostics.el
 ELS += $(SRC_DIR)/treemacs-dom.el
 ELS += $(SRC_DIR)/treemacs-extensions.el
 ELS += $(SRC_DIR)/treemacs-faces.el
