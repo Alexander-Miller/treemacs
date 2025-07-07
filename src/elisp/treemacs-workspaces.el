@@ -139,16 +139,17 @@ If no workspace is assigned to the current scope the persisted workspaces will
 be loaded and a workspace will be found based on the `current-buffer'.
 
 This function can be used with `setf'."
+  (treemacs--maybe-load-workspaces)
   (or treemacs-override-workspace
-      (-if-let (shelf (treemacs-current-scope-shelf))
-          (treemacs-scope-shelf->workspace shelf)
-        (treemacs--maybe-load-workspaces)
-        (let* ((workspace (treemacs--find-workspace (buffer-file-name (current-buffer))))
-               (new-shelf (treemacs-scope-shelf->create! :workspace workspace)))
-          (setf (treemacs-current-scope-shelf) new-shelf)
-          (run-hook-with-args treemacs-workspace-first-found-functions
-                              workspace (treemacs-current-scope))
-          workspace))))
+      (let* ((shelf (treemacs-current-scope-shelf))
+             (workspace (and shelf (treemacs-scope-shelf->workspace shelf))))
+        (or workspace
+            (let* ((workspace (treemacs--find-workspace (buffer-file-name (current-buffer))))
+                   (new-shelf (treemacs-scope-shelf->create! :workspace workspace)))
+              (setf (treemacs-current-scope-shelf) new-shelf)
+              (run-hook-with-args treemacs-workspace-first-found-functions
+                                  workspace (treemacs-current-scope))
+              workspace)))))
 
 (gv-define-setter treemacs-current-workspace (val)
   `(let ((shelf (treemacs-current-scope-shelf)))
