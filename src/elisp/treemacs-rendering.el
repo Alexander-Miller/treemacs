@@ -794,7 +794,7 @@ FORCE-EXPAND: Boolean"
             (when ,force-expand
               (funcall (alist-get (treemacs-button-get btn :state) treemacs-TAB-actions-config))))
         (-when-let (dom-node (treemacs-find-in-dom ,path))
-          (setf (treemacs-dom-node->refresh-flag dom-node) t)))))))
+          (setf (treemacs-dom-node->refresh-flag dom-node) nil)))))))
 
 (defun treemacs-update-node (path &optional force-expand)
   "Update the node identified by its PATH.
