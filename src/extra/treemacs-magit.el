@@ -97,6 +97,7 @@ current git status and just go through the lines as they are right now."
     (pfuture-callback `(,treemacs-python-executable
                         "-O" "-S"
                         ,treemacs--git-status.py
+                        ,treemacs-git-executable
                         ,magit-root
                         ,(number-to-string treemacs-max-git-entries)
                         ,treemacs-git-command-pipe
