@@ -131,6 +131,16 @@ indentation will be a space INTEGER pixels wide."
                        (const :tag "" px)))
   :group 'treemacs)
 
+(defcustom treemacs-buffer-name-prefix " *Treemacs-Buffer-"
+  "The static prefix that is added to every treemacs buffer name.
+
+Can only be set immediately after treemacs is loaded as its value is used for
+compatibility with other packages like winum.
+
+See also: `treemacs-buffer-name-function'."
+  :type 'string
+  :group 'treemacs)
+
 (defcustom treemacs-buffer-name-function #'treemacs-default-buffer-name
   "The function used to create the name of a treemacs buffer.
 
@@ -140,7 +150,7 @@ current frame, however with packages like `treemacs-persp' it is also possible
 for it to be the current perspective.
 
 In addition, the buffer name will *always* be prefixed with
-`treemacs--buffer-name-prefix', which is necessary to properly recognise
+`treemacs-buffer-name-prefix', which is necessary to properly recognise
 treemacs buffers and maintain compatibility with some packages like winum."
   :type 'function
   :group 'treemacs)
@@ -152,7 +162,7 @@ must be matched with `string-match-p'.
 
 Regexp-quoting the items in this list is *not* necessary, the quoting will
 happen automatically when needed."
-  :type 'list
+  :type '(list string)
   :group 'treemacs)
 
 (defcustom treemacs-read-string-input
@@ -315,7 +325,7 @@ This controls the matching behaviour of `treemacs-toggle-show-dotfiles'."
   "Indicates whether the .git directory should be hidden.
 When this is non-nil the .git dir will be hidden regardless of current setting
 of `treemacs-toggle-show-dotfiles'."
-  :type 'list
+  :type 'boolean
   :group 'treemacs)
 
 (defcustom treemacs-sorting 'alphabetic-asc
@@ -392,7 +402,7 @@ instead modified with functions like `add-to-list'.
 
 Additionally `treemacs--mac-ignore-file-predicate' is also included on
 Mac-derived operating systems (when `system-type' is `darwin')."
-  :type 'list
+  :type '(list function)
   :group 'treemacs)
 
 (defcustom treemacs-pre-file-insert-predicates nil
@@ -419,7 +429,7 @@ map map as follows: (the pattern is derived from \\='git status --porcelain\\=')
 Otherwise the behaviour is the same as `treemacs-ignored-file-predicates', in
 that any one function returning t for a file means that this file will not
 be rendered."
-  :type 'list
+  :type '(list function)
   :group 'treemacs)
 
 (defcustom treemacs-file-event-delay 2000

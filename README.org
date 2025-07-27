@@ -453,7 +453,9 @@ discoverability.
       (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
     (progn
-      (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+      (setq treemacs-buffer-name-function            #'treemacs-default-buffer-name
+            treemacs-buffer-name-prefix              " *Treemacs-Buffer-"
+            treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
             treemacs-deferred-git-apply-delay        0.5
             treemacs-directory-name-transformer      #'identity
             treemacs-display-in-side-window          t
@@ -643,6 +645,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-move-files-by-mouse-dragging    | t                                                | When non-nil treemacs will move files by dragging with your mouse inside treemacs.                                                                                                                                                   |
 | treemacs-buffer-name-function            | #'treemacs-default-buffer-name                   | Determines the names of treemacs buffers.                                                                                                                                                                                            |
 | treemacs-file-follow-ignore-functions    | nil                                              | Functions to determine which files shold not be followed.                                                                                                                                                                            |
+| treemacs-buffer-name-prefix              | " *Treemacs-Buffer-"                             | Static prefix for all treemacs buffer names.                                                                                                                                                                                       |
 
 ** Faces
 Treemacs defines and uses the following faces:

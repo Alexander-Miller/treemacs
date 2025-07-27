@@ -201,7 +201,7 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
       (treemacs--find-workspace (buffer-file-name)))
     (treemacs-scope-shelf->kill-buffer shelf)
     (let* ((name (format "%s%s"
-                         treemacs--buffer-name-prefix
+                         treemacs-buffer-name-prefix
                          (or (funcall treemacs-buffer-name-function scope)
                              (treemacs-default-buffer-name scope))))
            (buffer (get-buffer-create name)))
@@ -211,7 +211,7 @@ NEW-SCOPE-TYPE: T: treemacs-scope"
 (defun treemacs-default-buffer-name (scope)
   "Default buffer name implementation for a given SCOPE.
 Appends the name of the given scope to the mandatory
-`treemacs--buffer-name-prefix'."
+`treemacs-buffer-name-prefix'."
   (or (treemacs-scope->current-scope-name treemacs--current-scope-type scope)
       (prin1-to-string scope)))
 
@@ -257,7 +257,7 @@ Returns nil if no treemacs buffer is visible."
        (--first (->> it
                      (window-buffer)
                      (buffer-name)
-                     (s-starts-with? treemacs--buffer-name-prefix)))))
+                     (s-starts-with? treemacs-buffer-name-prefix)))))
 
 (define-inline treemacs-current-visibility ()
   "Return whether the current visibility state of the treemacs buffer.

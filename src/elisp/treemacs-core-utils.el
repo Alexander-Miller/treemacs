@@ -205,8 +205,6 @@ PATH: File Path"
          (file-name-directory)
          (treemacs--unslash)))))
 
-(defconst treemacs--buffer-name-prefix " *Treemacs-Buffer-")
-
 (defconst treemacs-dir
   ;; locally we're in src/elisp, installed from melpa we're at the package root
   (-let [dir (-> (if load-file-name
@@ -434,7 +432,7 @@ extensions and special names like this."
   "Return t when WINDOW is showing a treemacs buffer."
   (declare (side-effect-free t))
   (inline-quote
-   (->> ,window (window-buffer) (buffer-name) (s-starts-with? treemacs--buffer-name-prefix))))
+   (->> ,window (window-buffer) (buffer-name) (s-starts-with? treemacs-buffer-name-prefix))))
 
 (define-inline treemacs--next-neighbour-of (btn)
   "Get the next same-level neighbour of BTN, if any."
@@ -523,7 +521,7 @@ In practice this means expand PATH and remove its final slash."
 (define-inline treemacs-is-treemacs-window-selected? ()
   "Return t when the treemacs window is selected."
   (declare (side-effect-free t))
-  (inline-quote (s-starts-with? treemacs--buffer-name-prefix (buffer-name))))
+  (inline-quote (s-starts-with? treemacs-buffer-name-prefix (buffer-name))))
 
 (defun treemacs--reload-buffers-after-rename (old-path new-path)
   "Reload buffers and windows after OLD-PATH was renamed to NEW-PATH."
