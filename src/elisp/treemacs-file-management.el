@@ -360,8 +360,10 @@ will likewise be updated."
        (treemacs-error-return-if (not (file-exists-p old-path))
          "The file to be renamed does not exist.")
        (let* ((old-name  (treemacs--filename old-path))
-              (new-name  (treemacs--read-string
-                          "New name: " (file-name-nondirectory old-path)))
+              (new-name  (--if-let (treemacs--read-string
+                                    "New name: " (file-name-nondirectory old-path))
+                             it
+                           (treemacs-return nil)))
               (dir       (treemacs--parent-dir old-path))
               (new-path  (treemacs-join-path dir new-name))
               (parent    (treemacs-button-get btn :parent)))

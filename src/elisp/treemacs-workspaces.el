@@ -176,7 +176,6 @@ PATH: String"
                ('always-ask
                 (treemacs--select-workspace-by-name))))))))
 
-;; TODO(2020/11/25): NAME
 (define-inline treemacs--find-project-for-buffer (&optional buffer-file)
   "In the current workspace find the project current buffer's file falls under.
 Optionally supply the BUFFER-FILE in case it is not available by calling the
@@ -703,7 +702,8 @@ Returns t when the name is invalid.
 
 NAME: String"
   (declare (pure t) (side-effect-free t))
-  (or (s-blank-str? name)
+  (or (null name)
+      (s-blank-str? name)
       (s-contains? "\n" name)
       (not (s-matches? (rx (1+ (or space (syntax word) (syntax symbol) (syntax punctuation)))) name))))
 
