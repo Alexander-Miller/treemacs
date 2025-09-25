@@ -44,7 +44,7 @@ def find_recursive_entries(path, state):
     global output, ht_size
     for item in listdir(path):
         full_path = join(path, item)
-        output.append(QUOTE + full_path + QUOTE + face_for_status(state))
+        output.append(QUOTE + full_path.replace(b'"', b'\\"') + QUOTE + face_for_status(state))
         ht_size += 1
         if ht_size > LIMIT:
             break
@@ -100,7 +100,7 @@ def main():
                 # directories should not be printed more than once, which would happen if
                 # e.g. both /A/B/C/x and /A/B/C/y have changes
                 if full_dirname not in dirs_added:
-                    output.append(QUOTE + full_dirname + QUOTE + b"treemacs-git-modified-face")
+                    output.append(QUOTE + full_dirname.replace(b'"', b'\\"') + QUOTE + b"treemacs-git-modified-face")
                     ht_size += 1
                     dirs_added[full_dirname] = True
         # for untracked and ignored directories we need to find an entry for every single file
