@@ -471,6 +471,7 @@ discoverability.
             treemacs-goto-tag-strategy               'refetch-index
             treemacs-header-scroll-indicators        '(nil . "^^^^^^")
             treemacs-hide-dot-git-directory          t
+            treemacs-hide-dot-jj-directory           t
             treemacs-indentation                     2
             treemacs-indentation-string              " "
             treemacs-is-never-other-window           nil
@@ -641,6 +642,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-find-workspace-method           | 'find-for-file-or-pick-first                     | Determines how treemacs selects the workspace when it first starts.                                                                                                                                                                  |
 | treemacs-header-scroll-indicators        | '(nil . "^^^^^^")                                | Indicators used for ~treemacs-indicate-top-scroll-mode~.                                                                                                                                                                             |
 | treemacs-hide-dot-git-directory          | t                                                | Indicates whether ~.git~ directories should always be hidden.                                                                                                                                                                        |
+| treemacs-hide-dot-jj-directory           | t                                                | Indicates whether ~.jj~ directories should always be hidden.                                                                                                                                                                         |
 | treemacs-project-follow-into-home        | nil                                              | Indicates whether ~treemacs-project-follow-mode~ can follow into the $HOME directory.                                                                                                                                                |
 | treemacs-move-files-by-mouse-dragging    | t                                                | When non-nil treemacs will move files by dragging with your mouse inside treemacs.                                                                                                                                                   |
 | treemacs-buffer-name-function            | #'treemacs-default-buffer-name                   | Determines the names of treemacs buffers.                                                                                                                                                                                            |
