@@ -160,7 +160,11 @@
 
       (it "Accepts .git when it is not hidden"
         (-let [treemacs-hide-dot-git-directory nil]
-          (expect (treemacs--reject-ignored-files "~/A/B/C/.git") :to-be t))))
+          (expect (treemacs--reject-ignored-files "~/A/B/C/.git") :to-be t)))
+
+      (it "Accepts .jj when it is not hidden"
+        (-let [treemacs-hide-dot-jj-directory nil]
+          (expect (treemacs--reject-ignored-files "~/A/B/C/.jj") :to-be t))))
 
     (describe "Rejecting"
 
@@ -228,6 +232,9 @@
 
       (it "Rejects .git"
         (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/.git") :to-be nil))
+
+      (it "Rejects .jj"
+        (expect (treemacs--reject-ignored-and-dotfiles "~/A/B/C/.jj") :to-be nil))
 
       (it "Rejects dot"
         (expect (treemacs--reject-ignored-and-dotfiles ".") :to-be nil))

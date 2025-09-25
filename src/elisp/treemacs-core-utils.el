@@ -1034,7 +1034,8 @@ Will return t when FILE
 3) ends with \"~\" (backup files)
 4) is surrounded with \"#\" (auto save files)
 5) is \".git\" (see also `treemacs-hide-dot-git-directory')
-6) is \".\" or \"..\" (default dirs)"
+6) is \".jj\" (see also `treemacs-hide-dot-jj-directory')
+7) is \".\" or \"..\" (default dirs)"
   (declare (side-effect-free t) (pure t))
   (inline-letevals (file)
     (inline-quote
@@ -1046,6 +1047,8 @@ Will return t when FILE
            (string-equal ,file "..")
            (and treemacs-hide-dot-git-directory
                 (string-equal ,file ".git"))
+           (and treemacs-hide-dot-jj-directory
+                (string-equal ,file ".jj"))
            (string-prefix-p "flycheck_" ,file))))))
 
 (define-inline treemacs--mac-ignore-file-predicate (file _)

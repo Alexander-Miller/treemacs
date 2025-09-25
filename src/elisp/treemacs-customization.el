@@ -328,6 +328,13 @@ of `treemacs-toggle-show-dotfiles'."
   :type 'boolean
   :group 'treemacs)
 
+(defcustom treemacs-hide-dot-jj-directory t
+  "Indicates whether the .jj directory should be hidden.
+When this is non-nil the .jj dir will be hidden regardless of current setting
+of `treemacs-toggle-show-dotfiles'."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs-sorting 'alphabetic-asc
   "Indicates how treemacs will sort its files and directories.
 Files will still always be shown after directories.
