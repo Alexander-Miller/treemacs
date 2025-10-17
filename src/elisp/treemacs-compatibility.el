@@ -108,7 +108,7 @@ to split it."
        (select-window (next-window))))))
 
 (with-eval-after-load 'persp-mode
-  (defun treemacs--remove-treemacs-window-in-new-frames (persp-activated-for)
+  (defun treemacs--remove-treemacs-window-in-new-frames (persp-activated-for &rest _)
     (when (eq persp-activated-for 'frame)
       (-when-let (w (--first (treemacs-is-treemacs-window? it)
                              (window-list)))
