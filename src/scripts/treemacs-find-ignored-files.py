@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from os.path import exists
+from os import environ
 import sys
 
 GIT_BIN = sys.argv[1]
@@ -37,7 +38,8 @@ def main():
 
     for root in roots:
         if exists(root + "/.git"):
-            proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100, cwd=root, env={"LC_ALL": "C"})
+            environ["LC_ALL"] = "C"
+            proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100, cwd=root)
             procs.append((root, proc))
 
     STDOUT.write(b"(")
