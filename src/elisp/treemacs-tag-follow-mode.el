@@ -87,7 +87,7 @@ or nesting depth."
            ;; in org mode buffers the first item may not be a cons since its position
            ;; is still stored as a text property
            (semantic? (and (consp first) (overlayp (cdr first))))
-           (compare-func (if (memq major-mode '(markdown-mode adoc-mode))
+           (compare-func (if (derived-mode-p '(markdown-mode adoc-mode))
                              #'treemacs--compare-markdown-tag-paths
                            #'treemacs--compare-tag-paths)))
       (cond
