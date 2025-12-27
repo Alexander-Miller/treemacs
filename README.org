@@ -569,7 +569,7 @@ discoverability.
 
 * Configuration
 ** Variables
-Treemacs offers the following configuration options (~describe-variable~ will usually offers more details):
+Treemacs offers the following configuration options (~describe-variable~ will usually offer more details):
 
 | Variable                                 | Default                                          | Description                                                                                                                                                                                                                          |
 |------------------------------------------+--------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
