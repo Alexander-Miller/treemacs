@@ -101,6 +101,25 @@ DEFAULT: Face"
        ("R" 'treemacs-git-renamed-face)
        (_   ,default)))))
 
+(defun treemacs--git-directory-face-mode-arg ()
+  "Compute the Python argument string for directory face mode.
+Returns \"modified\" when `treemacs-git-directory-face-mode' is \\='modified,
+otherwise a comma-separated severity string like \"U,M,?,A,R\"."
+  (if (eq treemacs-git-directory-face-mode 'modified)
+      "modified"
+    (let ((symbol-to-status '((conflict  . "U")
+                              (modified  . "M")
+                              (untracked . "?")
+                              (added     . "A")
+                              (renamed   . "R"))))
+      (if (null treemacs-git-directory-face-severity-list)
+          "modified"
+        (mapconcat (lambda (sym)
+                     (or (cdr (assq sym symbol-to-status))
+                         (error "Unknown severity symbol: %s" sym)))
+                   treemacs-git-directory-face-severity-list
+                   ",")))))
+
 (defvar treemacs--git-mode nil
   "Saves the specific version of git-mode that is active.
 Values are either `simple', `extended', `deferred' or nil.")
@@ -159,6 +178,7 @@ Real implementation will be `fset' based on `treemacs-git-mode' value."
                       ,git-root
                       ,(number-to-string treemacs-max-git-entries)
                       ,treemacs-git-command-pipe
+                      ,(treemacs--git-directory-face-mode-arg)
                       ,@open-dirs))
            (future (apply #'pfuture-new command)))
       future)))
@@ -187,7 +207,12 @@ GIT-FUTURE: Pfuture"
           (when (= 0 (process-exit-status git-future))
             (-let [parsed-output (read git-output)]
               (if (hash-table-p parsed-output)
-                  parsed-output
+                  (progn
+                    (when (functionp treemacs-git-directory-face-mode)
+                      (let ((result (funcall treemacs-git-directory-face-mode parsed-output)))
+                        (when (hash-table-p result)
+                          (setf parsed-output result))))
+                    parsed-output)
                 (let ((inhibit-message t))
                   (treemacs-log-err "treemacs-git-status.py output: %s" git-output))
                 (treemacs-log-err "treemacs-git-status.py did not output a valid hash table. See full output in *Messages*.")

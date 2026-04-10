@@ -9,7 +9,9 @@ import sys
 #    the actual working directory is set in emacs
 # 2) `treemacs-max-git-entries`
 # 3) `treemacs-git-command-pipe`
-# 4) a list of expanded directories the script may recurse into to collect
+# 4) directory face mode - either "modified" or a comma-separated severity
+#    hierarchy like "U,M,?,A,R" (see `treemacs-git-directory-face-mode')
+# 5) a list of expanded directories the script may recurse into to collect
 #    an entry for every untracked/ignored file inside
 #    this list is turned into a set since it is possible that it contains duplicates
 #    when called for magit, see also `treemacs-magit--extended-git-mode-update`
@@ -18,8 +20,14 @@ GIT_BIN      = sys.argv[1]
 GIT_ROOT     = str.encode(sys.argv[2])
 LIMIT        = int(sys.argv[3])
 GIT_CMD      = "{} status --porcelain --ignored=matching . ".format(GIT_BIN) + sys.argv[4]
+DIR_MODE     = sys.argv[5] if len(sys.argv) > 5 else "modified"
 STDOUT       = sys.stdout.buffer
-RECURSE_DIRS = set([str.encode(it[(len(GIT_ROOT)):]) + b"/" for it in sys.argv[5:]]) if len(sys.argv) > 5 else []
+RECURSE_DIRS = set([str.encode(it[(len(GIT_ROOT)):]) + b"/" for it in sys.argv[6:]]) if len(sys.argv) > 6 else []
+
+if DIR_MODE == "modified":
+    SEVERITY_ORDER = None
+else:
+    SEVERITY_ORDER = [s.encode() for s in DIR_MODE.split(",")]
 QUOTE        = b'"'
 output       = []
 ht_size      = 0
@@ -40,6 +48,13 @@ def face_for_status(status):
     else:
         return b"font-lock-keyword-face"
 
+def resolve_dir_face(statuses):
+    """Resolve a directory's face from its children's statuses using the severity hierarchy."""
+    for status in SEVERITY_ORDER:
+        if status in statuses:
+            return face_for_status(status)
+    return b"treemacs-git-modified-face"
+
 def find_recursive_entries(path, state):
     global output, ht_size
     for item in listdir(path):
@@ -58,6 +73,7 @@ def main():
     environ["GIT_OPTIONAL_LOCKS"] = "0"
     proc = Popen(GIT_CMD, shell=True, stdout=PIPE, bufsize=100)
     dirs_added = {}
+    dirs_statuses = {} if SEVERITY_ORDER is not None else None
 
     for item in proc.stdout:
         # remove final newline
@@ -101,9 +117,17 @@ def main():
                 full_dirname = join(GIT_ROOT, dirname.lstrip())
                 # directories should not be printed more than once, which would happen if
                 # e.g. both /A/B/C/x and /A/B/C/y have changes
-                if full_dirname not in dirs_added:
-                    output.append(QUOTE + full_dirname.replace(b'"', b'\\"') + QUOTE + b"treemacs-git-modified-face")
-                    ht_size += 1
+                if SEVERITY_ORDER is None:
+                    # modified mode: existing behavior
+                    if full_dirname not in dirs_added:
+                        output.append(QUOTE + full_dirname.replace(b'"', b'\\"') + QUOTE + b"treemacs-git-modified-face")
+                        ht_size += 1
+                        dirs_added[full_dirname] = True
+                else:
+                    # severity mode: collect statuses, defer output
+                    if full_dirname not in dirs_statuses:
+                        dirs_statuses[full_dirname] = set()
+                    dirs_statuses[full_dirname].add(state)
                     dirs_added[full_dirname] = True
         # for untracked and ignored directories we need to find an entry for every single file
         # they contain
@@ -113,6 +137,13 @@ def main():
                 find_recursive_entries(abs_path, state)
         if ht_size >= LIMIT:
             break
+
+    # second pass: emit deferred directory entries for severity mode
+    if dirs_statuses is not None:
+        for full_dirname, statuses in dirs_statuses.items():
+            output.append(QUOTE + full_dirname.replace(b'"', b'\\"') + QUOTE + resolve_dir_face(statuses))
+            ht_size += 1
+
     STDOUT.write(
         b"#s(hash-table size " + \
         bytes(str(ht_size), 'utf-8') + \

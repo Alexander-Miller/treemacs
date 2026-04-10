@@ -839,6 +839,45 @@ output to a manageable volume for treemacs."
   :type 'string
   :group 'treemacs-git)
 
+(defcustom treemacs-git-directory-face-mode 'modified
+  "Determines how git faces are assigned to parent directories.
+
+In extended and deferred git-mode, when a file has a git status, all of its
+ancestor directories are also assigned a git face.  This variable controls how
+that face is determined.
+
+There are 3 options:
+ - `modified': directories always get `treemacs-git-modified-face' (the default,
+   preserving existing behavior).
+ - `severity': the face is determined by a severity hierarchy.  When all
+   children share the same status the directory inherits that status.  When
+   children have mixed statuses the highest-severity status wins.  The default
+   hierarchy (highest to lowest) is: conflict, modified, untracked, added,
+   renamed.  Customize with `treemacs-git-directory-face-severity-list'.
+ - A function: the function is called with the git-info hash table after the
+   Python script has been parsed.  It receives a hash table mapping absolute
+   file/directory paths to face symbols and should modify it in place or return
+   a new hash table.  The Python script uses `severity' logic as a baseline when
+   a function is specified."
+  :type '(choice (const :tag "Always modified (default)" modified)
+                 (const :tag "Severity-based" severity)
+                 (function :tag "Custom function"))
+  :group 'treemacs-git)
+
+(defcustom treemacs-git-directory-face-severity-list
+  '(conflict modified untracked added renamed)
+  "Severity hierarchy for directory git faces, from highest to lowest.
+
+Only relevant when `treemacs-git-directory-face-mode' is `severity' or a custom
+function.  Each element is a symbol corresponding to a git status.  The first
+element has the highest severity."
+  :type '(repeat (choice (const conflict)
+                         (const modified)
+                         (const untracked)
+                         (const added)
+                         (const renamed)))
+  :group 'treemacs-git)
+
 (defcustom treemacs-is-never-other-window nil
   "When non-nil treemacs will use the `no-other-window' parameter.
 

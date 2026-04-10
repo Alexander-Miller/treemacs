@@ -101,6 +101,7 @@ current git status and just go through the lines as they are right now."
                         ,magit-root
                         ,(number-to-string treemacs-max-git-entries)
                         ,treemacs-git-command-pipe
+                        ,(treemacs--git-directory-face-mode-arg)
                         ,@visible-dirs)
       :directory magit-root
       :on-success
@@ -112,6 +113,10 @@ current git status and just go through the lines as they are right now."
   "Run the update as a pfuture callback.
 Will update nodes under MAGIT-ROOT with output in PFUTURE-BUFFER."
   (let ((ht (read (pfuture-output-from-buffer pfuture-buffer))))
+    (when (and (hash-table-p ht) (functionp treemacs-git-directory-face-mode))
+      (let ((result (funcall treemacs-git-directory-face-mode ht)))
+        (when (hash-table-p result)
+          (setf ht result))))
     (treemacs-run-in-every-buffer
      (let ((dom-node (or (treemacs-find-in-dom magit-root)
                          (when-let* ((project
