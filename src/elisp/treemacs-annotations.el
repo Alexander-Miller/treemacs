@@ -237,7 +237,7 @@ GIT-FUTURE: Pfuture"
       (save-excursion
         (treemacs-with-writable-buffer
          (let* ((depth (1+ (treemacs-button-get btn :depth)))
-                (git-info (or (ht-get treemacs--git-cache (treemacs-button-get btn :key))
+                (git-info (or (ht-get treemacs--git-cache path)
                               treemacs--empty-table)))
            ;; the depth check ensures that we only iterate over the nodes that
            ;; are below parent-btn and stop when we've moved on to nodes that
