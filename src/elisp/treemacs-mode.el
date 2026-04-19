@@ -22,6 +22,7 @@
 ;;; Code:
 
 (require 'eldoc)
+(require 'dnd)
 (require 's)
 (require 'treemacs-interface)
 (require 'treemacs-customization)
@@ -209,6 +210,76 @@ Will be set by `treemacs--post-command'.")
       (define-key map [C-i] 'treemacs-TAB-action))
     map)
   "Keymap for `treemacs-mode'.")
+
+(defun treemacs--dnd-open-files-normally (uris action)
+  "Open dropped URIS using Emacs' default drag-and-drop file behavior.
+ACTION is the action supplied by `dnd-handle-multiple-urls'."
+  (dolist (uri uris)
+    (if (dnd-get-local-file-name uri t)
+        (dnd-open-local-file uri action)
+      (dnd-open-file uri action)))
+  'private)
+
+(defun treemacs--dnd-project-at-point ()
+  "Return the treemacs project at point during a drop, or nil."
+  (when (derived-mode-p 'treemacs-mode)
+    (ignore-errors (treemacs-project-at-point))))
+
+(defun treemacs--dnd-copy-prompt (files project)
+  "Return the prompt for copying FILES into PROJECT."
+  (format "Copy %d dropped file%s into project %s? "
+          (length files)
+          (if (= 1 (length files)) "" "s")
+          (propertize (treemacs-project->name project)
+                      'face 'font-lock-string-face)))
+
+(defun treemacs--dnd-copy-file-to-project (file project-path)
+  "Copy FILE into PROJECT-PATH and return the copy's path."
+  (let ((target (treemacs--find-repeated-file-name
+                 (treemacs-join-path project-path (treemacs--filename file)))))
+    (treemacs--without-filewatch
+     (if (file-directory-p file)
+         (copy-directory file target)
+       (copy-file file target)))
+    (run-hook-with-args 'treemacs-copy-file-functions file target)
+    target))
+
+(defun treemacs--dnd-copy-files-to-project (files project)
+  "Copy FILES into PROJECT and return the copied file paths."
+  (let ((project-path (treemacs-project->path project)))
+    (--map (treemacs--dnd-copy-file-to-project it project-path) files)))
+
+;;;###autoload
+(defun treemacs-dnd-copy-local-files-to-project (uris action)
+  "Ask whether local file URIS should be copied into the project at point.
+ACTION is the action supplied by `dnd-handle-multiple-urls'.
+
+The custom behavior only applies in `treemacs-mode' buffers.  Outside treemacs,
+or when the user declines the prompt, fall back to Emacs' normal file drop
+behavior."
+  (let ((files (--map (dnd-get-local-file-name it t) uris))
+        (project (treemacs--dnd-project-at-point)))
+    (if (and treemacs-copy-files-by-external-drag-and-drop
+             project
+             (-all? #'identity files)
+             (y-or-n-p (treemacs--dnd-copy-prompt files project)))
+        (let* ((project-path (treemacs-project->path project))
+               (copied-files (treemacs--dnd-copy-files-to-project files project)))
+          (treemacs-update-node project-path)
+          (-when-let (first-copy (car copied-files))
+            (treemacs-goto-file-node first-copy project))
+          (treemacs-pulse-on-success
+           "Copied %s file%s into %s"
+           (length copied-files)
+           (if (= 1 (length copied-files)) "" "s")
+           (propertize (treemacs-project->name project)
+                       'face 'font-lock-string-face))
+          'copy)
+      (treemacs--dnd-open-files-normally uris action))))
+
+(put 'treemacs-dnd-copy-local-files-to-project 'dnd-multiple-handler t)
+(add-to-list 'dnd-protocol-alist
+             '("^file:" . treemacs-dnd-copy-local-files-to-project))
 
 (defun treemacs--setup-mode-line ()
   "Create either a simple modeline, or integrate into spaceline."

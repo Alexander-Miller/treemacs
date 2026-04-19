@@ -1520,6 +1520,64 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
     (expect (treemacs--find-repeated-file-name "/d/file")
             :to-equal "/d/file (Copy 5)")))
 
+(describe "treemacs drag-and-drop copying"
+
+  (it "Copies a dropped file into the project at point"
+    (let* ((project-root (make-temp-file "TREEMACS-PROJECT" t))
+           (source (make-temp-file "TREEMACS-SOURCE"))
+           (project (treemacs-project->create!
+                     :name "P"
+                     :path project-root
+                     :path-status 'local-readable))
+           (uri (concat "file:" source)))
+      (unwind-protect
+          (with-temp-buffer
+            (setq major-mode 'treemacs-mode)
+            (spy-on #'treemacs--dnd-project-at-point :and-return-value project)
+            (spy-on #'y-or-n-p :and-return-value t)
+            (spy-on #'treemacs-update-node :and-return-value nil)
+            (spy-on #'treemacs-find-file-node :and-return-value nil)
+            (spy-on #'treemacs-goto-file-node :and-return-value nil)
+            (spy-on #'treemacs-pulse-on-success :and-return-value nil)
+            (expect (treemacs-dnd-copy-local-files-to-project (list uri) 'copy)
+                    :to-be 'copy)
+            (expect (file-exists-p
+                     (expand-file-name (file-name-nondirectory source)
+                                       project-root))
+                    :to-be-truthy))
+        (when (file-exists-p source)
+          (delete-file source))
+        (when (file-exists-p project-root)
+          (delete-directory project-root t)))))
+
+  (it "Finds an unused name when a dropped file already exists"
+    (let* ((project-root (make-temp-file "TREEMACS-PROJECT" t))
+           (source (make-temp-file "TREEMACS-SOURCE"))
+           (target (expand-file-name (file-name-nondirectory source)
+                                     project-root)))
+      (unwind-protect
+          (progn
+            (write-region "old" nil target)
+            (write-region "new" nil source)
+            (let ((copy-target (treemacs--find-repeated-file-name target)))
+              (expect (treemacs--dnd-copy-file-to-project source project-root)
+                      :to-equal copy-target)
+              (expect (file-exists-p copy-target) :to-be-truthy)))
+        (when (file-exists-p source)
+          (delete-file source))
+        (when (file-exists-p project-root)
+          (delete-directory project-root t)))))
+
+  (it "Falls back to normal file drops outside treemacs buffers"
+    (with-temp-buffer
+      (setq major-mode 'fundamental-mode)
+      (spy-on #'treemacs--dnd-open-files-normally :and-return-value 'private)
+      (spy-on #'y-or-n-p :and-return-value t)
+      (expect (treemacs-dnd-copy-local-files-to-project '("file:/tmp/a") 'copy)
+              :to-be 'private)
+      (expect #'treemacs--dnd-open-files-normally :to-have-been-called)
+      (expect #'y-or-n-p :not :to-have-been-called))))
+
 (describe "treemacs--tokenize-path"
 
   (it "Throws when path is nil"

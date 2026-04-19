@@ -795,6 +795,14 @@ followed."
   :group 'treemacs-mouse
   :type 'boolean)
 
+(defcustom treemacs-copy-files-by-external-drag-and-drop t
+  "When non-nil treemacs will offer to copy externally dropped files.
+
+This applies to files dragged from another program and dropped into a treemacs
+buffer.  The dropped files are copied into the project at point."
+  :group 'treemacs-mouse
+  :type 'boolean)
+
 (defcustom treemacs-deferred-git-apply-delay 0.5
   "Delay in seconds of idle time before git fontification is applied.
 This is only relevant when using the deferred variant of git-mode."

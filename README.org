@@ -237,6 +237,9 @@ A right click popup-menu is also available:
 
 You can move and open files by dragging them with the mouse.
 
+Files dragged from another program into a treemacs buffer can also be copied into the project at point after
+confirmation.  This is controlled by ~treemacs-copy-files-by-external-drag-and-drop~.
+
 ** Follow-mode
 ~treemacs-follow-mode~ is a global minor mode which allows the treemacs view to always move its focus to the currently
 selected file. This mode runs on an idle timer - the exact duration of inactivity (in seconds) before a move is called
@@ -645,6 +648,7 @@ Treemacs offers the following configuration options (~describe-variable~ will us
 | treemacs-hide-dot-jj-directory           | t                                                | Indicates whether ~.jj~ directories should always be hidden.                                                                                                                                                                         |
 | treemacs-project-follow-into-home        | nil                                              | Indicates whether ~treemacs-project-follow-mode~ can follow into the $HOME directory.                                                                                                                                                |
 | treemacs-move-files-by-mouse-dragging    | t                                                | When non-nil treemacs will move files by dragging with your mouse inside treemacs.                                                                                                                                                   |
+| treemacs-copy-files-by-external-drag-and-drop | t                                         | When non-nil treemacs will offer to copy files dropped from another program into the project at point.                                                                                                                               |
 | treemacs-buffer-name-function            | #'treemacs-default-buffer-name                   | Determines the names of treemacs buffers.                                                                                                                                                                                            |
 | treemacs-file-follow-ignore-functions    | nil                                              | Functions to determine which files shold not be followed.                                                                                                                                                                            |
 | treemacs-buffer-name-prefix              | " *Treemacs-Buffer-"                             | Static prefix for all treemacs buffer names.                                                                                                                                                                                       |
