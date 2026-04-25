@@ -44,6 +44,7 @@ ELS += $(SRC_DIR)/treemacs-scope.el
 ELS += $(SRC_DIR)/treemacs-tag-follow-mode.el
 ELS += $(SRC_DIR)/treemacs-tags.el
 ELS += $(SRC_DIR)/treemacs-themes.el
+ELS += $(SRC_DIR)/treemacs-unfocused-hl-line-mode.el
 ELS += $(SRC_DIR)/treemacs-visuals.el
 ELS += $(SRC_DIR)/treemacs-treelib.el
 ELS += $(SRC_DIR)/treemacs-workspaces.el

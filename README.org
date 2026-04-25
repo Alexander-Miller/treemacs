@@ -23,6 +23,7 @@
    - [[#follow-mode][Follow-mode]]
    - [[#tag-follow-mode][Tag-follow-mode]]
    - [[#fringe-indicator-mode][Fringe-indicator-mode]]
+   - [[#unfocused-hl-line-mode][Unfocused-hl-line-mode]]
    - [[#git-mode][Git-mode]]
    - [[#filewatch-mode][Filewatch-mode]]
    - [[#file-management][File Management]]
@@ -260,6 +261,21 @@ cursor.  It can make the selected line more visible if ~hl-line-mode~ doesn't st
 
 The indicator can either be permanently visible, or be only shown when the treemacs window is selected by calling it
 either with the ~always~ or ~only-when-focused~ argument.
+** Unfocused-hl-line-mode
+~treemacs-unfocused-hl-line-mode~ is a global minor mode that swaps the selected-line highlight in treemacs buffers to
+~treemacs-hl-line-unfocused-face~ whenever the treemacs window is not the selected window, and restores
+~treemacs-hl-line-face~ when it regains focus.  Useful in IDE-style layouts, where a dimmer cursor-line in the sidebar
+makes it obvious which side has keyboard focus without losing the indicator of which file the cursor is on.
+
+The default ~treemacs-hl-line-unfocused-face~ inherits from ~treemacs-hl-line-face~, so the appearance is unchanged until
+you customise it.  For example:
+
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'treemacs-hl-line-unfocused-face nil
+                      :background "gray25" :extend t :inherit nil)
+#+END_SRC
+
+Requires ~window-selection-change-functions~, available since Emacs 27.1.
 ** Git-mode
 ~treemacs-git-mode~ is a global minor mode which enables treemacs to check for files' and directories' git status
 information and highlight them accordingly (see also the ~treemacs-git-...~ faces). The mode is available in 3 variants:
@@ -674,6 +690,7 @@ Treemacs defines and uses the following faces:
 | treemacs-git-commit-diff-face          | font-lock-comment-face                           | Face used for ~treemacs-indicate-top-scroll-mode~ annotations.               |
 | treemacs-window-background-face        | default                                          | Face used for the background of the treemacs window.                         |
 | treemacs-hl-line-face                  | hl-line                                          | Face used for hl-line overlay inside the treemacs buffer.                    |
+| treemacs-hl-line-unfocused-face        | treemacs-hl-line-face                            | Face used for hl-line when the treemacs window is not the selected window, while ~treemacs-unfocused-hl-line-mode~ is active. |
 
 ** Evil compatibility
 To make treemacs get along with evil-mode you need to install and load ~treemacs-evil~. It does not define any functions

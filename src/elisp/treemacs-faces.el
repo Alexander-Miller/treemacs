@@ -46,6 +46,14 @@ variant), so it will only be used if git-mode is disabled or set to simple."
   "Face used for the hl-line selection in the treemacs window."
   :group 'treemacs-faces)
 
+(defface treemacs-hl-line-unfocused-face
+  '((t :inherit treemacs-hl-line-face))
+  "Face used for the hl-line selection when the treemacs window is unfocused.
+Only takes effect while `treemacs-unfocused-hl-line-mode' is active.
+Defaults to inheriting from `treemacs-hl-line-face' so the appearance is
+unchanged until the user customises it."
+  :group 'treemacs-faces)
+
 (defface treemacs-file-face
   '((t :inherit default))
   "Face used by treemacs for files."
