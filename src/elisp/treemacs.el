@@ -46,6 +46,7 @@
 (require 'treemacs-compatibility)
 (require 'treemacs-workspaces)
 (require 'treemacs-fringe-indicator)
+(require 'treemacs-arrow-keys-mode)
 (require 'treemacs-header-line)
 (require 'treemacs-annotations)
 

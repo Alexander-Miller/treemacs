@@ -77,6 +77,7 @@ Will be set by `treemacs--post-command'.")
                    treemacs-previous-project
                    treemacs-goto-parent-node
                    treemacs-TAB-action
+                   treemacs-RIGHT-action
                    treemacs-select-window
                    treemacs-leftclick-action))
       (set (intern (symbol-name cmd) ob) t))
@@ -132,6 +133,7 @@ Will be set by `treemacs--post-command'.")
     (define-key map (kbd "n")        'treemacs-indent-guide-mode)
     (define-key map (kbd "c")        'treemacs-indicate-top-scroll-mode)
     (define-key map (kbd "d")        'treemacs-git-commit-diff-mode)
+    (define-key map (kbd "k")        'treemacs-arrow-keys-mode)
     map)
   "Keymap for commands that toggle state in `treemacs-mode'.")
 

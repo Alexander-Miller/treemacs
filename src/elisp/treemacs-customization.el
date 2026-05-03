@@ -315,6 +315,23 @@ of how this config works and how to modify it."
   :type '(alist :key-type symbol :value-type treemacs-collapse-action)
   :group 'treemacs)
 
+(defcustom treemacs-RIGHT-actions-config
+  '((root-node-open   . ignore)
+    (root-node-closed . treemacs-toggle-node)
+    (dir-node-open    . ignore)
+    (dir-node-closed  . treemacs-toggle-node)
+    (file-node-open   . ignore)
+    (file-node-closed . treemacs-toggle-node)
+    (tag-node-open    . ignore)
+    (tag-node-closed  . treemacs-toggle-node)
+    (tag-node         . ignore))
+  "Defines the behaviour of `treemacs-RIGHT-action'.
+
+See the doc string of `treemacs-RET-actions-config' for a detailed description
+of how this config works and how to modify it."
+  :type '(alist :key-type symbol :value-type function)
+  :group 'treemacs)
+
 (defcustom treemacs-dotfiles-regex (rx bol "." (1+ any))
   "Files matching this regular expression count as dotfiles.
 This controls the matching behaviour of `treemacs-toggle-show-dotfiles'."

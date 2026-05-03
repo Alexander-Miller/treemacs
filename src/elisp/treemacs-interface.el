@@ -391,6 +391,33 @@ ACTION should be one of the `treemacs-visit-node-*' commands."
   (setf treemacs-COLLAPSE-actions-config (assq-delete-all state treemacs-COLLAPSE-actions-config))
   (push (cons state action) treemacs-COLLAPSE-actions-config))
 
+(defun treemacs-RIGHT-action (&optional arg)
+  "Run the appropriate RIGHT action for the current button.
+
+In the default configuration this expands closed nodes and does nothing for
+open or leaf nodes.  A potential prefix ARG is passed on to the executed action,
+if possible.
+
+This function's exact configuration is stored in
+`treemacs-RIGHT-actions-config'."
+  (interactive "P")
+  (-when-let (state (treemacs--prop-at-point :state))
+    (--if-let (cdr (assq state treemacs-RIGHT-actions-config))
+      (progn
+        (funcall it arg)
+        (treemacs--evade-image))
+      (treemacs-pulse-on-failure "No RIGHT action defined for node of type %s."
+        (propertize (format "%s" state) 'face 'font-lock-type-face)))))
+
+(defun treemacs-define-RIGHT-action (state action)
+  "Define the behaviour of `treemacs-RIGHT-action'.
+Determines that a button with a given STATE should lead to the execution of
+ACTION.
+The list of possible states can be found in `treemacs-valid-button-states'.
+ACTION should be one of the `treemacs-visit-node-*' commands."
+  (setf treemacs-RIGHT-actions-config (assq-delete-all state treemacs-RIGHT-actions-config))
+  (push (cons state action) treemacs-RIGHT-actions-config))
+
 (defun treemacs-visit-node-in-external-application ()
   "Open current file according to its mime type in an external application.
 Treemacs knows how to open files on linux, windows and macos."
