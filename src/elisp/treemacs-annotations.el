@@ -39,6 +39,11 @@
 
 (defconst treemacs--annotation-store (make-hash-table :size 200 :test 'equal))
 
+(defvar treemacs--after-annotation-applied nil
+  "Optional function called after an annotation is applied to a node.
+Called with BTN and GIT-FACE as arguments.  Used by
+`treemacs-git-status-indicator-mode' to place margin indicators.")
+
 ;; TODO(2022/02/23): clear on file delete
 
 (cl-defstruct (treemacs-annotation
@@ -309,7 +314,11 @@ GIT-FACE is taken from the latest git cache, or nil if it's not known."
               new-face-value))
 
            ;; Suffix
-           (when suffix-value (insert suffix-value))))))))
+           (when suffix-value (insert suffix-value))))
+
+       ;; Post-annotation hook (used by git-status-indicator-mode)
+       (when treemacs--after-annotation-applied
+         (funcall treemacs--after-annotation-applied ,btn ,git-face))))))
 
 (defun treemacs-apply-single-annotation (path)
   "Apply annotations for a single node at given PATH in all treemacs buffers."
