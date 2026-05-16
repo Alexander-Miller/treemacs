@@ -11,6 +11,10 @@
     the window picked by ~next-window~ was a side or dedicated window.  The fallback now skips
     side and dedicated windows so the file is opened in the window the docstring promises -
     "the window next to treemacs".
+*** Fixed ~treemacs-visit-node-no-split~ (and the split variants) opening the leftmost window
+    instead of the one spatially adjacent to treemacs when treemacs sat on the right of a
+    multi-window frame.  The fallback now uses ~window-in-direction~ to pick the window next
+    to treemacs.
 ** v3.1
 - Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
   ~treemacs-hl-line-face~

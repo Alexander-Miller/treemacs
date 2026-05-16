@@ -449,6 +449,21 @@ the immediate next window if every candidate is a side/dedicated window."
         (when (eq candidate from)
           (throw 'found first-next))))))
 
+(defun treemacs--window-next-to-treemacs (from)
+  "Find the window spatially adjacent to FROM (the treemacs window).
+Uses `window-in-direction' to pick the window immediately next to
+treemacs, based on `treemacs-position' (the opposite direction is
+where the rest of the frame lives).  Skips side and dedicated windows.
+Falls back to `treemacs--next-non-side-window' when no suitable
+adjacent window exists."
+  (let* ((direction (if (eq treemacs-position 'right) 'left 'right))
+         (adjacent (window-in-direction direction from)))
+    (if (and adjacent
+             (not (window-parameter adjacent 'window-side))
+             (not (window-dedicated-p adjacent)))
+        adjacent
+      (treemacs--next-non-side-window from))))
+
 (define-inline treemacs--next-neighbour-of (btn)
   "Get the next same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
