@@ -32,6 +32,7 @@
   (require 'gv))
 
 (declare-function treemacs--scope-store "treemacs-scope")
+(declare-function treemacs--window-next-to-treemacs "treemacs-core-utils")
 
 (defmacro treemacs-import-functions-from (file &rest functions)
   "Import FILE's FUNCTIONS.
@@ -223,7 +224,7 @@ WINDOW-ARG determines whether the treemacs windows should remain selected,
                     `((when (one-window-p)
                         (save-selected-window
                           (split-window nil nil (if (eq 'left treemacs-position) 'right 'left))))))
-              (select-window (or ,window (next-window (selected-window) nil nil)))
+              (select-window (or ,window (treemacs--window-next-to-treemacs (selected-window))))
               ,@(if split-function
                     `((funcall ,split-function)
                       (other-window 1)))

@@ -197,7 +197,7 @@ ARG is optional and only available so this function can be used as an action."
       (treemacs-pulse-on-failure)))
 
 (defun treemacs-visit-node-vertical-split (&optional arg)
-  "Open current file or tag by vertically splitting `next-window'.
+  "Open current file or tag by vertically splitting the window next to treemacs.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
@@ -213,7 +213,7 @@ treemacs window with a double prefix argument."
     :no-match-explanation "Node is neither a file, a directory or a tag - nothing to do here.")))
 
 (defun treemacs-visit-node-horizontal-split (&optional arg)
-  "Open current file or tag by horizontally splitting `next-window'.
+  "Open current file or tag by horizontally splitting the window next to treemacs.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")
@@ -237,9 +237,9 @@ arg."
 
 (defun treemacs-visit-node-no-split (&optional arg)
   "Open current node without performing any window split or window selection.
-The node will be displayed in the window next to treemacs, the exact selection
-is determined by `next-window'.  If the node is already opened in some other
-window then that window will be selected instead.
+The node will be displayed in the window next to treemacs, skipping side and
+dedicated windows.  If the node is already opened in some other window then
+that window will be selected instead.
 Stay in the current window with a single prefix argument ARG, or close the
 treemacs window with a double prefix argument."
   (interactive "P")

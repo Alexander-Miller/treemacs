@@ -434,6 +434,46 @@ extensions and special names like this."
   (inline-quote
    (->> ,window (window-buffer) (buffer-name) (s-starts-with? treemacs-buffer-name-prefix))))
 
+(defun treemacs--window-next-to-treemacs (from)
+  "Find a sensible window next to FROM (the treemacs window).
+
+First tries `window-in-direction' in the direction *away* from treemacs
+(`left' when `treemacs-position' is `right', `right' when it is `left')
+to pick the window spatially adjacent to treemacs.  If that returns a
+window that is not a side window and not dedicated, returns it.
+
+Otherwise cycles through the frame in the same direction skipping side
+and dedicated windows: `previous-window' when walking left,
+`next-window' when walking right.  Falls back to the immediate cyclic
+neighbor if every candidate is unsuitable, so behavior is never worse
+than the prior raw `next-window' fallback.
+
+This implements the docstring contract of `treemacs-visit-node-no-split'
+- \"the window next to treemacs\" - even when treemacs sits to the right
+of multiple windows (where `next-window' wraps to the leftmost rather
+than the adjacent one) and even when a side or strongly-dedicated window
+sits between treemacs and the main editor (where `find-file' would
+otherwise fall back to `display-buffer' and split a different window)."
+  (let* ((direction (if (eq treemacs-position 'right) 'left 'right))
+         (step (if (eq direction 'left) #'previous-window #'next-window))
+         (adjacent (window-in-direction direction from)))
+    (cond
+     ((and adjacent
+           (not (window-parameter adjacent 'window-side))
+           (not (window-dedicated-p adjacent)))
+      adjacent)
+     (t
+      (let* ((first-next (funcall step from nil nil))
+             (candidate first-next))
+        (catch 'found
+          (while t
+            (unless (or (window-parameter candidate 'window-side)
+                        (window-dedicated-p candidate))
+              (throw 'found candidate))
+            (setq candidate (funcall step candidate nil nil))
+            (when (eq candidate from)
+              (throw 'found first-next)))))))))
+
 (define-inline treemacs--next-neighbour-of (btn)
   "Get the next same-level neighbour of BTN, if any."
   (declare (side-effect-free t))

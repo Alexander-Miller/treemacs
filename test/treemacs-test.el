@@ -2088,6 +2088,133 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
     (expect (treemacs--prefix-arg-to-recurse-depth "a") :to-be 999)
     (expect (treemacs--prefix-arg-to-recurse-depth (treemacs-project->create!)) :to-be 999)))
 
+(describe "treemacs--window-next-to-treemacs"
+
+  ;; Each spec builds an ephemeral layout in the current frame and tears it
+  ;; down afterwards, so the helper is exercised against real window objects.
+
+  (describe "spatial-adjacent path"
+
+    (it "picks the adjacent window when treemacs is on the right of multiple normal windows"
+      (let* ((a-buf (get-buffer-create " *t-a*"))
+             (b-buf (get-buffer-create " *t-b*"))
+             (tm-buf (get-buffer-create " *t-tm*"))
+             (a-win (selected-window))
+             b-win tm-win)
+        (unwind-protect
+            (let ((treemacs-position 'right))
+              (set-window-buffer a-win a-buf)
+              (setq b-win (split-window-right))
+              (set-window-buffer b-win b-buf)
+              (setq tm-win (split-window b-win nil 'right))
+              (set-window-buffer tm-win tm-buf)
+              ;; Layout L->R: A | B | treemacs.  next-window from treemacs
+              ;; would wrap to A; the helper should pick the adjacent B.
+              (expect (treemacs--window-next-to-treemacs tm-win) :to-be b-win))
+          (when (window-live-p tm-win) (delete-window tm-win))
+          (when (window-live-p b-win) (delete-window b-win)))))
+
+    (it "picks the adjacent window when treemacs is on the left of multiple normal windows"
+      (let* ((tm-buf (get-buffer-create " *t2-tm*"))
+             (b-buf (get-buffer-create " *t2-b*"))
+             (c-buf (get-buffer-create " *t2-c*"))
+             (tm-win (selected-window))
+             b-win c-win)
+        (unwind-protect
+            (let ((treemacs-position 'left))
+              (set-window-buffer tm-win tm-buf)
+              (setq b-win (split-window-right))
+              (set-window-buffer b-win b-buf)
+              (setq c-win (split-window b-win nil 'right))
+              (set-window-buffer c-win c-buf)
+              ;; Layout L->R: treemacs | B | C.  B is the adjacent window.
+              (expect (treemacs--window-next-to-treemacs tm-win) :to-be b-win))
+          (when (window-live-p c-win) (delete-window c-win))
+          (when (window-live-p b-win) (delete-window b-win)))))
+
+    (it "skips a dedicated adjacent window and falls back to a cycle"
+      (let* ((main-buf (get-buffer-create " *t3-main*"))
+             (left-buf (get-buffer-create " *t3-left*"))
+             (right-buf (get-buffer-create " *t3-right*"))
+             (main-win (selected-window))
+             left-win right-win)
+        (unwind-protect
+            (let ((treemacs-position 'right))
+              (set-window-buffer main-win main-buf)
+              (setq left-win (display-buffer-in-side-window
+                              left-buf '((side . left) (slot . 0))))
+              (setq right-win (display-buffer-in-side-window
+                               right-buf '((side . right) (slot . 0))))
+              (set-window-dedicated-p left-win t)
+              ;; treemacs analogue is right-win; the immediate left in this
+              ;; layout is main, which is reachable via the fallback cycle.
+              (expect (treemacs--window-next-to-treemacs right-win)
+                      :to-be main-win))
+          (when (window-live-p left-win) (delete-window left-win))
+          (when (window-live-p right-win) (delete-window right-win))))))
+
+  (describe "bidirectional cycle path"
+
+    (it "cycles leftward when treemacs is on the right and the adjacent window is dedicated"
+      ;; Layout L->R: A | B(dedicated) | treemacs.  Adjacent (B) is dedicated.
+      ;; Cycling leftward via `previous-window' must skip B and land on A.
+      (let* ((a-buf (get-buffer-create " *c1-a*"))
+             (b-buf (get-buffer-create " *c1-b*"))
+             (tm-buf (get-buffer-create " *c1-tm*"))
+             (a-win (selected-window))
+             b-win tm-win)
+        (unwind-protect
+            (let ((treemacs-position 'right))
+              (set-window-buffer a-win a-buf)
+              (setq b-win (split-window-right))
+              (set-window-buffer b-win b-buf)
+              (setq tm-win (split-window b-win nil 'right))
+              (set-window-buffer tm-win tm-buf)
+              (set-window-dedicated-p b-win t)
+              (expect (treemacs--window-next-to-treemacs tm-win) :to-be a-win))
+          (when (window-live-p tm-win) (delete-window tm-win))
+          (when (window-live-p b-win)
+            (set-window-dedicated-p b-win nil)
+            (delete-window b-win)))))
+
+    (it "cycles rightward when treemacs is on the left and the adjacent window is dedicated"
+      ;; Layout L->R: treemacs | B(dedicated) | C.  Adjacent (B) is dedicated.
+      ;; Cycling rightward via `next-window' must skip B and land on C.
+      (let* ((tm-buf (get-buffer-create " *c2-tm*"))
+             (b-buf (get-buffer-create " *c2-b*"))
+             (c-buf (get-buffer-create " *c2-c*"))
+             (tm-win (selected-window))
+             b-win c-win)
+        (unwind-protect
+            (let ((treemacs-position 'left))
+              (set-window-buffer tm-win tm-buf)
+              (setq b-win (split-window-right))
+              (set-window-buffer b-win b-buf)
+              (setq c-win (split-window b-win nil 'right))
+              (set-window-buffer c-win c-buf)
+              (set-window-dedicated-p b-win t)
+              (expect (treemacs--window-next-to-treemacs tm-win) :to-be c-win))
+          (when (window-live-p c-win) (delete-window c-win))
+          (when (window-live-p b-win)
+            (set-window-dedicated-p b-win nil)
+            (delete-window b-win))))))
+
+  (describe "two-window fallback"
+
+    (it "returns the only other window when treemacs is one of two non-dedicated windows"
+      (let* ((main-buf (get-buffer-create " *tw-main*"))
+             (other-buf (get-buffer-create " *tw-other*"))
+             (main-win (selected-window))
+             other-win)
+        (unwind-protect
+            (let ((treemacs-position 'left))
+              (set-window-buffer main-win main-buf)
+              (setq other-win (split-window-right))
+              (set-window-buffer other-win other-buf)
+              (expect (treemacs--window-next-to-treemacs main-win)
+                      :to-be other-win))
+          (when (window-live-p other-win) (delete-window other-win)))))))
+
 (provide 'test-treemacs)
 
 ;;; treemacs-test.el ends here

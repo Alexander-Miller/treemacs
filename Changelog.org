@@ -7,6 +7,11 @@
 *** Added ~treemacs-file-follow-ignore-functions~
 *** Added ~treemacs-buffer-name-prefix~
 *** Added ~treemacs-hide-dot-jj-directory~
+*** Fixed ~treemacs-visit-node-no-split~ (and the split variants) opening the wrong window when
+    treemacs sits next to a side window, a strongly-dedicated window, or simply on the right of
+    multiple windows.  The fallback now uses ~window-in-direction~ to pick the window spatially
+    next to treemacs and, on miss, cycles in the matching direction skipping side and dedicated
+    windows.
 ** v3.1
 - Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
   ~treemacs-hl-line-face~
