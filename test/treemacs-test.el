@@ -2088,6 +2088,66 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
     (expect (treemacs--prefix-arg-to-recurse-depth "a") :to-be 999)
     (expect (treemacs--prefix-arg-to-recurse-depth (treemacs-project->create!)) :to-be 999)))
 
+(describe "treemacs--next-non-side-window"
+
+  ;; Each spec builds an ephemeral layout in the current frame and tears it down
+  ;; afterwards, so the helper is exercised against real window objects.
+
+  (it "skips dedicated side windows and lands on the main window"
+    (let* ((main-buf (get-buffer-create " *t-main*"))
+           (left-buf (get-buffer-create " *t-left*"))
+           (right-buf (get-buffer-create " *t-right*"))
+           (main-win (selected-window))
+           left-win right-win)
+      (unwind-protect
+          (progn
+            (set-window-buffer main-win main-buf)
+            (setq left-win (display-buffer-in-side-window
+                            left-buf '((side . left) (slot . 0))))
+            (setq right-win (display-buffer-in-side-window
+                             right-buf '((side . right) (slot . 0))))
+            (set-window-dedicated-p left-win t)
+            ;; Treemacs analogue lives in the right side window.
+            (expect (treemacs--next-non-side-window right-win)
+                    :to-be main-win))
+        (when (window-live-p left-win) (delete-window left-win))
+        (when (window-live-p right-win) (delete-window right-win)))))
+
+  (it "returns the only other window when no side or dedicated windows exist"
+    (let* ((main-buf (get-buffer-create " *t2-main*"))
+           (other-buf (get-buffer-create " *t2-other*"))
+           (main-win (selected-window))
+           other-win)
+      (unwind-protect
+          (progn
+            (set-window-buffer main-win main-buf)
+            (setq other-win (split-window-right))
+            (set-window-buffer other-win other-buf)
+            (expect (treemacs--next-non-side-window main-win)
+                    :to-be other-win))
+        (when (window-live-p other-win) (delete-window other-win)))))
+
+  (it "falls back to the immediate next window when every candidate is unsuitable"
+    (let* ((main-buf (get-buffer-create " *t3-main*"))
+           (left-buf (get-buffer-create " *t3-left*"))
+           (right-buf (get-buffer-create " *t3-right*"))
+           (main-win (selected-window))
+           left-win right-win)
+      (unwind-protect
+          (progn
+            (set-window-buffer main-win main-buf)
+            (setq left-win (display-buffer-in-side-window
+                            left-buf '((side . left) (slot . 0))))
+            (setq right-win (display-buffer-in-side-window
+                             right-buf '((side . right) (slot . 0))))
+            (set-window-dedicated-p left-win t)
+            (set-window-dedicated-p main-win t)
+            (expect (treemacs--next-non-side-window right-win)
+                    :to-be (next-window right-win nil nil)))
+        (set-window-dedicated-p main-win nil)
+        (when (window-live-p left-win) (delete-window left-win))
+        (when (window-live-p right-win) (delete-window right-win))))))
+
 (provide 'test-treemacs)
 
 ;;; treemacs-test.el ends here

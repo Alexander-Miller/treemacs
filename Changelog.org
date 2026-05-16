@@ -7,6 +7,10 @@
 *** Added ~treemacs-file-follow-ignore-functions~
 *** Added ~treemacs-buffer-name-prefix~
 *** Added ~treemacs-hide-dot-jj-directory~
+*** Fixed ~treemacs-visit-node-no-split~ (and the split variants) opening a new window when
+    the window picked by ~next-window~ was a side or dedicated window.  The fallback now skips
+    side and dedicated windows so the file is opened in the window the docstring promises -
+    "the window next to treemacs".
 ** v3.1
 - Deprecated ~treemacs-window-background-color~ in favour of ~treemacs-window-background-face~ and
   ~treemacs-hl-line-face~

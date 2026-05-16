@@ -434,6 +434,21 @@ extensions and special names like this."
   (inline-quote
    (->> ,window (window-buffer) (buffer-name) (s-starts-with? treemacs-buffer-name-prefix))))
 
+(defun treemacs--next-non-side-window (from)
+  "Find the next window after FROM that is not a side or dedicated window.
+Cycles through the frame's windows in `next-window' order.  Falls back to
+the immediate next window if every candidate is a side/dedicated window."
+  (let* ((first-next (next-window from nil nil))
+         (candidate first-next))
+    (catch 'found
+      (while t
+        (unless (or (window-parameter candidate 'window-side)
+                    (window-dedicated-p candidate))
+          (throw 'found candidate))
+        (setq candidate (next-window candidate nil nil))
+        (when (eq candidate from)
+          (throw 'found first-next))))))
+
 (define-inline treemacs--next-neighbour-of (btn)
   "Get the next same-level neighbour of BTN, if any."
   (declare (side-effect-free t))
