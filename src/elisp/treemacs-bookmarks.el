@@ -111,7 +111,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
       (cond
        ;; ${label} - Label of the current button
        ((string= pattern "label")
-        (treemacs--get-label-of btn))
+        (treemacs--get-logical-label-of btn))
 
        ;; ${label:1} - Label of Nth parent
        ((s-starts-with? "label:" pattern)
@@ -120,7 +120,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
           (dotimes (_ depth)
             (setq current-button (when current-button (treemacs-button-get current-button :parent))))
           (when current-button
-            (treemacs--get-label-of current-button))))
+            (treemacs--get-logical-label-of current-button))))
 
        ;; ${label-path} and ${label-path:4} - Path of labels, optionally limited by a number.
        ((or (string= pattern "label-path") (s-starts-with? "label-path:" pattern))
@@ -129,7 +129,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
               (current-button btn)
               (path))
           (while (and current-button (not (eq 0 depth)))
-            (push (treemacs--get-label-of current-button) path)
+            (push (treemacs--get-logical-label-of current-button) path)
             (when depth (cl-decf depth))
             (setq current-button (treemacs-button-get current-button :parent)))
           (s-join "/" path)))
@@ -141,7 +141,7 @@ With a prefix argument ARG treemacs will also open the bookmarked location."
         (let ((current-button btn))
           (while (> (treemacs-button-get current-button :depth) 0)
             (setq current-button (treemacs-button-get current-button :parent)))
-          (treemacs--get-label-of current-button)))
+          (treemacs--get-logical-label-of current-button)))
 
        ;; ${file-path} - Filesystem path.
        ((string= pattern "file-path")

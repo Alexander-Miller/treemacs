@@ -389,6 +389,7 @@ additional keys."
             :open-action
             (treemacs--create-buttons
              :nodes items
+             :parent node
              :depth depth
              :node-name item
              :node-action ,render-action)

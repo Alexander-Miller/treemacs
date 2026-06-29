@@ -64,6 +64,46 @@
   "Message to be output by `treemacs--eldoc-function'.
 Will be set by `treemacs--post-command'.")
 
+(defun treemacs--mode-line-label ()
+  "Return the label Treemacs should display in its mode line."
+  (let ((workspace (treemacs-current-workspace)))
+    (if (not treemacs-project-name-in-mode-line)
+        (treemacs-workspace->name workspace)
+      (or (-some-> (treemacs-project-at-point) (treemacs-project->name))
+          (and (= 1 (length (treemacs-workspace->projects workspace)))
+               (treemacs-project->name (car (treemacs-workspace->projects workspace))))
+          (treemacs-workspace->name workspace)))))
+
+(defun treemacs--default-mode-line-format ()
+  "Return the default mode line format for `treemacs-mode'."
+  `(:eval
+    ,(if treemacs-project-name-in-mode-line
+         '(format " %s" (treemacs--mode-line-label))
+       '(format " Treemacs: %s" (treemacs--mode-line-label)))))
+
+(defun treemacs--moody-mode-line-format ()
+  "Return the moody mode line format for `treemacs-mode'."
+  '(:eval
+    (let ((label (if treemacs-project-name-in-mode-line
+                     (treemacs--mode-line-label)
+                   "Treemacs")))
+      (moody-tab (format " %s " label)
+                 (max 10 (+ 2 (length label)))
+                 'down))))
+
+(defun treemacs--doom-mode-line-format ()
+  "Return the doom-modeline format for `treemacs-mode'."
+  (with-no-warnings
+    (eval
+     '(progn
+        (require 'doom-modeline)
+        (doom-modeline-def-segment treemacs-label
+          "Display treemacs."
+          (propertize (format " %s " (treemacs--mode-line-label))
+                      'face (doom-modeline-face 'doom-modeline-buffer-minor-mode)))
+        (doom-modeline-def-modeline 'treemacs '(bar " " major-mode) '(treemacs-label))
+        (doom-modeline 'treemacs)))))
+
 (defconst treemacs--eldoc-obarray
   (-let [ob (make-vector 59 0)]
     (mapatoms
@@ -217,6 +257,15 @@ Will be set by `treemacs--post-command'.")
                (if (eq 'none treemacs-user-mode-line-format)
                    nil
                  treemacs-user-mode-line-format))
+              (treemacs-project-name-in-mode-line
+               (cond ((and (listp (default-value 'mode-line-format))
+                           (member 'moody-mode-line-buffer-identification
+                                   (default-value 'mode-line-format)))
+                      (treemacs--moody-mode-line-format))
+                     ((featurep 'doom-modeline)
+                      (treemacs--doom-mode-line-format))
+                     (t
+                      (treemacs--default-mode-line-format))))
               ((fboundp 'spaceline-install)
                (spaceline-install
                 "treemacs" '((workspace-number
@@ -227,21 +276,11 @@ Will be set by `treemacs--post-command'.")
               ((and (listp (default-value 'mode-line-format))
                     (member 'moody-mode-line-buffer-identification
                             (default-value 'mode-line-format)))
-               '(:eval (moody-tab " Treemacs " 10 'down)))
+               (treemacs--moody-mode-line-format))
               ((featurep 'doom-modeline)
-               (with-no-warnings
-                 (eval
-                  '(progn
-                     (require 'doom-modeline)
-                     (doom-modeline-def-segment treemacs-workspace-name
-                       "Display treemacs."
-                       (propertize (format " %s " (treemacs-workspace->name (treemacs-current-workspace)))
-                                   'face (doom-modeline-face 'doom-modeline-buffer-minor-mode)))
-                     (doom-modeline-def-modeline 'treemacs '(bar " " major-mode) '(treemacs-workspace-name))
-                     (doom-modeline 'treemacs)))))
+               (treemacs--doom-mode-line-format))
               (t
-               '(:eval (format " Treemacs: %s"
-                               (treemacs-workspace->name (treemacs-current-workspace))))))))
+               (treemacs--default-mode-line-format)))))
 
 (defun treemacs--post-command ()
   "Set the default directory to the nearest directory of the current node.

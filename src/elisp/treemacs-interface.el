@@ -621,14 +621,14 @@ without the need to call `treemacs-resort' with a prefix arg."
           ('dir-node-closed
            (treemacs--expand-dir-node btn)
            (treemacs-log "Resorted %s with sort method '%s'."
-                         (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
+                         (propertize (treemacs--get-logical-label-of btn) 'face 'font-lock-string-face)
                          (propertize sort-name 'face 'font-lock-type-face)))
           ('dir-node-open
            (treemacs--collapse-dir-node btn)
            (goto-char (treemacs-button-start btn))
            (treemacs--expand-dir-node btn)
            (treemacs-log "Resorted %s with sort method '%s'."
-                         (propertize (treemacs--get-label-of btn) 'face 'font-lock-string-face)
+                         (propertize (treemacs--get-logical-label-of btn) 'face 'font-lock-string-face)
                          (propertize sort-name 'face 'font-lock-type-face)))
           ((or 'file-node-open 'file-node-closed 'tag-node-open 'tag-node-closed 'tag-node)
            (let* ((parent (treemacs-button-get btn :parent)))
@@ -645,7 +645,7 @@ without the need to call `treemacs-resort' with a prefix arg."
                    (set-window-point (selected-window) window-point)
                    (with-no-warnings (goto-line line))
                    (treemacs-log "Resorted %s with sort method '%s'."
-                                 (propertize (treemacs--get-label-of parent) 'face 'font-lock-string-face)
+                                 (propertize (treemacs--get-logical-label-of parent) 'face 'font-lock-string-face)
                                  (propertize sort-name 'face 'font-lock-type-face)))
                ;; a top level file's containing dir is root
                (treemacs-without-messages (treemacs-refresh))

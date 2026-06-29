@@ -1320,6 +1320,39 @@ In BODY, variable PROJECT is defined."
          (goto-char 0)
          ,@body))))
 
+(defmacro test-treemacs--with-hidden-root-buffer (&rest body)
+  "Evaluate BODY with a project root whose rendered label is hidden."
+  (declare (indent 0))
+  (let ((parent-marker (make-symbol "parent-marker")))
+    `(with-temp-buffer
+       (let ((project (treemacs-project->create! :name "Project" :path "/project"))
+            (,parent-marker nil))
+         (insert-text-button " "
+                            :path "/project"
+                            :state 'root-node-open
+                            :depth 0
+                            :project project)
+         (setq ,parent-marker (copy-marker (line-beginning-position)))
+         (insert "\n")
+         (insert-text-button "directory"
+                            :path "/project/directory"
+                            :key "/project/directory"
+                            :state 'dir-node-open
+                            :parent ,parent-marker
+                            :depth 1)
+         (setq ,parent-marker (copy-marker (line-beginning-position)))
+         (insert "\n")
+         (insert-text-button "file.txt"
+                            :path "/project/directory/file.txt"
+                            :key "/project/directory/file.txt"
+                            :state 'file-node-closed
+                            :parent ,parent-marker
+                            :depth 2)
+         (setq ,parent-marker (copy-marker (line-beginning-position)))
+         (insert "\n")
+         (goto-char 0)
+         ,@body))))
+
 (defun test-treemacs--format-pattern (template expected-1 expected-2 expected-3)
   "Test that `treemacs--format-bookmark-title' expands TEMPLATE correctly.
 
@@ -1393,6 +1426,56 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
         (-let [result (-map #'treemacs--get-label-of (treemacs-collect-child-nodes input))]
           (expect result :to-have-same-items-as '("  Child1" "  Child2")))))))
 
+(describe "treemacs--display-depth"
+  (it "Shifts project descendants left by one level when enabled"
+    (with-temp-buffer
+      (let* ((treemacs-project-name-in-mode-line t)
+             (project (treemacs-project->create! :name "Project" :path "/project"))
+             root
+             child)
+        (insert-text-button "Project"
+                            :path "/project"
+                            :state 'root-node-open
+                            :depth 0
+                            :project project)
+        (setq root (copy-marker (line-beginning-position)))
+        (insert "\n")
+        (insert-text-button "directory"
+                            :path "/project/directory"
+                            :state 'dir-node-open
+                            :depth 1
+                            :parent root)
+        (setq child (copy-marker (line-beginning-position)))
+        (expect (treemacs--display-depth 1 root) :to-equal 0)
+        (expect (treemacs--display-depth 2 child) :to-equal 1))))
+
+  (it "Leaves non-project indentation unchanged"
+    (let ((treemacs-project-name-in-mode-line t))
+      (expect (treemacs--display-depth 2 nil) :to-equal 2))))
+
+(describe "treemacs--mode-line-label"
+  (it "Uses the workspace name by default"
+    (let ((treemacs-project-name-in-mode-line nil)
+          (project (treemacs-project->create! :name "Project" :path "/project")))
+      (treemacs--with-project project
+        (with-temp-buffer
+          (expect (treemacs--mode-line-label) :to-equal "FAKE")))))
+
+  (it "Uses the project at point when enabled"
+    (let ((treemacs-project-name-in-mode-line t)
+          (project (treemacs-project->create! :name "Project" :path "/project")))
+      (treemacs--with-project project
+        (test-treemacs--with-sample-buffer
+          (forward-line 1)
+          (expect (treemacs--mode-line-label) :to-equal "Project")))))
+
+  (it "Falls back to the single project name when there is no button at point"
+    (let ((treemacs-project-name-in-mode-line t)
+          (project (treemacs-project->create! :name "Project" :path "/project")))
+      (treemacs--with-project project
+        (with-temp-buffer
+          (expect (treemacs--mode-line-label) :to-equal "Project"))))))
+
 (describe "treemacs--format-bookmark-title"
   (it "Uses the configured pattern"
     (test-treemacs--format-pattern "No replacements" "No replacements" "No replacements" "No replacements"))
@@ -1414,6 +1497,14 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
 
   (it "Formats the limited label path"
     (test-treemacs--format-pattern "${label-path:2}" "Project" "Project/directory" "directory/file.txt"))
+
+  (it "Uses the project name when the root label is hidden"
+    (let ((treemacs-project-name-in-mode-line t)
+          (treemacs-bookmark-title-template "${label-path}"))
+      (test-treemacs--with-hidden-root-buffer
+        (forward-line 2)
+        (expect (treemacs--format-bookmark-title (treemacs-current-button))
+                :to-equal "Project/directory/file.txt"))))
 
   (it "Does not hang with negatie label path limit"
     (test-treemacs--format-pattern "${label-path:-2}" "Project" "Project/directory" "Project/directory/file.txt"))

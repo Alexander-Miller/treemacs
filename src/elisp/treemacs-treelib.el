@@ -906,6 +906,7 @@ ITEMS: List<Any>"
       :open-action
       (treemacs--create-buttons
        :nodes items
+       :parent btn
        :depth depth
        :node-name item
        :node-action
