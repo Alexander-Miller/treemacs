@@ -196,6 +196,7 @@ Recursively open all tags below BTN when RECURSIVE is non-nil."
          :open-action
          (treemacs--create-buttons
           :nodes index
+          :parent btn
           :extra-vars
           ((node-prefix (concat prefix treemacs-icon-tag-closed))
            (leaf-prefix (concat prefix treemacs-icon-tag-leaf)))
@@ -314,6 +315,7 @@ Open all tag section under BTN when call is RECURSIVE."
      :new-icon treemacs-icon-tag-open
      :open-action (treemacs--create-buttons
                    :nodes index
+                   :parent btn
                    :depth (1+ (treemacs-button-get btn :depth))
                    :node-name item
                    :extra-vars ((leaf-prefix (concat prefix treemacs-icon-tag-leaf))

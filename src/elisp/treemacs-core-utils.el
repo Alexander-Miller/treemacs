@@ -29,6 +29,8 @@
 (require 'treemacs-customization)
 (require 'treemacs-logging)
 
+(declare-function treemacs--get-indentation "treemacs-visuals" (depth))
+
 (eval-when-compile
   (require 'inline)
   (require 'cl-lib)
@@ -259,6 +261,31 @@ Returns nil when point is between projects."
     (copy-marker t))))
 (defalias 'treemacs-node-at-point #'treemacs-current-button)
 
+(defun treemacs--standard-project-root-p (btn)
+  "Return non-nil when BTN is a standard Treemacs project root button."
+  (and btn
+       (memq (treemacs-button-get btn :state) '(root-node-open root-node-closed))
+       (treemacs-button-get btn :project)
+       (not (treemacs-button-get btn :custom))))
+
+(defun treemacs--node-belongs-to-project-root-p (btn)
+  "Return non-nil when BTN belongs to a standard Treemacs project tree."
+  (while (and btn (not (treemacs--standard-project-root-p btn)))
+    (setq btn (treemacs-button-get btn :parent)))
+  btn)
+
+(defun treemacs--display-depth (depth &optional parent)
+  "Return the indentation depth to use for DEPTH under PARENT."
+  (if (and treemacs-project-name-in-mode-line
+           (> depth 0)
+           (treemacs--node-belongs-to-project-root-p parent))
+      (1- depth)
+    depth))
+
+(defun treemacs--indentation-for-depth (depth &optional parent)
+  "Return the indentation string for DEPTH under PARENT."
+  (treemacs--get-indentation (treemacs--display-depth depth parent)))
+
 (define-inline treemacs-button-put (button prop val)
   "Set BUTTON's PROP property to VAL.
 Same as `button-put', but faster since it's inlined and does not query the
@@ -318,6 +345,13 @@ button type on every call."
   (declare (side-effect-free t))
   (inline-quote
    (buffer-substring-no-properties (treemacs-button-start ,btn) (treemacs-button-end ,btn))))
+
+(defun treemacs--get-logical-label-of (btn)
+  "Return BTN's semantic label, even when its rendered label is hidden."
+  (if (and treemacs-project-name-in-mode-line
+           (treemacs--standard-project-root-p btn))
+      (treemacs-project->name (treemacs-button-get btn :project))
+    (treemacs--get-label-of btn)))
 
 (define-inline treemacs--tokenize-path (path exclude-prefix)
   "Get the PATH's single elements, excluding EXCLUDE-PREFIX.

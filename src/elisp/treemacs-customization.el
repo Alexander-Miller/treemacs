@@ -1194,6 +1194,16 @@ For more specific information about formatting mode line check
   :type 'sexp
   :group 'treemacs)
 
+(defcustom treemacs-project-name-in-mode-line nil
+  "When non-nil show project names in the mode line instead of root labels.
+
+Treemacs will render project root lines without their names, keep the project
+name in the mode line instead, and shift descendant nodes left by one
+indentation level.  The mode line shows the project at point, or falls back to
+the workspace name when no project can be determined."
+  :type 'boolean
+  :group 'treemacs)
+
 (defcustom treemacs-workspace-switch-cleanup nil
   "Indicates which, if any, buffers should be deleted on a workspace switch.
 Only applies when interactively calling `treemacs-switch-workspace'.

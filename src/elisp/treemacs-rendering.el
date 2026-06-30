@@ -304,7 +304,7 @@ either OPEN-ACTION or POST-OPEN-ACTION are expected to take over insertion."
          (when (equal parent (treemacs-button-get child :parent))
            (forward-line 1))))))
 
-(cl-defmacro treemacs--create-buttons (&key nodes node-action  depth extra-vars node-name)
+(cl-defmacro treemacs--create-buttons (&key nodes node-action depth extra-vars node-name parent)
   "Building block macro for creating buttons from a list of NODES.
 Will not making any insertions, but instead return a list of strings created by
 NODE-ACTION, so that the list can be further manipulated and efficiently
@@ -313,9 +313,10 @@ NODES is the list to create buttons from.
 DEPTH is the indentation level buttons will be created on.
 EXTRA-VARS are additional var bindings inserted into the initial let block.
 NODE-ACTION is the button creating form inserted for every NODE.
-NODE-NAME is the variable individual nodes are bound to in NODE-ACTION."
+NODE-NAME is the variable individual nodes are bound to in NODE-ACTION.
+PARENT is the parent button the nodes belong to."
   `(let* ((depth ,depth)
-          (prefix (concat "\n" (treemacs--get-indentation depth)))
+          (prefix (concat "\n" (treemacs--indentation-for-depth depth ,parent)))
           (,node-name (car ,nodes))
           (strings)
           ,@extra-vars)
@@ -430,12 +431,14 @@ set to PARENT."
          (setq dir-strings
                (treemacs--create-buttons
                 :nodes dirs
+                :parent ,parent
                 :depth ,depth
                 :node-name node
                 :node-action (treemacs--create-dir-button-strings node prefix ,parent ,depth)))
          (setq file-strings
                (treemacs--create-buttons
                 :nodes files
+                :parent ,parent
                 :depth ,depth
                 :node-name node
                 :node-action (treemacs--create-file-button-strings node prefix ,parent ,depth)))
@@ -729,10 +732,11 @@ PROJECT: Project Struct"
          (dom-node (treemacs-dom-node->create! :key path :position pos)))
     (treemacs-dom-node->insert-into-dom! dom-node)
     (insert
-     (propertize (treemacs-project->name project)
+     (propertize (if treemacs-project-name-in-mode-line " " (treemacs-project->name project))
                  'button '(t)
                  'category 'treemacs-button
                  'face (treemacs--root-face project)
+                 'help-echo (treemacs-project->name project)
                  :project project
                  :default-face 'treemacs-root-face
                  :key path
@@ -1076,7 +1080,7 @@ DEPTH: Int"
   (declare (side-effect-free t))
   (inline-letevals (path depth parent)
     (inline-quote
-     (let ((prefix (treemacs--get-indentation ,depth)))
+     (let ((prefix (treemacs--indentation-for-depth ,depth ,parent)))
        (apply
         #'concat
         (let* ((strs)
