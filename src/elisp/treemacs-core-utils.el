@@ -1140,7 +1140,7 @@ Returns a cons cell of a descriptive string name and the sorting symbol."
                        ("Sort by Size Descending" . size-desc)
                        ("Sort by Modification Date Ascending" . mod-time-asc)
                        ("Sort by Modification Date Descending" . mod-time-desc)))
-         (selected-value (completing-read (format "Sort Method (current is %s)" treemacs-sorting)
+         (selected-value (completing-read (format "Sort Method (current is %s): " treemacs-sorting)
                                           (-map #'car sort-names))))
     (--first (s-equals? (car it) selected-value) sort-names)))
 
