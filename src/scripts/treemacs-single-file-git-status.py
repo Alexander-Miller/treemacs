@@ -40,6 +40,7 @@ def main():
     if '"' in FILE or '\\' in FILE:
         sys.exit(2)
 
+    environ["GIT_OPTIONAL_LOCKS"] = "0"
     new_state = determine_file_git_state()
 
     # nothing to do
