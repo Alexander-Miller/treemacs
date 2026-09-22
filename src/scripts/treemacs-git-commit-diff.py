@@ -7,6 +7,7 @@ STATUS_CMD = "{} status -sb".format(GIT_BIN)
 
 def main():
     environ["LC_ALL"] = "C"
+    environ["GIT_OPTIONAL_LOCKS"] = "0"
     proc = Popen(STATUS_CMD, shell=True, stdout=PIPE, bufsize=100)
 
     if (proc.wait() != 0):
