@@ -78,7 +78,8 @@ window."
 
 (defun treemacs--setup-project-follow-mode ()
   "Setup all the hooks needed for `treemacs-project-follow-mode'."
-  (when treemacs--project-follow-timer (cancel-timer treemacs--project-follow-timer))
+  (when treemacs--project-follow-timer
+    (cancel-timer treemacs--project-follow-timer))
   (setf treemacs--project-follow-timer nil)
   (add-hook 'window-buffer-change-functions #'treemacs--follow-project)
   (add-hook 'window-selection-change-functions #'treemacs--follow-project)
@@ -86,7 +87,8 @@ window."
 
 (defun treemacs--tear-down-project-follow-mode ()
   "Remove the hooks added by `treemacs--setup-project-follow-mode'."
-  (cancel-timer treemacs--project-follow-timer)
+  (when treemacs--project-follow-timer
+    (cancel-timer treemacs--project-follow-timer))
   (remove-hook 'window-buffer-change-functions #'treemacs--follow-project)
   (remove-hook 'window-selection-change-functions #'treemacs--follow-project)
   (remove-hook 'treemacs-post-buffer-init-hook #'treemacs--follow-project-after-buffer-init))
