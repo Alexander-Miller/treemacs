@@ -76,6 +76,12 @@ Will rename treemacs perspective workspace OLD-NAME to use NEW-NAME."
   "Hook running after the perspective was switched.
 Will select a workspace for the now active perspective, creating it if
 necessary."
+  ;; Select an existing workspace before a new sidebar captures its projects.
+  ;; Keep creation deferred so project-switch commands can first visit a file.
+  (when (treemacs--find-workspace-by-name
+         (treemacs-scope->current-scope-name
+          (treemacs-current-scope-type) (treemacs-current-scope)))
+    (treemacs-persp--ensure-workspace-exists))
   ;; running with a timer ensures that any other post-processing is finished after a perspective
   ;; was run since commands like `spacemacs/helm-persp-switch-project' first create a perspective
   ;; and only afterwards select the file to display
