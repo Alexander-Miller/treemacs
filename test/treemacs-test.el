@@ -2091,3 +2091,49 @@ EXPECTED-3 is the expected expansion of the \"file.txt\" button."
 (provide 'test-treemacs)
 
 ;;; treemacs-test.el ends here
+
+(describe "treemacs--flatten-org-mode-imenu-index parent representations"
+  (it "Emits a group-first modern parent only once"
+    (with-temp-buffer
+      (insert "abc")
+      (let* ((marker (copy-marker 1))
+             (child-marker (copy-marker 2))
+             (parent (propertize "Parent" 'org-imenu-marker marker))
+             (group (list parent (cons "Child" child-marker)))
+             (leaf (cons parent marker))
+             (result (treemacs--flatten-org-mode-imenu-index (list group leaf))))
+        (expect (length result) :to-be 2)
+        (expect (member (list leaf) result) :to-be-truthy)
+        (expect (member (list (cons "Child" child-marker) parent) result) :to-be-truthy))))
+  (it "Emits a leaf-first modern parent only once"
+    (with-temp-buffer
+      (insert "abc")
+      (let* ((marker (copy-marker 1))
+             (child-marker (copy-marker 2))
+             (parent (propertize "Parent" 'org-imenu-marker marker))
+             (group (list parent (cons "Child" child-marker)))
+             (leaf (cons parent marker))
+             (result (treemacs--flatten-org-mode-imenu-index (list leaf group))))
+        (expect (length result) :to-be 2)
+        (expect (member (list leaf) result) :to-be-truthy)
+        (expect (member (list (cons "Child" child-marker) parent) result) :to-be-truthy))))
+  (it "Preserves a legacy parent without an explicit leaf"
+    (with-temp-buffer
+      (insert "abc")
+      (let* ((parent (propertize "Parent" 'org-imenu-marker (copy-marker 1)))
+             (child (cons "Child" (copy-marker 2)))
+             (result (treemacs--flatten-org-mode-imenu-index (list (list parent child)))))
+        (expect (length result) :to-be 2)
+        (expect (member (list parent) result) :to-be-truthy)
+        (expect (member (list child parent) result) :to-be-truthy))))
+  (it "Preserves same-named headings at distinct markers"
+    (with-temp-buffer
+      (insert "abc")
+      (let* ((parent (propertize "Parent" 'org-imenu-marker (copy-marker 1)))
+             (child (cons "Child" (copy-marker 2)))
+             (other (cons "Parent" (copy-marker 3)))
+             (result (treemacs--flatten-org-mode-imenu-index
+                      (list (list parent child) other))))
+        (expect (length result) :to-be 3)
+        (expect (member (list parent) result) :to-be-truthy)
+        (expect (member (list other) result) :to-be-truthy)))))

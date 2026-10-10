@@ -141,7 +141,19 @@ PATH: String List"
   (let (result)
     (--each index
       (let ((is-subalist? (imenu--subalist-p it)))
-        (setq result (cons (cons (if is-subalist? (car it) it) (nreverse (copy-sequence path))) result))
+        ;; Newer Org indexes also include a leaf for the section headline.
+        ;; Prefer that leaf, but keep legacy section-only headline entries.
+        (unless (and is-subalist?
+                     (cl-some
+                      (lambda (entry)
+                        (and (consp entry)
+                             (not (imenu--subalist-p entry))
+                             (equal (car entry) (car it))
+                             (equal (cdr entry)
+                                    (get-text-property 0 'org-imenu-marker (car it)))))
+                      index))
+          (setq result (cons (cons (if is-subalist? (car it) it)
+                                   (nreverse (copy-sequence path))) result)))
         (when is-subalist?
           (setq result (append result (treemacs--flatten-org-mode-imenu-index (cdr it) (cons (car it) path)))))))
     result))
