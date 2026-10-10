@@ -79,12 +79,22 @@ necessary."
   ;; running with a timer ensures that any other post-processing is finished after a perspective
   ;; was run since commands like `spacemacs/helm-persp-switch-project' first create a perspective
   ;; and only afterwards select the file to display
-  (run-with-timer
-   0.1 nil
-   (lambda ()
-     (treemacs-without-following
-      (treemacs-persp--ensure-workspace-exists)
-      (treemacs--change-buffer-on-scope-change)))))
+  (let ((frame (selected-frame))
+        (perspective (get-current-persp))
+        (token (make-symbol "treemacs-persp-switch")))
+    (set-frame-parameter frame 'treemacs-persp-switch-token token)
+    (run-with-timer
+     0.1 nil
+     (lambda ()
+       (when (and (frame-live-p frame)
+                  (eq token (frame-parameter frame 'treemacs-persp-switch-token)))
+         (set-frame-parameter frame 'treemacs-persp-switch-token nil)
+         (with-selected-frame frame
+           (when (and (eq (treemacs-current-scope-type) 'treemacs-persp-scope)
+                      (eq perspective (get-current-persp)))
+             (treemacs-without-following
+              (treemacs-persp--ensure-workspace-exists)
+              (treemacs--change-buffer-on-scope-change)))))))))
 
 (defun treemacs-persp--ensure-workspace-exists ()
   "Make sure a workspace exists for the given PERSP-NAME.
