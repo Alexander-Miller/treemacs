@@ -56,6 +56,7 @@ Will return \"No Perspective\" if no perspective is active."
   "Persp-scope setup."
   (add-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
   (add-hook 'persp-renamed-functions #'treemacs-persp--on-perspective-rename)
+  (advice-add 'persp-rename :around #'treemacs-persp--validate-rename)
   (add-hook 'persp-before-kill-functions #'treemacs--on-scope-kill)
   (treemacs-persp--ensure-workspace-exists))
 
@@ -63,14 +64,45 @@ Will return \"No Perspective\" if no perspective is active."
   "Persp-scope tear-down."
   (remove-hook 'persp-activated-functions #'treemacs-persp--on-perspective-switch)
   (remove-hook 'persp-renamed-functions #'treemacs-persp--on-perspective-rename)
+  (advice-remove 'persp-rename #'treemacs-persp--validate-rename)
   (remove-hook 'persp-before-kill-functions #'treemacs--on-scope-kill))
 
 (defun treemacs-persp--on-perspective-rename (_perspective old-name new-name)
   "Hook running after perspective was renamed.
 Will rename treemacs perspective workspace OLD-NAME to use NEW-NAME."
-  (treemacs-do-rename-workspace
-   (treemacs--find-workspace-by-name (treemacs-persp--format-workspace-name old-name))
-   (treemacs-persp--format-workspace-name new-name)))
+  (when-let* ((workspace (treemacs--find-workspace-by-name
+                         (treemacs-persp--format-workspace-name old-name))))
+    (treemacs-do-rename-workspace workspace
+                                  (treemacs-persp--format-workspace-name new-name))))
+
+(defun treemacs-persp--validate-rename (fn new-name &rest args)
+  "Validate sidebar identities before FN renames a perspective to NEW-NAME.
+ARGS are passed unchanged to FN.  Validate only the main perspective hash."
+  (let ((perspective (if args (car args) (get-current-persp)))
+        (phash (if (cdr args) (cadr args) *persp-hash*)))
+    (when (stringp perspective)
+      (setq perspective (persp-get-by-name perspective phash)))
+    (when (and perspective (perspective-p perspective) (eq phash *persp-hash*))
+      (let* ((old-name (persp-name perspective))
+             (old-sidebar-name (treemacs-persp--format-workspace-name old-name))
+             (sources (cl-remove-if-not
+                       (lambda (workspace)
+                         (equal old-sidebar-name (treemacs-workspace->name workspace)))
+                       treemacs--workspaces)))
+        (unless new-name
+          (setq new-name (read-string
+                          (concat "New name for the " old-name " perspective: ") old-name)))
+        (unless (equal old-name new-name)
+          (when (> (length sources) 1)
+            (user-error "Ambiguous Treemacs workspace for %s" old-name))
+          (let ((target (treemacs-persp--format-workspace-name new-name)))
+            (when (cl-some
+                   (lambda (workspace)
+                     (and (equal target (treemacs-workspace->name workspace))
+                          (not (eq workspace (car sources)))))
+                   treemacs--workspaces)
+              (user-error "Treemacs workspace already exists for %s" new-name))))))
+    (apply fn new-name args)))
 
 (defun treemacs-persp--on-perspective-switch (&rest _)
   "Hook running after the perspective was switched.
