@@ -636,7 +636,8 @@ Can be set to nil to use the default value."
   "Path to the file treemacs uses to persist its state.
 Can be set to nil to disable workspace persistence."
   :group 'treemacs
-  :type 'string)
+  :type '(choice (const :tag "Off" nil)
+                 (string :tag "Path")))
 
 (defcustom treemacs-last-error-persist-file
   (expand-file-name ".cache/treemacs-persist-at-last-error" user-emacs-directory)
